@@ -3,10 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const COMPTES_DEMO = [
-  { role: 'Client',      email: 'client@demo.com',  motdepasse: 'client123',  color: '#5B5BD6', icon: '👤' },
-  { role: 'Patron',      email: 'patron@demo.com',  motdepasse: 'patron123',  color: '#7C3AED', icon: '🏗️' },
-  { role: 'Artisan',     email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669', icon: '🔨' },
-  { role: 'Super Admin', email: 'admin@demo.com',   motdepasse: 'admin123',   color: '#DC2626', icon: '⚡' },
+  { role: 'Client',  email: 'client@demo.com',  motdepasse: 'client123',  color: '#5B5BD6', icon: '👤' },
+  { role: 'Patron',  email: 'patron@demo.com',  motdepasse: 'patron123',  color: '#7C3AED', icon: '🏗️' },
+  { role: 'Artisan', email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669', icon: '🔨' },
 ];
 
 const REDIRECTIONS = {
