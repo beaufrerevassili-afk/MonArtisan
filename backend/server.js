@@ -39,6 +39,8 @@ const SECRET = process.env.JWT_SECRET;
 //  MIDDLEWARES GLOBAUX
 // ============================================================
 
+app.set('trust proxy', 1);
+
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
 app.use(cors({
   origin: allowedOrigins.length ? allowedOrigins : false,
