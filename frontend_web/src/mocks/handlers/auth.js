@@ -1,8 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { DEMO_USERS } from '../data/users';
-
-// Session en mémoire pour les mocks (simule le cookie HttpOnly)
-let mockSession = null;
+import { DEMO_USERS, makeToken } from '../data/users';
 
 export const authHandlers = [
   // Login
@@ -14,19 +11,12 @@ export const authHandlers = [
     if (!user) {
       return HttpResponse.json({ message: 'Email ou mot de passe incorrect' }, { status: 401 });
     }
-    mockSession = { id: user.id, nom: user.nom, email: user.email, role: user.role };
-    return HttpResponse.json({ userId: user.id, nom: user.nom, email: user.email, role: user.role });
-  }),
-
-  // /me — restaure la session
-  http.get('*/me', () => {
-    if (!mockSession) return HttpResponse.json({ erreur: 'Non authentifié' }, { status: 401 });
-    return HttpResponse.json(mockSession);
+    const token = makeToken(user);
+    return HttpResponse.json({ token, userId: user.id, nom: user.nom, email: user.email, role: user.role });
   }),
 
   // Logout
   http.post('*/logout', () => {
-    mockSession = null;
     return HttpResponse.json({ message: 'Déconnecté' });
   }),
 

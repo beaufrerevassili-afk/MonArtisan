@@ -7,22 +7,36 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restaure la session depuis le cookie HttpOnly via /me
   useEffect(() => {
-    api.get('/me')
-      .then(({ data }) => setUser(data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp * 1000 > Date.now()) {
+          setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role });
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+          sessionStorage.removeItem('token');
+        }
+      } catch {
+        sessionStorage.removeItem('token');
+      }
+    }
+    setLoading(false);
   }, []);
 
   async function login(email, motdepasse) {
     const { data } = await api.post('/login', { email, motdepasse });
+    sessionStorage.setItem('token', data.token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role });
     return data;
   }
 
   async function logout() {
     await api.post('/logout').catch(() => {});
+    sessionStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   }
 

@@ -174,33 +174,14 @@ app.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (req, 
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom }, SECRET, { expiresIn: '8h' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      maxAge: 8 * 60 * 60 * 1000,
-    });
-
-    res.json({ message: `Bienvenue ${user.nom} !`, role: user.role, userId: user.id, nom: user.nom, email: user.email });
+    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, userId: user.id, nom: user.nom, email: user.email });
   } catch (err) {
     console.error('Erreur /login :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
-app.get('/me', (req, res) => {
-  const token = req.cookies?.token;
-  if (!token) return res.status(401).json({ erreur: 'Non authentifié' });
-  try {
-    const payload = jwt.verify(token, SECRET);
-    res.json({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role });
-  } catch {
-    res.status(401).json({ erreur: 'Session expirée' });
-  }
-});
-
 app.post('/logout', (req, res) => {
-  res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict' });
   res.json({ message: 'Déconnecté' });
 });
 
