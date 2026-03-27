@@ -175,7 +175,7 @@ app.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (req, 
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 8 * 60 * 60 * 1000,
     });
 
@@ -198,7 +198,7 @@ app.get('/me', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
+  res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict' });
   res.json({ message: 'Déconnecté' });
 });
 
