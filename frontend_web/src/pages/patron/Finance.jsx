@@ -1,0 +1,1179 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp, IconClock, IconUser } from '../../components/ui/Icons';
+
+const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
+
+const TABS = [
+  { id: 'tableau-de-bord', label: "Vue d'ensemble" },
+  { id: 'tresorerie',      label: 'Trésorerie'      },
+  { id: 'salaires',        label: 'Salaires'        },
+  { id: 'bareme-paiement', label: 'Barème paiement' },
+];
+
+const STATUT_DEVIS = {
+  brouillon:  { cls: 'badge badge-gray',   label: 'Brouillon'  },
+  'envoyé':   { cls: 'badge badge-blue',   label: 'Envoyé'     },
+  'accepté':  { cls: 'badge badge-green',  label: 'Accepté'    },
+  'refusé':   { cls: 'badge badge-red',    label: 'Refusé'     },
+  en_attente: { cls: 'badge badge-yellow', label: 'En attente' },
+  'payée':    { cls: 'badge badge-green',  label: 'Payée'      },
+  en_retard:  { cls: 'badge badge-red',    label: 'En retard'  },
+};
+
+function StatutBadge({ statut }) {
+  const s = STATUT_DEVIS[statut];
+  return <span className={s?.cls || 'badge badge-gray'}>{s?.label || statut}</span>;
+}
+
+const DEMO_FINANCE = {
+  chiffreAffaires: { total: 142_800, facturesEmises: 38, montantEnAttente: 18_500, totalPrecedent: 118_400 },
+  devis: { acceptes: 24, tauxConversion: 68, tauxPrecedent: 61 },
+  marge: 31_200, margePrecedente: 24_900,
+  mensuel: [
+    { mois: 'Oct', ca: 9_800,  charges: 6_500 },
+    { mois: 'Nov', ca: 12_400, charges: 7_800 },
+    { mois: 'Déc', ca: 8_600,  charges: 5_200 },
+    { mois: 'Jan', ca: 14_200, charges: 9_100 },
+    { mois: 'Fév', ca: 16_500, charges: 10_200 },
+    { mois: 'Mar', ca: 19_800, charges: 11_800 },
+  ],
+  repartition: [
+    { label: 'Maçonnerie',  pct: 38, color: '#5B5BD6', ca: 54_264 },
+    { label: 'Plomberie',   pct: 22, color: '#34C759', ca: 31_416 },
+    { label: 'Électricité', pct: 18, color: '#FF9500', ca: 25_704 },
+    { label: 'Peinture',    pct: 14, color: '#AF52DE', ca: 19_992 },
+    { label: 'Autres',      pct: 8,  color: '#8E8E93', ca: 11_424 },
+  ],
+  topClients: [
+    { nom: 'SCI Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Paris 11e' },
+    { nom: 'Résidence du Parc',    ca: 19_800, factures: 4,  taux: 100, ville: 'Vincennes'  },
+    { nom: 'M. & Mme Bertrand',    ca: 14_500, factures: 3,  taux: 67,  ville: 'Montreuil'  },
+    { nom: 'SARL Dupont Immo',     ca: 12_900, factures: 5,  taux: 80,  ville: 'Bagnolet'   },
+    { nom: 'Copropriété Voltaire', ca: 9_200,  factures: 2,  taux: 100, ville: 'Paris 12e'  },
+  ],
+};
+
+// Données de trésorerie prévisionnelle
+const DEMO_TRESORERIE = {
+  soldeActuel: 42_800,
+  encaissementsAttendus: [
+    { label: 'FAC-2025-038 · SCI Les Acacias',   montant: 8_400, datePrevu: '2025-04-10', statut: 'facturé',   joursRestants: 14 },
+    { label: 'FAC-2025-037 · Résidence du Parc', montant: 5_200, datePrevu: '2025-04-18', statut: 'relancé',   joursRestants: 22 },
+    { label: 'FAC-2025-036 · M. Bertrand',       montant: 3_800, datePrevu: '2025-04-30', statut: 'facturé',   joursRestants: 34 },
+    { label: 'Acompte Devis #041',               montant: 4_500, datePrevu: '2025-05-05', statut: 'en attente', joursRestants: 39 },
+    { label: 'FAC-2025-034 · Copropriété Vol.',  montant: 9_200, datePrevu: '2025-05-15', statut: 'en retard',  joursRestants: -5  },
+  ],
+  decaissementsPrevis: [
+    { label: 'Salaires avril 2025',       montant: 12_400, datePrevu: '2025-04-28', categorie: 'salaires'    },
+    { label: 'Charges URSSAF T1 2025',    montant: 5_940,  datePrevu: '2025-04-15', categorie: 'urssaf'      },
+    { label: 'Fournisseur Matériaux SA',  montant: 3_200,  datePrevu: '2025-04-20', categorie: 'fournisseur' },
+    { label: 'Assurance RC Pro',          montant: 820,    datePrevu: '2025-05-01', categorie: 'assurance'   },
+    { label: 'Leasing véhicule',          montant: 680,    datePrevu: '2025-04-05', categorie: 'charges'     },
+  ],
+  previsionnel3Mois: [
+    { mois: 'Avril',   encaissements: 21_900, decaissements: 22_040, solde: 42_660 },
+    { mois: 'Mai',     encaissements: 18_400, decaissements: 14_800, solde: 46_260 },
+    { mois: 'Juin',    encaissements: 22_500, decaissements: 16_200, solde: 52_560 },
+  ],
+};
+
+const DEMO_SALARIES = {
+  employes: [
+    { employeId: 1, nom: 'Lucas Martin',  poste: 'Chef de chantier',  salaireBrutTotal: 3_200, cotisationsSalariales: 640,  salaireNet: 2_560 },
+    { employeId: 2, nom: 'Karim Benali',  poste: 'Maçon qualifié',    salaireBrutTotal: 2_450, cotisationsSalariales: 490,  salaireNet: 1_960 },
+    { employeId: 3, nom: 'Théo Leblanc', poste: 'Électricien N3',    salaireBrutTotal: 2_700, cotisationsSalariales: 540,  salaireNet: 2_160 },
+    { employeId: 4, nom: 'Sarah Morel',  poste: 'Secrétaire admin.', salaireBrutTotal: 2_100, cotisationsSalariales: 420,  salaireNet: 1_680 },
+  ],
+  resume: { totalBrut: 10_450, totalNet: 8_360, totalChargesPatronales: 4_390 },
+};
+
+export default function Finance() {
+  const navigate = useNavigate();
+  const [tab, setTab]         = useState('tableau-de-bord');
+  const [data, setData]       = useState(null);
+  const [devis, setDevis]     = useState([]);
+  const [factures, setFac]    = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm]       = useState({
+    clientId: '',
+    lignes: [{ description: '', quantite: 1, prixUnitaire: 0, tva: 0.2 }],
+  });
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      api.get('/finance/tableau-de-bord').catch(() => null),
+      api.get('/finance/devis').catch(() => null),
+      api.get('/finance/factures').catch(() => null),
+    ]).then(([tdb, dv, fac]) => {
+      setData(tdb?.data || null);
+      setDevis(dv?.data?.devis || []);
+      setFac(fac?.data?.factures || []);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  async function creerDevis(e) {
+    e.preventDefault();
+    try {
+      await api.post('/finance/devis', form);
+      const { data: dv } = await api.get('/finance/devis');
+      setDevis(dv.devis);
+      setForm({ clientId: '', lignes: [{ description: '', quantite: 1, prixUnitaire: 0, tva: 0.2 }] });
+    } catch (err) {
+      alert(err.response?.data?.erreur || 'Erreur lors de la création');
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h1>Finance</h1>
+          <p style={{ marginTop: 4 }}>Vue d'ensemble financière, salaires et barèmes</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs">
+        {TABS.map(t => (
+          <button key={t.id} className={`tab-item${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+          <div className="spinner" style={{ width: 28, height: 28 }} />
+        </div>
+      ) : (
+        <>
+          {/* Vue d'ensemble */}
+          {tab === 'tableau-de-bord' && (() => {
+            const d = data || DEMO_FINANCE;
+            const isDemo = !data;
+            const caTrend = d.chiffreAffaires?.totalPrecedent > 0
+              ? ((d.chiffreAffaires.total - d.chiffreAffaires.totalPrecedent) / d.chiffreAffaires.totalPrecedent * 100).toFixed(1)
+              : null;
+            const margeTrend = d.margePrecedente > 0
+              ? ((d.marge - d.margePrecedente) / d.margePrecedente * 100).toFixed(1)
+              : null;
+            const txTrend = d.devis?.tauxPrecedent != null
+              ? (d.devis.tauxConversion - d.devis.tauxPrecedent)
+              : null;
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {isDemo && (
+                  <div style={{ background: 'rgba(255,149,0,0.08)', borderRadius: 10, padding: '10px 16px', fontSize: '0.8125rem', color: '#7A5C00', display: 'flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,149,0,0.2)' }}>
+                    <span>📊</span> Données de démonstration — connectez l'API pour afficher vos chiffres réels.
+                  </div>
+                )}
+
+                {/* Raccourcis */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  {[
+                    { label: 'Devis Pro', sub: 'Créer et gérer vos devis', icon: <IconDocument size={18} />, path: '/patron/devis-pro', bg: 'var(--primary-light)', fg: 'var(--primary)', border: 'rgba(91,91,214,0.2)' },
+                    { label: 'Facturation', sub: 'Suivre vos factures', icon: <IconCheck size={18} />, path: '/patron/facturation', bg: 'rgba(52,199,89,0.08)', fg: '#1A7A3C', border: 'rgba(52,199,89,0.2)' },
+                    { label: 'Trésorerie', sub: 'Flux entrants / sortants', icon: <IconTrendUp size={18} />, path: null, onClick: () => setTab('tresorerie'), bg: 'rgba(124,58,237,0.08)', fg: '#7C3AED', border: 'rgba(124,58,237,0.2)' },
+                  ].map(({ label, sub, icon, path, onClick, bg, fg, border }) => (
+                    <button key={label} onClick={onClick || (() => navigate(path))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: bg, border: `1px solid ${border}`, borderRadius: 12, cursor: 'pointer', textAlign: 'left' }}>
+                      <span style={{ color: fg }}>{icon}</span>
+                      <div>
+                        <p style={{ fontWeight: 700, color: fg, fontSize: '0.875rem' }}>{label}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{sub} →</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* KPI grid avec tendances */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 14 }}>
+                  <KpiCard label="CA Total (12 mois)" valeur={`${(d.chiffreAffaires?.total || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="blue" trend={caTrend} trendLabel="vs période préc." />
+                  <KpiCard label="Factures émises"    valeur={d.chiffreAffaires?.facturesEmises || 0}                          Icon={IconDocument} color="blue" />
+                  <KpiCard label="En attente paiement" valeur={`${(d.chiffreAffaires?.montantEnAttente || 0).toLocaleString('fr-FR')} €`} Icon={IconAlert} color="red" />
+                  <KpiCard label="Taux de conversion" valeur={`${d.devis?.tauxConversion || 0} %`} Icon={IconFinance} color={d.devis?.tauxConversion >= 60 ? 'green' : 'orange'} trend={txTrend} trendLabel="pts vs période préc." trendUnit="pts" />
+                  <KpiCard label="Marge brute"        valeur={`${(d.marge || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="green" trend={margeTrend} trendLabel="vs période préc." />
+                  <KpiCard label="Taux de marge"      valeur={d.chiffreAffaires?.total > 0 ? `${(d.marge / d.chiffreAffaires.total * 100).toFixed(1)} %` : '—'} Icon={IconTrendUp} color="blue" />
+                </div>
+
+                {/* Charts row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
+                  {/* CA + Charges mensuel */}
+                  <div className="card" style={{ padding: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)' }}>CA vs Charges (6 mois)</div>
+                      <div style={{ display: 'flex', gap: 14, fontSize: '0.75rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--primary)' }} /> CA
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(255,59,48,0.5)' }} /> Charges
+                        </span>
+                      </div>
+                    </div>
+                    {d.mensuel && (
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 130 }}>
+                        {d.mensuel.map((item, i) => {
+                          const maxVal = Math.max(...d.mensuel.map(x => x.ca));
+                          const hCa = Math.round((item.ca / maxVal) * 100);
+                          const hCh = Math.round(((item.charges || 0) / maxVal) * 100);
+                          const marge = item.ca - (item.charges || 0);
+                          return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                              <div style={{ fontSize: '0.625rem', color: marge >= 0 ? '#1A7A3C' : '#FF3B30', fontWeight: 700 }}>
+                                {marge >= 0 ? '+' : ''}{(marge / 1000).toFixed(0)}k
+                              </div>
+                              <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 1, height: 100 }}>
+                                <div style={{ flex: 1, height: `${hCa}%`, background: i === d.mensuel.length - 1 ? 'var(--primary)' : 'rgba(91,91,214,0.35)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
+                                <div style={{ flex: 1, height: `${hCh}%`, background: 'rgba(255,59,48,0.4)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
+                              </div>
+                              <div style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>{item.mois}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Répartition par activité */}
+                  <div className="card" style={{ padding: 20 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)', marginBottom: 16 }}>Répartition par activité</div>
+                    {d.repartition && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {d.repartition.map((r, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                            <div style={{ fontSize: '0.8125rem', color: 'var(--text)', width: 90, flexShrink: 0, fontWeight: 500 }}>{r.label}</div>
+                            <div style={{ flex: 1, height: 6, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden' }}>
+                              <div style={{ width: `${r.pct}%`, height: '100%', background: r.color, borderRadius: 3, transition: 'width 0.6s' }} />
+                            </div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', width: 36, textAlign: 'right', flexShrink: 0 }}>{r.pct}%</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {d.chiffreAffaires?.total > 0 && (
+                      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
+                        Total : <strong style={{ color: 'var(--text)' }}>{(d.chiffreAffaires.total).toLocaleString('fr-FR')} €</strong>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Top clients */}
+                {d.topClients?.length > 0 && (
+                  <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+                    <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 className="section-title">Top clients (12 mois)</h3>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>Par CA généré</span>
+                    </div>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Client</th>
+                          <th>Ville</th>
+                          <th style={{ textAlign: 'right' }}>CA généré</th>
+                          <th style={{ textAlign: 'right' }}>Factures</th>
+                          <th>Taux paiement</th>
+                          <th style={{ textAlign: 'right' }}>% du CA total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {d.topClients.map((c, i) => {
+                          const pct = d.chiffreAffaires?.total > 0 ? (c.ca / d.chiffreAffaires.total * 100).toFixed(1) : 0;
+                          return (
+                            <tr key={i}>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', fontWeight: 700, flexShrink: 0 }}>
+                                    {i + 1}
+                                  </div>
+                                  <span style={{ fontWeight: 600 }}>{c.nom}</span>
+                                </div>
+                              </td>
+                              <td style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>{c.ville}</td>
+                              <td style={{ textAlign: 'right', fontWeight: 700 }}>{c.ca.toLocaleString('fr-FR')} €</td>
+                              <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{c.factures}</td>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ flex: 1, height: 5, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden', minWidth: 60 }}>
+                                    <div style={{ width: `${c.taux}%`, height: '100%', background: c.taux >= 90 ? '#34C759' : c.taux >= 60 ? '#FF9500' : '#FF3B30', borderRadius: 3 }} />
+                                  </div>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: c.taux >= 90 ? '#1A7A3C' : c.taux >= 60 ? '#7A5C00' : '#CC3B2F', width: 32 }}>{c.taux}%</span>
+                                </div>
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{pct}%</span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Trésorerie */}
+          {tab === 'tresorerie' && <TrésorerieView />}
+
+          {/* Salaires */}
+          {tab === 'salaires' && <SalairesView />}
+
+          {/* Barème de paiement */}
+          {tab === 'bareme-paiement' && <BaremePaiementView />}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Trésorerie ── */
+function TrésorerieView() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/finance/tresorerie').catch(() => null)
+      .then(r => setData(r?.data || null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const d = data || DEMO_TRESORERIE;
+  const isDemo = !data;
+
+  const totalEncaissements = d.encaissementsAttendus.reduce((s, e) => s + e.montant, 0);
+  const totalDecaissements = d.decaissementsPrevis.reduce((s, e) => s + e.montant, 0);
+  const soldeProj = d.soldeActuel + totalEncaissements - totalDecaissements;
+
+  const CAT_COLORS = {
+    salaires: { bg: 'rgba(91,91,214,0.1)', fg: 'var(--primary)', label: 'Salaires' },
+    urssaf:   { bg: 'rgba(255,149,0,0.1)', fg: '#7A5C00',        label: 'URSSAF' },
+    fournisseur: { bg: 'rgba(255,59,48,0.1)', fg: 'var(--danger)', label: 'Fournisseur' },
+    assurance:{ bg: 'rgba(52,199,89,0.1)', fg: '#1A7A3C',        label: 'Assurance' },
+    charges:  { bg: 'rgba(142,142,147,0.1)', fg: '#6E6E73',      label: 'Charges fixes' },
+  };
+
+  const STATUT_ENCAISSE = {
+    'facturé':    { bg: 'rgba(91,91,214,0.1)',  fg: 'var(--primary)' },
+    'relancé':    { bg: 'rgba(255,149,0,0.1)',  fg: '#7A5C00'        },
+    'en attente': { bg: 'rgba(142,142,147,0.1)',fg: '#6E6E73'        },
+    'en retard':  { bg: 'rgba(255,59,48,0.1)',  fg: 'var(--danger)'  },
+  };
+
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" style={{ width: 24, height: 24 }} /></div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {isDemo && (
+        <div style={{ background: 'rgba(255,149,0,0.08)', borderRadius: 10, padding: '10px 16px', fontSize: '0.8125rem', color: '#7A5C00', display: 'flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,149,0,0.2)' }}>
+          <span>📊</span> Données de démonstration — connectez l'API pour afficher votre trésorerie réelle.
+        </div>
+      )}
+
+      {/* Soldes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        {[
+          { label: 'Solde actuel',             val: d.soldeActuel,       color: 'var(--primary)', sub: 'Compte courant' },
+          { label: 'Encaissements attendus',    val: totalEncaissements,  color: '#1A7A3C',        sub: `${d.encaissementsAttendus.length} factures en cours` },
+          { label: 'Décaissements prévus',      val: -totalDecaissements, color: 'var(--danger)',  sub: `${d.decaissementsPrevis.length} échéances` },
+        ].map(({ label, val, color, sub }) => (
+          <div key={label} className="card" style={{ padding: '18px 20px' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{label}</p>
+            <p style={{ fontSize: '1.625rem', fontWeight: 800, color, letterSpacing: '-0.04em', lineHeight: 1 }}>
+              {val >= 0 ? '' : '−'}{Math.abs(val).toLocaleString('fr-FR')} €
+            </p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 6 }}>{sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Solde projeté + barre */}
+      <div className="card" style={{ padding: '18px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Solde projeté après toutes les échéances</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 800, color: soldeProj >= 0 ? '#1A7A3C' : 'var(--danger)', letterSpacing: '-0.04em', marginTop: 4 }}>
+              {soldeProj.toLocaleString('fr-FR')} €
+            </p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Variation</p>
+            <p style={{ fontSize: '1.125rem', fontWeight: 700, color: soldeProj >= d.soldeActuel ? '#1A7A3C' : 'var(--danger)' }}>
+              {soldeProj >= d.soldeActuel ? '+' : ''}{(soldeProj - d.soldeActuel).toLocaleString('fr-FR')} €
+            </p>
+          </div>
+        </div>
+        {/* Stacked bar */}
+        <div style={{ height: 10, borderRadius: 5, overflow: 'hidden', background: 'var(--bg)', display: 'flex' }}>
+          <div style={{ flex: d.soldeActuel, background: 'var(--primary)', minWidth: 3 }} title={`Solde actuel : ${d.soldeActuel.toLocaleString('fr-FR')} €`} />
+          <div style={{ flex: totalEncaissements, background: '#34C759', minWidth: 3 }} title={`Encaissements : +${totalEncaissements.toLocaleString('fr-FR')} €`} />
+          <div style={{ flex: totalDecaissements, background: '#FF3B30', minWidth: 3 }} title={`Décaissements : -${totalDecaissements.toLocaleString('fr-FR')} €`} />
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+          {[
+            { label: 'Solde actuel', color: 'var(--primary)' },
+            { label: 'Encaissements', color: '#34C759' },
+            { label: 'Décaissements', color: '#FF3B30' },
+          ].map(l => (
+            <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />{l.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Prévisionnel 3 mois */}
+      <div className="card" style={{ padding: 20 }}>
+        <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>Prévisionnel trésorerie — 3 prochains mois</h3>
+        <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 100, marginBottom: 8 }}>
+          {d.previsionnel3Mois.map((m, i) => {
+            const maxVal = Math.max(...d.previsionnel3Mois.map(x => Math.max(x.encaissements, x.decaissements)));
+            const hEnc = Math.round((m.encaissements / maxVal) * 90);
+            const hDec = Math.round((m.decaissements / maxVal) * 90);
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <div style={{ width: '80%', display: 'flex', alignItems: 'flex-end', gap: 2, height: 90 }}>
+                  <div style={{ flex: 1, height: `${hEnc}%`, background: 'rgba(52,199,89,0.6)', borderRadius: '3px 3px 0 0', minHeight: 4 }} title={`Encaissements : ${m.encaissements.toLocaleString('fr-FR')} €`} />
+                  <div style={{ flex: 1, height: `${hDec}%`, background: 'rgba(255,59,48,0.5)', borderRadius: '3px 3px 0 0', minHeight: 4 }} title={`Décaissements : ${m.decaissements.toLocaleString('fr-FR')} €`} />
+                </div>
+                <div style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{m.mois}</div>
+                <div style={{ fontSize: '0.6875rem', color: m.solde >= d.soldeActuel ? '#1A7A3C' : '#FF3B30', fontWeight: 700 }}>
+                  {(m.solde / 1000).toFixed(0)}k€
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {/* Encaissements attendus */}
+        <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>Encaissements attendus</h3>
+            <span style={{ fontWeight: 700, color: '#1A7A3C' }}>+{totalEncaissements.toLocaleString('fr-FR')} €</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {d.encaissementsAttendus.map((e, i) => {
+              const sc = STATUT_ENCAISSE[e.statut] || STATUT_ENCAISSE['facturé'];
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < d.encaissementsAttendus.length - 1 ? '1px solid var(--border-light)' : 'none' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.label}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>Prévu le {new Date(e.datePrevu).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: e.joursRestants < 0 ? 'var(--danger)' : '#1A7A3C' }}>
+                      +{e.montant.toLocaleString('fr-FR')} €
+                    </p>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '1px 6px', borderRadius: 8, background: sc.bg, color: sc.fg }}>{e.statut}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Décaissements prévus */}
+        <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>Décaissements prévus</h3>
+            <span style={{ fontWeight: 700, color: 'var(--danger)' }}>−{totalDecaissements.toLocaleString('fr-FR')} €</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {d.decaissementsPrevis.map((e, i) => {
+              const cc = CAT_COLORS[e.categorie] || CAT_COLORS['charges'];
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: i < d.decaissementsPrevis.length - 1 ? '1px solid var(--border-light)' : 'none' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: cc.bg, color: cc.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.625rem', fontWeight: 700 }}>
+                    {cc.label.slice(0, 3).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.label}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>{new Date(e.datePrevu).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--danger)', flexShrink: 0 }}>−{e.montant.toLocaleString('fr-FR')} €</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Factures ── */
+const LIGNE_VIDE = { designation: '', quantite: 1, unite: 'u', prixHT: '', tva: 20 };
+const MENTIONS_LEGALES = [
+  'Conformément à l\'art. L441-6 du Code de Commerce, tout retard de paiement entraîne des pénalités de retard exigibles sans rappel à un taux égal à 3 fois le taux d\'intérêt légal.',
+  'Indemnité forfaitaire pour frais de recouvrement : 40 € (Décret n°2012-1115).',
+  'Pas d\'escompte pour paiement anticipé.',
+  'TVA non applicable, article 293B du CGI — si applicable.',
+];
+
+function FacturesView({ factures, setFac }) {
+  const [mode, setMode] = useState('list'); // list | create | preview
+  const [factureEnCours, setFactureEnCours] = useState(null);
+  const [form, setForm] = useState({
+    clientNom: '', clientAdresse: '', clientVille: '', clientSiret: '',
+    dateEmission: new Date().toISOString().split('T')[0],
+    dateEcheance: '',
+    lignes: [{ ...LIGNE_VIDE }],
+    remise: 0,
+    notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [envoi, setEnvoi] = useState(false);
+
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = PRINT_FACTURE;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  const totalHT = form.lignes.reduce((s, l) => s + (Number(l.quantite) * Number(l.prixHT) || 0), 0);
+  const remiseMt = totalHT * (Number(form.remise) / 100);
+  const baseHT = totalHT - remiseMt;
+  const totalTVA = form.lignes.reduce((s, l) => s + ((Number(l.quantite) * Number(l.prixHT) || 0) * (Number(l.tva) / 100)), 0);
+  const totalTTC = baseHT + totalTVA;
+
+  function setLigne(i, key, val) {
+    setForm(p => { const ls = [...p.lignes]; ls[i] = { ...ls[i], [key]: val }; return { ...p, lignes: ls }; });
+  }
+  function addLigne() { setForm(p => ({ ...p, lignes: [...p.lignes, { ...LIGNE_VIDE }] })); }
+  function removeLigne(i) { setForm(p => ({ ...p, lignes: p.lignes.filter((_, j) => j !== i) })); }
+
+  async function handleCreate(e) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = { ...form, montantHT: baseHT, montantTVA: totalTVA, montantTTC: totalTTC };
+      const r = await api.post('/finance/factures', payload);
+      const newFac = r.data.facture || { ...payload, id: Date.now(), numero: `FAC-${Date.now()}`, statut: 'en_attente', creeLe: new Date().toISOString() };
+      setFac(prev => [newFac, ...prev]);
+      setFactureEnCours(newFac);
+      setMode('preview');
+    } catch {
+      setFactureEnCours({ ...form, id: Date.now(), numero: `FAC-${Date.now().toString().slice(-6)}`, statut: 'en_attente', montantHT: baseHT, montantTVA: totalTVA, montantTTC: totalTTC, creeLe: new Date().toISOString() });
+      setMode('preview');
+    } finally { setSaving(false); }
+  }
+
+  async function handleEnvoyer() {
+    setEnvoi(true);
+    await api.put(`/finance/factures/${factureEnCours.id}/envoyer`).catch(() => {});
+    setTimeout(() => { setEnvoi(false); alert('Facture envoyée au client.'); setMode('list'); }, 1200);
+  }
+
+  if (mode === 'preview' && factureEnCours) {
+    const f = factureEnCours;
+    const lignes = form.lignes;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => setMode('list')} style={{ padding: '8px 16px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>← Retour</button>
+          <button onClick={() => window.print()} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#1C1C1E', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}><IconDownload size={14} /> Télécharger PDF</button>
+          <button onClick={handleEnvoyer} disabled={envoi} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{envoi ? 'Envoi…' : 'Envoyer au client'}</button>
+        </div>
+
+        <div id="facture-print" style={{ background: '#fff', borderRadius: 14, padding: 40, boxShadow: '0 1px 8px rgba(0,0,0,0.10)', maxWidth: 760, margin: '0 auto', width: '100%' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 36 }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 22, color: '#1C1C1E' }}>FACTURE</div>
+              <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 4 }}>{f.numero}</div>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: 13 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Bernard Martin BTP</div>
+              <div style={{ color: '#6E6E73' }}>12 rue des Artisans, 75011 Paris</div>
+              <div style={{ color: '#6E6E73' }}>SIRET : 123 456 789 00012</div>
+              <div style={{ color: '#6E6E73' }}>APE : 4391A · N° TVA : FR12 123456789</div>
+            </div>
+          </div>
+
+          {/* Client + dates */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, marginBottom: 28 }}>
+            <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 18px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Facturé à</div>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{form.clientNom || '—'}</div>
+              <div style={{ fontSize: 13, color: '#6E6E73' }}>{form.clientAdresse}</div>
+              <div style={{ fontSize: 13, color: '#6E6E73' }}>{form.clientVille}</div>
+              {form.clientSiret && <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 4 }}>SIRET : {form.clientSiret}</div>}
+            </div>
+            <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 18px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Informations</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}><span style={{ color: '#6E6E73' }}>Date d'émission</span><span style={{ fontWeight: 600 }}>{new Date(form.dateEmission).toLocaleDateString('fr-FR')}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span style={{ color: '#6E6E73' }}>Échéance</span><span style={{ fontWeight: 600, color: '#FF3B30' }}>{form.dateEcheance ? new Date(form.dateEcheance).toLocaleDateString('fr-FR') : 'À réception'}</span></div>
+            </div>
+          </div>
+
+          {/* Lignes */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginBottom: 16 }}>
+            <thead>
+              <tr style={{ background: '#1C1C1E', color: '#fff' }}>
+                {['Désignation', 'Qté', 'Unité', 'P.U. HT', 'TVA %', 'Total HT'].map(h => (
+                  <th key={h} style={{ padding: '9px 12px', textAlign: h === 'Désignation' ? 'left' : 'right', fontWeight: 700, fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {lignes.map((l, i) => {
+                const ht = Number(l.quantite) * Number(l.prixHT) || 0;
+                return (
+                  <tr key={i} style={{ borderBottom: '1px solid #F2F2F7', background: i % 2 === 0 ? '#fff' : '#FAFAFA' }}>
+                    <td style={{ padding: '9px 12px' }}>{l.designation}</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right' }}>{l.quantite}</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right', color: '#6E6E73' }}>{l.unite}</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right' }}>{Number(l.prixHT).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right', color: '#6E6E73' }}>{l.tva} %</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 600 }}>{ht.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Totals */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+            <div style={{ width: 280 }}>
+              {[
+                { label: 'Total HT', val: totalHT, bold: false },
+                form.remise > 0 && { label: `Remise (${form.remise}%)`, val: -remiseMt, bold: false, color: '#34C759' },
+                form.remise > 0 && { label: 'Base HT', val: baseHT, bold: false },
+                { label: 'TVA', val: totalTVA, bold: false },
+              ].filter(Boolean).map(({ label, val, bold, color }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 13, borderBottom: '1px solid #F2F2F7' }}>
+                  <span style={{ color: '#6E6E73' }}>{label}</span>
+                  <span style={{ fontWeight: bold ? 800 : 600, color: color || '#1C1C1E' }}>{val.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: '#007AFF', borderRadius: 8, marginTop: 8 }}>
+                <span style={{ fontWeight: 800, color: '#fff', fontSize: 15 }}>NET À PAYER TTC</span>
+                <span style={{ fontWeight: 800, color: '#fff', fontSize: 17 }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mentions légales */}
+          <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#8E8E93', lineHeight: 1.6 }}>
+            <div style={{ fontWeight: 700, fontSize: 11, color: '#6E6E73', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Mentions légales</div>
+            {MENTIONS_LEGALES.map((m, i) => <div key={i} style={{ marginBottom: 3 }}>• {m}</div>)}
+            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Paris B 123 456 789 · Siège social : 12 rue des Artisans, 75011 Paris · N° TVA intracommunautaire : FR12 123456789</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'create') {
+    return (
+      <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button type="button" onClick={() => setMode('list')} style={{ padding: '8px 16px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>← Annuler</button>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Nouvelle facture</h2>
+        </div>
+
+        {/* Client */}
+        <div className="card" style={{ padding: 22 }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>Client</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div><label className="label">Nom / Raison sociale *</label><input className="input" required value={form.clientNom} onChange={e => setForm(p => ({ ...p, clientNom: e.target.value }))} placeholder="Nom du client" /></div>
+            <div><label className="label">SIRET client</label><input className="input" value={form.clientSiret} onChange={e => setForm(p => ({ ...p, clientSiret: e.target.value }))} placeholder="123 456 789 00012" /></div>
+            <div><label className="label">Adresse</label><input className="input" value={form.clientAdresse} onChange={e => setForm(p => ({ ...p, clientAdresse: e.target.value }))} placeholder="12 rue du Client" /></div>
+            <div><label className="label">Code postal / Ville</label><input className="input" value={form.clientVille} onChange={e => setForm(p => ({ ...p, clientVille: e.target.value }))} placeholder="75001 Paris" /></div>
+            <div><label className="label">Date d'émission</label><input type="date" className="input" value={form.dateEmission} onChange={e => setForm(p => ({ ...p, dateEmission: e.target.value }))} /></div>
+            <div><label className="label">Date d'échéance</label><input type="date" className="input" value={form.dateEcheance} onChange={e => setForm(p => ({ ...p, dateEcheance: e.target.value }))} /></div>
+          </div>
+        </div>
+
+        {/* Lignes */}
+        <div className="card" style={{ padding: 22 }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>Prestations</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #F2F2F7' }}>
+                {['Désignation', 'Qté', 'Unité', 'P.U. HT (€)', 'TVA %', 'Total HT', ''].map(h => (
+                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8E8E93' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {form.lignes.map((l, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #F8F8F8' }}>
+                  <td style={{ padding: '6px 8px', minWidth: 200 }}><input className="input" style={{ padding: '6px 8px', fontSize: 13 }} value={l.designation} onChange={e => setLigne(i, 'designation', e.target.value)} placeholder="Description de la prestation" /></td>
+                  <td style={{ padding: '6px 8px', width: 70 }}><input type="number" className="input" style={{ padding: '6px 8px', fontSize: 13 }} value={l.quantite} onChange={e => setLigne(i, 'quantite', e.target.value)} /></td>
+                  <td style={{ padding: '6px 8px', width: 80 }}>
+                    <select className="input" style={{ padding: '6px 8px', fontSize: 13 }} value={l.unite} onChange={e => setLigne(i, 'unite', e.target.value)}>
+                      {['u','h','m²','m³','m','j','forfait','kg'].map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </td>
+                  <td style={{ padding: '6px 8px', width: 110 }}><input type="number" className="input" style={{ padding: '6px 8px', fontSize: 13 }} value={l.prixHT} onChange={e => setLigne(i, 'prixHT', e.target.value)} /></td>
+                  <td style={{ padding: '6px 8px', width: 80 }}>
+                    <select className="input" style={{ padding: '6px 8px', fontSize: 13 }} value={l.tva} onChange={e => setLigne(i, 'tva', e.target.value)}>
+                      {[0, 5.5, 10, 20].map(r => <option key={r} value={r}>{r} %</option>)}
+                    </select>
+                  </td>
+                  <td style={{ padding: '6px 12px', fontWeight: 700, whiteSpace: 'nowrap' }}>{((Number(l.quantite) * Number(l.prixHT)) || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+                  <td style={{ padding: '6px 4px' }}><button type="button" onClick={() => removeLigne(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF3B30' }}><IconX size={14} /></button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+            <button type="button" onClick={addLigne} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #C7C7CC', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#007AFF' }}><IconPlus size={13} /> Ajouter une ligne</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ fontSize: 13, color: '#6E6E73' }}>Remise</label>
+              <input type="number" className="input" style={{ width: 70, padding: '6px 10px', textAlign: 'right' }} value={form.remise} onChange={e => setForm(p => ({ ...p, remise: e.target.value }))} min={0} max={100} />
+              <span style={{ fontSize: 13 }}>%</span>
+            </div>
+          </div>
+
+          {/* Totals */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+            <div style={{ width: 260 }}>
+              {[{ l: 'Total HT', v: totalHT }, { l: `Remise (${form.remise}%)`, v: -remiseMt }, { l: 'Base HT', v: baseHT }, { l: 'Total TVA', v: totalTVA }].map(({ l, v }) => (
+                <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, borderBottom: '1px solid #F2F2F7' }}>
+                  <span style={{ color: '#6E6E73' }}>{l}</span>
+                  <span>{v.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '2px solid #1C1C1E', marginTop: 4 }}>
+                <span style={{ fontWeight: 800 }}>TOTAL TTC</span>
+                <span style={{ fontWeight: 800, fontSize: 16, color: '#007AFF' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div className="card" style={{ padding: 22 }}>
+          <label className="label">Notes / Conditions particulières</label>
+          <textarea className="input" rows={3} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Conditions de règlement, informations complémentaires…" style={{ resize: 'vertical' }} />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button type="button" onClick={() => setMode('list')} style={{ padding: '10px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
+          <button type="submit" disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: saving ? '#C7C7CC' : '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+            {saving ? 'Création…' : 'Créer la facture'}
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  // List view
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => setMode('create')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+          <IconPlus size={14} /> Nouvelle facture
+        </button>
+      </div>
+      <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-light)' }}>
+          <span className="section-title">{factures.length} facture{factures.length !== 1 ? 's' : ''}</span>
+        </div>
+        <table className="data-table">
+          <thead>
+            <tr><th>Numéro</th><th>Client</th><th>Montant TTC</th><th>Statut</th><th>Échéance</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {factures.length === 0 ? (
+              <tr><td colSpan={6}><div className="empty-state"><p className="empty-state-text">Aucune facture — cliquez sur "Nouvelle facture"</p></div></td></tr>
+            ) : factures.map(f => (
+              <tr key={f.id}>
+                <td style={{ fontWeight: 600 }}>{f.numero}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>{f.clientNom || '—'}</td>
+                <td style={{ fontWeight: 700 }}>{Number(f.montantTTC || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+                <td><StatutBadge statut={f.statut} /></td>
+                <td style={{ color: 'var(--text-tertiary)' }}>{f.dateEcheance || '—'}</td>
+                <td>
+                  {f.statut === 'en_attente' && (
+                    <button className="btn-ghost" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => api.put(`/finance/factures/${f.id}/relancer`).then(() => alert('Relance envoyée'))}>
+                      <IconRefresh size={13} /> Relancer
+                    </button>
+                  )}
+                  <button className="btn-ghost" style={{ padding: '4px 10px', fontSize: '0.75rem', marginLeft: 4 }} onClick={() => { setFactureEnCours(f); setForm({ ...f, lignes: f.lignes || [{ ...LIGNE_VIDE }] }); setMode('preview'); }}>
+                    <IconDocument size={13} /> Voir
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SalairesView() {
+  const [mois, setMois]       = useState(new Date().getMonth() + 1);
+  const [annee, setAnnee]     = useState(new Date().getFullYear());
+  const [calcul, setCalcul]   = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isDemo, setIsDemo]   = useState(false);
+  const [paid, setPaid]       = useState(false);
+
+  async function calculer() {
+    setLoading(true);
+    setPaid(false);
+    try {
+      const { data } = await api.post('/finance/salaires/calculer', { mois, annee });
+      setCalcul(data);
+      setIsDemo(false);
+    } catch {
+      // Fallback to demo data with selected period label
+      const moisLabel = new Date(0, mois - 1).toLocaleString('fr-FR', { month: 'long' });
+      setCalcul({ ...DEMO_SALARIES, periode: `${moisLabel} ${annee}` });
+      setIsDemo(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function payer() {
+    try {
+      await api.post('/finance/salaires/payer', { mois, annee });
+    } catch { /* demo mode */ }
+    setPaid(true);
+  }
+
+  const totalChargesPatronales = calcul?.resume?.totalChargesPatronales || 0;
+  const coutTotal = (calcul?.resume?.totalBrut || 0) + totalChargesPatronales;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="card" style={{ padding: 24 }}>
+        <h3 style={{ marginBottom: 4, fontSize: '1rem', fontWeight: 700 }}>Calcul de la paie</h3>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: 18 }}>
+          Sélectionnez la période pour calculer les salaires nets et les charges sociales.
+        </p>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div>
+            <label className="label">Mois</label>
+            <select className="select" style={{ width: 160 }} value={mois} onChange={e => setMois(Number(e.target.value))}>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('fr-FR', { month: 'long' })}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Année</label>
+            <input type="number" className="input" style={{ width: 100 }} value={annee} onChange={e => setAnnee(e.target.value)} />
+          </div>
+          <button className="btn-primary" onClick={calculer} disabled={loading}>
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Calcul...</> : 'Calculer la paie'}
+          </button>
+        </div>
+      </div>
+
+      {calcul && (
+        <>
+          {isDemo && (
+            <div style={{ background: 'rgba(255,149,0,0.08)', border: '1px solid rgba(255,149,0,0.2)', borderRadius: 10, padding: '10px 16px', fontSize: '0.8125rem', color: '#7A5C00', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>📊</span> Données de démonstration pour {calcul.periode}.
+            </div>
+          )}
+
+          {/* Résumé financier */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            {[
+              { label: 'Salaires bruts', val: calcul.resume?.totalBrut, color: 'var(--text)' },
+              { label: 'Total net à verser', val: calcul.resume?.totalNet, color: '#1A7A3C' },
+              { label: 'Charges patronales', val: totalChargesPatronales, color: 'var(--danger)' },
+              { label: 'Coût total employeur', val: coutTotal, color: 'var(--primary)' },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="stat-card" style={{ padding: '14px 18px' }}>
+                <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{label}</p>
+                <p style={{ fontSize: '1.375rem', fontWeight: 800, color, letterSpacing: '-0.03em' }}>
+                  {(val || 0).toLocaleString('fr-FR')} €
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>
+                Détail par employé — {calcul.periode || `${new Date(0, mois-1).toLocaleString('fr-FR', { month: 'long' })} ${annee}`}
+              </h3>
+              {!paid ? (
+                <button className="btn-primary" onClick={payer} style={{ padding: '8px 16px' }}>
+                  <IconCheck size={14} /> Valider le virement
+                </button>
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', fontWeight: 600, color: '#1A7A3C' }}>
+                  <IconCheck size={14} /> Salaires virés
+                </span>
+              )}
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Employé</th>
+                  <th>Poste</th>
+                  <th style={{ textAlign: 'right' }}>Brut</th>
+                  <th style={{ textAlign: 'right' }}>Cotis. sal.</th>
+                  <th style={{ textAlign: 'right' }}>Net</th>
+                  <th style={{ textAlign: 'right' }}>Taux net</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calcul.employes?.map(e => {
+                  const tauxNet = e.salaireBrutTotal > 0 ? (e.salaireNet / e.salaireBrutTotal * 100).toFixed(0) : '—';
+                  return (
+                    <tr key={e.employeId}>
+                      <td style={{ fontWeight: 600 }}>{e.nom}</td>
+                      <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{e.poste || '—'}</td>
+                      <td style={{ textAlign: 'right' }}>{e.salaireBrutTotal?.toLocaleString('fr-FR')} €</td>
+                      <td style={{ textAlign: 'right', color: 'var(--danger)' }}>− {e.cotisationsSalariales?.toLocaleString('fr-FR')} €</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: '#1A7A3C' }}>{e.salaireNet?.toLocaleString('fr-FR')} €</td>
+                      <td style={{ textAlign: 'right', color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>{tauxNet} %</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: 'var(--bg)' }}>
+                  <td colSpan={2} style={{ padding: '10px 16px', fontWeight: 700 }}>Total</td>
+                  <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700 }}>{calcul.resume?.totalBrut?.toLocaleString('fr-FR')} €</td>
+                  <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--danger)' }}>
+                    − {calcul.employes?.reduce((s, e) => s + (e.cotisationsSalariales || 0), 0).toLocaleString('fr-FR')} €
+                  </td>
+                  <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 800, color: '#1A7A3C' }}>{calcul.resume?.totalNet?.toLocaleString('fr-FR')} €</td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Barème de paiement ── */
+function BaremePaiementView() {
+  const [montantDevis, setMontantDevis] = useState('');
+  const [modele, setModele] = useState('standard');
+  const [retenue, setRetenue] = useState(5);
+
+  const montant = parseFloat(montantDevis) || 0;
+
+  const MODELES = {
+    standard: {
+      label: 'Standard BTP',
+      desc: 'Modèle courant pour travaux de 5 000 € à 50 000 €',
+      echeances: [
+        { label: 'Acompte à la signature',     pct: 30, timing: 'À la signature',          type: 'acompte' },
+        { label: 'Situation 1 — 30% travaux',  pct: 20, timing: '30% des travaux réalisés', type: 'situation' },
+        { label: 'Situation 2 — 60% travaux',  pct: 20, timing: '60% des travaux réalisés', type: 'situation' },
+        { label: 'Situation 3 — 90% travaux',  pct: 15, timing: '90% des travaux réalisés', type: 'situation' },
+        { label: 'Solde (hors retenue)',       pct: 15 - retenue, timing: 'Réception des travaux', type: 'solde' },
+        { label: `Retenue de garantie (${retenue}%)`, pct: retenue, timing: '1 an après réception (levée des réserves)', type: 'retenue' },
+      ],
+    },
+    gros_travaux: {
+      label: 'Grands travaux (> 50 000 €)',
+      desc: 'Situations mensuelles adaptées aux chantiers longs',
+      echeances: [
+        { label: 'Acompte à la signature',      pct: 20, timing: 'À la signature',     type: 'acompte' },
+        { label: 'Situation mensuelle × 4',    pct: 15, timing: 'Chaque mois (×4)',    type: 'situation' },
+        { label: 'Situation 5 (fin de chantier)', pct: 15, timing: 'Fin de chantier', type: 'situation' },
+        { label: 'Solde (hors retenue)',         pct: 10 - retenue, timing: 'Réception', type: 'solde' },
+        { label: `Retenue de garantie (${retenue}%)`, pct: retenue, timing: '1 an après réception', type: 'retenue' },
+      ],
+    },
+    petit: {
+      label: 'Petits travaux (< 5 000 €)',
+      desc: 'Simplicité pour devis courts',
+      echeances: [
+        { label: 'Acompte à la commande',       pct: 40, timing: 'À la commande',     type: 'acompte' },
+        { label: 'Solde (hors retenue)',         pct: 60 - retenue, timing: 'À réception', type: 'solde' },
+        { label: `Retenue de garantie (${retenue}%)`, pct: retenue, timing: '1 an après réception', type: 'retenue' },
+      ],
+    },
+  };
+
+  const m = MODELES[modele];
+  const echeances = m.echeances;
+  const totalPct = echeances.reduce((s, e) => s + e.pct, 0);
+
+  const TYPE_COLORS = {
+    acompte:  { bg: '#EBF5FF', color: '#007AFF', label: 'Acompte' },
+    situation:{ bg: '#FFF3CD', color: '#856404', label: 'Situation' },
+    solde:    { bg: '#D1F2E0', color: '#1A7F43', label: 'Solde' },
+    retenue:  { bg: '#F2F2F7', color: '#6E6E73', label: 'Retenue garantie' },
+  };
+
+  function formatCur(n) { return Number(n||0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }); }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Info légale */}
+      <div style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)30', borderRadius: 12, padding: '14px 18px', fontSize: '0.875rem', color: 'var(--primary)' }}>
+        <strong>Retenue de garantie légale :</strong> Art. 1792-6 du Code civil + Loi n°71-584 du 16 juillet 1971.
+        La retenue de garantie est plafonnée à <strong>5%</strong> du montant TTC du marché. Elle est libérée 1 an après réception des travaux si aucune réserve n'est levée.
+        Le maître d'ouvrage peut la remplacer par une caution bancaire.
+      </div>
+
+      {/* Paramètres */}
+      <div className="card" style={{ padding: 22 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700 }}>Paramètres du barème</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          <div>
+            <label className="label">Montant du devis TTC (€)</label>
+            <input type="number" min="0" step="100" value={montantDevis} onChange={e => setMontantDevis(e.target.value)} placeholder="Ex: 25000" className="input" />
+          </div>
+          <div>
+            <label className="label">Modèle de paiement</label>
+            <select value={modele} onChange={e => setModele(e.target.value)} className="select">
+              {Object.entries(MODELES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label">Retenue de garantie (%)</label>
+            <input type="number" min="0" max="5" step="0.5" value={retenue} onChange={e => setRetenue(Number(e.target.value))} className="input" />
+            {retenue > 5 && <span style={{ fontSize: '0.75rem', color: 'var(--danger)' }}>⚠️ Maximum légal : 5%</span>}
+          </div>
+        </div>
+        <p style={{ margin: '10px 0 0', fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>{m.desc}</p>
+      </div>
+
+      {/* Tableau des échéances */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Échéancier de paiement</h3>
+          {montant > 0 && <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Total : <strong>{formatCur(montant)}</strong></span>}
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg)' }}>
+              {['N°', 'Libellé', 'Type', '% Marché', montant > 0 ? 'Montant TTC' : null, 'Déclenchement'].filter(Boolean).map(h => (
+                <th key={h} style={{ padding: '10px 16px', textAlign: h.includes('Montant') || h === '% Marché' ? 'right' : 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {echeances.map((e, i) => {
+              const tc = TYPE_COLORS[e.type];
+              const montantEch = montant * e.pct / 100;
+              return (
+                <tr key={i} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                  <td style={{ padding: '13px 16px', color: 'var(--text-tertiary)', fontWeight: 700 }}>{i + 1}</td>
+                  <td style={{ padding: '13px 16px', fontWeight: 600 }}>{e.label}</td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700, background: tc.bg, color: tc.color }}>{tc.label}</span>
+                  </td>
+                  <td style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 700, fontSize: '1rem', color: e.type === 'retenue' ? 'var(--text-tertiary)' : 'var(--text)' }}>
+                    {e.pct}%
+                  </td>
+                  {montant > 0 && (
+                    <td style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 700, color: e.type === 'retenue' ? 'var(--text-secondary)' : 'var(--primary)' }}>
+                      {formatCur(montantEch)}
+                    </td>
+                  )}
+                  <td style={{ padding: '13px 16px', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{e.timing}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr style={{ borderTop: '2px solid var(--text)', background: 'var(--bg)' }}>
+              <td colSpan={3} style={{ padding: '12px 16px', fontWeight: 800, fontSize: '0.9375rem' }}>TOTAL</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, fontSize: '1rem', color: totalPct === 100 ? 'var(--success)' : 'var(--danger)' }}>
+                {totalPct}%{totalPct !== 100 && ' ⚠️'}
+              </td>
+              {montant > 0 && (
+                <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, fontSize: '1rem', color: 'var(--primary)' }}>
+                  {formatCur(montant)}
+                </td>
+              )}
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Barre de progression visuelle */}
+      {montant > 0 && (
+        <div className="card" style={{ padding: 20 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700 }}>Répartition visuelle</h3>
+          <div style={{ display: 'flex', height: 36, borderRadius: 10, overflow: 'hidden', gap: 2 }}>
+            {echeances.map((e, i) => {
+              const tc = TYPE_COLORS[e.type];
+              return (
+                <div key={i} title={`${e.label} — ${e.pct}%`} style={{ flex: e.pct, background: tc.color, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: e.pct > 5 ? 'auto' : 0, transition: 'flex 0.3s' }}>
+                  {e.pct > 8 && <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#fff' }}>{e.pct}%</span>}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
+            {Object.entries(TYPE_COLORS).map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8125rem' }}>
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: v.color }} />
+                <span style={{ color: 'var(--text-secondary)' }}>{v.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Notes de bas */}
+      <div style={{ background: 'var(--bg)', borderRadius: 12, padding: '14px 18px', fontSize: '0.8125rem', color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
+        <strong style={{ color: 'var(--text-secondary)' }}>À retenir :</strong><br />
+        • L'acompte est encaissé à la commande — il sécurise le chantier.<br />
+        • Les <em>situations de travaux</em> sont établies au fur et à mesure de l'avancement réel.<br />
+        • La retenue de garantie (max 5%) peut être remplacée par une caution bancaire à la demande du client (Loi 71-584).<br />
+        • En cas de litige à la réception, la retenue est bloquée jusqu'à levée des réserves ou décision judiciaire.
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({ label, valeur, Icon, color = 'blue', trend, trendLabel, trendUnit = '%' }) {
+  const colors = {
+    blue:   { bg: 'var(--primary-light)',  fg: 'var(--primary)' },
+    green:  { bg: 'rgba(52,199,89,0.1)',   fg: '#1A7A3C'        },
+    red:    { bg: 'var(--danger-light)',   fg: 'var(--danger)'  },
+    orange: { bg: 'rgba(255,149,0,0.1)',   fg: '#7A5C00'        },
+  };
+  const c = colors[color] || colors.blue;
+  const trendVal = parseFloat(trend);
+  const up = !isNaN(trendVal) && trendVal > 0;
+  const dn = !isNaN(trendVal) && trendVal < 0;
+  return (
+    <div className="stat-card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: c.bg, color: c.fg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={17} />
+        </div>
+        {trend != null && !isNaN(trendVal) && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', fontWeight: 700,
+            color: up ? '#1A7A3C' : dn ? 'var(--danger)' : 'var(--text-tertiary)',
+            background: up ? 'rgba(52,199,89,0.1)' : dn ? 'var(--danger-light)' : 'var(--bg)',
+            padding: '2px 7px', borderRadius: 20,
+          }}>
+            {up ? <IconArrowUp size={10} /> : dn ? <IconArrowDown size={10} /> : null}
+            {up ? '+' : ''}{trendVal}{trendUnit}
+          </span>
+        )}
+      </div>
+      <p style={{ fontSize: '1.5rem', fontWeight: 700, color: color === 'red' ? 'var(--danger)' : 'var(--text)', letterSpacing: '-0.03em', lineHeight: 1 }}>{valeur}</p>
+      <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: 5 }}>{label}</p>
+      {trendLabel && trend != null && (
+        <p style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary)', marginTop: 3 }}>{trendLabel}</p>
+      )}
+    </div>
+  );
+}

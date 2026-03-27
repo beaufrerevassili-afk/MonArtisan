@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  # ─── Base de données PostgreSQL ────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: artisans_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: artisans_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend Node.js ───────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: artisans_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres_password@postgres:5432/artisans_db
+      JWT_SECRET: change_this_in_production_use_a_long_random_string
+      CORS_ORIGINS: http://localhost,http://localhost:80,http://frontend
+    ports:
+      - "3000:3000"
+
+  # ─── Frontend Web ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend_web
+      args:
+        VITE_API_URL: http://localhost:3000
+    container_name: artisans_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:

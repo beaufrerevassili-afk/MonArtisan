@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Logo MonArtisan — Style SeLoger</title>
+  <style>
+    body { background: #f0f0f0; font-family: sans-serif; padding: 40px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 960px; margin: auto; }
+    .card { background: white; border-radius: 16px; padding: 50px 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .card-dark { background: #1a1a2e; }
+    .card-gray { background: #f8f8f8; }
+    h2 { margin: 0; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center; margin-bottom: 40px; max-width:960px; margin:0 auto 40px; font-size:22px;">Logo MonArtisan — Style moderne / SeLoger</h1>
+  <div class="grid">
+
+    <!-- Option A : Icône maison flat bleue + texte -->
+    <div class="card">
+      <h2>Option A — Bleu classique</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <!-- Maison flat style SeLoger -->
+        <g transform="translate(0, 4)">
+          <!-- Corps maison -->
+          <rect x="8" y="28" width="48" height="32" rx="3" fill="#2563EB"/>
+          <!-- Toit -->
+          <polygon points="32,2 66,28 -2,28" fill="#1D4ED8"/>
+          <!-- Porte -->
+          <rect x="24" y="38" width="16" height="22" rx="8" fill="white"/>
+          <!-- Fenêtre gauche -->
+          <rect x="10" y="32" width="10" height="10" rx="2" fill="white" opacity="0.8"/>
+          <!-- Fenêtre droite -->
+          <rect x="44" y="32" width="10" height="10" rx="2" fill="white" opacity="0.8"/>
+          <!-- Cheminée -->
+          <rect x="46" y="10" width="7" height="14" rx="2" fill="#1D4ED8"/>
+          <rect x="44" y="8" width="11" height="5" rx="2" fill="#1E40AF"/>
+        </g>
+        <!-- Texte -->
+        <text x="82" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="80" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+    <!-- Option B : Icône maison orange + contour -->
+    <div class="card">
+      <h2>Option B — Orange chaleureux</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <g transform="translate(0, 4)">
+          <!-- Corps maison -->
+          <rect x="8" y="28" width="48" height="32" rx="3" fill="#EA580C"/>
+          <!-- Toit -->
+          <polygon points="32,2 66,28 -2,28" fill="#C2410C"/>
+          <!-- Porte -->
+          <rect x="24" y="38" width="16" height="22" rx="8" fill="white"/>
+          <!-- Fenêtre gauche -->
+          <rect x="10" y="32" width="10" height="10" rx="2" fill="white" opacity="0.85"/>
+          <!-- Fenêtre droite -->
+          <rect x="44" y="32" width="10" height="10" rx="2" fill="white" opacity="0.85"/>
+          <!-- Cheminée -->
+          <rect x="46" y="10" width="7" height="14" rx="2" fill="#C2410C"/>
+          <rect x="44" y="8" width="11" height="5" rx="2" fill="#9A3412"/>
+          <!-- Fumée -->
+          <circle cx="48" cy="5" r="3" fill="#ccc" opacity="0.5"/>
+          <circle cx="51" cy="2" r="2" fill="#ccc" opacity="0.3"/>
+        </g>
+        <!-- Texte -->
+        <text x="82" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="80" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+    <!-- Option C : Maison outline uniquement -->
+    <div class="card">
+      <h2>Option C — Outline élégant</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <g transform="translate(0, 4)">
+          <!-- Corps maison outline -->
+          <rect x="8" y="28" width="48" height="32" rx="3" fill="none" stroke="#111" stroke-width="3"/>
+          <!-- Toit outline -->
+          <polyline points="-2,28 32,2 66,28" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+          <!-- Porte -->
+          <rect x="24" y="40" width="16" height="20" rx="8" fill="none" stroke="#111" stroke-width="2.5"/>
+          <!-- Fenêtre gauche -->
+          <rect x="11" y="33" width="9" height="9" rx="1.5" fill="none" stroke="#111" stroke-width="2"/>
+          <!-- Fenêtre droite -->
+          <rect x="44" y="33" width="9" height="9" rx="1.5" fill="none" stroke="#111" stroke-width="2"/>
+          <!-- Cheminée -->
+          <rect x="47" y="12" width="6" height="13" rx="1.5" fill="none" stroke="#111" stroke-width="2.5"/>
+        </g>
+        <!-- Barre accent orange -->
+        <rect x="75" y="8" width="3" height="56" rx="1.5" fill="#EA580C"/>
+        <!-- Texte -->
+        <text x="86" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="84" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+    <!-- Option D : Maison flat bicolore bleu/orange -->
+    <div class="card">
+      <h2>Option D — Bicolore moderne</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <g transform="translate(0, 4)">
+          <!-- Corps maison -->
+          <rect x="8" y="28" width="48" height="32" rx="3" fill="#2563EB"/>
+          <!-- Toit orange -->
+          <polygon points="32,2 66,28 -2,28" fill="#EA580C"/>
+          <!-- Porte arrondie blanche -->
+          <rect x="24" y="38" width="16" height="22" rx="8" fill="white"/>
+          <!-- Fenêtres -->
+          <rect x="10" y="32" width="10" height="10" rx="2" fill="white" opacity="0.9"/>
+          <rect x="44" y="32" width="10" height="10" rx="2" fill="white" opacity="0.9"/>
+          <!-- Cheminée orange -->
+          <rect x="46" y="10" width="7" height="14" rx="2" fill="#EA580C"/>
+        </g>
+        <!-- Texte -->
+        <text x="82" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="80" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+    <!-- Option E : Fond coloré avec maison blanche -->
+    <div class="card">
+      <h2>Option E — Fond coloré</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <!-- Pill / fond arrondi -->
+        <rect x="0" y="4" width="68" height="64" rx="20" fill="#2563EB"/>
+        <g transform="translate(2, 6)">
+          <!-- Corps maison blanc -->
+          <rect x="10" y="26" width="44" height="30" rx="3" fill="white" opacity="0.25"/>
+          <!-- Toit -->
+          <polygon points="32,4 60,26 4,26" fill="white"/>
+          <!-- Porte -->
+          <rect x="24" y="36" width="16" height="20" rx="8" fill="#2563EB"/>
+          <!-- Fenêtres -->
+          <rect x="10" y="30" width="10" height="9" rx="2" fill="white" opacity="0.7"/>
+          <rect x="44" y="30" width="10" height="9" rx="2" fill="white" opacity="0.7"/>
+        </g>
+        <!-- Texte -->
+        <text x="82" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="80" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+    <!-- Option F : Très minimaliste, juste toit + initiales -->
+    <div class="card card-gray">
+      <h2>Option F — Ultra minimaliste</h2>
+      <svg width="280" height="72" viewBox="0 0 280 72">
+        <!-- Toit simple -->
+        <polygon points="34,8 66,32 2,32" fill="#2563EB"/>
+        <!-- Corps -->
+        <rect x="10" y="32" width="48" height="30" rx="0" fill="#111"/>
+        <!-- Porte orange -->
+        <rect x="26" y="40" width="16" height="22" rx="8" fill="#EA580C"/>
+        <!-- Texte -->
+        <text x="82" y="30" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#888" letter-spacing="4">MON</text>
+        <text x="80" y="62" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700" fill="#111" letter-spacing="-0.5">Artisan</text>
+      </svg>
+    </div>
+
+  </div>
+
+  <p style="text-align:center; margin-top:40px; color:#999; font-size:14px;">Dis-moi ta préférée — on ajuste couleurs, proportions, police !</p>
+</body>
+</html>

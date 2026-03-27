@@ -1,0 +1,564 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import {
+  IconHome, IconMissions, IconFinance, IconTeam, IconShield,
+  IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
+  IconDownload, IconBox, IconBell, IconSearch, IconCalendar, IconCreditCard,
+  IconChevronDown, IconScale, IconStar,
+} from '../ui/Icons';
+
+/* ── Inline icon helpers ───────────────────────────────── */
+function IconSun({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  );
+}
+function IconMoon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+  );
+}
+
+/* ── Menu structure ────────────────────────────────────── */
+const MENUS = {
+  client: [
+    { label: 'Tableau de bord', path: '/client/dashboard', Icon: IconHome },
+    { label: 'Mes missions',    path: '/client/missions',  Icon: IconMissions },
+  ],
+  patron: null, // groups used instead
+  super_admin: [
+    { label: 'Administration',  path: '/admin/dashboard',  Icon: IconSettings },
+  ],
+  artisan: [
+    { label: 'Mes missions',    path: '/client/dashboard', Icon: IconMissions },
+  ],
+};
+
+// Grouped menu for patron role
+const PATRON_GROUPS = [
+  {
+    id: 'operations',
+    label: 'Opérations',
+    items: [
+      { label: 'Tableau de bord', path: '/patron/dashboard', Icon: IconHome },
+      { label: 'Missions & Chantiers', path: '/patron/missions', Icon: IconBuilding },
+      { label: 'Agenda',          path: '/patron/agenda',    Icon: IconCalendar },
+      { label: 'Devis Pro',       path: '/patron/devis-pro', Icon: IconDocument },
+      { label: 'Facturation',     path: '/patron/facturation', Icon: IconCreditCard },
+    ],
+  },
+  {
+    id: 'finances',
+    label: 'Finances',
+    items: [
+      { label: 'Finance',  path: '/patron/finance', Icon: IconFinance },
+      { label: 'URSSAF',   path: '/patron/urssaf',  Icon: IconBank },
+      { label: 'Stock',    path: '/patron/stock',   Icon: IconBox },
+    ],
+  },
+  {
+    id: 'equipe',
+    label: 'Équipe & Clients',
+    items: [
+      { label: 'Ressources H.',  path: '/patron/rh',          Icon: IconTeam },
+      { label: 'QSE',            path: '/patron/qse',          Icon: IconShield },
+      { label: 'Clients RFM',    path: '/patron/clients-rfm',  Icon: IconTeam },
+      { label: 'Réputation',     path: '/patron/reputation',   Icon: IconStar },
+    ],
+  },
+  {
+    id: 'gestion',
+    label: 'Gestion',
+    items: [
+      { label: 'Documents',        path: '/patron/documents',        Icon: IconDownload },
+      { label: 'Gestion logiciel', path: '/patron/gestion-logiciel', Icon: IconSettings },
+      { label: 'Rappel juridique', path: '/patron/rappel-juridique', Icon: IconScale },
+    ],
+  },
+];
+
+const DEMO_NOTIFS = [
+  { id: 1, text: 'Nouveau devis accepté par M. Rousseau', time: 'Il y a 5 min', unread: true },
+  { id: 2, text: 'Contrôle technique à renouveler : AA-123-BB', time: 'Il y a 1 h',  unread: true },
+  { id: 3, text: 'Facture #F-2024-018 en retard de paiement', time: 'Hier',         unread: false },
+  { id: 4, text: 'Salarié Martin absent demain', time: 'Hier',                      unread: false },
+];
+
+const ROLE_LABELS = {
+  client:      'Client',
+  patron:      'Patron Artisan',
+  artisan:     'Artisan',
+  super_admin: 'Super Admin',
+};
+
+/* ── Group item ────────────────────────────────────────── */
+function NavGroup({ group, collapsed, location, onNavigate }) {
+  const storageKey = `nav-group-${group.id}`;
+  const [open, setOpen] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved !== null) return saved === 'true';
+    // default open if any item in group is active
+    return group.items.some(i => location.pathname === i.path || location.pathname.startsWith(i.path));
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, String(open));
+  }, [open, storageKey]);
+
+  if (collapsed) {
+    return (
+      <>
+        {group.items.map(({ label, path, Icon }) => {
+          const active = location.pathname === path || location.pathname.startsWith(path + '/');
+          return (
+            <Link
+              key={path}
+              to={path}
+              onClick={onNavigate}
+              className={`nav-item${active ? ' active' : ''}`}
+              style={{ padding: 8, justifyContent: 'center', marginBottom: 2 }}
+              title={label}
+            >
+              <Icon size={17} />
+            </Link>
+          );
+        })}
+      </>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '100%', padding: '5px 10px', background: 'none', border: 'none',
+          cursor: 'pointer', color: 'var(--text-tertiary)',
+          fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+          borderRadius: 6, transition: 'var(--transition)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}
+      >
+        <span>{group.label}</span>
+        <span style={{ transition: 'transform 0.2s', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', display: 'flex' }}>
+          <IconChevronDown size={12} />
+        </span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 2 }}>
+          {group.items.map(({ label, path, Icon }) => {
+            const active = location.pathname === path || location.pathname.startsWith(path + '/');
+            return (
+              <Link
+                key={path}
+                to={path}
+                onClick={onNavigate}
+                className={`nav-item${active ? ' active' : ''}`}
+                style={{ padding: '7px 12px', marginBottom: 1, overflow: 'hidden' }}
+              >
+                <Icon size={16} />
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Notification bell ─────────────────────────────────── */
+function NotifBell() {
+  const [open, setOpen] = useState(false);
+  const [notifs, setNotifs] = useState(DEMO_NOTIFS);
+  const ref = useRef(null);
+  const unreadCount = notifs.filter(n => n.unread).length;
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  function markAllRead() {
+    setNotifs(n => n.map(x => ({ ...x, unread: false })));
+  }
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--text-secondary)', padding: '6px', borderRadius: 8,
+          display: 'flex', alignItems: 'center', transition: 'var(--transition)',
+        }}
+        title="Notifications"
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.color = 'var(--text)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+      >
+        <IconBell size={18} />
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute', top: 4, right: 4,
+            width: 8, height: 8, borderRadius: '50%',
+            background: 'var(--danger)', border: '2px solid var(--card)',
+          }} />
+        )}
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+          width: 320, background: 'var(--card)',
+          border: '1px solid var(--border)', borderRadius: 12,
+          boxShadow: 'var(--shadow-md)', zIndex: 100,
+          animation: 'slideUp 0.15s ease-out',
+          overflow: 'hidden',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border-light)' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text)' }}>
+              Notifications {unreadCount > 0 && <span style={{ background: 'var(--danger)', color: '#fff', borderRadius: 20, padding: '1px 7px', fontSize: '0.6875rem', marginLeft: 6 }}>{unreadCount}</span>}
+            </span>
+            {unreadCount > 0 && (
+              <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 500 }}>
+                Tout marquer lu
+              </button>
+            )}
+          </div>
+          <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+            {notifs.length === 0 ? (
+              <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>Aucune notification</div>
+            ) : notifs.map(n => (
+              <div
+                key={n.id}
+                onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x))}
+                style={{
+                  padding: '12px 16px', borderBottom: '1px solid var(--border-light)',
+                  background: n.unread ? 'var(--primary-light)' : 'transparent',
+                  cursor: 'pointer', transition: 'background 0.1s', display: 'flex', gap: 10, alignItems: 'flex-start',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = n.unread ? 'var(--primary-light)' : 'var(--bg)'}
+                onMouseLeave={e => e.currentTarget.style.background = n.unread ? 'var(--primary-light)' : 'transparent'}
+              >
+                {n.unread && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 5 }} />}
+                {!n.unread && <span style={{ width: 7, flexShrink: 0 }} />}
+                <div>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text)', fontWeight: n.unread ? 500 : 400, marginBottom: 3 }}>{n.text}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{n.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+export default function Layout({ children }) {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [search, setSearch] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = e => { setIsMobile(e.matches); if (!e.matches) setMobileOpen(false); };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
+  const menu = MENUS[user?.role] || [];
+  const isPatron = user?.role === 'patron';
+  const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+
+  // Flat list for search across all patron items
+  const allPatronItems = PATRON_GROUPS.flatMap(g => g.items);
+  const searchResults = search.trim().length > 1
+    ? allPatronItems.filter(i => i.label.toLowerCase().includes(search.toLowerCase()))
+    : [];
+
+  function handleLogout() {
+    logout();
+    navigate('/login');
+  }
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
+      {/* Mobile overlay */}
+      {isMobile && mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 40 }}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside style={{
+        width: isMobile ? 'var(--sidebar-width)' : (collapsed ? 64 : 'var(--sidebar-width)'),
+        minWidth: isMobile ? 'var(--sidebar-width)' : (collapsed ? 64 : 'var(--sidebar-width)'),
+        background: 'var(--card)',
+        borderRight: '1px solid var(--border-light)',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94), width 0.2s cubic-bezier(0.25,0.46,0.45,0.94)',
+        overflow: 'hidden',
+        boxShadow: isMobile ? 'var(--shadow-xl)' : '1px 0 0 var(--border-light)',
+        zIndex: 50,
+        ...(isMobile ? {
+          position: 'fixed',
+          top: 0, bottom: 0, left: 0,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        } : {}),
+      }}>
+        {/* Logo + toggles */}
+        <div style={{
+          height: 'var(--header-height)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: collapsed ? '0 10px' : '0 12px',
+          borderBottom: '1px solid var(--border-light)',
+          gap: 6,
+          flexShrink: 0,
+        }}>
+          {!collapsed && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, overflow: 'hidden' }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 9,
+                background: 'var(--gradient-primary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 4px 10px var(--primary-glow)',
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.75)"/>
+                </svg>
+              </div>
+              <span style={{ fontWeight: 800, fontSize: '0.9375rem', letterSpacing: '-0.025em', whiteSpace: 'nowrap', color: 'var(--text)' }}>
+                Artisans<span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>
+              </span>
+            </div>
+          )}
+          <button
+            onClick={() => setDark(d => !d)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-tertiary)', padding: 4, borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'var(--transition)',
+              marginLeft: collapsed ? 'auto' : 0,
+            }}
+            title={dark ? 'Mode clair' : 'Mode sombre'}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+          >
+            {dark ? <IconSun size={15} /> : <IconMoon size={15} />}
+          </button>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-tertiary)', padding: 4, borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'var(--transition)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+          >
+            <IconMenu size={15} />
+          </button>
+        </div>
+
+        {/* Search bar (patron, expanded only) */}
+        {isPatron && !collapsed && (
+          <div style={{ padding: '10px 8px 4px', flexShrink: 0, position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', display: 'flex', pointerEvents: 'none' }}>
+                <IconSearch size={13} />
+              </span>
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  width: '100%', background: 'var(--bg)', border: '1px solid var(--border-light)',
+                  borderRadius: 8, padding: '6px 10px 6px 28px',
+                  fontSize: '0.8125rem', color: 'var(--text)', outline: 'none',
+                  fontFamily: 'inherit', transition: 'var(--transition)',
+                }}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(0,122,255,0.1)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border-light)'; e.target.style.boxShadow = 'none'; }}
+              />
+            </div>
+            {searchResults.length > 0 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 8, right: 8,
+                background: 'var(--card)', border: '1px solid var(--border)',
+                borderRadius: 10, boxShadow: 'var(--shadow-md)', zIndex: 50,
+                overflow: 'hidden',
+              }}>
+                {searchResults.map(({ label, path, Icon }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    onClick={() => setSearch('')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '9px 12px', color: 'var(--text)',
+                      fontSize: '0.8125rem', fontWeight: 500, textDecoration: 'none',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
+          {isPatron ? (
+            PATRON_GROUPS.map(group => (
+              <NavGroup key={group.id} group={group} collapsed={collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
+            ))
+          ) : (
+            menu.map(({ label, path, Icon }) => {
+              const active = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`nav-item${active ? ' active' : ''}`}
+                  style={{
+                    padding: collapsed ? '8px' : '8px 12px',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    marginBottom: 2,
+                    overflow: 'hidden',
+                  }}
+                  title={collapsed ? label : undefined}
+                >
+                  <Icon size={17} />
+                  {!collapsed && <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}
+                </Link>
+              );
+            })
+          )}
+        </nav>
+
+        {/* User profile */}
+        <div style={{
+          borderTop: '1px solid var(--border-light)',
+          padding: collapsed ? '12px 8px' : '12px',
+          flexShrink: 0,
+        }}>
+          {!collapsed ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 4px', background: 'var(--primary-light)', borderRadius: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem', color: '#fff', letterSpacing: '-0.01em', boxShadow: '0 2px 8px var(--primary-glow)' }}>{initials}</div>
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.015em' }}>
+                  {user?.nom}
+                </p>
+                <p style={{ fontSize: '0.6875rem', color: 'var(--primary)', fontWeight: 600 }}>
+                  {ROLE_LABELS[user?.role] || user?.role}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-tertiary)', padding: 4, borderRadius: 6,
+                  display: 'flex', alignItems: 'center',
+                  transition: 'var(--transition)', flexShrink: 0,
+                }}
+                title="Se déconnecter"
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+              >
+                <IconLogout size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-tertiary)', padding: 8, borderRadius: 6,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '100%', transition: 'var(--transition)',
+              }}
+              title="Se déconnecter"
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+            >
+              <IconLogout size={16} />
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top bar */}
+        <div style={{ height: 48, display: 'flex', alignItems: 'center', padding: '0 20px', borderBottom: '1px solid var(--border-light)', background: 'var(--card)', flexShrink: 0, gap: 8, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+          {isMobile && (
+            <button
+              onClick={() => setMobileOpen(o => !o)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px', borderRadius: 6, display: 'flex', alignItems: 'center' }}
+            >
+              <IconMenu size={18} />
+            </button>
+          )}
+          <button
+            onClick={() => navigate(-1)}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.8125rem', fontWeight: 500, padding: '4px 8px', borderRadius: 6, transition: 'var(--transition)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.color = 'var(--primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Retour
+          </button>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flex: 1 }}>
+            {location.pathname.split('/').filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ')}
+          </span>
+          <NotifBell />
+        </div>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 16px' : '28px 32px' }}>
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

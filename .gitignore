@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Environnements
+.env
+.env.local
+.env.production
+!.env.example
+
+# Build
+dist/
+build/
+.expo/
+
+# IDE
+.DS_Store
+.vscode/
+*.swp
+
+# Logs
+logs/
+*.log
+
+# Divers
+*.pem
+coverage/
