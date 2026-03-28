@@ -30,6 +30,7 @@ const urssafRoutes        = require('./routes/urssafRoutes');
 const clientRoutes        = require('./routes/clientRoutes');
 const notificationsRoutes = require('./routes/notificationsRoutes');
 const patronRoutes        = require('./routes/patronRoutes');
+const artisanRoutes       = require('./routes/artisanRoutes');
 
 const app    = express();
 const PORT   = process.env.PORT || 3000;
@@ -944,8 +945,9 @@ app.use('/finance',       financeRoutes);
 app.use('/rh',            rhRoutes);
 app.use('/qse',           qseRoutes);
 app.use('/urssaf',        urssafRoutes);
-app.use('/client',        clientRoutes);
-app.use('/patron',        patronRoutes);
+app.use('/client',  authenticateToken, clientRoutes);
+app.use('/patron',  authenticateToken, patronRoutes);
+app.use('/artisan', authenticateToken, artisanRoutes);
 app.use('/notifications', notificationsRoutes);
 
 // ============================================================

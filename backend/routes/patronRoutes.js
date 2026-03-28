@@ -353,7 +353,7 @@ router.get('/alertes', (req, res) => {
 // ============================================================
 router.get('/stock', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM stock_articles ORDER BY designation');
+    const { rows } = await db.query('SELECT * FROM stock_articles WHERE patron_id=$1 ORDER BY designation', [req.user.id]);
     res.json({ articles: rows.map(r => ({
       id: r.id, ref: r.ref, designation: r.designation, categorie: r.categorie,
       quantite: parseFloat(r.quantite), seuilAlerte: parseFloat(r.seuil_alerte),
@@ -366,9 +366,9 @@ router.post('/stock', async (req, res) => {
   try {
     const { ref, designation, categorie, quantite, seuilAlerte, unite, valeurUnitaire, fournisseur } = req.body;
     const { rows } = await db.query(
-      `INSERT INTO stock_articles (ref, designation, categorie, quantite, seuil_alerte, unite, valeur_unitaire, fournisseur)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [ref||null, designation, categorie||'Matériaux', quantite||0, seuilAlerte||0, unite||'u', valeurUnitaire||0, fournisseur||null]
+      `INSERT INTO stock_articles (ref, designation, categorie, quantite, seuil_alerte, unite, valeur_unitaire, fournisseur, patron_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [ref||null, designation, categorie||'Matériaux', quantite||0, seuilAlerte||0, unite||'u', valeurUnitaire||0, fournisseur||null, req.user.id]
     );
     const r = rows[0];
     res.status(201).json({ article: { id: r.id, ref: r.ref, designation: r.designation, categorie: r.categorie, quantite: parseFloat(r.quantite), seuilAlerte: parseFloat(r.seuil_alerte), unite: r.unite, valeurUnitaire: parseFloat(r.valeur_unitaire), fournisseur: r.fournisseur }});
@@ -380,8 +380,8 @@ router.put('/stock/:id', async (req, res) => {
     const { ref, designation, categorie, quantite, seuilAlerte, unite, valeurUnitaire, fournisseur } = req.body;
     const { rows } = await db.query(
       `UPDATE stock_articles SET ref=$1, designation=$2, categorie=$3, quantite=$4, seuil_alerte=$5, unite=$6, valeur_unitaire=$7, fournisseur=$8, modifie_le=NOW()
-       WHERE id=$9 RETURNING *`,
-      [ref||null, designation, categorie||'Matériaux', quantite||0, seuilAlerte||0, unite||'u', valeurUnitaire||0, fournisseur||null, req.params.id]
+       WHERE id=$9 AND patron_id=$10 RETURNING *`,
+      [ref||null, designation, categorie||'Matériaux', quantite||0, seuilAlerte||0, unite||'u', valeurUnitaire||0, fournisseur||null, req.params.id, req.user.id]
     );
     if (!rows[0]) return res.status(404).json({ erreur: 'Article introuvable' });
     const r = rows[0];
@@ -391,7 +391,7 @@ router.put('/stock/:id', async (req, res) => {
 
 router.delete('/stock/:id', async (req, res) => {
   try {
-    await db.query('DELETE FROM stock_articles WHERE id=$1', [req.params.id]);
+    await db.query('DELETE FROM stock_articles WHERE id=$1 AND patron_id=$2', [req.params.id, req.user.id]);
     res.json({ message: 'Article supprimé' });
   } catch (err) { res.status(500).json({ erreur: err.message }); }
 });
@@ -401,7 +401,7 @@ router.delete('/stock/:id', async (req, res) => {
 // ============================================================
 router.get('/agenda', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM agenda_events ORDER BY date, heure');
+    const { rows } = await db.query('SELECT * FROM agenda_events WHERE patron_id=$1 ORDER BY date, heure', [req.user.id]);
     res.json({ events: rows.map(r => ({
       id: String(r.id), type: r.type, title: r.title, date: r.date?.toISOString().slice(0,10),
       heure: r.heure, heureFin: r.heure_fin, salarie: r.salarie, lieu: r.lieu, vehicule: r.vehicule, note: r.note
@@ -413,9 +413,9 @@ router.post('/agenda', async (req, res) => {
   try {
     const { type, title, date, heure, heureFin, salarie, lieu, vehicule, note } = req.body;
     const { rows } = await db.query(
-      `INSERT INTO agenda_events (type, title, date, heure, heure_fin, salarie, lieu, vehicule, note)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [type||'rdv', title, date, heure||null, heureFin||null, salarie||null, lieu||null, vehicule||null, note||null]
+      `INSERT INTO agenda_events (type, title, date, heure, heure_fin, salarie, lieu, vehicule, note, patron_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [type||'rdv', title, date, heure||null, heureFin||null, salarie||null, lieu||null, vehicule||null, note||null, req.user.id]
     );
     const r = rows[0];
     res.status(201).json({ event: { id: String(r.id), type: r.type, title: r.title, date: r.date?.toISOString().slice(0,10), heure: r.heure, heureFin: r.heure_fin, salarie: r.salarie, lieu: r.lieu, vehicule: r.vehicule, note: r.note }});
@@ -424,7 +424,7 @@ router.post('/agenda', async (req, res) => {
 
 router.delete('/agenda/:id', async (req, res) => {
   try {
-    await db.query('DELETE FROM agenda_events WHERE id=$1', [req.params.id]);
+    await db.query('DELETE FROM agenda_events WHERE id=$1 AND patron_id=$2', [req.params.id, req.user.id]);
     res.json({ message: 'Événement supprimé' });
   } catch (err) { res.status(500).json({ erreur: err.message }); }
 });
@@ -434,7 +434,7 @@ router.delete('/agenda/:id', async (req, res) => {
 // ============================================================
 router.get('/avis', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM avis ORDER BY cree_le DESC');
+    const { rows } = await db.query('SELECT * FROM avis WHERE patron_id=$1 ORDER BY cree_le DESC', [req.user.id]);
     res.json({ avis: rows.map(r => ({
       id: r.id, client: r.client, artisan: r.artisan, specialite: r.specialite,
       travail: r.travail, note: parseFloat(r.note), recommande: r.recommande,
@@ -447,7 +447,7 @@ router.get('/avis', async (req, res) => {
 router.post('/avis/:id/repondre', async (req, res) => {
   try {
     const { reponse } = req.body;
-    await db.query('UPDATE avis SET reponse=$1 WHERE id=$2', [reponse, req.params.id]);
+    await db.query('UPDATE avis SET reponse=$1 WHERE id=$2 AND patron_id=$3', [reponse, req.params.id, req.user.id]);
     res.json({ message: 'Réponse enregistrée' });
   } catch (err) { res.status(500).json({ erreur: err.message }); }
 });

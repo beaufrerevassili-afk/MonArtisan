@@ -636,6 +636,13 @@ router.get('/conversations', async (req, res) => {
 router.get('/messages-list/:missionId', async (req, res) => {
   try {
     const missionId = parseInt(req.params.missionId);
+
+    // Verify ownership
+    const missionCheck = await db.query('SELECT client_id FROM missions WHERE id=$1', [missionId]);
+    if (!missionCheck.rows[0] || missionCheck.rows[0].client_id !== req.user.id) {
+      return res.status(403).json({ erreur: 'Accès refusé' });
+    }
+
     const result = await db.query(
       'SELECT * FROM messages WHERE mission_id = $1 ORDER BY date ASC',
       [missionId]
@@ -660,6 +667,13 @@ router.get('/messages-list/:missionId', async (req, res) => {
 router.post('/messages-list/:missionId', async (req, res) => {
   try {
     const missionId = parseInt(req.params.missionId);
+
+    // Verify ownership
+    const missionCheck = await db.query('SELECT client_id FROM missions WHERE id=$1', [missionId]);
+    if (!missionCheck.rows[0] || missionCheck.rows[0].client_id !== req.user.id) {
+      return res.status(403).json({ erreur: 'Accès refusé' });
+    }
+
     const { texte, nomAuteur } = req.body;
     if (!texte) return res.status(400).json({ erreur: 'texte requis' });
 
