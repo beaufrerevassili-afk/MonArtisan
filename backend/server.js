@@ -47,14 +47,36 @@ app.use(cors({
   origin: allowedOrigins.length ? allowedOrigins : false,
   credentials: true,
 }));
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'"],
+      styleSrc:   ["'self'", "'unsafe-inline'"],
+      imgSrc:     ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'", ...( process.env.CORS_ORIGINS?.split(',') || [] )],
+      fontSrc:    ["'self'"],
+      objectSrc:  ["'none'"],
+      frameSrc:   ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(cookieParser());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '500kb' }));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 10 : 100,
   message: { erreur: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: process.env.NODE_ENV === 'production' ? 20 : 200,
+  message: { erreur: 'Trop de requêtes. Réessayez dans une heure.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -186,7 +208,7 @@ app.post('/logout', (req, res) => {
   res.json({ message: 'Déconnecté' });
 });
 
-app.post('/forgot-password', async (req, res) => {
+app.post('/forgot-password', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ erreur: 'Email requis' });
@@ -200,13 +222,9 @@ app.post('/forgot-password', async (req, res) => {
     const expiresAt = Date.now() + 30 * 60 * 1000; // 30 minutes
     resetTokens.set(token, { userId: user.id, expiresAt });
 
-    // In a real app we'd send an email; here we return the token for demo purposes
-    res.json({
-      message: 'Si cet email existe, un lien de réinitialisation a été envoyé.',
-      // DEMO ONLY — remove in production:
-      demo_token: token,
-      demo_email: user.email,
-    });
+    // TODO: send email with reset link (SendGrid / Resend)
+    console.log(`[RESET] Lien: /reset-password/${token} pour ${user.email}`);
+    res.json({ message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' });
   } catch (err) {
     console.error('Erreur /forgot-password :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
@@ -228,7 +246,7 @@ app.post('/reset-password', async (req, res) => {
     const { rows } = await db.query('SELECT id FROM users WHERE id = $1', [entry.userId]);
     if (!rows[0]) return res.status(400).json({ erreur: 'Utilisateur introuvable' });
 
-    const hash = await bcrypt.hash(motdepasse, 10);
+    const hash = await bcrypt.hash(motdepasse, 12);
     await db.query('UPDATE users SET motdepasse = $1 WHERE id = $2', [hash, entry.userId]);
     resetTokens.delete(token);
 
@@ -239,7 +257,7 @@ app.post('/reset-password', async (req, res) => {
   }
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', authLimiter, async (req, res) => {
   try {
     const { nom, email, motdepasse, role, telephone, metier, siret, adresse, ville, experience, description, documents, statut_verification } = req.body;
     if (!nom || !email || !motdepasse) return res.status(400).json({ erreur: 'nom, email, motdepasse requis' });
@@ -259,7 +277,7 @@ app.post('/register', async (req, res) => {
     const rolesValides = ['client', 'patron', 'artisan'];
     const roleValide   = rolesValides.includes(role) ? role : 'client';
     const isVerified   = roleValide !== 'patron' && roleValide !== 'artisan';
-    const hash         = await bcrypt.hash(motdepasse, 10);
+    const hash         = await bcrypt.hash(motdepasse, 12);
 
     const docsObj        = role === 'artisan' ? (documents || {}) : null;
     const docsSoumis     = role === 'artisan' ? Object.keys(documents || {}).length : 0;

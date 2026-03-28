@@ -182,16 +182,18 @@ router.post('/devis-pro', async (req, res) => {
 
 router.put('/devis-pro/:id/envoyer', async (req, res) => {
   try {
+    const sigToken = require('crypto').randomBytes(32).toString('hex');
     const result = await db.query(
-      `UPDATE devis_pro SET statut = 'envoyé', envoye_le = NOW() WHERE id = $1 RETURNING *`,
-      [parseInt(req.params.id)]
+      `UPDATE devis_pro SET statut = 'envoyé', envoye_le = NOW(), signature_token = $1 WHERE id = $2 RETURNING *`,
+      [sigToken, parseInt(req.params.id)]
     );
     if (!result.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
 
     const devis = mapDevis(result.rows[0]);
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.json({
       message: 'Devis marqué comme envoyé',
-      lienSignature: `http://localhost:3001/devis/${devis.id}/signer`,
+      lienSignature: `${baseUrl}/devis/${devis.id}/signer?token=${sigToken}`,
       devis,
     });
   } catch (err) {
@@ -200,24 +202,28 @@ router.put('/devis-pro/:id/envoyer', async (req, res) => {
   }
 });
 
-// Route PUBLIQUE — signature client
+// Route PUBLIQUE — signature client (protégée par signature_token)
 router.post('/devis-pro/:id/signer', async (req, res) => {
   try {
     const devisId = parseInt(req.params.id);
-    const { signatureNom } = req.body;
-    if (!signatureNom?.trim()) return res.status(400).json({ erreur: 'signatureNom requis' });
+    const { nomSignataire, token } = req.body;
 
-    // Vérifier si déjà signé
-    const existing = await db.query('SELECT statut FROM devis_pro WHERE id = $1', [devisId]);
+    if (!nomSignataire?.trim() || nomSignataire.trim().length < 2 || nomSignataire.trim().length > 120) {
+      return res.status(400).json({ erreur: 'Nom du signataire invalide (2–120 caractères requis)' });
+    }
+    if (!token) return res.status(400).json({ erreur: 'Token de signature manquant' });
+
+    const existing = await db.query('SELECT statut, signature_token FROM devis_pro WHERE id = $1', [devisId]);
     if (!existing.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
     if (existing.rows[0].statut === 'signé') return res.status(400).json({ erreur: 'Ce devis a déjà été signé' });
+    if (existing.rows[0].signature_token !== token) return res.status(403).json({ erreur: 'Token invalide' });
 
     const result = await db.query(
       `UPDATE devis_pro
-       SET statut = 'signé', signe_le = NOW(), signature_nom = $1
+       SET statut = 'signé', signe_le = NOW(), signature_nom = $1, signature_token = NULL
        WHERE id = $2
        RETURNING *`,
-      [signatureNom.trim(), devisId]
+      [nomSignataire.trim(), devisId]
     );
 
     res.json({ message: 'Devis signé avec succès', devis: mapDevis(result.rows[0]) });

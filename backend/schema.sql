@@ -410,8 +410,9 @@ CREATE TABLE IF NOT EXISTS devis_pro (
   statut        VARCHAR(50) DEFAULT 'brouillon',
   cree_le       TIMESTAMPTZ DEFAULT NOW(),
   envoye_le     TIMESTAMPTZ,
-  signe_le      TIMESTAMPTZ,
-  signature_nom VARCHAR(255)
+  signe_le       TIMESTAMPTZ,
+  signature_nom  VARCHAR(255),
+  signature_token VARCHAR(64)
 );
 
 -- ============================================================
