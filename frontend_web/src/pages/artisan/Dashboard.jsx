@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   IconDocument, IconCheck, IconX, IconPlus, IconDownload,
   IconClock, IconAlert, IconCalendar, IconUser,
+  IconMessage, IconSend,
 } from '../../components/ui/Icons';
 import api from '../../services/api';
 
@@ -38,7 +39,7 @@ function simulerOCR(fichier) {
   });
 }
 
-const TABS = ['Tableau de bord', 'Mes missions', 'Notes de frais', 'Frais chantier', 'Planning', 'Mes fiches de paie', 'Congés', 'Mon profil'];
+const TABS = ['Tableau de bord', 'Mes missions', 'Notes de frais', 'Frais chantier', 'Planning', 'Mes fiches de paie', 'Congés', 'Messagerie', 'Mon profil'];
 
 export default function ArtisanDashboard() {
   const { user, token } = useAuth();
@@ -84,6 +85,7 @@ export default function ArtisanDashboard() {
       {tab === 'Planning' && <TabPlanning headers={headers} />}
       {tab === 'Mes fiches de paie' && <TabFichesPaie user={user} />}
       {tab === 'Congés' && <TabConges conges={mesConges} setConges={setConges} headers={headers} />}
+      {tab === 'Messagerie' && <TabMessagerie user={user} />}
       {tab === 'Mon profil' && <TabProfil user={user} />}
     </div>
   );
@@ -1374,5 +1376,174 @@ function TabProfil({ user }) {
         </button>
       </div>
     </form>
+  );
+}
+
+function TabMessagerie({ user }) {
+  const [conversations, setConversations] = React.useState([]);
+  const [conv, setConv] = React.useState(null);
+  const [messages, setMessages] = React.useState([]);
+  const [texte, setTexte] = React.useState('');
+  const [sending, setSending] = React.useState(false);
+  const bottomRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+
+  const AVATAR_COLORS = ['#5B5BD6', '#0891B2', '#059669', '#D97706', '#DC2626', '#7C3AED'];
+  function avatarColor(name = '') {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+  function formatTime(iso) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffDays = Math.floor((now - d) / 86400000);
+    if (diffDays === 0) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (diffDays === 1) return 'Hier ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  }
+
+  React.useEffect(() => {
+    api.get('/artisan/conversations')
+      .then(({ data }) => {
+        const convs = data.conversations || [];
+        setConversations(convs);
+        if (convs.length > 0) setConv(convs[0]);
+      })
+      .catch(() => {});
+  }, []);
+
+  const loadMessages = React.useCallback(async (missionId) => {
+    try {
+      const { data } = await api.get(`/artisan/messages/${missionId}`);
+      setMessages(data.messages || []);
+    } catch { setMessages([]); }
+  }, []);
+
+  React.useEffect(() => {
+    if (!conv) return;
+    loadMessages(conv.missionId);
+    inputRef.current?.focus();
+  }, [conv, loadMessages]);
+
+  React.useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  async function envoyer(e) {
+    e.preventDefault();
+    if (!texte.trim() || !conv || sending) return;
+    const draft = texte.trim();
+    setTexte('');
+    setSending(true);
+    try {
+      await api.post(`/artisan/messages/${conv.missionId}`, { texte: draft, nomAuteur: user?.nom });
+      await loadMessages(conv.missionId);
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); envoyer(e); }
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 16, height: 'calc(100vh - 200px)', minHeight: 400 }}>
+      {/* Conversations */}
+      <div style={{ width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
+        <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Conversations</p>
+        {conversations.length === 0 && (
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', padding: '12px 0' }}>Aucune mission assignée</p>
+        )}
+        {conversations.map(c => (
+          <button key={c.missionId} onClick={() => setConv(c)} style={{
+            display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 12,
+            border: `1px solid ${conv?.missionId === c.missionId ? 'rgba(91,91,214,0.4)' : 'var(--border)'}`,
+            background: conv?.missionId === c.missionId ? 'rgba(91,91,214,0.1)' : 'var(--card)',
+            cursor: 'pointer', textAlign: 'left', width: '100%',
+          }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: avatarColor(c.client), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
+              {c.client?.charAt(0)}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.client}</p>
+              <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.titre}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Chat */}
+      <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
+        {!conv ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+            Sélectionnez une conversation
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: avatarColor(conv.client), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                {conv.client?.charAt(0)}
+              </div>
+              <div>
+                <p style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9375rem' }}>{conv.client}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{conv.titre}</p>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {messages.length === 0 ? (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Démarrez la conversation
+                </div>
+              ) : messages.map((msg, idx) => {
+                const isMe = msg.auteur === 'artisan';
+                return (
+                  <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 6 }}>
+                    {!isMe && (
+                      <div style={{ width: 26, height: 26, borderRadius: 7, background: avatarColor(msg.nomAuteur || ''), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.6875rem', flexShrink: 0 }}>
+                        {(msg.nomAuteur || '?').charAt(0)}
+                      </div>
+                    )}
+                    <div style={{
+                      maxWidth: '68%',
+                      background: isMe ? 'var(--primary)' : 'var(--bg)',
+                      color: isMe ? '#fff' : 'var(--text)',
+                      borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                      padding: '8px 12px', fontSize: '0.875rem',
+                    }}>
+                      {!isMe && <p style={{ fontSize: '0.6875rem', fontWeight: 600, marginBottom: 3, color: avatarColor(msg.nomAuteur || '') }}>{msg.nomAuteur}</p>}
+                      <p style={{ lineHeight: 1.5 }}>{msg.texte}</p>
+                      <p style={{ fontSize: '0.625rem', marginTop: 4, opacity: 0.6, textAlign: 'right' }}>{formatTime(msg.date)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input */}
+            <form onSubmit={envoyer} style={{ padding: '10px 14px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+              <input
+                ref={inputRef}
+                value={texte}
+                onChange={e => setTexte(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Message à ${conv.client}…`}
+                className="input"
+                style={{ flex: 1, borderRadius: 20 }}
+              />
+              <button type="submit" disabled={sending || !texte.trim()} className="btn-primary" style={{ padding: '8px 16px', borderRadius: 20, flexShrink: 0 }}>
+                Envoyer
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

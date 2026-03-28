@@ -624,6 +624,14 @@ export default function Landing() {
         />
       )}
 
+      {/* ══ FOOTER ══ */}
+      <div style={{ textAlign: 'center', padding: '24px', borderTop: '1px solid var(--border, #e5e7eb)', marginTop: 40, fontSize: '0.8125rem', color: 'var(--text-secondary, #6b7280)' }}>
+        © 2026 MonArtisan —
+        <a href="/cgu" style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 4 }}>CGU & Mentions légales</a>
+        {' · '}
+        <a href="mailto:contact@monartisan.fr" style={{ color: 'var(--primary)', textDecoration: 'none' }}>contact@monartisan.fr</a>
+      </div>
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
