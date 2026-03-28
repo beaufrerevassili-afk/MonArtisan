@@ -263,6 +263,76 @@ async function seedPaiementsClient() {
   console.log(`✅ ${paiements.length} paiements insérés`);
 }
 
+async function seedStock() {
+  console.log('📦 Seed stock...');
+  const articles = [
+    { ref: 'MAT-001', designation: 'Parpaings 20×20×50',          categorie: 'Matériaux',          quantite: 240, seuil_alerte: 50,  unite: 'u',     valeur_unitaire: 1.20,  fournisseur: 'Point.P'   },
+    { ref: 'MAT-002', designation: 'Sable fin (sac 25 kg)',        categorie: 'Matériaux',          quantite: 18,  seuil_alerte: 20,  unite: 'sac',   valeur_unitaire: 6.50,  fournisseur: 'Lafarge'   },
+    { ref: 'MAT-003', designation: 'Ciment CEM II 32,5 R',        categorie: 'Matériaux',          quantite: 32,  seuil_alerte: 15,  unite: 'sac',   valeur_unitaire: 8.20,  fournisseur: 'Holcim'    },
+    { ref: 'OUT-001', designation: 'Perceuse à percussion Makita', categorie: 'Outillage',          quantite: 3,   seuil_alerte: 1,   unite: 'u',     valeur_unitaire: 189.00, fournisseur: 'Makita'   },
+    { ref: 'OUT-002', designation: 'Meuleuse 125 mm',              categorie: 'Outillage',          quantite: 2,   seuil_alerte: 1,   unite: 'u',     valeur_unitaire: 85.00,  fournisseur: 'Bosch'    },
+    { ref: 'EPI-001', designation: 'Casque chantier blanc (lot 10)', categorie: 'EPI / Sécurité',  quantite: 2,   seuil_alerte: 1,   unite: 'boîte', valeur_unitaire: 42.00,  fournisseur: 'MSA'      },
+    { ref: 'EPI-002', designation: 'Gants de protection T9',       categorie: 'EPI / Sécurité',    quantite: 45,  seuil_alerte: 20,  unite: 'u',     valeur_unitaire: 2.80,   fournisseur: 'Deltaplus' },
+    { ref: 'EPI-003', designation: 'Masques FFP2 (boîte 20)',      categorie: 'EPI / Sécurité',    quantite: 8,   seuil_alerte: 5,   unite: 'boîte', valeur_unitaire: 15.90,  fournisseur: 'Moldex'   },
+    { ref: 'CHI-001', designation: 'Décapant peinture (5L)',       categorie: 'Produits chimiques', quantite: 4,   seuil_alerte: 3,   unite: 'L',     valeur_unitaire: 22.50,  fournisseur: 'Starwax'  },
+  ];
+  for (const a of articles) {
+    await query(
+      `INSERT INTO stock_articles (ref, designation, categorie, quantite, seuil_alerte, unite, valeur_unitaire, fournisseur)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [a.ref, a.designation, a.categorie, a.quantite, a.seuil_alerte, a.unite, a.valeur_unitaire, a.fournisseur]
+    );
+  }
+  console.log(`✅ ${articles.length} articles de stock insérés`);
+}
+
+async function seedAvis() {
+  console.log('⭐ Seed avis...');
+  const avis = [
+    {
+      client: 'Marie L.', artisan: 'Eric Leroy', specialite: 'Électricité',
+      travail: 'Installation prise électrique salon',
+      note: 4.9, recommande: true, verifie: true,
+      commentaire: 'Travail impeccable, très professionnel et ponctuel. Je recommande vivement.',
+      criteres: JSON.stringify({ qualite: 5, ponctualite: 5, proprete: 5, communication: 5, rapport: 4 }),
+      reponse: null, cree_le: '2024-03-22T00:00:00Z',
+    },
+    {
+      client: 'Thomas R.', artisan: 'Carlos Garcia', specialite: 'Plomberie',
+      travail: 'Réparation robinet chambre',
+      note: 4.4, recommande: true, verifie: true,
+      commentaire: 'Rapide et efficace. Léger retard au démarrage mais le résultat est là.',
+      criteres: JSON.stringify({ qualite: 5, ponctualite: 3, proprete: 4, communication: 5, rapport: 5 }),
+      reponse: null, cree_le: '2024-02-14T00:00:00Z',
+    },
+    {
+      client: 'Claire B.', artisan: 'Sophie Martin', specialite: 'Peinture',
+      travail: 'Peinture couloir entrée',
+      note: 5.0, recommande: true, verifie: true,
+      commentaire: "Magnifique résultat, travail soigné et propre. La meilleure artisane que j'ai eue.",
+      criteres: JSON.stringify({ qualite: 5, ponctualite: 5, proprete: 5, communication: 5, rapport: 5 }),
+      reponse: "Merci pour votre confiance, c'est toujours un plaisir de travailler avec des clients attentifs !",
+      cree_le: '2024-01-28T00:00:00Z',
+    },
+    {
+      client: 'François D.', artisan: 'Jean-Paul Moreau', specialite: 'Menuiserie',
+      travail: 'Remplacement fenêtres double-vitrage',
+      note: 4.8, recommande: true, verifie: true,
+      commentaire: '',
+      criteres: JSON.stringify({ qualite: 5, ponctualite: 5, proprete: 4, communication: 5, rapport: 5 }),
+      reponse: null, cree_le: '2023-11-10T00:00:00Z',
+    },
+  ];
+  for (const a of avis) {
+    await query(
+      `INSERT INTO avis (client, artisan, specialite, travail, note, recommande, verifie, commentaire, criteres, reponse, cree_le)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [a.client, a.artisan, a.specialite, a.travail, a.note, a.recommande, a.verifie, a.commentaire, a.criteres, a.reponse, a.cree_le]
+    );
+  }
+  console.log(`✅ ${avis.length} avis insérés`);
+}
+
 async function main() {
   console.log('\n🌱 === SEED APPLICATION ARTISANS ===\n');
   await testConnection();
@@ -277,6 +347,8 @@ async function main() {
   await seedChantiers();
   await seedMessages();
   await seedPaiementsClient();
+  await seedStock();
+  await seedAvis();
   console.log('\n✅ === SEED TERMINÉ ===\n');
   process.exit(0);
 }

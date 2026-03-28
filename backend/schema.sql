@@ -437,6 +437,58 @@ CREATE TABLE IF NOT EXISTS chantiers (
 );
 
 -- ============================================================
+--  STOCK
+-- ============================================================
+CREATE TABLE IF NOT EXISTS stock_articles (
+  id              SERIAL PRIMARY KEY,
+  ref             VARCHAR(50),
+  designation     VARCHAR(255) NOT NULL,
+  categorie       VARCHAR(100),
+  quantite        DECIMAL(12,2) DEFAULT 0,
+  seuil_alerte    DECIMAL(12,2) DEFAULT 0,
+  unite           VARCHAR(20) DEFAULT 'u',
+  valeur_unitaire DECIMAL(12,2) DEFAULT 0,
+  fournisseur     VARCHAR(255),
+  cree_le         TIMESTAMPTZ DEFAULT NOW(),
+  modifie_le      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  AGENDA
+-- ============================================================
+CREATE TABLE IF NOT EXISTS agenda_events (
+  id        SERIAL PRIMARY KEY,
+  type      VARCHAR(50) DEFAULT 'rdv',
+  title     VARCHAR(255) NOT NULL,
+  date      DATE NOT NULL,
+  heure     VARCHAR(10),
+  heure_fin VARCHAR(10),
+  salarie   VARCHAR(255),
+  lieu      TEXT,
+  vehicule  VARCHAR(255),
+  note      TEXT,
+  cree_le   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  AVIS / RÉPUTATION
+-- ============================================================
+CREATE TABLE IF NOT EXISTS avis (
+  id          SERIAL PRIMARY KEY,
+  client      VARCHAR(255),
+  artisan     VARCHAR(255),
+  specialite  VARCHAR(100),
+  travail     VARCHAR(255),
+  note        DECIMAL(3,2),
+  recommande  BOOLEAN DEFAULT true,
+  verifie     BOOLEAN DEFAULT false,
+  commentaire TEXT,
+  criteres    JSONB DEFAULT '{}',
+  reponse     TEXT,
+  cree_le     TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
 --  INDEX POUR LES PERFORMANCES
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_users_email     ON users(email);

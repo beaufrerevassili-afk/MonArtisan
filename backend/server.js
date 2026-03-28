@@ -402,6 +402,32 @@ app.get('/dashboard/patron', authenticateToken, authorizeRole('patron'), async (
   }
 });
 
+// ============================================================
+//  PROFIL UTILISATEUR
+// ============================================================
+
+app.put('/users/profil', authenticateToken, async (req, res) => {
+  try {
+    const { nom, telephone, adresse, ville, metier, siret, tva, nomEntreprise } = req.body;
+    await db.query(
+      `UPDATE users SET
+        nom = COALESCE($1, nom),
+        telephone = COALESCE($2, telephone),
+        adresse = COALESCE($3, adresse),
+        ville = COALESCE($4, ville),
+        metier = COALESCE($5, metier),
+        siret = COALESCE($6, siret)
+       WHERE id = $7`,
+      [nom || null, telephone || null, adresse || null, ville || null, metier || null, siret || null, req.user.id]
+    );
+    const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    res.json({ message: 'Profil mis à jour', user: mapUser(rows[0]) });
+  } catch (err) {
+    console.error('Erreur PUT /users/profil :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 app.get('/dashboard/admin', authenticateToken, authorizeRole('super_admin'), async (req, res) => {
   try {
     const { rows: allUsers }    = await db.query('SELECT id, nom, email, role, verified, statut_verification, statut_validation, motif_rejet, suspendu, cree_le FROM users');
