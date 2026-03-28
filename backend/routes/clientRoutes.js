@@ -596,6 +596,42 @@ router.post('/devis-client/:id/refuser', async (req, res) => {
 //  MESSAGERIE
 // ============================================================
 
+// GET /client/conversations
+router.get('/conversations', async (req, res) => {
+  try {
+    const clientId = req.user.id;
+    const result = await db.query(
+      `SELECT
+         m.id          AS "missionId",
+         m.titre,
+         m.categorie   AS specialite,
+         u.nom         AS artisan,
+         (SELECT texte FROM messages WHERE mission_id = m.id ORDER BY date DESC LIMIT 1) AS dernier_message,
+         (SELECT date  FROM messages WHERE mission_id = m.id ORDER BY date DESC LIMIT 1) AS dernier_message_date
+       FROM missions m
+       JOIN users u ON u.id = m.artisan_id
+       WHERE m.client_id = $1
+         AND m.artisan_id IS NOT NULL
+       ORDER BY dernier_message_date DESC NULLS LAST, m.cree_le DESC`,
+      [clientId]
+    );
+
+    const conversations = result.rows.map(r => ({
+      missionId:          r.missionId,
+      titre:              r.titre,
+      specialite:         r.specialite,
+      artisan:            r.artisan,
+      dernierMessage:     r.dernier_message || '',
+      dernierMessageDate: r.dernier_message_date || null,
+    }));
+
+    res.json({ conversations });
+  } catch (err) {
+    console.error('GET /client/conversations :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 // GET /client/messages-list/:missionId
 router.get('/messages-list/:missionId', async (req, res) => {
   try {
