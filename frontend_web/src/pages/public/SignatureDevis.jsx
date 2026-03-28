@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IconCheck, IconX, IconDownload, IconDocument } from '../../components/ui/Icons';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -29,6 +29,8 @@ function calcLine(l) {
 
 export default function SignatureDevis() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const sigToken = searchParams.get('token');
   const [devis, setDevis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -64,13 +66,14 @@ export default function SignatureDevis() {
   async function handleSign() {
     if (!nomSignataire.trim()) { setError('Veuillez saisir votre nom complet.'); return; }
     if (!accepted) { setError('Vous devez accepter les termes du devis.'); return; }
+    if (!sigToken) { setError('Lien de signature invalide ou expiré.'); return; }
     setError('');
     setSubmitting(true);
     try {
       const r = await fetch(`${API}/patron/devis-pro/${id}/signer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nomSignataire }),
+        body: JSON.stringify({ nomSignataire, token: sigToken }),
       });
       if (!r.ok) throw new Error('Erreur lors de la signature');
       const updated = await r.json();
