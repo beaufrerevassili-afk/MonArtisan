@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { IconCheck, IconAlert } from '../../components/ui/Icons';
+import api from '../../services/api';
 
 export default function ProfilPatron() {
   const { user } = useAuth();
@@ -31,10 +32,22 @@ export default function ProfilPatron() {
     setForm(f => ({ ...f, logoUrl: URL.createObjectURL(file) }));
   }
 
-  function sauvegarder(e) {
+  async function sauvegarder(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      await api.put('/users/profil', {
+        nom: form.nom,
+        telephone: form.telephone,
+        adresse: form.adresse,
+        ville: form.ville,
+        siret: form.siret,
+        metier: form.metier,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Erreur sauvegarde profil:', err);
+    }
   }
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IconBox, IconPlus, IconX, IconAlert, IconCheck } from '../../components/ui/Icons';
+import api from '../../services/api';
 
 const CATS = ['Matériaux', 'Outillage', 'EPI / Sécurité', 'Fournitures', 'Produits chimiques', 'Équipement'];
 const UNITES = ['u', 'kg', 't', 'm', 'm²', 'm³', 'L', 'sac', 'palette', 'rouleau', 'boîte'];
@@ -23,16 +24,16 @@ function formatCur(n) {
 }
 
 export default function Stock() {
-  const [articles, setArticles] = useState(() => {
-    try {
-      const saved = localStorage.getItem('stock_articles');
-      return saved ? JSON.parse(saved) : ARTICLES_INIT;
-    } catch { return ARTICLES_INIT; }
-  });
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('stock_articles', JSON.stringify(articles));
-  }, [articles]);
+    api.get('/patron/stock')
+      .then(({ data }) => setArticles(data.articles || []))
+      .catch(() => setArticles(ARTICLES_INIT))
+      .finally(() => setLoading(false));
+  }, []);
+
   const [modal, setModal] = useState(null); // null | 'add' | article-object
   const [form, setForm] = useState(ARTICLE_VIDE);
   const [filtreCat, setFiltreCat] = useState('Tous');
@@ -50,23 +51,40 @@ export default function Stock() {
   function openAdd() { setForm(ARTICLE_VIDE); setModal('add'); }
   function openEdit(a) { setForm({ ...a }); setModal(a); }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const payload = { ...form, quantite: Number(form.quantite), seuilAlerte: Number(form.seuilAlerte), valeurUnitaire: Number(form.valeurUnitaire) };
-    if (modal === 'add') {
-      setArticles(prev => [...prev, { ...payload, id: Date.now() }]);
-    } else {
-      setArticles(prev => prev.map(a => a.id === modal.id ? { ...a, ...payload } : a));
+    try {
+      if (modal === 'add') {
+        const { data } = await api.post('/patron/stock', payload);
+        setArticles(prev => [...prev, data.article]);
+      } else {
+        const { data } = await api.put(`/patron/stock/${modal.id}`, payload);
+        setArticles(prev => prev.map(a => a.id === modal.id ? data.article : a));
+      }
+      setModal(null);
+    } catch (err) {
+      console.error('Erreur stock:', err);
     }
-    setModal(null);
   }
 
-  function handleDelete(id) {
-    setArticles(prev => prev.filter(a => a.id !== id));
-    setModal(null);
+  async function handleDelete(id) {
+    try {
+      await api.delete(`/patron/stock/${id}`);
+      setArticles(prev => prev.filter(a => a.id !== id));
+      setModal(null);
+    } catch (err) {
+      console.error('Erreur suppression stock:', err);
+    }
   }
 
   const f = k => ({ value: form[k], onChange: e => setForm(p => ({ ...p, [k]: e.target.value })) });
+
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200, color: '#8E8E93', fontSize: 14 }}>
+      Chargement du stock…
+    </div>
+  );
 
   return (
     <div style={{ padding: 28, maxWidth: 1200, margin: '0 auto' }}>

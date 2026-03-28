@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 /* ── Helpers ───────────────────────────────────────────── */
 const TODAY = new Date();
@@ -126,20 +127,27 @@ export default function Agenda() {
   const { token } = useAuth();
   const [view, setView] = useState('month'); // 'month' | 'week'
   const [cursor, setCursor] = useState(new Date(TODAY));
-  const [events, setEvents] = useState(DEMO_EVENTS);
+  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [addingDate, setAddingDate] = useState(null);
   const [form, setForm] = useState(FORM_VIDE);
   const [addSubmitted, setAddSubmitted] = useState(false);
   const [filterType, setFilterType] = useState('all');
 
-  /* Load real chantiers/missions and merge into agenda */
+  /* Load agenda events from API, then merge real chantiers/missions */
   useEffect(() => {
-    const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const headers = { Authorization: `Bearer ${token}` };
+
+    // Load custom agenda events first
+    api.get('/patron/agenda')
+      .then(({ data }) => setEvents(data.events || DEMO_EVENTS))
+      .catch(() => setEvents(DEMO_EVENTS));
+
+    // Then merge chantiers/missions as readonly events
     Promise.all([
-      fetch(`${API}/patron/missions`, { headers }).then(r => r.ok ? r.json() : {}),
-      fetch(`${API}/patron/chantiers`, { headers }).then(r => r.ok ? r.json() : {}),
+      fetch(`${API_BASE}/patron/missions`, { headers }).then(r => r.ok ? r.json() : {}),
+      fetch(`${API_BASE}/patron/chantiers`, { headers }).then(r => r.ok ? r.json() : {}),
     ]).then(([dm, dc]) => {
       const missions  = dm.missions  || [];
       const chantiers = dc.chantiers || [];
@@ -156,7 +164,7 @@ export default function Agenda() {
           readonly: true,          // cannot be deleted from agenda
         }));
       if (chantierEvents.length > 0) {
-        // Replace demo chantier events with real ones, keep other demo events
+        // Replace demo chantier events with real ones, keep other events
         setEvents(prev => [
           ...prev.filter(e => e.type !== 'chantier'),
           ...chantierEvents,
@@ -212,12 +220,11 @@ export default function Agenda() {
     setSelectedEvent(null);
     setAddSubmitted(false);
   }
-  function handleAdd(e) {
+  async function handleAdd(e) {
     e.preventDefault();
     setAddSubmitted(true);
     if (!form.title.trim() || !form.date) return;
-    const ev = {
-      id: 'ev-' + Date.now(),
+    const payload = {
       type: form.type,
       date: form.date,
       title: form.title,
@@ -226,12 +233,23 @@ export default function Agenda() {
       lieu: form.lieu || undefined,
       note: form.note || undefined,
     };
-    setEvents(prev => [...prev, ev]);
+    try {
+      const { data } = await api.post('/patron/agenda', payload);
+      setEvents(prev => [...prev, data.event || { id: 'ev-' + Date.now(), ...payload }]);
+    } catch {
+      // Fallback : ajouter localement si l'API échoue
+      setEvents(prev => [...prev, { id: 'ev-' + Date.now(), ...payload }]);
+    }
     setAddingDate(null);
     setAddSubmitted(false);
     setForm(FORM_VIDE);
   }
-  function handleDelete(id) {
+  async function handleDelete(id) {
+    try {
+      await api.delete(`/patron/agenda/${id}`);
+    } catch {
+      // Fail silently — suppression locale quand même
+    }
     setEvents(prev => prev.filter(e => e.id !== id));
     setSelectedEvent(null);
   }

@@ -23,10 +23,20 @@ export default function ProfilClient() {
 
   const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
-  function sauvegarder(e) {
+  async function sauvegarder(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      await api.put('/users/profil', {
+        nom: form.nom,
+        telephone: form.telephone,
+        adresse: form.adresse,
+        ville: form.ville,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Erreur sauvegarde profil:', err);
+    }
   }
 
   async function supprimerCompte() {

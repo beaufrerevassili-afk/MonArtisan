@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import api from '../../services/api';
 
 // Avis démo représentant ce que les clients ont laissé
 const AVIS_DEMO = [
@@ -106,41 +105,29 @@ function ReponseModal({ avis, onClose, onSave }) {
 
 export default function Reputation() {
   const { token } = useAuth();
-  const [avis, setAvis]     = useState(AVIS_DEMO);
+  const [avis, setAvis]     = useState([]);
   const [apiOk, setApiOk]   = useState(false);
   const [filtre, setFiltre] = useState('tous');
   const [modal, setModal]   = useState(null);
-  const [reponses, setReponses] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('patron_reponses_avis')) || {}; }
-    catch { return {}; }
-  });
 
   useEffect(() => {
-    if (!token) return;
-    fetch(`${API}/patron/avis-recus`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.avis?.length) { setAvis(data.avis); setApiOk(true); } })
-      .catch(() => {});
-  }, [token]);
+    api.get('/patron/avis')
+      .then(({ data }) => { setAvis(data.avis || []); setApiOk(true); })
+      .catch(() => setAvis(AVIS_DEMO));
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem('patron_reponses_avis', JSON.stringify(reponses));
-  }, [reponses]);
-
-  function handleSaveReponse(id, texte) {
-    setReponses(prev => ({ ...prev, [id]: texte }));
-    if (token) {
-      fetch(`${API}/patron/avis/${id}/reponse`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reponse: texte }),
-      }).catch(() => {});
+  async function handleSaveReponse(id, texte) {
+    try {
+      await api.post(`/patron/avis/${id}/repondre`, { reponse: texte });
+      setAvis(prev => prev.map(a => a.id === id ? { ...a, reponse: texte } : a));
+    } catch (err) {
+      console.error('Erreur réponse avis:', err);
     }
   }
 
-  // Avis enrichis avec réponses locales
-  const avisAvecReponses = avis.map(a => ({ ...a, reponse: reponses[a.id] ?? a.reponse }));
-  const avisFiltres = avisAvecReponses.filter(a => {
+  // Filtrage direct sur le state avis (les réponses y sont déjà incluses)
+  const avisAvecReponses = avis;
+  const avisFiltres = avis.filter(a => {
     if (filtre === 'sans_reponse') return !a.reponse;
     if (filtre === 'avec_reponse') return !!a.reponse;
     if (filtre === 'recommande')   return a.recommande;

@@ -1122,10 +1122,22 @@ function TabProfil({ user }) {
     setProfil(p => ({ ...p, logoUrl: url }));
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      await api.put('/users/profil', {
+        nom: profil.nom,
+        telephone: profil.telephone,
+        adresse: profil.adresse,
+        ville: profil.ville,
+        metier: profil.metier,
+        siret: profil.siret,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('Erreur sauvegarde profil:', err);
+    }
   }
 
   const initials = profil.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'A';
