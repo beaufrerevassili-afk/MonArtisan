@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const COMPTES_DEMO = [
@@ -13,6 +13,7 @@ const REDIRECTIONS = {
   patron:      '/patron/dashboard',
   artisan:     '/artisan/dashboard',
   super_admin: '/admin/dashboard',
+  fondateur:   '/fondateur/dashboard',
 };
 
 const FEATURES = [
@@ -23,13 +24,15 @@ const FEATURES = [
 ];
 
 export default function Login() {
-  const { login }  = useAuth();
-  const navigate   = useNavigate();
+  const { user, login } = useAuth();
+  const navigate        = useNavigate();
   const [form, setForm]       = useState({ email: '', motdepasse: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [focused, setFocused] = useState('');
+
+  if (user) return <Navigate to={REDIRECTIONS[user.role] || '/'} replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -45,9 +48,17 @@ export default function Login() {
     }
   }
 
-  function remplirDemo(compte) {
-    setForm({ email: compte.email, motdepasse: compte.motdepasse });
+  async function remplirDemo(compte) {
     setError('');
+    setLoading(true);
+    try {
+      const data = await login(compte.email, compte.motdepasse);
+      navigate(REDIRECTIONS[data.role] || '/');
+    } catch (err) {
+      setError(err.response?.data?.erreur || 'Identifiants incorrects');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

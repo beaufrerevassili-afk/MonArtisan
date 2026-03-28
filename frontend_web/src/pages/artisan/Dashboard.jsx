@@ -1120,8 +1120,8 @@ function TabConges({ conges, setConges, headers }) {
   );
 }
 
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 };
-const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' };
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 };
+const inp = { width: '100%', padding: '9px 12px', border: '1px solid var(--border-light)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' };
 
 /* ── Mon profil ── */
 function TabProfil({ user }) {
@@ -1184,14 +1184,14 @@ function TabProfil({ user }) {
     <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
       {/* Photo de profil */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+      <div className="card" style={{ padding: 24 }}>
         <h3 style={{ margin: '0 0 18px', fontSize: 15, fontWeight: 700 }}>Photo de profil</h3>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
           {/* Avatar */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <div
               onClick={() => photoRef.current?.click()}
-              style={{ width: 96, height: 96, borderRadius: '50%', background: profil.photoUrl ? 'transparent' : '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 32, color: '#fff', cursor: 'pointer', overflow: 'hidden', border: '3px solid #E5E5EA', position: 'relative' }}
+              style={{ width: 96, height: 96, borderRadius: '50%', background: profil.photoUrl ? 'transparent' : 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 32, color: '#fff', cursor: 'pointer', overflow: 'hidden', border: '3px solid var(--border)', position: 'relative' }}
               title="Cliquer pour changer la photo"
             >
               {profil.photoUrl
@@ -1200,7 +1200,7 @@ function TabProfil({ user }) {
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 10, fontWeight: 700, textAlign: 'center', padding: '4px 0' }}>Modifier</div>
             </div>
             <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
-            <button type="button" onClick={() => photoRef.current?.click()} style={{ fontSize: 12, color: '#007AFF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+            <button type="button" onClick={() => photoRef.current?.click()} style={{ fontSize: 12, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
               Changer la photo
             </button>
           </div>
@@ -1210,11 +1210,11 @@ function TabProfil({ user }) {
             <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginBottom: 10 }}>
               <div
                 onClick={() => setProfil(p => ({ ...p, photoEnLigne: !p.photoEnLigne }))}
-                style={{ width: 44, height: 26, borderRadius: 13, background: profil.photoEnLigne ? '#34C759' : '#E5E5EA', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                style={{ width: 44, height: 26, borderRadius: 13, background: profil.photoEnLigne ? '#34C759' : 'var(--border)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 3, left: profil.photoEnLigne ? 21 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
               </div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#1C1C1E' }}>Mettre en ligne ma photo</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Mettre en ligne ma photo</span>
             </label>
             {!profil.photoEnLigne && (
               <div style={{ background: '#FFF3CD', border: '1px solid #FFD60A40', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#856404', lineHeight: 1.5 }}>
@@ -1231,7 +1231,7 @@ function TabProfil({ user }) {
       </div>
 
       {/* Informations personnelles */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+      <div className="card" style={{ padding: 24 }}>
         <h3 style={{ margin: '0 0 18px', fontSize: 15, fontWeight: 700 }}>Informations personnelles</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
@@ -1266,24 +1266,24 @@ function TabProfil({ user }) {
       </div>
 
       {/* Informations entreprise */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+      <div className="card" style={{ padding: 24 }}>
         <h3 style={{ margin: '0 0 18px', fontSize: 15, fontWeight: 700 }}>Informations entreprise</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           {/* Logo */}
           <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
             <div
               onClick={() => logoRef.current?.click()}
-              style={{ width: 72, height: 72, borderRadius: 14, background: profil.logoUrl ? 'transparent' : '#F2F2F7', border: '2px dashed #C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', fontSize: 24, flexShrink: 0 }}
+              style={{ width: 72, height: 72, borderRadius: 14, background: profil.logoUrl ? 'transparent' : 'var(--bg)', border: '2px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', fontSize: 24, flexShrink: 0 }}
               title="Cliquer pour ajouter le logo"
             >
               {profil.logoUrl ? <img src={profil.logoUrl} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : '🏢'}
             </div>
             <input ref={logoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoChange} />
             <div>
-              <button type="button" onClick={() => logoRef.current?.click()} style={{ fontSize: 13, color: '#007AFF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+              <button type="button" onClick={() => logoRef.current?.click()} style={{ fontSize: 13, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'block', marginBottom: 4 }}>
                 {profil.logoUrl ? 'Changer le logo' : 'Ajouter le logo'}
               </button>
-              <div style={{ fontSize: 12, color: '#8E8E93' }}>Le logo apparaîtra sur vos devis et factures</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Le logo apparaîtra sur vos devis et factures</div>
             </div>
           </div>
           <div>
@@ -1306,7 +1306,7 @@ function TabProfil({ user }) {
       </div>
 
       {/* Carte Pro BTP */}
-      <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+      <div className="card" style={{ padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Carte Pro BTP</h3>
           <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: carteValide ? '#D1F2E0' : '#FFE5E5', color: carteValide ? '#1A7F43' : '#C0392B' }}>
@@ -1316,19 +1316,19 @@ function TabProfil({ user }) {
 
         {/* Photo de la carte physique */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#6E6E73', marginBottom: 12 }}>Photo de votre carte physique</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12 }}>Photo de votre carte physique</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[
               { side: 'Recto', key: 'carteProBTPPhotoRecto', ref: btpRectoRef },
               { side: 'Verso', key: 'carteProBTPPhotoVerso', ref: btpVersoRef },
             ].map(({ side, key, ref }) => (
               <div key={side}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#8E8E93', marginBottom: 6 }}>{side}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{side}</div>
                 <div
                   onClick={() => ref.current?.click()}
-                  style={{ height: 130, borderRadius: 12, border: `2px dashed ${profil[key] ? '#FF9500' : '#C7C7CC'}`, background: '#FAFAFA', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', position: 'relative', transition: 'border-color 0.2s' }}
+                  style={{ height: 130, borderRadius: 12, border: `2px dashed ${profil[key] ? '#FF9500' : 'var(--border)'}`, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', position: 'relative', transition: 'border-color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = '#FF9500'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = profil[key] ? '#FF9500' : '#C7C7CC'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = profil[key] ? '#FF9500' : 'var(--border)'}
                 >
                   {profil[key] ? (
                     <>
@@ -1344,8 +1344,8 @@ function TabProfil({ user }) {
                   ) : (
                     <>
                       <div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#8E8E93', textAlign: 'center' }}>Cliquer pour ajouter</div>
-                      <div style={{ fontSize: 11, color: '#AEAEB2', marginTop: 4 }}>JPG, PNG — max 5 Mo</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center' }}>Cliquer pour ajouter</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>JPG, PNG — max 5 Mo</div>
                     </>
                   )}
                 </div>
@@ -1362,7 +1362,7 @@ function TabProfil({ user }) {
         </div>
 
         {/* Visual digital card */}
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#6E6E73', marginBottom: 12 }}>Informations de la carte</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12 }}>Informations de la carte</div>
         <div style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF9500 50%, #FFCC00 100%)', borderRadius: 14, padding: '20px 24px', color: '#fff', marginBottom: 18, position: 'relative', overflow: 'hidden', maxWidth: 380 }}>
           <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.12)' }} />
           <div style={{ position: 'absolute', bottom: -30, left: 60, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
@@ -1404,7 +1404,7 @@ function TabProfil({ user }) {
             Profil enregistré
           </span>
         )}
-        <button type="submit" style={{ padding: '11px 28px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>
+        <button type="submit" className="btn-primary">
           Enregistrer les modifications
         </button>
       </div>

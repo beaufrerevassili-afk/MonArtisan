@@ -5,7 +5,7 @@ import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
   IconDownload, IconBox, IconBell, IconSearch, IconCalendar, IconCreditCard,
-  IconChevronDown, IconScale, IconStar,
+  IconChevronDown, IconScale, IconStar, IconUser,
 } from '../ui/Icons';
 
 /* ── Inline icon helpers ───────────────────────────────── */
@@ -37,6 +37,9 @@ const MENUS = {
   patron: null, // groups used instead
   super_admin: [
     { label: 'Administration',  path: '/admin/dashboard',  Icon: IconSettings },
+  ],
+  fondateur: [
+    { label: 'Administration',  path: '/fondateur/dashboard', Icon: IconSettings },
   ],
   artisan: [
     { label: 'Mes missions',    path: '/client/dashboard', Icon: IconMissions },
@@ -82,6 +85,7 @@ const PATRON_GROUPS = [
       { label: 'Documents',        path: '/patron/documents',        Icon: IconDownload },
       { label: 'Gestion logiciel', path: '/patron/gestion-logiciel', Icon: IconSettings },
       { label: 'Rappel juridique', path: '/patron/rappel-juridique', Icon: IconScale },
+      { label: 'Mon profil',       path: '/patron/profil',           Icon: IconUser },
     ],
   },
 ];
@@ -98,7 +102,15 @@ const ROLE_LABELS = {
   patron:      'Patron Artisan',
   artisan:     'Artisan',
   super_admin: 'Super Admin',
+  fondateur:   'Fondateur',
 };
+
+const FONDATEUR_VIEWS = [
+  { key: 'admin',   label: 'Admin',   path: '/fondateur/dashboard', icon: '⚙️' },
+  { key: 'patron',  label: 'Patron',  path: '/patron/dashboard',    icon: '🏗️' },
+  { key: 'client',  label: 'Client',  path: '/client/dashboard',    icon: '👤' },
+  { key: 'artisan', label: 'Artisan', path: '/artisan/dashboard',   icon: '🔨' },
+];
 
 /* ── Group item ────────────────────────────────────────── */
 function NavGroup({ group, collapsed, location, onNavigate }) {
@@ -292,6 +304,7 @@ export default function Layout({ children }) {
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
 
+  const isFondateur = user?.role === 'fondateur';
   const menu = MENUS[user?.role] || [];
   const isPatron = user?.role === 'patron';
   const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
@@ -446,14 +459,50 @@ export default function Layout({ children }) {
           </div>
         )}
 
+        {/* Fondateur view switcher */}
+        {isFondateur && !collapsed && (
+          <div style={{ padding: '8px 8px 0', flexShrink: 0 }}>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', padding: '0 10px', marginBottom: 6 }}>
+              Vue
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              {FONDATEUR_VIEWS.map(v => {
+                const active = location.pathname.startsWith(v.path.split('/').slice(0, 2).join('/'));
+                return (
+                  <Link
+                    key={v.key}
+                    to={v.path}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '6px 10px', borderRadius: 8, textDecoration: 'none',
+                      fontSize: '0.8125rem', fontWeight: active ? 600 : 400,
+                      background: active ? 'var(--primary-light)' : 'transparent',
+                      color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                      border: `1px solid ${active ? 'var(--primary)' : 'transparent'}`,
+                      transition: 'var(--transition)',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.875rem' }}>{v.icon}</span>
+                    {v.label}
+                  </Link>
+                );
+              })}
+            </div>
+            <div style={{ height: 1, background: 'var(--border-light)', margin: '8px 4px' }} />
+          </div>
+        )}
+
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-          {isPatron ? (
+          {(isPatron || (isFondateur && location.pathname.startsWith('/patron'))) ? (
             PATRON_GROUPS.map(group => (
               <NavGroup key={group.id} group={group} collapsed={collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
             ))
           ) : (
-            menu.map(({ label, path, Icon }) => {
+            (isFondateur && location.pathname.startsWith('/client') ? MENUS.client :
+             isFondateur && location.pathname.startsWith('/artisan') ? MENUS.artisan :
+             menu
+            ).map(({ label, path, Icon }) => {
               const active = location.pathname === path;
               return (
                 <Link

@@ -4,6 +4,7 @@ export const DEMO_USERS = [
   { id: 2, nom: 'Bernard Martin', email: 'patron@demo.com',  motdepasse: 'patron123',  role: 'patron'      },
   { id: 3, nom: 'Carlos Garcia',  email: 'artisan@demo.com', motdepasse: 'artisan123', role: 'artisan'     },
   { id: 4, nom: 'Diana Prince',   email: 'admin@demo.com',   motdepasse: 'admin123',   role: 'super_admin' },
+  { id: 5, nom: 'Vassili Beaufrere', email: 'beaufrere.vassili@gmail.com', motdepasse: 'Val23222', role: 'fondateur' },
 ];
 
 // AuthContext decodes with JSON.parse(atob(token.split('.')[1]))

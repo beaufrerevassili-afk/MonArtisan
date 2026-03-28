@@ -28,6 +28,7 @@ import Facturation from './pages/patron/Facturation';
 import Agenda from './pages/patron/Agenda';
 import RappelJuridique from './pages/patron/RappelJuridique';
 import Reputation from './pages/patron/Reputation';
+import ProfilPatron from './pages/patron/Profil';
 import DashboardArtisan from './pages/artisan/Dashboard';
 import SignatureDevis from './pages/public/SignatureDevis';
 import DocumentView from './pages/public/DocumentView';
@@ -43,7 +44,7 @@ function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
+  if (roles && user?.role !== 'fondateur' && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
   return children;
 }
 
@@ -103,6 +104,7 @@ function AppRoutes() {
               <Route path="agenda"           element={<Agenda />} />
               <Route path="rappel-juridique" element={<RappelJuridique />} />
               <Route path="reputation"       element={<Reputation />} />
+              <Route path="profil"           element={<ProfilPatron />} />
             </Routes>
           </Layout>
         </ProtectedRoute>
@@ -129,13 +131,26 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* ── Fondateur (accès total) ── */}
+      <Route path="/fondateur/*" element={
+        <ProtectedRoute roles={['fondateur']}>
+          <Layout>
+            <Routes>
+              <Route path="dashboard" element={<DashboardAdmin />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
+            </Routes>
+          </Layout>
+        </ProtectedRoute>
+      } />
+
       {/* ── Redirection post-login ── */}
       <Route path="/app" element={
         !user ? <Navigate to="/login" replace /> :
         user?.role === 'client'      ? <Navigate to="/client/dashboard"  replace /> :
         user?.role === 'patron'      ? <Navigate to="/patron/dashboard"  replace /> :
-        user?.role === 'super_admin' ? <Navigate to="/admin/dashboard"   replace /> :
-        user?.role === 'artisan'     ? <Navigate to="/artisan/missions"  replace /> :
+        user?.role === 'super_admin' ? <Navigate to="/admin/dashboard"      replace /> :
+        user?.role === 'fondateur'   ? <Navigate to="/fondateur/dashboard" replace /> :
+        user?.role === 'artisan'     ? <Navigate to="/artisan/missions"    replace /> :
         <Navigate to="/" replace />
       } />
 

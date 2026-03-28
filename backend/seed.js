@@ -22,6 +22,7 @@ async function seedUsers() {
     { nom: 'Bernard Martin', email: 'patron@demo.com',   motdepasse: 'patron123',  role: 'patron',      verified: true  },
     { nom: 'Carlos Garcia',  email: 'artisan@demo.com',  motdepasse: 'artisan123', role: 'artisan',     verified: true, telephone: '0612345678', metier: 'Plomberie', siret: '123 456 789 00012', ville: 'Paris 11e', experience: '15 ans' },
     { nom: 'Diana Prince',   email: 'admin@demo.com',    motdepasse: 'admin123',   role: 'super_admin', verified: true  },
+    { nom: 'Vassili Beaufrere', email: 'beaufrere.vassili@gmail.com', motdepasse: 'Val23222', role: 'fondateur', verified: true },
     { nom: 'Éric Leroy',     email: 'artisan2@demo.com', motdepasse: 'artisan123', role: 'artisan',     verified: true, telephone: '0623456789', metier: 'Électricité', siret: '234 567 890 00023', ville: 'Paris 15e', experience: '10 ans' },
     { nom: 'Fatima Benali',  email: 'artisan3@demo.com', motdepasse: 'artisan123', role: 'artisan',     verified: true, telephone: '0634567890', metier: 'Peinture', siret: '345 678 901 00034', ville: 'Lyon 3e', experience: '8 ans' },
     { nom: 'Georges Petit',  email: 'client2@demo.com',  motdepasse: 'client123',  role: 'client',      verified: true  },
