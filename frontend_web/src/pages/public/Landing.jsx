@@ -110,10 +110,18 @@ function ArtisanCard({ artisan, onContact }) {
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 3, justifyContent: 'flex-end' }}>
-              <StarRatingDark note={artisan.note} size={11} />
-              <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0E0E1A', letterSpacing: '-0.01em' }}>{artisan.note}</span>
+              {artisan.nbAvis > 0 ? (
+                <>
+                  <StarRatingDark note={artisan.note} size={11} />
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0E0E1A', letterSpacing: '-0.01em' }}>{artisan.note}</span>
+                </>
+              ) : (
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#9898B8' }}>Nouveau</span>
+              )}
             </div>
-            <span style={{ fontSize: '0.6875rem', color: '#9898B8' }}>({artisan.nbAvis} avis)</span>
+            {artisan.nbAvis > 0 && (
+              <span style={{ fontSize: '0.6875rem', color: '#9898B8' }}>({artisan.nbAvis} avis)</span>
+            )}
           </div>
         </div>
 
@@ -136,12 +144,14 @@ function ArtisanCard({ artisan, onContact }) {
         {/* Footer: dispo + prix + CTA */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '4px 10px', borderRadius: 20, background: dispo.bg, color: dispo.color }}>
-              {dispo.label}
+            <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '4px 10px', borderRadius: 20, background: 'rgba(91,91,214,0.10)', color: '#5B5BD6' }}>
+              Disponible
             </span>
-            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0E0E1A', letterSpacing: '-0.02em' }}>
-              {artisan.prixHeure}€<span style={{ fontWeight: 400, color: '#9898B8', fontSize: '0.75rem' }}>/h</span>
-            </span>
+            {artisan.prixHeure != null && (
+              <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0E0E1A', letterSpacing: '-0.02em' }}>
+                {artisan.prixHeure}€<span style={{ fontWeight: 400, color: '#9898B8', fontSize: '0.75rem' }}>/h</span>
+              </span>
+            )}
           </div>
           <button
             style={{
@@ -401,7 +411,7 @@ export default function Landing() {
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', boxShadow: '0 0 6px #1DB954' }} />
             <span style={{ fontSize: '0.6875rem', color: '#4ADE80', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Vérifié</span>
           </div>
-          <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>10 000+ artisans certifiés partout en France</span>
+          <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>Artisans certifiés partout en France</span>
         </div>
 
         {/* Headline */}
@@ -496,17 +506,17 @@ export default function Landing() {
           )}
         </div>
 
-        {/* ══ STATS ══ */}
+        {/* ══ ENGAGEMENTS ══ */}
         <div className="hero-stats" style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(24px, 5vw, 56px)', marginTop: 56, flexWrap: 'wrap' }}>
           {[
-            { val: '10 000+', label: 'Artisans certifiés' },
-            { val: '98%',     label: 'Clients satisfaits' },
-            { val: '< 24h',   label: 'Délai devis moyen'  },
-            { val: '4,9 ★',   label: 'Note moyenne'       },
+            { icon: '🛡️', label: 'Artisans vérifiés' },
+            { icon: '⚡', label: 'Devis sous 24h'    },
+            { icon: '💳', label: 'Paiement sécurisé' },
+            { icon: '⭐', label: 'Avis authentiques' },
           ].map(s => (
-            <div key={s.label} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>{s.val}</p>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', marginTop: 5, fontWeight: 500, letterSpacing: '0.02em', textTransform: 'uppercase' }}>{s.label}</p>
+            <div key={s.label} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{s.icon}</span>
+              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -519,7 +529,7 @@ export default function Landing() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0E0E1A', letterSpacing: '-0.03em' }}>
-              {loading ? 'Recherche en cours…' : `${artisans.length} artisan${artisans.length > 1 ? 's' : ''} ${artisans.length > 1 ? 'disponibles' : 'disponible'}`}
+              {loading ? 'Recherche en cours…' : artisans.length > 0 ? `${artisans.length} artisan${artisans.length > 1 ? 's' : ''} trouvé${artisans.length > 1 ? 's' : ''}` : 'Artisans'}
             </h2>
             {(metier || ville) && (
               <p style={{ fontSize: '0.875rem', color: '#9898B8', marginTop: 4, fontWeight: 500 }}>
@@ -542,12 +552,27 @@ export default function Landing() {
         /* Empty */
         ) : artisans.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', background: '#fff', borderRadius: 24, border: '1px solid rgba(91,91,214,0.08)', boxShadow: '0 4px 24px rgba(14,14,26,0.06)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 16 }}>🔍</div>
-            <p style={{ fontWeight: 700, color: '#0E0E1A', fontSize: '1.125rem', marginBottom: 8, letterSpacing: '-0.02em' }}>Aucun artisan trouvé</p>
-            <p style={{ color: '#9898B8', fontSize: '0.9375rem' }}>Essayez d'élargir vos critères de recherche</p>
-            <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => { setMetier(''); setVille(''); setVilleInput(''); setDispo(''); setNoteMin(''); setTimeout(search, 50); }}>
-              Voir tous les artisans
-            </button>
+            {(metier || ville || noteMin) ? (
+              <>
+                <div style={{ fontSize: '3rem', marginBottom: 16 }}>🔍</div>
+                <p style={{ fontWeight: 700, color: '#0E0E1A', fontSize: '1.125rem', marginBottom: 8, letterSpacing: '-0.02em' }}>Aucun artisan trouvé</p>
+                <p style={{ color: '#9898B8', fontSize: '0.9375rem' }}>Essayez d'élargir vos critères de recherche</p>
+                <button className="btn-primary" style={{ marginTop: 20 }} onClick={() => { setMetier(''); setVille(''); setVilleInput(''); setDispo(''); setNoteMin(''); setTimeout(search, 50); }}>
+                  Voir tous les artisans
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '3rem', marginBottom: 16 }}>🚀</div>
+                <p style={{ fontWeight: 700, color: '#0E0E1A', fontSize: '1.25rem', marginBottom: 12, letterSpacing: '-0.02em' }}>La plateforme est en cours de lancement</p>
+                <p style={{ color: '#9898B8', fontSize: '0.9375rem', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
+                  Les premiers artisans vérifiés arrivent bientôt.<br />Vous êtes artisan ? Rejoignez-nous dès maintenant.
+                </p>
+                <button onClick={() => window.location.href = '/register'} className="btn-primary" style={{ padding: '12px 28px' }}>
+                  Rejoindre la plateforme →
+                </button>
+              </>
+            )}
           </div>
 
         /* Grid */
@@ -598,7 +623,7 @@ export default function Landing() {
                 Développez votre activité avec Artisans Pro
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
-                Rejoignez 10 000 artisans qui gèrent leur agenda, devis et factures depuis une seule plateforme.
+                Gérez votre agenda, vos devis et vos factures depuis une seule plateforme. Simple, rapide, professionnel.
               </p>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={() => navigate('/register')} className="btn-primary" style={{ padding: '13px 28px', fontSize: '0.9375rem', borderRadius: 14 }}>

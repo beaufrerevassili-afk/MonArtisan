@@ -86,24 +86,6 @@ const authLimiter = rateLimit({
 // ============================================================
 const resetTokens = new Map(); // token -> { userId, expiresAt }
 
-// ============================================================
-//  DONNÉES ARTISANS PUBLICS (landing page, sans auth)
-// ============================================================
-
-const artisansPublics = [
-  { id: 1,  nom: 'Carlos Garcia',    metier: 'Plomberie',    ville: 'Paris 11e',     note: 4.9, nbAvis: 127, disponibilite: 'aujourd_hui',  prixHeure: 65,  verified: true,  certifications: ['RGE', 'Qualibat'],      description: "Plombier certifié avec 15 ans d'expérience. Intervention rapide en urgence, 7j/7."     },
-  { id: 2,  nom: 'Éric Leroy',       metier: 'Électricité',  ville: 'Paris 15e',     note: 4.8, nbAvis: 98,  disponibilite: 'cette_semaine', prixHeure: 70,  verified: true,  certifications: ['CONSUEL', 'Qualifelec'], description: 'Électricien agréé, mise aux normes, dépannage et installation neuve.'                },
-  { id: 3,  nom: 'Fatima Benali',    metier: 'Peinture',     ville: 'Lyon 3e',       note: 4.7, nbAvis: 84,  disponibilite: 'ce_mois',      prixHeure: 45,  verified: true,  certifications: ['Qualibat'],             description: 'Peintre décorateur, ravalement façade, intérieur/extérieur.'                        },
-  { id: 4,  nom: 'Marc Dupuis',      metier: 'Carrelage',    ville: 'Marseille 6e',  note: 4.6, nbAvis: 61,  disponibilite: 'cette_semaine', prixHeure: 50,  verified: true,  certifications: ['Qualibat'],             description: 'Carreleur professionnel, pose de carrelage mural et au sol, salle de bain, cuisine.' },
-  { id: 5,  nom: 'Sophie Renaud',    metier: 'Menuiserie',   ville: 'Bordeaux',      note: 4.9, nbAvis: 143, disponibilite: 'aujourd_hui',  prixHeure: 60,  verified: true,  certifications: ['Qualibat', 'Artisan'],  description: 'Menuisière ébéniste, fabrication sur mesure, portes, fenêtres, parquet.'             },
-  { id: 6,  nom: 'Youssef Amrani',   metier: 'Maçonnerie',   ville: 'Paris 18e',     note: 4.5, nbAvis: 52,  disponibilite: 'ce_mois',      prixHeure: 55,  verified: false, certifications: [],                      description: 'Maçon polyvalent, gros œuvre, rénovation, extension de maison.'                    },
-  { id: 7,  nom: 'Lucie Girard',     metier: 'Chauffage',    ville: 'Toulouse',      note: 4.8, nbAvis: 77,  disponibilite: 'cette_semaine', prixHeure: 72,  verified: true,  certifications: ['RGE', 'QualiPAC'],     description: 'Technicienne chauffagiste, pompe à chaleur, climatisation, entretien chaudière.'     },
-  { id: 8,  nom: 'Karim Moussaoui',  metier: 'Serrurerie',   ville: 'Paris 20e',     note: 4.7, nbAvis: 119, disponibilite: 'aujourd_hui',  prixHeure: 80,  verified: true,  certifications: ['Artisan'],             description: 'Serrurier dépannage 24h/24, ouverture de porte, blindage, installation.'             },
-  { id: 9,  nom: 'Nathalie Poirier', metier: 'Jardinage',    ville: 'Nice',          note: 4.6, nbAvis: 38,  disponibilite: 'cette_semaine', prixHeure: 40,  verified: true,  certifications: ['Artisan'],             description: 'Jardinière paysagiste, entretien, taille, création de jardin.'                      },
-  { id: 10, nom: 'Thomas Blanc',     metier: 'Plomberie',    ville: 'Lyon 7e',       note: 4.4, nbAvis: 45,  disponibilite: 'cette_semaine', prixHeure: 60,  verified: false, certifications: [],                      description: 'Plombier sanitaire, installation et dépannage, chauffage central.'                  },
-  { id: 11, nom: 'Amélie Fontaine',  metier: 'Peinture',     ville: 'Paris 12e',     note: 4.8, nbAvis: 92,  disponibilite: 'ce_mois',      prixHeure: 48,  verified: true,  certifications: ['Qualibat'],            description: 'Peintre en bâtiment, enduits décoratifs, béton ciré, tadelakt.'                    },
-  { id: 12, nom: 'Rachid Boukhari',  metier: 'Électricité',  ville: 'Marseille 13e', note: 4.5, nbAvis: 63,  disponibilite: 'aujourd_hui',  prixHeure: 65,  verified: true,  certifications: ['CONSUEL'],             description: 'Électricien tous travaux, domotique, borne de recharge véhicule électrique.'         },
-];
 
 // ============================================================
 //  MIDDLEWARES AUTH
@@ -486,17 +468,59 @@ app.get('/dashboard/admin', authenticateToken, authorizeRole('super_admin'), asy
 //  ROUTE PUBLIQUE — ARTISANS (landing page, sans auth)
 // ============================================================
 
-app.get('/public/artisans', (req, res) => {
-  let results = [...artisansPublics];
-  const { q, metier, ville, disponibilite, noteMin } = req.query;
+app.get('/public/artisans', async (req, res) => {
+  try {
+    const { q, metier, ville, noteMin } = req.query;
 
-  if (q)            results = results.filter(a => [a.nom, a.metier, a.ville, a.description].some(s => s.toLowerCase().includes(q.toLowerCase())));
-  if (metier)       results = results.filter(a => a.metier === metier);
-  if (ville)        results = results.filter(a => a.ville.toLowerCase().includes(ville.toLowerCase()));
-  if (disponibilite) results = results.filter(a => a.disponibilite === disponibilite);
-  if (noteMin)      results = results.filter(a => a.note >= parseFloat(noteMin));
+    let sql = `
+      SELECT
+        u.id,
+        u.nom,
+        u.metier,
+        u.ville,
+        u.description,
+        u.verified,
+        u.experience,
+        ROUND(COALESCE(AVG(n.note), 0)::numeric, 1) AS note,
+        COUNT(n.id)::int AS nb_avis
+      FROM users u
+      LEFT JOIN notations n ON n.artisan_id = u.id
+      WHERE u.role = 'artisan'
+        AND u.statut_validation = 'validé'
+        AND (u.suspendu IS NULL OR u.suspendu = false)
+    `;
+    const params = [];
+    let idx = 1;
 
-  res.json({ artisans: results, total: results.length });
+    if (metier) { sql += ` AND u.metier = $${idx++}`; params.push(metier); }
+    if (ville)  { sql += ` AND u.ville ILIKE $${idx++}`; params.push(`%${ville}%`); }
+
+    sql += ' GROUP BY u.id ORDER BY u.verified DESC, AVG(n.note) DESC NULLS LAST';
+
+    let { rows } = await db.query(sql, params);
+
+    if (q) {
+      const ql = q.toLowerCase();
+      rows = rows.filter(a => [a.nom, a.metier, a.ville, a.description, a.experience].some(s => s && s.toLowerCase().includes(ql)));
+    }
+    if (noteMin) rows = rows.filter(a => a.note >= parseFloat(noteMin));
+
+    const artisans = rows.map(a => ({
+      id:          a.id,
+      nom:         a.nom,
+      metier:      a.metier,
+      ville:       a.ville,
+      description: a.description,
+      verified:    a.verified,
+      note:        parseFloat(a.note) || 0,
+      nbAvis:      a.nb_avis || 0,
+    }));
+
+    res.json({ artisans, total: artisans.length });
+  } catch (err) {
+    console.error('Erreur GET /public/artisans :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
 });
 
 // ============================================================
