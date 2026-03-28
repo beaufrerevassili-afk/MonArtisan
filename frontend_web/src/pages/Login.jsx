@@ -289,7 +289,7 @@ export default function Login() {
               ))}
             </div>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8125rem' }}>
-              +10 000 professionnels font confiance
+              Professionnels qui nous font confiance
             </span>
           </div>
         </div>
