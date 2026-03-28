@@ -378,7 +378,7 @@ export default function DashboardPatron() {
       })()}
 
       {/* Financial KPIs */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+      <div className="stats-grid">
         <KpiCard label="CA mensuel"   valeur={`${caMensuel.toLocaleString('fr-FR')} €`}       Icon={IconFinance}  color="blue"   sub={new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })} />
         <KpiCard label="CA annuel"    valeur={`${caAnnuel.toLocaleString('fr-FR')} €`}        Icon={IconTrendUp}  color="green"  sub={`exercice ${new Date().getFullYear()}`} />
         <KpiCard label="Marge nette"  valeur={`${margeNette} %`}                               Icon={IconDocument} color="green"  sub={`${benefice.toLocaleString('fr-FR')} €`} />
@@ -452,7 +452,7 @@ export default function DashboardPatron() {
         })()}
 
         {/* Bottom KPI row */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap: 12, marginTop: 20, paddingTop: 16, borderTop:'1px solid var(--border-light)' }}>
+        <div className="stats-grid" style={{ marginTop: 20, paddingTop: 16, borderTop:'1px solid var(--border-light)' }}>
           {METRICS.map(m => {
             const total = MONTHLY_DATA.reduce((s, d) => s + d[m.key], 0);
             const thisMonth = MONTHLY_DATA[new Date().getMonth()][m.key];

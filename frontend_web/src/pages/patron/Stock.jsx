@@ -284,7 +284,7 @@ export default function Stock() {
               <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#8E8E93' }}>✕</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid-2">
                 <div><label style={lbl}>Référence</label><input {...f('ref')} placeholder="MAT-001" style={inp}/></div>
                 <div><label style={lbl}>Désignation *</label><input {...f('designation')} required placeholder="Nom de l'article" style={inp}/></div>
                 <div>

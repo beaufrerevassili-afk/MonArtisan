@@ -613,9 +613,46 @@ export default function Layout({ children }) {
           </span>
           <NotifBell />
         </div>
-        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 16px' : '28px 32px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 14px 80px' : '28px 32px' }}>
           {children}
         </main>
+        {/* Mobile bottom nav */}
+        {isMobile && (
+          <nav style={{
+            display: 'flex',
+            background: 'var(--card)',
+            borderTop: '1px solid var(--border-light)',
+            padding: '6px 0 calc(6px + env(safe-area-inset-bottom))',
+            flexShrink: 0,
+            zIndex: 30,
+          }}>
+            {(isPatron ? [
+              { label: 'Accueil',    path: '/patron/dashboard', Icon: IconHome      },
+              { label: 'Missions',   path: '/patron/missions',  Icon: IconBuilding  },
+              { label: 'Finance',    path: '/patron/finance',   Icon: IconFinance   },
+              { label: 'RH',         path: '/patron/rh',        Icon: IconTeam      },
+              { label: 'Plus',       path: null,                Icon: IconMenu, action: () => setMobileOpen(true) },
+            ] : menu.slice(0, 5)).map(({ label, path, Icon, action }) => {
+              const active = path && (location.pathname === path || location.pathname.startsWith(path + '/'));
+              return (
+                <button
+                  key={label}
+                  onClick={() => action ? action() : path && navigate(path)}
+                  style={{
+                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 3, padding: '6px 4px', background: 'none', border: 'none',
+                    cursor: 'pointer', color: active ? 'var(--primary)' : 'var(--text-tertiary)',
+                    fontSize: '0.625rem', fontWeight: active ? 600 : 400,
+                    transition: 'color 0.15s',
+                  }}
+                >
+                  <Icon size={active ? 20 : 18} />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
       </div>
     </div>
   );

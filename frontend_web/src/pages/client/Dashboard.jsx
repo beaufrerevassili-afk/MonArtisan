@@ -305,7 +305,7 @@ export default function DashboardClient() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
+      <div className="stats-grid">
         {[
           { label: 'Missions total',  val: data?.resume?.missions_total     || 0, Icon: IconMissions, color: 'blue'   },
           { label: 'En attente',      val: data?.resume?.missions_en_attente || 0, Icon: IconClock,    color: 'orange' },

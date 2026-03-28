@@ -78,7 +78,7 @@ export default function ProfilPatron() {
       <div className="card" style={{ padding: 24 }}>
         <h2 style={{ marginBottom: 20 }}>Informations personnelles</h2>
         <form onSubmit={sauvegarder} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="grid-2">
             <div>
               <label className="label">Nom complet</label>
               <input className="input" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
@@ -92,7 +92,7 @@ export default function ProfilPatron() {
             <label className="label">Adresse email</label>
             <input className="input" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="grid-2">
             <div>
               <label className="label">Adresse</label>
               <input className="input" placeholder="12 rue de la Paix" value={form.adresse} onChange={e => setForm({ ...form, adresse: e.target.value })} />
@@ -135,7 +135,7 @@ export default function ProfilPatron() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="grid-2">
           <div>
             <label className="label">Nom de l'entreprise</label>
             <input className="input" value={form.nomEntreprise} onChange={e => setForm({ ...form, nomEntreprise: e.target.value })} />
@@ -163,7 +163,7 @@ export default function ProfilPatron() {
             <label className="label">Mot de passe actuel</label>
             <input className="input" type="password" placeholder="••••••••" style={{ maxWidth: 300 }} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="grid-2">
             <div>
               <label className="label">Nouveau mot de passe</label>
               <input className="input" type="password" placeholder="••••••••" />
