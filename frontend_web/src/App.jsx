@@ -38,7 +38,6 @@ import Missions from './pages/shared/Missions';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
-import ClientLayout from './components/layout/ClientLayout';
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -65,7 +64,7 @@ function AppRoutes() {
       {/* ── Client ── */}
       <Route path="/client/*" element={
         <ProtectedRoute roles={['client']}>
-          <ClientLayout>
+          <Layout>
             <Routes>
               <Route path="dashboard"   element={<DashboardClient />} />
               <Route path="devis"       element={<DevisClient />} />
@@ -79,7 +78,7 @@ function AppRoutes() {
               <Route path="missions"    element={<Missions />} />
               <Route path="*"           element={<Navigate to="dashboard" replace />} />
             </Routes>
-          </ClientLayout>
+          </Layout>
         </ProtectedRoute>
       } />
 
@@ -113,10 +112,12 @@ function AppRoutes() {
       {/* ── Artisan ── */}
       <Route path="/artisan/*" element={
         <ProtectedRoute roles={['artisan']}>
-          <Routes>
-            <Route path="dashboard" element={<DashboardArtisan />} />
-            <Route path="*"         element={<Navigate to="dashboard" replace />} />
-          </Routes>
+          <Layout>
+            <Routes>
+              <Route path="dashboard" element={<DashboardArtisan />} />
+              <Route path="*"         element={<Navigate to="dashboard" replace />} />
+            </Routes>
+          </Layout>
         </ProtectedRoute>
       } />
 

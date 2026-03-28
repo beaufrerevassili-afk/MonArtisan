@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import {
   IconDocument, IconCheck, IconX, IconPlus, IconDownload,
   IconClock, IconAlert, IconCalendar, IconUser,
@@ -42,11 +41,9 @@ function simulerOCR(fichier) {
 const TABS = ['Tableau de bord', 'Mes missions', 'Notes de frais', 'Frais chantier', 'Planning', 'Mes fiches de paie', 'Congés', 'Mon profil'];
 
 export default function ArtisanDashboard() {
-  const { user, token, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user, token } = useAuth();
   const [tab, setTab] = useState('Tableau de bord');
   const [preFraisChantierMission, setPreFraisChantierMission] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
   const [notesFrais, setNotesFrais] = useState([]);
   const [conges, setConges] = useState([]);
 
@@ -68,70 +65,26 @@ export default function ArtisanDashboard() {
   const congesEnAttente = mesConges.filter(c => c.statut === 'en_attente').length;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F2F2F7' }}>
-      {/* Top bar */}
-      <header style={{ background: '#fff', borderBottom: '1px solid #E5E5EA', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" fill="none"/></svg>
-          </div>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>Artisans</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
-          <span style={{ fontSize: 14, color: '#6E6E73' }}>Bonjour, {user?.nom?.split(' ')[0] || 'Artisan'}</span>
-          <button onClick={() => setShowProfile(p => !p)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#007AFF20', color: '#007AFF', border: '2px solid #007AFF40', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, cursor: 'pointer' }}>{initials}</button>
-
-          {showProfile && (
-            <div style={{ position: 'absolute', top: 44, right: 0, background: '#fff', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', border: '1px solid #F2F2F7', zIndex: 200, minWidth: 240, padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F2F2F7' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#007AFF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>{initials}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: '#1C1C1E' }}>{user?.nom || 'Artisan'}</div>
-                  <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 2 }}>{user?.email || 'artisan@demo.com'}</div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#34C759', marginTop: 2 }}>Artisan / Salarié</div>
-                </div>
-              </div>
-              {[
-                { label: 'Mon profil', icon: '👤', action: () => { setShowProfile(false); setTab('Tableau de bord'); } },
-                { label: 'Mes fiches de paie', icon: '📄', action: () => { setShowProfile(false); setTab('Mes fiches de paie'); } },
-                { label: 'Mes congés', icon: '🏖️', action: () => { setShowProfile(false); setTab('Congés'); } },
-              ].map(({ label, icon, action }) => (
-                <button key={label} onClick={action} style={{ width: '100%', textAlign: 'left', padding: '9px 10px', background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: '#1C1C1E' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#F8F9FA'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                  <span>{icon}</span>{label}
-                </button>
-              ))}
-              <div style={{ borderTop: '1px solid #F2F2F7', marginTop: 8, paddingTop: 8 }}>
-                <button onClick={() => { logout?.(); navigate('/login'); }} style={{ width: '100%', textAlign: 'left', padding: '9px 10px', background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: '#FF3B30', fontWeight: 600 }}>
-                  <span>🚪</span> Se déconnecter
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: '#fff', borderRadius: 14, padding: 4, marginBottom: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflowX: 'auto' }}>
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              padding: '8px 16px', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s',
-              background: tab === t ? '#007AFF' : 'transparent',
-              color: tab === t ? '#fff' : '#6E6E73',
-            }}>{t}</button>
-          ))}
-        </div>
-
-        {tab === 'Tableau de bord' && <TabDashboard initials={initials} user={user} totalFrais={totalFraisApprouves} fraisEnAttente={fraisEnAttente} congesEnAttente={congesEnAttente} onTabChange={setTab} headers={headers} />}
-        {tab === 'Mes missions' && <TabMissions headers={headers} onAddFrais={() => setTab('Notes de frais')} onAddFraisChantier={(m) => { setPreFraisChantierMission(m); setTab('Frais chantier'); }} />}
-        {tab === 'Notes de frais' && <TabNotesFrais notes={mesNotes} setNotes={setNotesFrais} headers={headers} />}
-        {tab === 'Frais chantier' && <TabFraisChantier headers={headers} preMission={preFraisChantierMission} onClearPreMission={() => setPreFraisChantierMission(null)} />}
-        {tab === 'Planning' && <TabPlanning headers={headers} />}
-        {tab === 'Mes fiches de paie' && <TabFichesPaie user={user} />}
-        {tab === 'Congés' && <TabConges conges={mesConges} setConges={setConges} headers={headers} />}
-        {tab === 'Mon profil' && <TabProfil user={user} />}
+    <div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, background: 'var(--card)', borderRadius: 14, padding: 4, marginBottom: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflowX: 'auto' }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: '8px 16px', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s',
+            background: tab === t ? 'var(--primary)' : 'transparent',
+            color: tab === t ? '#fff' : 'var(--text-secondary)',
+          }}>{t}</button>
+        ))}
       </div>
+
+      {tab === 'Tableau de bord' && <TabDashboard initials={initials} user={user} totalFrais={totalFraisApprouves} fraisEnAttente={fraisEnAttente} congesEnAttente={congesEnAttente} onTabChange={setTab} headers={headers} />}
+      {tab === 'Mes missions' && <TabMissions headers={headers} onAddFrais={() => setTab('Notes de frais')} onAddFraisChantier={(m) => { setPreFraisChantierMission(m); setTab('Frais chantier'); }} />}
+      {tab === 'Notes de frais' && <TabNotesFrais notes={mesNotes} setNotes={setNotesFrais} headers={headers} />}
+      {tab === 'Frais chantier' && <TabFraisChantier headers={headers} preMission={preFraisChantierMission} onClearPreMission={() => setPreFraisChantierMission(null)} />}
+      {tab === 'Planning' && <TabPlanning headers={headers} />}
+      {tab === 'Mes fiches de paie' && <TabFichesPaie user={user} />}
+      {tab === 'Congés' && <TabConges conges={mesConges} setConges={setConges} headers={headers} />}
+      {tab === 'Mon profil' && <TabProfil user={user} />}
     </div>
   );
 }

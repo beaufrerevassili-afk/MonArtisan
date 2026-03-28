@@ -5,7 +5,7 @@ import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
   IconDownload, IconBox, IconBell, IconSearch, IconCalendar, IconCreditCard,
-  IconChevronDown, IconScale, IconStar, IconUser,
+  IconChevronDown, IconScale, IconStar, IconUser, IconMessage, IconGift,
 } from '../ui/Icons';
 
 /* ── Inline icon helpers ───────────────────────────────── */
@@ -31,8 +31,15 @@ function IconMoon({ size = 16 }) {
 /* ── Menu structure ────────────────────────────────────── */
 const MENUS = {
   client: [
-    { label: 'Tableau de bord', path: '/client/dashboard', Icon: IconHome },
-    { label: 'Mes missions',    path: '/client/missions',  Icon: IconMissions },
+    { label: 'Tableau de bord',    path: '/client/dashboard',  Icon: IconHome       },
+    { label: 'Trouver un artisan', path: '/client/recherche',  Icon: IconSearch     },
+    { label: 'Mes devis',          path: '/client/devis',       Icon: IconDocument   },
+    { label: 'Travaux passés',     path: '/client/travaux',     Icon: IconMissions   },
+    { label: 'Mes avis',           path: '/client/avis',        Icon: IconStar       },
+    { label: 'Messagerie',         path: '/client/messagerie',  Icon: IconMessage    },
+    { label: 'Paiements',          path: '/client/paiements',   Icon: IconCreditCard },
+    { label: 'Parrainage',         path: '/client/parrainage',  Icon: IconGift       },
+    { label: 'Mon profil',         path: '/client/profil',      Icon: IconUser       },
   ],
   patron: null, // groups used instead
   super_admin: [
@@ -42,7 +49,9 @@ const MENUS = {
     { label: 'Administration',  path: '/fondateur/dashboard', Icon: IconSettings },
   ],
   artisan: [
-    { label: 'Mes missions',    path: '/client/dashboard', Icon: IconMissions },
+    { label: 'Tableau de bord', path: '/artisan/dashboard', Icon: IconHome    },
+    { label: 'Mes missions',    path: '/artisan/dashboard', Icon: IconMissions },
+    { label: 'Mon profil',      path: '/artisan/dashboard', Icon: IconUser     },
   ],
 };
 
