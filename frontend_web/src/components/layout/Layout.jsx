@@ -341,8 +341,9 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside style={{
-        width: isMobile ? 'var(--sidebar-width)' : (collapsed ? 64 : 'var(--sidebar-width)'),
-        minWidth: isMobile ? 'var(--sidebar-width)' : (collapsed ? 64 : 'var(--sidebar-width)'),
+        // Sur mobile : position fixed → hors du flux flex → width 0 pour ne pas pousser le contenu
+        width:    isMobile ? 0 : (collapsed ? 64 : 'var(--sidebar-width)'),
+        minWidth: isMobile ? 0 : (collapsed ? 64 : 'var(--sidebar-width)'),
         background: 'var(--card)',
         borderRight: '1px solid var(--border-light)',
         display: 'flex',
@@ -353,6 +354,7 @@ export default function Layout({ children }) {
         zIndex: 50,
         ...(isMobile ? {
           position: 'fixed',
+          width: 'var(--sidebar-width)',   // largeur réelle de la sidebar elle-même
           top: 0, bottom: 0, left: 0,
           transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
         } : {}),
