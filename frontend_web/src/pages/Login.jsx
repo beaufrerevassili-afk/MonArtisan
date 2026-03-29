@@ -456,7 +456,7 @@ export default function Login() {
           </div>
 
           {/* Demo accounts */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div className="grid-2" style={{ gap: 8 }}>
             {COMPTES_DEMO.map(c => (
               <button
                 key={c.email}

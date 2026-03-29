@@ -200,7 +200,7 @@ function NavGroup({ group, collapsed, location, onNavigate }) {
 }
 
 /* ── Notification bell ─────────────────────────────────── */
-function NotifBell() {
+function NotifBell({ isMobile }) {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState(DEMO_NOTIFS);
   const ref = useRef(null);
@@ -242,12 +242,12 @@ function NotifBell() {
       </button>
 
       {open && (
-        <div style={{
+        <div className="notif-dropdown" style={{
           position: 'absolute', top: 'calc(100% + 8px)', right: 0,
           width: 320, background: 'var(--card)',
           border: '1px solid var(--border)', borderRadius: 12,
           boxShadow: 'var(--shadow-md)', zIndex: 100,
-          animation: 'slideUp 0.15s ease-out',
+          animation: 'slideUpFade 0.15s ease-out',
           overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border-light)' }}>
@@ -590,30 +590,33 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Top bar */}
-        <div style={{ height: 48, display: 'flex', alignItems: 'center', padding: '0 20px', borderBottom: '1px solid var(--border-light)', background: 'var(--card)', flexShrink: 0, gap: 8, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+        <div style={{ height: 48, display: 'flex', alignItems: 'center', padding: isMobile ? '0 12px' : '0 20px', borderBottom: '1px solid var(--border-light)', background: 'var(--card)', flexShrink: 0, gap: 6, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
           {isMobile && (
             <button
               onClick={() => setMobileOpen(o => !o)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px', borderRadius: 6, display: 'flex', alignItems: 'center' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '6px', borderRadius: 8, display: 'flex', alignItems: 'center', flexShrink: 0, minWidth: 32, minHeight: 32, justifyContent: 'center' }}
             >
               <IconMenu size={18} />
             </button>
           )}
           <button
             onClick={() => navigate(-1)}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.8125rem', fontWeight: 500, padding: '4px 8px', borderRadius: 6, transition: 'var(--transition)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.8125rem', fontWeight: 500, padding: '6px 8px', borderRadius: 8, transition: 'var(--transition)', flexShrink: 0, minHeight: 32 }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.color = 'var(--primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
-            Retour
+            {!isMobile && <span className="topbar-back-text">Retour</span>}
           </button>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flex: 1 }}>
-            {location.pathname.split('/').filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ')}
-          </span>
-          <NotifBell />
+          {!isMobile && (
+            <span className="topbar-breadcrumb" style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {location.pathname.split('/').filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ')}
+            </span>
+          )}
+          {isMobile && <span style={{ flex: 1 }} />}
+          <NotifBell isMobile={isMobile} />
         </div>
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 14px 80px' : '28px 32px' }}>
           {children}

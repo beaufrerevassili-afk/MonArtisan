@@ -452,7 +452,7 @@ export default function Landing() {
         </div>
 
         {/* ══ FILTER PILLS ══ */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 10 }} onClick={e => e.stopPropagation()}>
+        <div className="filters-row" style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 10 }} onClick={e => e.stopPropagation()}>
 
           {/* Ville */}
           <div style={{ position: 'relative' }}>
@@ -577,7 +577,7 @@ export default function Landing() {
 
         /* Grid */
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+          <div className="artisan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
             {artisans.map((a, i) => (
               <div key={a.id} className="reveal" style={{ transitionDelay: `${(i % 4) * 0.06}s` }}>
                 <ArtisanCard artisan={a} onContact={setSelectedArtisan} />
