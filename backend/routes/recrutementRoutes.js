@@ -141,29 +141,54 @@ function mapCandidature(r) {
 //  ROUTES PUBLIQUES
 // ═══════════════════════════════════════════════════════════
 
-// GET /recrutement/annonces — liste des annonces actives
+// GET /recrutement/annonces — liste des annonces actives (recherche + pagination)
 router.get('/annonces', async (req, res) => {
   try {
-    const { poste, localisation, typeContrat } = req.query;
-    let sql = `
-      SELECT a.*,
-        u.nom       AS nom_entreprise_user,
-        COUNT(c.id) AS nb_candidatures
+    const { q, localisation, typeContrat, salaireMin, page = 1, limit = 20 } = req.query;
+    const params = [];
+    let idx = 1;
+    let where = `WHERE a.statut = 'active'`;
+
+    // Recherche full-text sur titre + poste + description + compétences
+    if (q && q.trim()) {
+      where += ` AND (a.titre ILIKE $${idx} OR a.poste ILIKE $${idx} OR a.description ILIKE $${idx} OR a.competences ILIKE $${idx})`;
+      params.push(`%${q.trim()}%`); idx++;
+    }
+    if (localisation && localisation.trim()) {
+      where += ` AND a.localisation ILIKE $${idx++}`;
+      params.push(`%${localisation.trim()}%`);
+    }
+    if (typeContrat) {
+      where += ` AND a.type_contrat = $${idx++}`;
+      params.push(typeContrat);
+    }
+    if (salaireMin) {
+      where += ` AND a.salaire_min >= $${idx++}`;
+      params.push(parseFloat(salaireMin));
+    }
+
+    // Total pour pagination
+    const countSql = `SELECT COUNT(*) FROM annonces_recrutement a ${where}`;
+    const { rows: countRows } = await db.query(countSql, params);
+    const total = parseInt(countRows[0].count);
+
+    // Données paginées
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const sql = `
+      SELECT a.*, u.nom AS nom_entreprise_user, COUNT(c.id) AS nb_candidatures
       FROM annonces_recrutement a
       LEFT JOIN users u ON u.id = a.patron_id
       LEFT JOIN candidatures_recrutement c ON c.annonce_id = a.id
-      WHERE a.statut = 'active'
+      ${where}
+      GROUP BY a.id, u.nom
+      ORDER BY a.created_at DESC
+      LIMIT $${idx++} OFFSET $${idx++}
     `;
-    const params = [];
-    let idx = 1;
-    if (poste)       { sql += ` AND a.poste ILIKE $${idx++}`;        params.push(`%${poste}%`); }
-    if (localisation){ sql += ` AND a.localisation ILIKE $${idx++}`; params.push(`%${localisation}%`); }
-    if (typeContrat) { sql += ` AND a.type_contrat = $${idx++}`;      params.push(typeContrat); }
-    sql += ' GROUP BY a.id, u.nom ORDER BY a.created_at DESC';
+    params.push(parseInt(limit), offset);
 
     const { rows } = await db.query(sql, params);
     const annonces = rows.map(r => ({ ...mapAnnonce(r), nomEntreprise: r.nom_entreprise || r.nom_entreprise_user || 'Entreprise BTP' }));
-    res.json({ annonces, total: annonces.length });
+    res.json({ annonces, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
   } catch (err) {
     console.error('GET /recrutement/annonces:', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
