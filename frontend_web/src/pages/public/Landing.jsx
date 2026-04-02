@@ -412,7 +412,7 @@ export default function Landing() {
           </div>
 
           {/* Recrutement nav link */}
-          <button onClick={() => setOffresModal(true)}
+          <button onClick={() => navigate('/recrutement')}
             style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', borderRadius: 20, padding: '5px 14px 5px 10px', cursor: 'pointer', transition: 'all 0.15s', backdropFilter: 'blur(8px)' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor = 'rgba(165,165,255,0.3)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.13)'; }}>
