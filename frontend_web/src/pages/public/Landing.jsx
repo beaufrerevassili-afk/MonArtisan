@@ -399,15 +399,29 @@ export default function Landing() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(20px, 5vw, 60px)', height: 64,
       }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(91,91,214,0.4)' }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.7)"/>
-            </svg>
+        {/* Logo + Nav links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(91,91,214,0.4)' }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="white" stroke="none">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.7)"/>
+              </svg>
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '1.0625rem', color: '#fff', letterSpacing: '-0.025em' }}>Artisans<span style={{ background: 'linear-gradient(90deg, #A5A5FF, #C084FC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span></span>
           </div>
-          <span style={{ fontWeight: 800, fontSize: '1.0625rem', color: '#fff', letterSpacing: '-0.025em' }}>Artisans<span style={{ background: 'linear-gradient(90deg, #A5A5FF, #C084FC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span></span>
+
+          {/* Recrutement nav link */}
+          <button onClick={() => setOffresModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', borderRadius: 20, padding: '5px 14px 5px 10px', cursor: 'pointer', transition: 'all 0.15s', backdropFilter: 'blur(8px)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor = 'rgba(165,165,255,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.13)'; }}>
+            <span style={{ fontSize: '1rem' }}>👷</span>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.01em' }}>Ils recrutent</span>
+            {annonces.length > 0 && (
+              <span style={{ background: '#5B5BD6', color: '#fff', fontSize: '0.625rem', fontWeight: 800, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.02em' }}>{annonces.length}</span>
+            )}
+          </button>
         </div>
 
         {/* Actions */}
@@ -550,31 +564,6 @@ export default function Landing() {
       {/* ══════════════════ RESULTS ══════════════════ */}
       <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(32px, 5vw, 56px) clamp(20px, 5vw, 60px) 80px' }}>
 
-        {/* ══ RECRUTEMENT BANNER ══ */}
-        <div style={{ marginBottom: 28, borderRadius: 18, background: 'linear-gradient(135deg, #F0F0FF 0%, #F8F0FF 100%)', border: '1px solid rgba(91,91,214,0.15)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 13, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0, boxShadow: '0 4px 12px rgba(91,91,214,0.35)' }}>👷</div>
-            <div>
-              <p style={{ fontWeight: 800, fontSize: '0.9375rem', color: '#0E0E1A', marginBottom: 2, letterSpacing: '-0.015em' }}>
-                Ils recrutent en ce moment
-              </p>
-              <p style={{ fontSize: '0.8125rem', color: '#6B6B8A' }}>
-                {annonces.length > 0 ? `${annonces.length} offre${annonces.length > 1 ? 's' : ''} d'emploi dans le BTP` : 'Les offres d\'emploi BTP arrivent bientôt'}
-              </p>
-            </div>
-          </div>
-          {annonces.length > 0 ? (
-            <button onClick={() => setOffresModal(true)}
-              style={{ padding: '10px 22px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: '0.875rem', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(91,91,214,0.35)', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ''; }}>
-              Voir les offres →
-            </button>
-          ) : (
-            <span style={{ fontSize: '0.8125rem', color: '#9898B8', fontWeight: 600, padding: '8px 16px', background: 'rgba(91,91,214,0.08)', borderRadius: 10 }}>Bientôt disponible</span>
-          )}
-        </div>
-
         {/* Section header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
           <div>
@@ -703,6 +692,19 @@ export default function Landing() {
               <button onClick={() => setOffresModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#8E8E93', lineHeight: 1 }}>×</button>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {annonces.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: 16 }}>👷</div>
+                  <p style={{ fontWeight: 800, fontSize: '1.125rem', color: '#0E0E1A', marginBottom: 8 }}>Aucune offre pour le moment</p>
+                  <p style={{ color: '#9898B8', fontSize: '0.9375rem', maxWidth: 380, margin: '0 auto 24px', lineHeight: 1.6 }}>
+                    Les entreprises du bâtiment publient ici leurs offres d'emploi. Revenez bientôt !
+                  </p>
+                  <button onClick={() => { setOffresModal(false); navigate('/login'); }}
+                    style={{ padding: '10px 22px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: '0.875rem' }}>
+                    Vous êtes une entreprise ? Publier une offre →
+                  </button>
+                </div>
+              )}
               {annonces.map(a => {
                 const contratColor = { CDI:'#5B5BD6', CDD:'#0891B2', 'Intérim':'#D97706', Alternance:'#059669', Stage:'#DB2777', Freelance:'#7C3AED' }[a.typeContrat] || '#5B5BD6';
                 return (
