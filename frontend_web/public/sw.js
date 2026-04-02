@@ -1,55 +1,46 @@
 /* Service Worker — Artisans ERP */
-const CACHE_NAME = 'artisans-v1';
-
-// Assets to cache on install (app shell)
-const STATIC_ASSETS = ['/', '/index.html'];
+const CACHE_NAME = 'artisans-v3';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
-  );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
+// Network-first for everything: always serve fresh HTML/JS
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API calls: network-first, fall back to cache
-  if (url.pathname.startsWith('/api') || url.port === '3000') {
+  // Only intercept same-origin GET requests for navigation (HTML)
+  if (request.method !== 'GET') return;
+  if (url.origin !== self.location.origin) return;
+
+  // For HTML navigation requests: network-first, no caching
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // For hashed assets (/assets/...): cache-first (safe, immutable)
+  if (url.pathname.startsWith('/assets/')) {
     event.respondWith(
-      fetch(request)
-        .then(response => {
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return fetch(request).then(response => {
           if (response.ok) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           }
           return response;
-        })
-        .catch(() => caches.match(request))
+        });
+      })
     );
-    return;
   }
-
-  // Static assets: cache-first
-  event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response => {
-        if (response.ok && request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-        }
-        return response;
-      });
-    })
-  );
 });
