@@ -52,6 +52,8 @@ import ProfilPatron from './pages/patron/Profil';
 import DashboardArtisan from './pages/artisan/Dashboard';
 import CGU from './pages/public/CGU';
 import RecrutementPage from './pages/public/RecrutementPage';
+import SecteurSelect from './pages/public/SecteurSelect';
+import SecteurLanding from './pages/public/SecteurLanding';
 import SignatureDevis from './pages/public/SignatureDevis';
 import DocumentView from './pages/public/DocumentView';
 import ForgotPassword from './pages/ForgotPassword';
@@ -79,7 +81,8 @@ function AppRoutes() {
   return (
     <Routes>
       {/* ── Routes publiques ── */}
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<SecteurSelect />} />
+      <Route path="/btp" element={<Landing />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />
@@ -88,6 +91,8 @@ function AppRoutes() {
       <Route path="/documents/:type/:id" element={<DocumentView />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      {/* ── Landings sectorielles (route dynamique, après les routes fixes) ── */}
+      <Route path="/:secteur" element={<SecteurLanding />} />
 
       {/* ── Client ── */}
       <Route path="/client/*" element={
