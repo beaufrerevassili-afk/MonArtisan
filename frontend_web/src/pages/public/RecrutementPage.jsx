@@ -200,16 +200,13 @@ export default function RecrutementPage() {
   return (
     <div style={{ height:'100vh',background:'#fff',fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif",color:'#0A0A0A',display:'flex',flexDirection:'column',overflow:'hidden' }}>
       {/* Nav */}
-      <nav style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 clamp(20px,5vw,56px)',height:56,borderBottom:'1px solid #F0F0F0',background:'#fff',flexShrink:0,zIndex:100 }}>
-        <button onClick={()=>navigate('/')} style={{ display:'flex',alignItems:'center',gap:8,background:'none',border:'none',cursor:'pointer' }}>
-          <div style={{ width:28,height:28,borderRadius:7,background:'#0A0A0A',display:'flex',alignItems:'center',justifyContent:'center' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.55)"/></svg>
-          </div>
-          <span style={{ fontWeight:700,fontSize:'0.9rem',color:'#0A0A0A',letterSpacing:'-0.025em' }}>Artisans Pro</span>
+      <nav style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 clamp(20px,5vw,48px)',height:56,borderBottom:'1px solid #E8E7E4',background:'rgba(255,255,255,0.95)',backdropFilter:'blur(20px)',flexShrink:0,zIndex:100 }}>
+        <button onClick={()=>navigate('/')} style={{ background:'none',border:'none',cursor:'pointer',fontSize:17,fontWeight:800,color:'#0A0A0A',letterSpacing:'-0.05em',display:'flex',alignItems:'center',gap:2,fontFamily:'inherit' }}>
+          Artisans<span style={{ color:'#C9A96E' }}>.</span>
         </button>
-        <div style={{ display:'flex',gap:6 }}>
-          <button onClick={()=>navigate('/login')} style={{ background:'none',border:'1px solid #E8E8E8',cursor:'pointer',padding:'7px 16px',borderRadius:8,fontSize:'0.8125rem',fontWeight:500,color:'#555',transition:'all .15s' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='#0A0A0A';e.currentTarget.style.color='#0A0A0A';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#E8E8E8';e.currentTarget.style.color='#555';}}>Se connecter</button>
-          <button onClick={()=>navigate('/register')} style={{ background:'#0A0A0A',border:'none',cursor:'pointer',padding:'7px 16px',borderRadius:8,fontSize:'0.8125rem',fontWeight:600,color:'#fff',transition:'opacity .15s' }} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Créer un compte</button>
+        <div style={{ display:'flex',gap:6,alignItems:'center' }}>
+          <button onClick={()=>navigate('/login')} style={{ background:'none',border:'1px solid #E8E7E4',cursor:'pointer',padding:'7px 16px',borderRadius:100,fontSize:'0.8rem',fontWeight:500,color:'#6B6B6B',transition:'all .15s' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='#0A0A0A';e.currentTarget.style.color='#0A0A0A';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#E8E7E4';e.currentTarget.style.color='#6B6B6B';}}>Se connecter</button>
+          <button onClick={()=>navigate('/register')} style={{ background:'#0A0A0A',border:'none',cursor:'pointer',padding:'7px 20px',borderRadius:100,fontSize:'0.8rem',fontWeight:600,color:'#fff',transition:'opacity .15s' }} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Créer un compte</button>
         </div>
       </nav>
 
