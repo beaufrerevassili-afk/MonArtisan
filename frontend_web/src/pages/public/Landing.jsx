@@ -67,10 +67,14 @@ function ArtisanCard({ artisan, onContact }) {
   return (
     <div
       className="artisan-card"
+      role="button"
+      tabIndex={0}
+      aria-label={`Contacter ${artisan.nom}, ${artisan.metier}`}
       style={{ transform: hovered ? 'translateY(-6px)' : 'translateY(0)', boxShadow: hovered ? `0 24px 60px rgba(0,0,0,0.12), 0 0 0 2px ${accentColor}22` : undefined }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onContact(artisan)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onContact(artisan); } }}
     >
       {/* Gradient accent bar */}
       <div style={{ height: 4, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}99)` }} />
@@ -270,9 +274,29 @@ export default function Landing() {
   const [searched, setSearched]       = useState(false);
   const [selectedArtisan, setSelectedArtisan] = useState(null);
   const [metierOpen, setMetierOpen]   = useState(false);
+  const [annonces, setAnnonces]       = useState([]);
+  const [annonceModal, setAnnonceModal] = useState(null);
+  const [candidatureForm, setCandidatureForm] = useState({ nom:'', prenom:'', email:'', telephone:'', lettre:'', cvTexte:'' });
+  const [candidatureStatus, setCandidatureStatus] = useState(''); // 'sending' | 'ok' | 'error' | ''
   const [dispoOpen, setDispoOpen]     = useState(false);
   const [noteOpen, setNoteOpen]       = useState(false);
   const resultsRef = useRef(null);
+
+  useEffect(() => {
+    axios.get(`${API}/recrutement/annonces`).then(r => setAnnonces(r.data.annonces || [])).catch(() => {});
+  }, []);
+
+  async function postuler(e) {
+    e.preventDefault();
+    if (!annonceModal) return;
+    setCandidatureStatus('sending');
+    try {
+      await axios.post(`${API}/recrutement/annonces/${annonceModal.id}/candidatures`, candidatureForm);
+      setCandidatureStatus('ok');
+    } catch (err) {
+      setCandidatureStatus(err.response?.data?.erreur || 'error');
+    }
+  }
 
   useEffect(() => {
     const obs = new IntersectionObserver(entries => {
@@ -610,6 +634,71 @@ export default function Landing() {
           </div>
         )}
 
+        {/* ══ ILS RECRUTENT ══ */}
+        {annonces.length > 0 && (
+          <div className="reveal" style={{ marginTop: 72 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(91,91,214,0.08)', border: '1px solid rgba(91,91,214,0.15)', borderRadius: 24, padding: '5px 14px', marginBottom: 10 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#5B5BD6', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Offres d'emploi BTP</span>
+                </div>
+                <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 900, color: '#0E0E1A', letterSpacing: '-0.04em', lineHeight: 1.15, margin: 0 }}>
+                  Ils recrutent<span style={{ color: '#5B5BD6' }}> en ce moment</span>
+                </h2>
+                <p style={{ color: '#9898B8', fontSize: '1rem', marginTop: 8 }}>
+                  {annonces.length} offre{annonces.length > 1 ? 's' : ''} d'emploi publiée{annonces.length > 1 ? 's' : ''} par des entreprises du bâtiment
+                </p>
+              </div>
+            </div>
+
+            {/* Grid offres */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+              {annonces.map(a => {
+                const contratColor = { CDI:'#5B5BD6', CDD:'#0891B2', Intérim:'#D97706', Alternance:'#059669', Stage:'#DB2777', Freelance:'#7C3AED' }[a.typeContrat] || '#5B5BD6';
+                return (
+                  <div key={a.id}
+                    onClick={() => { setAnnonceModal(a); setCandidatureForm({ nom:'', prenom:'', email:'', telephone:'', lettre:'', cvTexte:'' }); setCandidatureStatus(''); }}
+                    style={{ background: '#fff', borderRadius: 18, padding: '20px', border: '1px solid rgba(91,91,214,0.08)', boxShadow: '0 4px 16px rgba(14,14,26,0.05)', cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(14,14,26,0.12)'; e.currentTarget.style.borderColor = 'rgba(91,91,214,0.25)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(14,14,26,0.05)'; e.currentTarget.style.borderColor = 'rgba(91,91,214,0.08)'; }}>
+                    {/* Badge contrat */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: contratColor + '18', color: contratColor, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                        {a.typeContrat}
+                      </span>
+                      <span style={{ fontSize: '0.6875rem', color: '#9898B8', fontWeight: 500 }}>
+                        {new Date(a.creeLe).toLocaleDateString('fr-FR', { day:'2-digit', month:'short' })}
+                      </span>
+                    </div>
+                    {/* Titre */}
+                    <h3 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 800, color: '#0E0E1A', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+                      {a.titre}
+                    </h3>
+                    {/* Entreprise */}
+                    <p style={{ margin: '0 0 12px', fontSize: '0.875rem', fontWeight: 600, color: '#5B5BD6' }}>
+                      🏢 {a.nomEntreprise}
+                    </p>
+                    {/* Infos */}
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: '0.8125rem', color: '#9898B8', marginBottom: 14 }}>
+                      <span>📍 {a.localisation}</span>
+                      {a.salaireMin && <span>💶 {a.salaireMin.toLocaleString('fr-FR')}–{a.salaireMax?.toLocaleString('fr-FR') || '?'} €/mois</span>}
+                      {a.experience && <span>🎯 {a.experience}</span>}
+                    </div>
+                    {/* Extrait description */}
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: '#6B6B8A', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {a.description}
+                    </p>
+                    <div style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#5B5BD6' }}>Voir & postuler →</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ══ CTA section ══ */}
         {!loading && (
           <div className="reveal" style={{ marginTop: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #0A0A14 0%, #12103A 50%, #1E0A3C 100%)', padding: 'clamp(40px, 6vw, 64px) clamp(24px, 5vw, 56px)', textAlign: 'center' }}>
@@ -637,6 +726,112 @@ export default function Landing() {
           </div>
         )}
       </div>
+
+      {/* ══ MODAL CANDIDATURE ══ */}
+      {annonceModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}
+          onClick={e => { if (e.target === e.currentTarget) setAnnonceModal(null); }}>
+          <div style={{ background: '#fff', borderRadius: 24, width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)' }}>
+            {/* Header */}
+            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid #F2F2F7' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, paddingRight: 16 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#E3F2FD', color: '#1565C0' }}>{annonceModal.typeContrat}</span>
+                    {annonceModal.dateDebut && <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: '#F2F2F7', color: '#6E6E73' }}>Démarrage : {new Date(annonceModal.dateDebut).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' })}</span>}
+                  </div>
+                  <h2 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: 900, color: '#0E0E1A', letterSpacing: '-0.03em' }}>{annonceModal.titre}</h2>
+                  <p style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#5B5BD6' }}>🏢 {annonceModal.nomEntreprise}</p>
+                  <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: '0.8125rem', color: '#9898B8', flexWrap: 'wrap' }}>
+                    <span>📍 {annonceModal.localisation}</span>
+                    {annonceModal.salaireMin && <span>💶 {annonceModal.salaireMin.toLocaleString('fr-FR')} – {annonceModal.salaireMax?.toLocaleString('fr-FR') || '?'} €/mois</span>}
+                    {annonceModal.experience && <span>🎯 {annonceModal.experience}</span>}
+                  </div>
+                </div>
+                <button onClick={() => setAnnonceModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#8E8E93', flexShrink: 0 }}>×</button>
+              </div>
+            </div>
+
+            <div style={{ padding: '20px 28px 28px' }}>
+              {/* Description */}
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0E0E1A', marginBottom: 8 }}>Description du poste</p>
+                <div style={{ fontSize: '0.9rem', color: '#3A3A3C', lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#FAFAFA', borderRadius: 12, padding: '14px 16px' }}>
+                  {annonceModal.description}
+                </div>
+              </div>
+              {annonceModal.competences && (
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0E0E1A', marginBottom: 8 }}>Compétences recherchées</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {annonceModal.competences.split(',').map(c => c.trim()).filter(Boolean).map(c => (
+                      <span key={c} style={{ fontSize: '0.8125rem', padding: '4px 12px', borderRadius: 20, background: 'rgba(91,91,214,0.08)', color: '#5B5BD6', fontWeight: 600 }}>{c}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Formulaire candidature */}
+              <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 20, marginTop: 4 }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 800, color: '#0E0E1A' }}>Postuler à cette offre</h3>
+
+                {candidatureStatus === 'ok' ? (
+                  <div style={{ background: '#D1F2E0', border: '1px solid #5CC88A', borderRadius: 14, padding: '20px 24px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+                    <p style={{ fontWeight: 800, fontSize: '1rem', color: '#1A7F43', marginBottom: 4 }}>Candidature envoyée !</p>
+                    <p style={{ color: '#1A7F43', fontSize: '0.875rem' }}>Votre dossier a bien été transmis à l'entreprise. Bonne chance !</p>
+                    <button onClick={() => setAnnonceModal(null)} style={{ marginTop: 16, padding: '8px 20px', background: '#1A7F43', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: '0.875rem' }}>
+                      Fermer
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={postuler} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      {[['prenom','Prénom *','Votre prénom'],['nom','Nom *','Votre nom']].map(([k,l,ph]) => (
+                        <div key={k}>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>{l}</label>
+                          <input required value={candidatureForm[k]} onChange={e => setCandidatureForm(p => ({...p,[k]:e.target.value}))}
+                            placeholder={ph} style={{ width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      {[['email','Email *','votre@email.fr'],['telephone','Téléphone','06 12 34 56 78']].map(([k,l,ph]) => (
+                        <div key={k}>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>{l}</label>
+                          <input type={k === 'email' ? 'email' : 'tel'} required={k==='email'} value={candidatureForm[k]} onChange={e => setCandidatureForm(p => ({...p,[k]:e.target.value}))}
+                            placeholder={ph} style={{ width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>Lettre de motivation *</label>
+                      <textarea required value={candidatureForm.lettre} onChange={e => setCandidatureForm(p => ({...p, lettre: e.target.value}))} rows={5}
+                        placeholder="Présentez-vous et expliquez pourquoi vous êtes le candidat idéal pour ce poste…"
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6, boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>Résumé de votre expérience / CV (optionnel)</label>
+                      <textarea value={candidatureForm.cvTexte} onChange={e => setCandidatureForm(p => ({...p, cvTexte: e.target.value}))} rows={4}
+                        placeholder="Listez vos expériences, diplômes, certifications (CACES, habilitations…)"
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6, boxSizing: 'border-box' }} />
+                    </div>
+                    {typeof candidatureStatus === 'string' && candidatureStatus !== '' && candidatureStatus !== 'sending' && candidatureStatus !== 'ok' && (
+                      <div style={{ background: '#FFE5E5', border: '1px solid #F5A5A5', borderRadius: 10, padding: '10px 14px', fontSize: '0.875rem', color: '#C0392B', fontWeight: 600 }}>
+                        {candidatureStatus === 'error' ? 'Une erreur est survenue, réessayez.' : candidatureStatus}
+                      </div>
+                    )}
+                    <button type="submit" disabled={candidatureStatus === 'sending'}
+                      style={{ padding: '12px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 12, cursor: candidatureStatus === 'sending' ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '0.9375rem', letterSpacing: '-0.01em', transition: 'all 0.15s' }}>
+                      {candidatureStatus === 'sending' ? 'Envoi en cours…' : '🚀 Envoyer ma candidature'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ MODAL ══ */}
       {selectedArtisan && (

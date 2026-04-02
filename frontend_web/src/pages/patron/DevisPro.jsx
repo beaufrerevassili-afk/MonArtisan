@@ -163,7 +163,7 @@ function calcTotals(lignes, remiseGlobale = 0) {
 const LIGNE_VIDE = { description: '', quantite: 1, unite: 'm²', prixUnitaire: 0, tva: 10, remise: 0 };
 
 const FORM_INIT = {
-  entreprise: { nom: 'Bernard Martin BTP', siret: '123 456 789 00012', tva: 'FR12 123 456 789', rcs: 'Lyon B 123 456 789', adresse: '12 rue des Artisans', cp: '69002', ville: 'Lyon', telephone: '04 78 00 00 00', email: 'contact@bernardmartin-btp.fr', decennale: 'MMA IARD — Police n° 123456789', rcpro: 'AXA Pro — Police n° 987654321' },
+  entreprise: { nom: '', siret: '', tva: '', rcs: '', adresse: '', cp: '', ville: '', telephone: '', email: '', decennale: '', rcpro: '' },
   client: { nom: '', siret: '', adresse: '', cp: '', ville: '', telephone: '', email: '' },
   chantier: { adresse: '', cp: '', ville: '', description: '' },
   objet: '',
@@ -189,9 +189,55 @@ export default function DevisPro() {
   const [sending, setSending] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [searchDevis, setSearchDevis] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
   const printRef = useRef();
 
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = e => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   const [form, setForm] = useState(FORM_INIT);
+
+  /* ── Charge salariale interne ── */
+  const [chargesOpen, setChargesOpen] = useState(false);
+  const [depotAdresse, setDepotAdresse] = useState(() => localStorage.getItem('btp_depot_adresse') || '');
+  const [mainOeuvre, setMainOeuvre] = useState([{ id: 1, nom: '', tauxHoraire: 0, heures: 0 }]);
+  const [trajetChantier, setTrajetChantier] = useState({ km: 0, jours: 1, nbPersonnes: 1, inclure: false });
+
+  function getBTPZoneRate(km) {
+    const k = Number(km) || 0;
+    if (k <= 10) return { zone: 'Zone 1', rate: 1.50 };
+    if (k <= 20) return { zone: 'Zone 2', rate: 1.84 };
+    if (k <= 30) return { zone: 'Zone 3', rate: 2.00 };
+    if (k <= 40) return { zone: 'Zone 4', rate: 2.32 };
+    if (k <= 50) return { zone: 'Zone 5', rate: 2.67 };
+    return { zone: 'Zone 6', rate: 3.05 };
+  }
+  const totalMO = mainOeuvre.reduce((s, e) => s + (Number(e.tauxHoraire) || 0) * (Number(e.heures) || 0), 0);
+  const { zone: btpZone, rate: btpRate } = getBTPZoneRate(trajetChantier.km);
+  const totalTrajet = btpRate * (Number(trajetChantier.jours) || 0) * (Number(trajetChantier.nbPersonnes) || 0);
+
+  function addMOLigne() {
+    setMainOeuvre(prev => [...prev, { id: Date.now(), nom: '', tauxHoraire: 0, heures: 0 }]);
+  }
+  function updateMO(id, field, val) {
+    setMainOeuvre(prev => prev.map(e => e.id === id ? { ...e, [field]: val } : e));
+  }
+  function removeMO(id) {
+    setMainOeuvre(prev => prev.length > 1 ? prev.filter(e => e.id !== id) : prev);
+  }
+  function addMOAsLigne() {
+    if (totalMO <= 0) return;
+    const desc = mainOeuvre.map(e => e.nom ? `${e.nom} (${e.heures}h)` : `${e.heures}h`).join(', ');
+    addLine({ description: `Main d'œuvre — ${desc}`, prixUnitaire: totalMO, unite: 'forfait', tva: 20 });
+  }
+  function addTrajetAsLigne() {
+    if (totalTrajet <= 0) return;
+    addLine({ description: `Indemnités trajet BTP ${btpZone} — ${trajetChantier.jours}j × ${trajetChantier.nbPersonnes} pers.`, prixUnitaire: totalTrajet, unite: 'forfait', tva: 20 });
+  }
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -207,11 +253,11 @@ export default function DevisPro() {
     try {
       const r = await fetch(`${API}/patron/devis-pro`, { headers });
       const d = await r.json();
-      setDevis(d.devis || DEMO_DEVIS);
-      setStats(d.stats || calcStats(d.devis || DEMO_DEVIS));
+      setDevis(d.devis || []);
+      setStats(d.stats || calcStats(d.devis || []));
     } catch (e) {
-      setDevis(DEMO_DEVIS);
-      setStats(calcStats(DEMO_DEVIS));
+      setDevis([]);
+      setStats(calcStats([]));
     }
     setLoading(false);
   }
@@ -306,10 +352,10 @@ export default function DevisPro() {
       {/* Legal reminder */}
       <DevisLegalBanner />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Devis professionnels</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0', fontSize: 14 }}>Créez, personnalisez et suivez vos devis BTP</p>
+          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Devis professionnels</h1>
+          {!isMobile && <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0', fontSize: 14 }}>Créez, personnalisez et suivez vos devis BTP</p>}
         </div>
         <button onClick={() => { resetForm(); setView('create'); }} style={{
           display: 'flex', alignItems: 'center', gap: 8, background: 'var(--primary)', color: '#fff',
@@ -320,17 +366,17 @@ export default function DevisPro() {
       </div>
 
       {/* Stats KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 26 }}>
+      <div className="stats-grid" style={{ gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Total devis', value: stats.total || 0, color: '#007AFF', fmt: v => v },
+          { label: 'Total', value: stats.total || 0, color: '#5B5BD6', fmt: v => v },
           { label: 'Brouillons', value: stats.brouillons || 0, color: '#8E8E93', fmt: v => v },
           { label: 'Envoyés', value: stats.envoyes || 0, color: '#FF9500', fmt: v => v },
           { label: 'Signés', value: stats.signes || 0, color: '#34C759', fmt: v => v },
-          { label: 'CA signé', value: stats.caTotal || 0, color: '#007AFF', fmt: v => formatCurrency(v) },
+          { label: 'CA signé', value: stats.caTotal || 0, color: '#5B5BD6', fmt: v => formatCurrency(v) },
         ].map(s => (
-          <div key={s.label} style={{ background: 'var(--card)', borderRadius: 14, padding: '16px 18px', boxShadow: 'var(--shadow)' }}>
-            <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.fmt(s.value)}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>{s.label}</div>
+          <div key={s.label} className="card" style={{ padding: '14px 16px' }}>
+            <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: s.color }}>{s.fmt(s.value)}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -344,16 +390,41 @@ export default function DevisPro() {
         </div>
       </div>
 
-      {/* Table */}
-      <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
-        {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-secondary)' }}>Chargement…</div>
-        ) : filteredDevis.length === 0 ? (
-          <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <IconDocument size={40} />
-            <p style={{ marginTop: 12 }}>Aucun devis pour l'instant</p>
-          </div>
-        ) : (
+      {/* Devis list */}
+      {loading ? (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-secondary)' }}>Chargement…</div>
+      ) : filteredDevis.length === 0 ? (
+        <div className="card" style={{ padding: 60, textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <IconDocument size={40} />
+          <p style={{ marginTop: 12 }}>Aucun devis pour l'instant</p>
+          <button onClick={() => { resetForm(); setView('create'); }} className="btn-primary" style={{ marginTop: 16 }}>
+            <IconPlus size={14} /> Créer un devis
+          </button>
+        </div>
+      ) : isMobile ? (
+        /* ── Mobile: card list ── */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filteredDevis.map(d => (
+            <div key={d.id} className="card" onClick={() => openPreview(d)}
+              style={{ padding: '14px 16px', cursor: 'pointer', borderLeft: `4px solid ${d.statut === 'signé' ? '#34C759' : d.statut === 'envoyé' ? '#FF9500' : 'var(--border)'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: 'var(--primary)', fontSize: 14 }}>{d.numero}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginLeft: 10 }}>{d.client?.nom || '—'}</span>
+                </div>
+                {statutBadge(d.statut)}
+              </div>
+              {d.objet && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.objet}</p>}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{formatDate(d.creeLe)} · {d.validiteDays}j</span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{formatCurrency(d.totalTTC)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* ── Desktop: table ── */
+        <div className="table-wrap" style={{ background: 'var(--card)', borderRadius: 16, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
@@ -375,10 +446,7 @@ export default function DevisPro() {
                   <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{d.validiteDays}j</td>
                   <td style={{ padding: '14px 16px' }}>{statutBadge(d.statut)}</td>
                   <td style={{ padding: '14px 16px' }}>
-                    <button onClick={() => openPreview(d)} style={{
-                      display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid var(--border)',
-                      borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 13, color: 'var(--text)'
-                    }}>
+                    <button onClick={() => openPreview(d)} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: 13, color: 'var(--text)' }}>
                       <IconEye size={14} /> Voir
                     </button>
                   </td>
@@ -386,8 +454,8 @@ export default function DevisPro() {
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 
@@ -401,17 +469,19 @@ export default function DevisPro() {
     const secTitle = { fontSize: 15, fontWeight: 700, margin: '0 0 16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 };
 
     return (
-      <div style={{ maxWidth: 980, margin: '0 auto' }}>
+      <div style={{ maxWidth: 980, margin: '0 auto', paddingBottom: isMobile ? 80 : 0 }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={() => setView('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: 15, fontWeight: 600 }}>← Retour</button>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Nouveau devis</h1>
+            <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Nouveau devis</h1>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => setView('list')} style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
-            <button onClick={handleCreate} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Créer le devis</button>
-          </div>
+          {!isMobile && (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setView('list')} style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
+              <button onClick={handleCreate} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Créer le devis</button>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -468,6 +538,129 @@ export default function DevisPro() {
               <div><label style={lbl}>Début travaux (estimé)</label><input type="date" value={form.dateDebut} onChange={e => setForm(f => ({ ...f, dateDebut: e.target.value }))} style={inp} /></div>
               <div><label style={lbl}>Fin travaux (estimée)</label><input type="date" value={form.dateFin} onChange={e => setForm(f => ({ ...f, dateFin: e.target.value }))} style={inp} /></div>
             </div>
+          </section>
+
+          {/* Section 3b — Charge salariale interne (non visible client) */}
+          <section style={{ ...sec, borderLeft: '3px solid #5B5BD6', paddingLeft: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ ...secTitle, margin: 0 }}>Charge salariale & déplacements
+                  <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 600, background: '#E3F2FD', color: '#5B5BD6', padding: '2px 8px', borderRadius: 8 }}>Usage interne · Non visible client</span>
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
+                  Calculez le coût de main d'œuvre et les indemnités trajet BTP 2024, puis ajoutez-les comme lignes de devis.
+                </p>
+              </div>
+              <button onClick={() => setChargesOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#5B5BD6', padding: '4px 8px' }}>
+                {chargesOpen ? '▲' : '▼'}
+              </button>
+            </div>
+
+            {chargesOpen && (
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                {/* Main d'œuvre */}
+                <div style={{ background: '#F8F8FE', borderRadius: 10, padding: 14 }}>
+                  <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 13 }}>Main d'œuvre</p>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: '#EDEDFC' }}>
+                        {['Employé / Poste', 'Taux horaire (€/h)', 'Heures estimées', 'Coût', ''].map(h => (
+                          <th key={h} style={{ padding: '6px 10px', textAlign: h === 'Coût' || h === 'Heures estimées' || h === 'Taux horaire (€/h)' ? 'right' : 'left', fontSize: 12, fontWeight: 600, color: '#5B5BD6' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mainOeuvre.map(emp => (
+                        <tr key={emp.id} style={{ borderBottom: '1px solid #E8E8F8' }}>
+                          <td style={{ padding: '6px 10px' }}>
+                            <input value={emp.nom} onChange={e => updateMO(emp.id, 'nom', e.target.value)}
+                              placeholder="Ex : Maçon, Chef équipe…" style={{ padding: '4px 8px', border: '1px solid #E5E5EA', borderRadius: 6, fontSize: 13, width: '100%' }} />
+                          </td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right' }}>
+                            <input type="number" min={0} step={0.5} value={emp.tauxHoraire}
+                              onChange={e => updateMO(emp.id, 'tauxHoraire', e.target.value)}
+                              style={{ padding: '4px 8px', border: '1px solid #E5E5EA', borderRadius: 6, fontSize: 13, width: 90, textAlign: 'right' }} />
+                          </td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right' }}>
+                            <input type="number" min={0} step={0.5} value={emp.heures}
+                              onChange={e => updateMO(emp.id, 'heures', e.target.value)}
+                              style={{ padding: '4px 8px', border: '1px solid #E5E5EA', borderRadius: 6, fontSize: 13, width: 90, textAlign: 'right' }} />
+                          </td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }}>
+                            {((Number(emp.tauxHoraire) || 0) * (Number(emp.heures) || 0)).toFixed(2)} €
+                          </td>
+                          <td style={{ padding: '6px 10px', textAlign: 'center' }}>
+                            <button onClick={() => removeMO(emp.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C0392B', fontSize: 16 }}>×</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan={3} style={{ padding: '8px 10px', fontWeight: 700 }}>Total main d'œuvre</td>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 800, color: '#5B5BD6', fontSize: 15 }}>{totalMO.toFixed(2)} €</td>
+                        <td />
+                      </tr>
+                    </tfoot>
+                  </table>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                    <button onClick={addMOLigne} style={{ padding: '6px 14px', background: '#F2F2F7', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                      + Ajouter un employé
+                    </button>
+                    <button onClick={addMOAsLigne} disabled={totalMO <= 0} style={{ padding: '6px 14px', background: totalMO > 0 ? '#5B5BD6' : '#E5E5EA', color: totalMO > 0 ? '#fff' : '#8E8E93', border: 'none', borderRadius: 8, cursor: totalMO > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
+                      + Ajouter comme ligne de devis ({totalMO.toFixed(2)} €)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Frais de déplacement */}
+                <div style={{ background: '#F8FFF8', borderRadius: 10, padding: 14 }}>
+                  <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 13 }}>Indemnités trajet BTP 2024</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 12, alignItems: 'flex-end' }}>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Adresse dépôt</label>
+                      <input value={depotAdresse} onChange={e => { setDepotAdresse(e.target.value); localStorage.setItem('btp_depot_adresse', e.target.value); }}
+                        placeholder="12 rue de la Paix, 45000 Orléans"
+                        style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, width: '100%' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Distance aller (km)</label>
+                      <input type="number" min={0} max={300} step={1} value={trajetChantier.km}
+                        onChange={e => setTrajetChantier(p => ({ ...p, km: e.target.value }))}
+                        style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, width: '100%' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Jours de chantier</label>
+                      <input type="number" min={1} max={250} step={1} value={trajetChantier.jours}
+                        onChange={e => setTrajetChantier(p => ({ ...p, jours: e.target.value }))}
+                        style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, width: '100%' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Nbre personnes</label>
+                      <input type="number" min={1} max={50} step={1} value={trajetChantier.nbPersonnes}
+                        onChange={e => setTrajetChantier(p => ({ ...p, nbPersonnes: e.target.value }))}
+                        style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, width: '100%' }} />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#6E6E73', marginBottom: 3 }}>Zone / Taux</div>
+                      <div style={{ padding: '6px 10px', background: '#E3F2FD', borderRadius: 8, fontWeight: 700, color: '#5B5BD6', fontSize: 13 }}>
+                        {btpZone} · {btpRate.toFixed(2)} €/j
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center' }}>
+                    <span style={{ fontSize: 13, color: '#6E6E73' }}>Total estimé :</span>
+                    <span style={{ fontWeight: 800, fontSize: 15, color: '#1A7F43' }}>{totalTrajet.toFixed(2)} €</span>
+                    <button onClick={addTrajetAsLigne} disabled={totalTrajet <= 0} style={{ padding: '6px 14px', background: totalTrajet > 0 ? '#34C759' : '#E5E5EA', color: totalTrajet > 0 ? '#fff' : '#8E8E93', border: 'none', borderRadius: 8, cursor: totalTrajet > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
+                      + Ajouter comme ligne de devis
+                    </button>
+                    <span style={{ fontSize: 11, color: '#8E8E93', marginLeft: 'auto' }}>Art. R3261-1 CT · Exonéré cotisations sociales</span>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </section>
 
           {/* Section 4 — Lignes */}
@@ -690,9 +883,9 @@ export default function DevisPro() {
         <div id="devis-print-area" ref={printRef} style={{ background: '#fff', borderRadius: 16, padding: '40px 44px', boxShadow: '0 2px 12px rgba(0,0,0,0.10)' }}>
 
           {/* Header — entreprise + DEVIS number */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, paddingBottom: 24, borderBottom: '3px solid #007AFF' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, paddingBottom: 24, borderBottom: '3px solid #5B5BD6' }}>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#007AFF', marginBottom: 6, letterSpacing: -0.5 }}>{ent.nom}</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#5B5BD6', marginBottom: 6, letterSpacing: -0.5 }}>{ent.nom}</div>
               <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 2 }}>
                 {ent.adresse}{ent.cp || ent.ville ? `, ${ent.cp} ${ent.ville}` : ''}<br />
                 Tél : {ent.telephone} — {ent.email}<br />
@@ -701,7 +894,7 @@ export default function DevisPro() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 32, fontWeight: 900, color: '#1C1C1E', letterSpacing: -1 }}>DEVIS</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#007AFF', marginTop: 4 }}>{d.numero}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#5B5BD6', marginTop: 4 }}>{d.numero}</div>
               <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 10, lineHeight: 1.8 }}>
                 Émis le : <strong>{formatDate(d.creeLe)}</strong><br />
                 Valable jusqu'au : <strong>{d.creeLe ? formatDate(new Date(new Date(d.creeLe).getTime() + (d.validiteDays || 30) * 86400000).toISOString()) : '—'}</strong>
@@ -778,7 +971,7 @@ export default function DevisPro() {
               {echeancier.map((e, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontSize: 12 }}>
                   <span style={{ color: '#3C3C43' }}>{e.label}</span>
-                  <span style={{ fontWeight: 700, color: '#007AFF' }}>{formatCurrency((t.totalTTC || 0) * e.pct / 100)} <span style={{ fontWeight: 400, color: '#8E8E93' }}>({e.pct}%)</span></span>
+                  <span style={{ fontWeight: 700, color: '#5B5BD6' }}>{formatCurrency((t.totalTTC || 0) * e.pct / 100)} <span style={{ fontWeight: 400, color: '#8E8E93' }}>({e.pct}%)</span></span>
                 </div>
               ))}
             </div>
@@ -801,7 +994,7 @@ export default function DevisPro() {
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 14px', fontSize: 13, color: '#6E6E73', borderBottom: '1px solid #F2F2F7' }}>
                 <span>TVA</span><span>{formatCurrency(t.totalTVA)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '13px 14px', background: '#007AFF', color: '#fff', fontSize: 16, fontWeight: 800 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '13px 14px', background: '#5B5BD6', color: '#fff', fontSize: 16, fontWeight: 800 }}>
                 <span>Total TTC</span><span>{formatCurrency(t.totalTTC)}</span>
               </div>
             </div>

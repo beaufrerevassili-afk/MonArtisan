@@ -4,6 +4,13 @@ import {
   IconShield, IconAlert, IconDocument, IconCheck, IconSearch,
   IconPlus, IconX, IconDownload, IconUser, IconRefresh,
 } from '../../components/ui/Icons';
+import RegistreIncendie from '../../components/qse/RegistreIncendie';
+import PermisFeu from '../../components/qse/PermisFeu';
+import PPSPS from '../../components/qse/PPSPS';
+import AffichageObligatoire from '../../components/qse/AffichageObligatoire';
+import PlanDechet from '../../components/qse/PlanDechet';
+import DiagnosticDemolition from '../../components/qse/DiagnosticDemolition';
+import { genererDUERP, genererPlanPrevention } from '../../utils/qsePDF';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -162,7 +169,7 @@ export default function QSE() {
         )}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:14 }}>
           {[
-            { label:'Total habilitations', value:habilitations.length, color:'#007AFF', Icon:IconShield },
+            { label:'Total habilitations', value:habilitations.length, color:'#5B5BD6', Icon:IconShield },
             { label:'Valides', value:habilitations.filter(h=>!h.alerte).length, color:'#34C759', Icon:IconCheck },
             { label:'Expirées/Urgentes', value:habilitations.filter(h=>h.alerte==='expirée'||h.alerte==='urgente').length, color:'#FF3B30', Icon:IconAlert },
             { label:'Risques DUERP', value:risques.length, color:'#FF9500', Icon:IconShield },
@@ -225,14 +232,14 @@ export default function QSE() {
             <select value={filterUT} onChange={e=>setFilterUT(e.target.value)} style={{ padding:'8px 10px', border:'1px solid #E5E5EA', borderRadius:8, fontSize:13, outline:'none' }}>
               {UNITES_TRAVAIL.map(u=><option key={u} value={u}>{u}</option>)}
             </select>
-            <button onClick={()=>window.print()} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/>PDF</button>
-            <button onClick={()=>setShowAdd(true)} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 16px', border:'none', borderRadius:8, background:'#007AFF', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconPlus size={13}/>Ajouter</button>
+            <button onClick={()=>genererDUERP(risquesFiltres, 'Bernard Martin BTP', '123 456 789 00012')} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/>PDF</button>
+            <button onClick={()=>setShowAdd(true)} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 16px', border:'none', borderRadius:8, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconPlus size={13}/>Ajouter</button>
           </div>
         </div>
 
         {/* Add form */}
         {showAdd && (
-          <div style={{ background:'#F0F7FF', border:'1px solid #007AFF', borderRadius:14, padding:20 }}>
+          <div style={{ background:'#F0F7FF', border:'1px solid #5B5BD6', borderRadius:14, padding:20 }}>
             <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 12px' }}>Nouveau risque</h3>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div><label style={lbl}>Unité de travail</label><select value={newR.ut} onChange={e=>setNewR(n=>({...n,ut:e.target.value}))} style={inp}>{UNITES_TRAVAIL.slice(1).map(u=><option key={u}>{u}</option>)}</select></div>
@@ -246,7 +253,7 @@ export default function QSE() {
               <div><label style={lbl}>Délai</label><input type="date" value={newR.delai} onChange={e=>setNewR(n=>({...n,delai:e.target.value}))} style={inp}/></div>
             </div>
             <div style={{ marginTop:12, display:'flex', gap:8 }}>
-              <button onClick={saveNew} style={{ padding:'8px 18px', background:'#007AFF', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontWeight:600 }}>Enregistrer</button>
+              <button onClick={saveNew} style={{ padding:'8px 18px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontWeight:600 }}>Enregistrer</button>
               <button onClick={()=>setShowAdd(false)} style={{ padding:'8px 14px', background:'none', border:'1px solid #E5E5EA', borderRadius:8, cursor:'pointer' }}>Annuler</button>
             </div>
           </div>
@@ -411,7 +418,7 @@ export default function QSE() {
     return (
       <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
         {!showForm && (
-          <button onClick={()=>setShowForm(true)} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 18px', background:'#007AFF', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:600, fontSize:13, alignSelf:'flex-start' }}>
+          <button onClick={()=>setShowForm(true)} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 18px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:600, fontSize:13, alignSelf:'flex-start' }}>
             <IconPlus size={14}/> Ajouter une habilitation
           </button>
         )}
@@ -434,7 +441,7 @@ export default function QSE() {
                   <div style={{ fontSize:12, color:'#FF3B30', marginTop:4, fontWeight:600 }}>* Document obligatoire</div>
                 </>
               ) : scanning ? (
-                <><div style={{ fontSize:28, marginBottom:6 }}>🔍</div><div style={{ fontWeight:600, color:'#007AFF' }}>Analyse du document en cours…</div><div style={{ fontSize:12, color:'#6E6E73', marginTop:3 }}>Extraction automatique des informations</div></>
+                <><div style={{ fontSize:28, marginBottom:6 }}>🔍</div><div style={{ fontWeight:600, color:'#5B5BD6' }}>Analyse du document en cours…</div><div style={{ fontSize:12, color:'#6E6E73', marginTop:3 }}>Extraction automatique des informations</div></>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:14 }}>
                   <div style={{ width:56, height:56, background:'#D1F2E0', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, flexShrink:0 }}>📄</div>
@@ -484,7 +491,7 @@ export default function QSE() {
             </div>
             <div style={{ marginTop:14, display:'flex', gap:10, justifyContent:'flex-end' }}>
               <button type="button" onClick={()=>setShowForm(false)} style={{ padding:'9px 18px', border:'1px solid #E5E5EA', borderRadius:10, background:'#fff', cursor:'pointer', fontWeight:600 }}>Annuler</button>
-              <button type="submit" disabled={saving||scanning||!fichier} style={{ padding:'9px 22px', border:'none', borderRadius:10, background: (!fichier||saving||scanning)?'#C7C7CC':'#007AFF', color:'#fff', cursor:'pointer', fontWeight:600 }}>
+              <button type="submit" disabled={saving||scanning||!fichier} style={{ padding:'9px 22px', border:'none', borderRadius:10, background: (!fichier||saving||scanning)?'#C7C7CC':'#5B5BD6', color:'#fff', cursor:'pointer', fontWeight:600 }}>
                 {saving?'Enregistrement…':'Enregistrer'}
               </button>
             </div>
@@ -523,7 +530,7 @@ export default function QSE() {
                     </td>
                     <td style={{ padding:'11px 14px' }}>
                       {h.documentNom ? (
-                        <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:'#007AFF' }}><IconDocument size={13}/>{h.documentNom}</span>
+                        <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:'#5B5BD6' }}><IconDocument size={13}/>{h.documentNom}</span>
                       ) : <span style={{ color:'#FF3B30', fontSize:12 }}>⚠ Manquant</span>}
                     </td>
                     <td style={{ padding:'11px 14px' }}>
@@ -657,11 +664,11 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
-            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#007AFF', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
+            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#5B5BD6', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
             <h2 style={{ margin:0, fontSize:18, fontWeight:800 }}>Fiches de Données de Sécurité (FDS)</h2>
             <p style={{ margin:'4px 0 0', fontSize:13, color:'#6E6E73' }}>Règlement (CE) n°1907/2006 REACH — Art. L4411-1 CT — Obligatoire pour tout produit chimique</p>
           </div>
-          <button onClick={()=>setShowFdsForm(true)} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:'#007AFF', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>
+          <button onClick={()=>setShowFdsForm(true)} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>
             <IconPlus size={14}/> Ajouter un produit
           </button>
         </div>
@@ -669,7 +676,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
         {/* Summary */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12 }}>
           {[
-            { label:'Total produits', val:fds.length, color:'#007AFF' },
+            { label:'Total produits', val:fds.length, color:'#5B5BD6' },
             { label:'FDS valides', val:fds.filter(f=>f.statut==='valide').length, color:'#34C759' },
             { label:'FDS expirées', val:fds.filter(f=>f.statut==='expire').length, color:'#FF3B30' },
             { label:'Catégories', val:[...new Set(fds.map(f=>f.categorie))].length, color:'#FF9500' },
@@ -683,7 +690,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
 
         {/* FDS Form */}
         {showFdsForm && (
-          <div style={{ background:'#F0F7FF', border:'2px solid #007AFF40', borderRadius:16, padding:24 }}>
+          <div style={{ background:'#F0F7FF', border:'2px solid #5B5BD640', borderRadius:16, padding:24 }}>
             <h3 style={{ margin:'0 0 14px', fontSize:15, fontWeight:700 }}>Nouvelle FDS — Produit chimique</h3>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
               {[
@@ -715,7 +722,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end', marginTop:16 }}>
               <button onClick={()=>setShowFdsForm(false)} style={{ padding:'9px 18px', border:'1px solid #E5E5EA', borderRadius:10, background:'#fff', cursor:'pointer', fontWeight:600 }}>Annuler</button>
-              <button onClick={()=>{ if(!fdsForm.produit||!fdsForm.fournisseur) return; const now = new Date(); const exp = fdsForm.dateExpiration ? new Date(fdsForm.dateExpiration) : null; setFds(p=>[{...fdsForm,id:Date.now(),statut:exp&&exp<now?'expire':'valide'},...p]); setShowFdsForm(false); setFdsForm({produit:'',fournisseur:'',ref:'',categorie:'Peinture/solvant',dateReception:today,dateExpiration:'',risques:'',epi:'',stockage:'',fichierNom:''}); }} style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#007AFF', color:'#fff', cursor:'pointer', fontWeight:700 }}>Enregistrer la FDS</button>
+              <button onClick={()=>{ if(!fdsForm.produit||!fdsForm.fournisseur) return; const now = new Date(); const exp = fdsForm.dateExpiration ? new Date(fdsForm.dateExpiration) : null; setFds(p=>[{...fdsForm,id:Date.now(),statut:exp&&exp<now?'expire':'valide'},...p]); setShowFdsForm(false); setFdsForm({produit:'',fournisseur:'',ref:'',categorie:'Peinture/solvant',dateReception:today,dateExpiration:'',risques:'',epi:'',stockage:'',fichierNom:''}); }} style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontWeight:700 }}>Enregistrer la FDS</button>
             </div>
           </div>
         )}
@@ -742,7 +749,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   <td style={{ padding:'10px 12px', fontSize:12, color:f.statut==='expire'?'#C0392B':'#6E6E73', fontWeight:f.statut==='expire'?700:400 }}>{fmt(f.dateExpiration)||'—'}</td>
                   <td style={{ padding:'10px 12px' }}>
                     {f.fichierNom ? (
-                      <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:'#007AFF', cursor:'pointer', fontWeight:600 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:'#5B5BD6', cursor:'pointer', fontWeight:600 }}>
                         <IconDownload size={12}/> {f.fichierNom}
                       </div>
                     ) : <span style={{ fontSize:12, color:'#C7C7CC' }}>—</span>}
@@ -765,12 +772,12 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
           <div>
-            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#007AFF', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
+            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#5B5BD6', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
             <h2 style={{ margin:0, fontSize:18, fontWeight:800 }}>Registre des Accidents du Travail</h2>
             <p style={{ margin:'4px 0 0', fontSize:13, color:'#6E6E73' }}>Art. L441-4 et R441-3 CSS — Conservation 5 ans — À disposition de l'inspecteur du travail</p>
           </div>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={()=>window.print()} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:9, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/> Exporter</button>
+            <button onClick={()=>window.print()} aria-label="Exporter le registre AT en PDF" style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:9, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/> Exporter</button>
             <button onClick={()=>setShowAtForm(true)} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:'#FF3B30', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>
               <IconPlus size={14}/> Déclarer un accident
             </button>
@@ -783,7 +790,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             { label:`Accidents ${currentYear}`, val:accidentsAnnee.length, color:'#FF3B30', suffix:'' },
             { label:'Avec arrêt de travail', val:accidentsAvecArret, color:'#FF9500', suffix:'' },
             { label:'Jours d\'arrêt total', val:joursArretTotal, color:'#FF9500', suffix:' j' },
-            { label:'TF (taux fréquence)', val:TF, color:'#007AFF', suffix:'', hint:'AT × 1 000 000 / heures travaillées' },
+            { label:'TF (taux fréquence)', val:TF, color:'#5B5BD6', suffix:'', hint:'AT × 1 000 000 / heures travaillées' },
             { label:'TG (taux gravité)', val:TG, color:'#AF52DE', suffix:'', hint:'Jours perdu × 1 000 / heures travaillées' },
           ].map(k=>(
             <div key={k.label} style={{ background:'#fff', borderRadius:12, padding:'14px 16px', boxShadow:'0 1px 4px rgba(0,0,0,.08)' }} title={k.hint||''}>
@@ -1005,17 +1012,41 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       </div>
     );
 
+    if (activeDoc === 'registre-incendie') return (
+      <RegistreIncendie onRetour={() => setActiveDoc(null)} />
+    );
+
+    if (activeDoc === 'permis-feu') return (
+      <PermisFeu onRetour={() => setActiveDoc(null)} />
+    );
+
+    if (activeDoc === 'ppsps') return (
+      <PPSPS onRetour={() => setActiveDoc(null)} />
+    );
+
+    if (activeDoc === 'affichage-obligatoire') return (
+      <AffichageObligatoire onRetour={() => setActiveDoc(null)} />
+    );
+
+    if (activeDoc === 'dechet') return (
+      <PlanDechet onRetour={() => setActiveDoc(null)} />
+    );
+
+    if (activeDoc === 'diagnostic-demolition') return (
+      <DiagnosticDemolition onRetour={() => setActiveDoc(null)} />
+    );
+
     if (activeDoc === 'charte-qualite') return (
       <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
           <div>
-            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#007AFF', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
+            <button onClick={()=>setActiveDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#5B5BD6', fontSize:14, fontWeight:600, padding:'0 0 4px' }}>← Retour aux documents</button>
             <h2 style={{ margin:0, fontSize:18, fontWeight:800 }}>Charte Qualité Chantier</h2>
             <p style={{ margin:'4px 0 0', fontSize:13, color:'#6E6E73' }}>NF EN ISO 9001 · Garantie décennale art. 1792 CC · Référentiel Qualibat</p>
           </div>
           <div style={{ display:'flex', gap:8 }}>
             {charteMode === 'view' ? (
-              <button onClick={()=>setCharteMode('edit')} style={{ padding:'8px 18px', background:'#007AFF', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>Modifier</button>
+              <button onClick={()=>setCharteMode('edit')} style={{ padding:'8px 18px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>Modifier</button>
             ) : (
               <button onClick={()=>setCharteMode('view')} style={{ padding:'8px 18px', background:'#34C759', color:'#fff', border:'none', borderRadius:10, cursor:'pointer', fontWeight:700, fontSize:14 }}>✓ Sauvegarder</button>
             )}
@@ -1132,7 +1163,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
           const doc = DOCS_QSE.find(d => d.id === editing);
           const champs = getChamps(editing);
           return (
-            <div style={{ background:'#F0F7FF', border:'2px solid #007AFF40', borderRadius:16, padding:24 }}>
+            <div style={{ background:'#F0F7FF', border:'2px solid #5B5BD640', borderRadius:16, padding:24 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
                 <div>
                   <h3 style={{ margin:0, fontSize:16, fontWeight:700 }}>{created[editing] ? 'Modifier' : 'Créer'} — {doc?.nom}</h3>
@@ -1155,7 +1186,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 </div>
                 <div style={{ display:'flex', gap:10, justifyContent:'flex-end', marginTop:16 }}>
                   <button type="button" onClick={()=>setEditing(null)} style={{ padding:'9px 18px', border:'1px solid #E5E5EA', borderRadius:10, background:'#fff', cursor:'pointer', fontWeight:600, fontSize:13 }}>Annuler</button>
-                  <button type="submit" style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#007AFF', color:'#fff', cursor:'pointer', fontWeight:700, fontSize:13 }}>
+                  <button type="submit" style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontWeight:700, fontSize:13 }}>
                     {created[editing] ? 'Sauvegarder' : 'Générer le document'}
                   </button>
                 </div>
@@ -1243,12 +1274,12 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   {items.map(doc=>{
                     const estCree = !!created[doc.id];
                     // Special docs with dedicated views
-                    const isSpecial = ['fds','registre-at','charte-qualite'].includes(doc.id);
+                    const isSpecial = ['fds','registre-at','charte-qualite','registre-incendie','permis-feu','ppsps','affichage-obligatoire','dechet','diagnostic-demolition'].includes(doc.id);
                     return (
                       <tr key={doc.id} style={{ borderBottom:'1px solid #F2F2F7', background: estCree ? '#FAFFF8' : '#fff' }}>
                         <td style={{ padding:'11px 14px', fontWeight:600 }}>
                           {doc.nom}
-                          {isSpecial && <span style={{ marginLeft:8, fontSize:10, fontWeight:700, color:'#007AFF', background:'#E3F2FD', padding:'1px 6px', borderRadius:8 }}>Gestionnaire dédié</span>}
+                          {isSpecial && <span style={{ marginLeft:8, fontSize:10, fontWeight:700, color:'#5B5BD6', background:'#E3F2FD', padding:'1px 6px', borderRadius:8 }}>Gestionnaire dédié</span>}
                           {estCree && !isSpecial && <span style={{ marginLeft:8, fontSize:10, fontWeight:700, color:'#34C759', background:'#D1F2E0', padding:'1px 6px', borderRadius:8 }}>Créé</span>}
                         </td>
                         <td style={{ padding:'11px 14px' }}>
@@ -1261,13 +1292,13 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                         </td>
                         <td style={{ padding:'11px 14px' }}>
                           {isSpecial ? (
-                            <button onClick={()=>setActiveDoc(doc.id)} style={{ padding:'5px 14px', background:'#007AFF', color:'#fff', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
+                            <button onClick={()=>setActiveDoc(doc.id)} style={{ padding:'5px 14px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
                               Ouvrir →
                             </button>
                           ) : (
                             <div style={{ display:'flex', gap:7 }}>
                               {!estCree ? (
-                                <button onClick={()=>openCreate(doc.id)} style={{ padding:'5px 12px', background:'#007AFF', color:'#fff', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
+                                <button onClick={()=>openCreate(doc.id)} style={{ padding:'5px 12px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
                                   Créer
                                 </button>
                               ) : (
@@ -1275,7 +1306,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                                   <button onClick={()=>setViewDoc(doc.id)} style={{ padding:'5px 12px', background:'#34C759', color:'#fff', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
                                     Ouvrir
                                   </button>
-                                  <button onClick={()=>openEdit(doc.id)} style={{ padding:'5px 12px', background:'#fff', color:'#007AFF', border:'1px solid #007AFF', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
+                                  <button onClick={()=>openEdit(doc.id)} style={{ padding:'5px 12px', background:'#fff', color:'#5B5BD6', border:'1px solid #5B5BD6', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:700 }}>
                                     Éditer
                                   </button>
                                 </>
@@ -1327,14 +1358,14 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             <h2 style={{ fontSize:17, fontWeight:700, margin:0 }}>Plans de prévention</h2>
             <p style={{ fontSize:13, color:'#6E6E73', marginTop:3 }}>Co-activité avec entreprises extérieures — Art. R4512-6 à R4512-12</p>
           </div>
-          <button onClick={()=>setShowModal(true)} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', border:'none', borderRadius:10, background:'#007AFF', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}>
+          <button onClick={()=>setShowModal(true)} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', border:'none', borderRadius:10, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}>
             <IconPlus size={14}/> Nouveau plan
           </button>
         </div>
 
         {/* Creation modal */}
         {showModal && (
-          <form onSubmit={handleAdd} style={{ background:'#F0F7FF', border:'1px solid #007AFF', borderRadius:14, padding:22 }}>
+          <form onSubmit={handleAdd} style={{ background:'#F0F7FF', border:'1px solid #5B5BD6', borderRadius:14, padding:22 }}>
             <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 14px' }}>Nouveau plan de prévention</h3>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
               <div><label style={lbl}>Chantier *</label><input value={form.chantier} onChange={e=>setForm(p=>({...p,chantier:e.target.value}))} placeholder="Rénovation appartement Dupont" style={inp} required/></div>
@@ -1345,7 +1376,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             </div>
             <div style={{ marginTop:14, display:'flex', gap:8, justifyContent:'flex-end' }}>
               <button type="button" onClick={()=>setShowModal(false)} style={{ padding:'9px 18px', border:'1px solid #E5E5EA', borderRadius:10, background:'#fff', cursor:'pointer', fontWeight:600 }}>Annuler</button>
-              <button type="submit" style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#007AFF', color:'#fff', cursor:'pointer', fontWeight:600 }}>Créer le plan</button>
+              <button type="submit" style={{ padding:'9px 22px', border:'none', borderRadius:10, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontWeight:600 }}>Créer le plan</button>
             </div>
           </form>
         )}
@@ -1367,7 +1398,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             </div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={()=>{ setForm({chantier:plan.chantier,date:plan.date,entreprises:plan.entreprises?.join(', ')||'',risques:plan.risques?.join(', ')||'',mesures:''}); setShowModal(true); }} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconRefresh size={12}/> Modifier</button>
-              <button onClick={()=>window.open(`/documents/qse/plan-prevention-${plan.id}`,'_blank')} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconDownload size={12}/> PDF</button>
+              <button onClick={()=>genererPlanPrevention(plan, 'Bernard Martin BTP', '123 456 789 00012')} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconDownload size={12}/> PDF</button>
               <button onClick={()=>setPlans(p=>p.map(x=>x.id===plan.id?{...x,statut:'clôturé'}:x))} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconCheck size={12}/> Clôturer</button>
             </div>
           </div>
@@ -1425,7 +1456,7 @@ function AssignationChecker({ employes=[], habilitations=[] }) {
           {employes.map(e=><option key={e.id} value={e.id}>{e.prenom} {e.nom}</option>)}
         </select>
         <input placeholder="Compétences requises (ex: habilitation électrique, CACES)" value={competences} onChange={e=>setCompetences(e.target.value)} style={{ flex:1, minWidth:240, padding:'8px 12px', border:'1px solid #E5E5EA', borderRadius:8, fontSize:13, outline:'none' }}/>
-        <button onClick={verifier} disabled={loading||!employeId} style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', background:'#007AFF', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontWeight:600, fontSize:13 }}>
+        <button onClick={verifier} disabled={loading||!employeId} style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:8, cursor:'pointer', fontWeight:600, fontSize:13 }}>
           {loading?'…':<IconSearch size={14}/>} Vérifier
         </button>
       </div>
@@ -1441,4 +1472,4 @@ function AssignationChecker({ employes=[], habilitations=[] }) {
 
 const lbl = { display:'block', fontSize:12, fontWeight:600, color:'#6E6E73', marginBottom:4 };
 const inp = { width:'100%', padding:'9px 12px', border:'1px solid #E5E5EA', borderRadius:10, fontSize:14, outline:'none', boxSizing:'border-box' };
-const cellInp = { padding:'4px 6px', border:'1px solid #007AFF', borderRadius:5, fontSize:12, outline:'none', width:'100%', boxSizing:'border-box' };
+const cellInp = { padding:'4px 6px', border:'1px solid #5B5BD6', borderRadius:5, fontSize:12, outline:'none', width:'100%', boxSizing:'border-box' };

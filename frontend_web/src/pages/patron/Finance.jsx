@@ -138,9 +138,16 @@ export default function Finance() {
       </div>
 
       {/* Tabs */}
-      <div className="tabs">
+      <div className="tabs" role="tablist" aria-label="Sections de la finance">
         {TABS.map(t => (
-          <button key={t.id} className={`tab-item${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            tabIndex={tab === t.id ? 0 : -1}
+            className={`tab-item${tab === t.id ? ' active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
             {t.label}
           </button>
         ))}
@@ -582,7 +589,7 @@ function FacturesView({ factures, setFac }) {
         <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={() => setMode('list')} style={{ padding: '8px 16px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>← Retour</button>
           <button onClick={() => window.print()} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#1C1C1E', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}><IconDownload size={14} /> Télécharger PDF</button>
-          <button onClick={handleEnvoyer} disabled={envoi} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{envoi ? 'Envoi…' : 'Envoyer au client'}</button>
+          <button onClick={handleEnvoyer} disabled={envoi} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{envoi ? 'Envoi…' : 'Envoyer au client'}</button>
         </div>
 
         <div id="facture-print" style={{ background: '#fff', borderRadius: 14, padding: 40, boxShadow: '0 1px 8px rgba(0,0,0,0.10)', maxWidth: 760, margin: '0 auto', width: '100%' }}>
@@ -656,7 +663,7 @@ function FacturesView({ factures, setFac }) {
                   <span style={{ fontWeight: bold ? 800 : 600, color: color || '#1C1C1E' }}>{val.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: '#007AFF', borderRadius: 8, marginTop: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: '#5B5BD6', borderRadius: 8, marginTop: 8 }}>
                 <span style={{ fontWeight: 800, color: '#fff', fontSize: 15 }}>NET À PAYER TTC</span>
                 <span style={{ fontWeight: 800, color: '#fff', fontSize: 17 }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
               </div>
@@ -729,7 +736,7 @@ function FacturesView({ factures, setFac }) {
             </tbody>
           </table>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-            <button type="button" onClick={addLigne} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #C7C7CC', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#007AFF' }}><IconPlus size={13} /> Ajouter une ligne</button>
+            <button type="button" onClick={addLigne} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #C7C7CC', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#5B5BD6' }}><IconPlus size={13} /> Ajouter une ligne</button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <label style={{ fontSize: 13, color: '#6E6E73' }}>Remise</label>
               <input type="number" className="input" style={{ width: 70, padding: '6px 10px', textAlign: 'right' }} value={form.remise} onChange={e => setForm(p => ({ ...p, remise: e.target.value }))} min={0} max={100} />
@@ -748,7 +755,7 @@ function FacturesView({ factures, setFac }) {
               ))}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '2px solid #1C1C1E', marginTop: 4 }}>
                 <span style={{ fontWeight: 800 }}>TOTAL TTC</span>
-                <span style={{ fontWeight: 800, fontSize: 16, color: '#007AFF' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+                <span style={{ fontWeight: 800, fontSize: 16, color: '#5B5BD6' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
               </div>
             </div>
           </div>
@@ -762,7 +769,7 @@ function FacturesView({ factures, setFac }) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           <button type="button" onClick={() => setMode('list')} style={{ padding: '10px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
-          <button type="submit" disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: saving ? '#C7C7CC' : '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+          <button type="submit" disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: saving ? '#C7C7CC' : '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
             {saving ? 'Création…' : 'Créer la facture'}
           </button>
         </div>
@@ -774,7 +781,7 @@ function FacturesView({ factures, setFac }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => setMode('create')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={() => setMode('create')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
           <IconPlus size={14} /> Nouvelle facture
         </button>
       </div>
@@ -822,6 +829,8 @@ function SalairesView() {
   const [loading, setLoading] = useState(false);
   const [isDemo, setIsDemo]   = useState(false);
   const [paid, setPaid]       = useState(false);
+  const [depotAdresse, setDepotAdresse] = useState(() => localStorage.getItem('btp_depot_adresse') || '');
+  const [trajets, setTrajets] = useState({});
 
   async function calculer() {
     setLoading(true);
@@ -846,6 +855,18 @@ function SalairesView() {
     } catch { /* demo mode */ }
     setPaid(true);
   }
+
+  function getBTPZoneRate(km) {
+    const k = Number(km) || 0;
+    if (k <= 10) return { zone: 'Zone 1', rate: 1.50 };
+    if (k <= 20) return { zone: 'Zone 2', rate: 1.84 };
+    if (k <= 30) return { zone: 'Zone 3', rate: 2.00 };
+    if (k <= 40) return { zone: 'Zone 4', rate: 2.32 };
+    if (k <= 50) return { zone: 'Zone 5', rate: 2.67 };
+    return { zone: 'Zone 6', rate: 3.05 };
+  }
+  function getTrajet(employeId) { return trajets[employeId] || { km: 0, jours: 22, inclure: false }; }
+  function setTrajet(employeId, patch) { setTrajets(p => ({ ...p, [employeId]: { ...getTrajet(employeId), ...patch } })); }
 
   const totalChargesPatronales = calcul?.resume?.totalChargesPatronales || 0;
   const coutTotal = (calcul?.resume?.totalBrut || 0) + totalChargesPatronales;
@@ -955,6 +976,88 @@ function SalairesView() {
               </tfoot>
             </table>
           </div>
+
+          {/* Indemnités de trajet BTP */}
+          <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', background: 'rgba(91,91,214,0.04)' }}>
+              <h3 style={{ margin: '0 0 2px', fontSize: '0.9375rem', fontWeight: 700 }}>Indemnités de trajet BTP</h3>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Barème BTP 2024 · Art. R3261-1 Code du Travail · Exonérées de cotisations dans la limite des plafonds URSSAF
+              </p>
+            </div>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)' }}>
+              <label className="label">Adresse du dépôt de l'entreprise</label>
+              <input className="input" style={{ maxWidth: 420 }}
+                value={depotAdresse}
+                onChange={e => { setDepotAdresse(e.target.value); localStorage.setItem('btp_depot_adresse', e.target.value); }}
+                placeholder="Ex : 12 rue de la Paix, 45000 Orléans" />
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Employé</th>
+                  <th style={{ textAlign: 'right' }}>Distance aller (km)</th>
+                  <th style={{ textAlign: 'right' }}>Jours travaillés</th>
+                  <th>Zone BTP</th>
+                  <th style={{ textAlign: 'right' }}>Indemnité / jour</th>
+                  <th style={{ textAlign: 'right' }}>Total mois</th>
+                  <th style={{ textAlign: 'center' }}>Inclure</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calcul.employes?.map(emp => {
+                  const t = getTrajet(emp.employeId);
+                  const { zone, rate } = getBTPZoneRate(t.km);
+                  const totalMois = rate * (Number(t.jours) || 0);
+                  return (
+                    <tr key={emp.employeId}>
+                      <td style={{ fontWeight: 600 }}>{emp.nom}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <input type="number" min={0} max={300} step={0.5} className="input"
+                          style={{ width: 80, textAlign: 'right', padding: '4px 8px' }}
+                          value={t.km} onChange={e => setTrajet(emp.employeId, { km: e.target.value })} />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <input type="number" min={0} max={31} step={1} className="input"
+                          style={{ width: 70, textAlign: 'right', padding: '4px 8px' }}
+                          value={t.jours} onChange={e => setTrajet(emp.employeId, { jours: e.target.value })} />
+                      </td>
+                      <td>
+                        <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 5, background: 'rgba(91,91,214,0.08)', color: 'var(--primary)', fontSize: '0.8125rem', fontWeight: 600 }}>
+                          {zone}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{rate.toFixed(2)} €</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700, color: t.inclure ? '#1A7A3C' : 'var(--text)' }}>
+                        {totalMois.toFixed(2)} €
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input type="checkbox" checked={!!t.inclure}
+                          onChange={e => setTrajet(emp.employeId, { inclure: e.target.checked })}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: 'var(--bg)' }}>
+                  <td colSpan={5} style={{ padding: '10px 16px', fontWeight: 700 }}>Total indemnités incluses dans la paie</td>
+                  <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 800, color: '#1A7A3C' }}>
+                    {(calcul.employes?.reduce((sum, emp) => {
+                      const t = getTrajet(emp.employeId);
+                      if (!t.inclure) return sum;
+                      return sum + getBTPZoneRate(t.km).rate * (Number(t.jours) || 0);
+                    }, 0) || 0).toFixed(2)} €
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+            <div style={{ padding: '10px 20px', background: 'rgba(91,91,214,0.04)', borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+              Ces indemnités sont indicatives et à reporter manuellement sur le bulletin de paie. Elles ne sont pas transmises au serveur.
+            </div>
+          </div>
         </>
       )}
     </div>
@@ -1009,7 +1112,7 @@ function BaremePaiementView() {
   const totalPct = echeances.reduce((s, e) => s + e.pct, 0);
 
   const TYPE_COLORS = {
-    acompte:  { bg: '#EBF5FF', color: '#007AFF', label: 'Acompte' },
+    acompte:  { bg: '#EBF5FF', color: '#5B5BD6', label: 'Acompte' },
     situation:{ bg: '#FFF3CD', color: '#856404', label: 'Situation' },
     solde:    { bg: '#D1F2E0', color: '#1A7F43', label: 'Solde' },
     retenue:  { bg: '#F2F2F7', color: '#6E6E73', label: 'Retenue garantie' },

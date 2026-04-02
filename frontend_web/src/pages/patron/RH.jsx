@@ -168,9 +168,9 @@ export default function RH() {
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
         {[
-          { label: 'Employés actifs',  value: tdb?.equipe?.actifs || 0,       color: '#007AFF', Icon: IconTeam, tabLink: 'Employés' },
+          { label: 'Employés actifs',  value: tdb?.equipe?.actifs || 0,       color: '#5B5BD6', Icon: IconTeam, tabLink: 'Employés' },
           { label: 'CDI',              value: tdb?.equipe?.contratsCDI || 0,   color: '#34C759', Icon: IconDocument, tabLink: null },
-          { label: 'CDD',              value: tdb?.equipe?.contratsCDD || 0,   color: '#007AFF', Icon: IconDocument, tabLink: null },
+          { label: 'CDD',              value: tdb?.equipe?.contratsCDD || 0,   color: '#5B5BD6', Icon: IconDocument, tabLink: null },
           { label: 'Masse salariale',  value: `${(tdb?.masseSalariale?.totalBrut || 0).toLocaleString('fr-FR')} €`, color: '#FF9500', Icon: IconTeam, tabLink: 'Masse salariale', clickable: true },
         ].map(k => (
           <div key={k.label}
@@ -230,7 +230,7 @@ const ACTIVITES_DEMO = [
   { type: 'conge',  text: 'Sophie M. — Congé payé approuvé (15–25 juin)', date: '2025-03-20', color: '#34C759' },
   { type: 'frais',  text: 'Henri L. — Note de frais 142€ en attente',      date: '2025-03-19', color: '#FF9500' },
   { type: 'contrat',text: 'Marc B. — Renouvellement CDD à planifier',      date: '2025-03-18', color: '#FF3B30' },
-  { type: 'paie',   text: 'Bulletins de paie Mars générés — 4 employés',  date: '2025-03-15', color: '#007AFF' },
+  { type: 'paie',   text: 'Bulletins de paie Mars générés — 4 employés',  date: '2025-03-15', color: '#5B5BD6' },
 ];
 
 function TabDashboardRH({ employes, tdb, setTab }) {
@@ -240,11 +240,11 @@ function TabDashboardRH({ employes, tdb, setTab }) {
   const fraisEnAttente  = tdb?.alertes?.fraisEnAttente  || 0;
 
   const kpis = [
-    { label: 'Effectif actif', val: nb, suffix: '', color: '#007AFF', sub: `${tdb?.equipe?.contratsCDI||0} CDI · ${tdb?.equipe?.contratsCDD||0} CDD`, tab: 'Employés' },
+    { label: 'Effectif actif', val: nb, suffix: '', color: '#5B5BD6', sub: `${tdb?.equipe?.contratsCDI||0} CDI · ${tdb?.equipe?.contratsCDD||0} CDD`, tab: 'Employés' },
     { label: 'Masse salariale/mois', val: masseBrute ? (masseBrute/12).toFixed(0) : 28500, suffix: ' €', color: '#FF9500', sub: 'Brut charges incluses', tab: 'Masse salariale' },
     { label: 'Congés en attente', val: congesEnAttente || 2, suffix: '', color: congesEnAttente>0?'#FF3B30':'#34C759', sub: 'demandes à valider', tab: 'Congés' },
     { label: 'Frais à rembourser', val: fraisEnAttente || 3, suffix: '', color: fraisEnAttente>0?'#FF9500':'#34C759', sub: 'notes en attente', tab: 'Notes de frais' },
-    { label: 'Bulletins à générer', val: nb, suffix: '', color: '#007AFF', sub: `Mars ${new Date().getFullYear()}`, tab: 'Paie' },
+    { label: 'Bulletins à générer', val: nb, suffix: '', color: '#5B5BD6', sub: `Mars ${new Date().getFullYear()}`, tab: 'Paie' },
     { label: 'Candidats pipeline', val: 5, suffix: '', color: '#AF52DE', sub: '2 en entretien', tab: 'Recrutement' },
   ];
 
@@ -270,7 +270,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
         <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700 }}>Répartition de l'effectif</h3>
           {[
-            { label: 'CDI', count: tdb?.equipe?.contratsCDI || 3, total: nb || 4, color: '#007AFF' },
+            { label: 'CDI', count: tdb?.equipe?.contratsCDI || 3, total: nb || 4, color: '#5B5BD6' },
             { label: 'CDD', count: tdb?.equipe?.contratsCDD || 1, total: nb || 4, color: '#FF9500' },
             { label: 'Apprentissage', count: 0, total: nb || 4, color: '#34C759' },
             { label: 'Intérim', count: 0, total: nb || 4, color: '#AF52DE' },
@@ -305,7 +305,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
       </div>
 
       {/* Alertes RH */}
-      <div style={{ background: 'linear-gradient(135deg, #007AFF, #0066CC)', borderRadius: 16, padding: '20px 24px', color: '#fff' }}>
+      <div style={{ background: 'linear-gradient(135deg, #5B5BD6, #0066CC)', borderRadius: 16, padding: '20px 24px', color: '#fff' }}>
         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Actions à faire cette semaine</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {[
@@ -326,89 +326,332 @@ function TabDashboardRH({ employes, tdb, setTab }) {
 }
 
 /* ── Recrutement ── */
-const PIPELINE_STAGES = ['Candidature reçue', 'CV examiné', 'Entretien prévu', 'Offre envoyée', 'Recruté'];
-const CANDIDATS_DEMO = [
-  { id:1, nom:'Thomas Petit', poste:'Maçon qualifié', stage:'Entretien prévu', date:'2025-03-22', note:'Bonnes références, 8 ans expérience' },
-  { id:2, nom:'Lucie Renard', poste:'Chef de chantier', stage:'CV examiné', date:'2025-03-20', note:'Diplôme BTP + CACES' },
-  { id:3, nom:'Ahmed Zouari', poste:'Électricien N3', stage:'Entretien prévu', date:'2025-03-21', note:'Habilitations à jour' },
-  { id:4, nom:'Marie Blanc', poste:'Assistante RH', stage:'Candidature reçue', date:'2025-03-23', note:'' },
-  { id:5, nom:'David Simon', poste:'Plombier-chauffagiste', stage:'Offre envoyée', date:'2025-03-18', note:'Disponible 1er avril' },
-];
+const PIPELINE_STAGES = ['nouvelle', 'examinée', 'entretien', 'retenue', 'rejetée'];
+const PIPELINE_LABELS = { nouvelle:'Nouvelle', examinée:'CV examiné', entretien:'Entretien prévu', retenue:'Retenue', rejetée:'Rejetée' };
+const PIPELINE_COLORS = { nouvelle:'#8E8E93', examinée:'#5B5BD6', entretien:'#FF9500', retenue:'#34C759', rejetée:'#C0392B' };
+const CONTRATS = ['CDI','CDD','Intérim','Alternance','Stage','Freelance'];
+const POSTES_BTP = ['Maçon','Plombier','Électricien','Charpentier','Menuisier','Carreleur','Peintre','Chef de chantier','Conducteur de travaux','Grutier','Coffreur','Étancheur','Autre'];
+
+const FORM_ANNONCE_INIT = { titre:'', poste:'', typeContrat:'CDI', description:'', localisation:'', salaireMin:'', salaireMax:'', experience:'', competences:'', dateDebut:'', nomEntreprise:'' };
 
 function RecrutementView() {
-  const [candidats, setCandidats] = useState(CANDIDATS_DEMO);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ nom:'', poste:'', stage:'Candidature reçue', note:'' });
+  const [view, setView] = useState('annonces'); // 'annonces' | 'pipeline' | 'create'
+  const [annonces, setAnnonces] = useState([]);
+  const [candidatures, setCandidatures] = useState([]);
+  const [selectedAnnonce, setSelectedAnnonce] = useState(null);
+  const [form, setForm] = useState(FORM_ANNONCE_INIT);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState('');
   const [selectedCand, setSelectedCand] = useState(null);
 
-  function advance(id) {
-    setCandidats(prev => prev.map(c => {
-      if (c.id !== id) return c;
-      const idx = PIPELINE_STAGES.indexOf(c.stage);
-      return idx < PIPELINE_STAGES.length - 1 ? { ...c, stage: PIPELINE_STAGES[idx+1] } : c;
-    }));
+  function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
+
+  async function fetchAnnonces() {
+    try {
+      const r = await api.get('/recrutement/patron/annonces');
+      setAnnonces(r.data.annonces || []);
+    } catch { setAnnonces([]); }
   }
+
+  async function fetchCandidatures(annonceId) {
+    try {
+      const r = await api.get(`/recrutement/patron/annonces/${annonceId}/candidatures`);
+      setCandidatures(r.data.candidatures || []);
+    } catch { setCandidatures([]); }
+  }
+
+  useEffect(() => { fetchAnnonces(); }, []);
+
+  async function creerAnnonce(e) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post('/recrutement/patron/annonces', {
+        ...form,
+        salaireMin: form.salaireMin ? Number(form.salaireMin) : null,
+        salaireMax: form.salaireMax ? Number(form.salaireMax) : null,
+      });
+      showToast('Annonce publiée sur la page d\'accueil !');
+      await fetchAnnonces();
+      setView('annonces');
+      setForm(FORM_ANNONCE_INIT);
+    } catch (err) {
+      showToast(err.response?.data?.erreur || 'Erreur lors de la publication');
+    }
+    setSaving(false);
+  }
+
+  async function fermerAnnonce(id) {
+    await api.put(`/recrutement/patron/annonces/${id}`, { statut: 'fermée' }).catch(() => {});
+    showToast('Annonce fermée');
+    await fetchAnnonces();
+  }
+
+  async function supprimerAnnonce(id) {
+    if (!window.confirm('Supprimer cette annonce ?')) return;
+    await api.delete(`/recrutement/patron/annonces/${id}`).catch(() => {});
+    showToast('Annonce supprimée');
+    await fetchAnnonces();
+  }
+
+  async function avancerCandidature(candId, statut) {
+    await api.put(`/recrutement/patron/candidatures/${candId}`, { statut }).catch(() => {});
+    await fetchCandidatures(selectedAnnonce.id);
+  }
+
+  async function noterCandidature(candId, noteInterne) {
+    await api.put(`/recrutement/patron/candidatures/${candId}`, { noteInterne }).catch(() => {});
+    setCandidatures(prev => prev.map(c => c.id === candId ? { ...c, noteInterne } : c));
+  }
+
+  const statutBadgeAnnonce = (s) => {
+    const m = { active:{ bg:'#D1F2E0', c:'#1A7F43', l:'Active' }, fermée:{ bg:'#FFE5E5', c:'#C0392B', l:'Fermée' } };
+    const x = m[s] || m.active;
+    return <span style={{ padding:'2px 8px', borderRadius:20, fontSize:11, fontWeight:700, background:x.bg, color:x.c }}>{x.l}</span>;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Pipeline de recrutement</h2>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>{candidats.length} candidats en cours</p>
+      {toast && (
+        <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 9999, background: '#1A7F43', color: '#fff', padding: '12px 20px', borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
+          {toast}
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
-          <IconPlus size={14} /> Ajouter un candidat
+      )}
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid #E5E5EA', paddingBottom: 0 }}>
+        {[['annonces','Mes annonces'],['pipeline','Pipeline candidatures']].map(([v, l]) => (
+          <button key={v} onClick={() => setView(v)} style={{ padding: '9px 18px', background: 'none', border: 'none', borderBottom: view === v ? '2px solid #5B5BD6' : '2px solid transparent', cursor: 'pointer', fontWeight: view === v ? 700 : 500, color: view === v ? '#5B5BD6' : '#6E6E73', fontSize: 14, marginBottom: -1 }}>
+            {l}
+          </button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <button onClick={() => setView('create')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, marginBottom: 4 }}>
+          <IconPlus size={14} /> Publier une annonce
         </button>
       </div>
 
-      {showForm && (
-        <div style={{ background: '#F0F7FF', border: '2px solid rgba(0,122,255,0.2)', borderRadius: 14, padding: 20 }}>
-          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700 }}>Nouveau candidat</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            <div><label style={lbl}>Nom Prénom</label><input value={form.nom} onChange={e=>setForm(p=>({...p,nom:e.target.value}))} placeholder="Nom Prénom" style={inp}/></div>
-            <div><label style={lbl}>Poste recherché</label><input value={form.poste} onChange={e=>setForm(p=>({...p,poste:e.target.value}))} placeholder="Maçon, Électricien…" style={inp}/></div>
-            <div><label style={lbl}>Étape</label>
-              <select value={form.stage} onChange={e=>setForm(p=>({...p,stage:e.target.value}))} style={inp}>
-                {PIPELINE_STAGES.map(s => <option key={s}>{s}</option>)}
-              </select>
+      {/* ── Formulaire création ── */}
+      {view === 'create' && (
+        <div style={{ background: '#fff', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>Nouvelle annonce de recrutement</h2>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>Elle sera visible sur la page d'accueil dans la section "Ils recrutent"</p>
             </div>
-            <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Notes</label><input value={form.note} onChange={e=>setForm(p=>({...p,note:e.target.value}))} placeholder="Expérience, remarques…" style={inp}/></div>
+            <button onClick={() => setView('annonces')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#8E8E93' }}>×</button>
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-            <button onClick={() => setShowForm(false)} style={{ padding: '8px 16px', border: '1px solid #E5E5EA', borderRadius: 9, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Annuler</button>
-            <button onClick={() => { if (!form.nom || !form.poste) return; setCandidats(p => [...p, { ...form, id: Date.now(), date: new Date().toISOString().split('T')[0] }]); setShowForm(false); setForm({ nom:'', poste:'', stage:'Candidature reçue', note:'' }); }} style={{ padding: '8px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 9, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>Ajouter</button>
+          <form onSubmit={creerAnnonce}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={lbl}>Titre de l'annonce *</label>
+                <input value={form.titre} onChange={e => setForm(p => ({...p, titre: e.target.value}))} required
+                  placeholder="Ex : Maçon qualifié N3 — CDI Orléans" style={{ ...inp, fontSize: 15, fontWeight: 600 }} />
+              </div>
+              <div>
+                <label style={lbl}>Poste / Métier *</label>
+                <select value={form.poste} onChange={e => setForm(p => ({...p, poste: e.target.value}))} required style={inp}>
+                  <option value="">Sélectionner…</option>
+                  {POSTES_BTP.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={lbl}>Type de contrat</label>
+                <select value={form.typeContrat} onChange={e => setForm(p => ({...p, typeContrat: e.target.value}))} style={inp}>
+                  {CONTRATS.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={lbl}>Localisation *</label>
+                <input value={form.localisation} onChange={e => setForm(p => ({...p, localisation: e.target.value}))} required
+                  placeholder="Ex : Orléans (45)" style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Nom de l'entreprise (affiché publiquement)</label>
+                <input value={form.nomEntreprise} onChange={e => setForm(p => ({...p, nomEntreprise: e.target.value}))}
+                  placeholder="Ex : Bernard Martin BTP" style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Salaire min (€ brut/mois)</label>
+                <input type="number" min={0} value={form.salaireMin} onChange={e => setForm(p => ({...p, salaireMin: e.target.value}))}
+                  placeholder="Ex : 2200" style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Salaire max (€ brut/mois)</label>
+                <input type="number" min={0} value={form.salaireMax} onChange={e => setForm(p => ({...p, salaireMax: e.target.value}))}
+                  placeholder="Ex : 2800" style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Expérience requise</label>
+                <input value={form.experience} onChange={e => setForm(p => ({...p, experience: e.target.value}))}
+                  placeholder="Ex : 3 ans minimum, N2/N3" style={inp} />
+              </div>
+              <div>
+                <label style={lbl}>Date de démarrage souhaitée</label>
+                <input type="date" value={form.dateDebut} onChange={e => setForm(p => ({...p, dateDebut: e.target.value}))} style={inp} />
+              </div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={lbl}>Compétences recherchées</label>
+                <input value={form.competences} onChange={e => setForm(p => ({...p, competences: e.target.value}))}
+                  placeholder="Ex : Maçonnerie traditionnelle, coffrage, lecture de plans, CACES…" style={inp} />
+              </div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={lbl}>Description du poste *</label>
+                <textarea value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} required rows={6}
+                  placeholder="Décrivez les missions, les conditions de travail, les avantages, les qualités recherchées…"
+                  style={{ ...inp, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => { setView('annonces'); setForm(FORM_ANNONCE_INIT); }} style={{ padding: '9px 20px', background: '#F2F2F7', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+                Annuler
+              </button>
+              <button type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 14 }}>
+                {saving ? 'Publication…' : '🚀 Publier l\'annonce'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── Liste des annonces ── */}
+      {view === 'annonces' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {annonces.length === 0 ? (
+            <div style={{ background: '#fff', borderRadius: 14, padding: 60, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+              <p style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1E', marginBottom: 8 }}>Aucune annonce publiée</p>
+              <p style={{ color: '#8E8E93', marginBottom: 20, fontSize: 14 }}>Publiez votre première offre d'emploi, elle apparaîtra sur la page d'accueil.</p>
+              <button onClick={() => setView('create')} style={{ padding: '10px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+                <IconPlus size={14} /> Publier une annonce
+              </button>
+            </div>
+          ) : annonces.map(a => (
+            <div key={a.id} style={{ background: '#fff', borderRadius: 14, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontWeight: 800, fontSize: 15, color: '#1C1C1E' }}>{a.titre}</span>
+                  {statutBadgeAnnonce(a.statut)}
+                </div>
+                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13, color: '#6E6E73' }}>
+                  <span>💼 {a.typeContrat}</span>
+                  <span>📍 {a.localisation}</span>
+                  {a.salaireMin && <span>💶 {a.salaireMin.toLocaleString('fr-FR')} – {a.salaireMax?.toLocaleString('fr-FR') || '?'} €/mois</span>}
+                  <span>📅 Publiée le {new Date(a.creeLe).toLocaleDateString('fr-FR')}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button onClick={() => { setSelectedAnnonce(a); fetchCandidatures(a.id); setView('pipeline'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#E3F2FD', color: '#1565C0', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                  👥 {a.nbCandidatures} candidature{a.nbCandidatures !== 1 ? 's' : ''}
+                </button>
+                {a.statut === 'active' && (
+                  <button onClick={() => fermerAnnonce(a.id)} style={{ padding: '7px 14px', background: '#FFF3E0', color: '#E65100', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                    Fermer
+                  </button>
+                )}
+                <button onClick={() => supprimerAnnonce(a.id)} style={{ padding: '7px 12px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Pipeline candidatures ── */}
+      {view === 'pipeline' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => { setView('annonces'); setSelectedAnnonce(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B5BD6', fontWeight: 600, fontSize: 14 }}>
+              ← Retour aux annonces
+            </button>
+            {selectedAnnonce && (
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#1C1C1E' }}>
+                {selectedAnnonce.titre} — {candidatures.length} candidature{candidatures.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+
+          {/* Kanban */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
+            {PIPELINE_STAGES.map(stage => {
+              const stageCands = candidatures.filter(c => c.statut === stage);
+              const sc = PIPELINE_COLORS[stage];
+              const sl = PIPELINE_LABELS[stage];
+              return (
+                <div key={stage} style={{ background: '#F8F9FA', borderRadius: 12, padding: 12, minHeight: 180 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{sl}</span>
+                    <span style={{ width: 20, height: 20, borderRadius: '50%', background: sc + '22', color: sc, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{stageCands.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {stageCands.map(c => (
+                      <div key={c.id} style={{ background: '#fff', borderRadius: 10, padding: '10px 12px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', borderLeft: `3px solid ${sc}` }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', marginBottom: 1 }}>{c.prenom} {c.nom}</div>
+                        <div style={{ fontSize: 11, color: '#8E8E93', marginBottom: 4 }}>{c.email}</div>
+                        {c.telephone && <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>📞 {c.telephone}</div>}
+                        {c.lettre && (
+                          <button onClick={() => setSelectedCand(c)}
+                            style={{ fontSize: 10, color: '#5B5BD6', background: '#E3F2FD', border: 'none', borderRadius: 6, padding: '2px 7px', cursor: 'pointer', fontWeight: 700, marginBottom: 6 }}>
+                            Voir lettre
+                          </button>
+                        )}
+                        {/* Actions */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                          {PIPELINE_STAGES.filter(s => s !== stage && s !== 'rejetée').map(s => (
+                            <button key={s} onClick={() => avancerCandidature(c.id, s)}
+                              style={{ fontSize: 10, color: PIPELINE_COLORS[s], background: PIPELINE_COLORS[s] + '18', border: 'none', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontWeight: 700 }}>
+                              → {PIPELINE_LABELS[s]}
+                            </button>
+                          ))}
+                          {stage !== 'rejetée' && (
+                            <button onClick={() => avancerCandidature(c.id, 'rejetée')}
+                              style={{ fontSize: 10, color: '#C0392B', background: '#FFE5E5', border: 'none', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontWeight: 700 }}>
+                              Rejeter
+                            </button>
+                          )}
+                        </div>
+                        <div style={{ marginTop: 6 }}>
+                          <input placeholder="Note interne…" value={c.noteInterne || ''} onChange={e => noterCandidature(c.id, e.target.value)}
+                            style={{ width: '100%', fontSize: 10, padding: '3px 6px', border: '1px solid #E5E5EA', borderRadius: 5, outline: 'none' }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Kanban */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, overflowX: 'auto' }}>
-        {PIPELINE_STAGES.map(stage => {
-          const stageCands = candidats.filter(c => c.stage === stage);
-          const stageColors = { 'Candidature reçue': '#8E8E93', 'CV examiné': '#007AFF', 'Entretien prévu': '#FF9500', 'Offre envoyée': '#AF52DE', 'Recruté': '#34C759' };
-          const sc = stageColors[stage];
-          return (
-            <div key={stage} style={{ background: '#F8F9FA', borderRadius: 12, padding: 12, minHeight: 200 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: sc, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stage}</span>
-                <span style={{ width: 20, height: 20, borderRadius: '50%', background: sc + '20', color: sc, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{stageCands.length}</span>
+      {/* Modal lettre de motivation */}
+      {selectedCand && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 28, maxWidth: 600, width: '100%', maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.25)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>{selectedCand.prenom} {selectedCand.nom}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>{selectedCand.email} {selectedCand.telephone ? `· ${selectedCand.telephone}` : ''}</p>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {stageCands.map(c => (
-                  <div key={c.id} style={{ background: '#fff', borderRadius: 10, padding: '10px 12px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', borderLeft: `3px solid ${sc}` }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', marginBottom: 2 }}>{c.nom}</div>
-                    <div style={{ fontSize: 11, color: '#8E8E93', marginBottom: 6 }}>{c.poste}</div>
-                    {c.note && <div style={{ fontSize: 10, color: '#6E6E73', marginBottom: 8, lineHeight: 1.4 }}>{c.note}</div>}
-                    {stage !== 'Recruté' && (
-                      <button onClick={() => advance(c.id)} style={{ fontSize: 10, color: sc, background: sc + '15', border: 'none', borderRadius: 6, padding: '3px 7px', cursor: 'pointer', fontWeight: 700 }}>Avancer →</button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <button onClick={() => setSelectedCand(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#8E8E93' }}>×</button>
             </div>
-          );
-        })}
-      </div>
+            {selectedCand.lettre && (
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Lettre de motivation</p>
+                <div style={{ background: '#F8F8F8', borderRadius: 10, padding: 16, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', color: '#1C1C1E' }}>{selectedCand.lettre}</div>
+              </div>
+            )}
+            {selectedCand.cvTexte && (
+              <div style={{ marginTop: 16 }}>
+                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>CV / Expérience</p>
+                <div style={{ background: '#F8F8F8', borderRadius: 10, padding: 16, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', color: '#1C1C1E' }}>{selectedCand.cvTexte}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -438,7 +681,7 @@ function FormationView() {
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Plan de formation</h2>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>Obligation formation : {formatCur(coutRealise)} réalisés sur {formatCur(totalBudget)} prévus</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
           <IconPlus size={14} /> Ajouter une formation
         </button>
       </div>
@@ -472,7 +715,7 @@ function FormationView() {
           </div>
           <div style={{ display:'flex', gap:10, marginTop:14 }}>
             <button onClick={() => setShowForm(false)} style={{ padding:'8px 16px', border:'1px solid #E5E5EA', borderRadius:9, background:'#fff', cursor:'pointer', fontWeight:600, fontSize:13 }}>Annuler</button>
-            <button onClick={() => { if(!form.titre||!form.employe) return; setFormations(p=>[...p,{...form,id:Date.now()}]); setShowForm(false); setForm({titre:'',employe:'',organisme:'',dateDebut:'',dateFin:'',cout:'',statut:'planifie',obligatoire:false}); }} style={{ padding:'8px 18px', background:'#007AFF', color:'#fff', border:'none', borderRadius:9, cursor:'pointer', fontWeight:700, fontSize:13 }}>Ajouter</button>
+            <button onClick={() => { if(!form.titre||!form.employe) return; setFormations(p=>[...p,{...form,id:Date.now()}]); setShowForm(false); setForm({titre:'',employe:'',organisme:'',dateDebut:'',dateFin:'',cout:'',statut:'planifie',obligatoire:false}); }} style={{ padding:'8px 18px', background:'#5B5BD6', color:'#fff', border:'none', borderRadius:9, cursor:'pointer', fontWeight:700, fontSize:13 }}>Ajouter</button>
           </div>
         </div>
       )}
@@ -566,7 +809,7 @@ function EmployesView({ employes: initEmployes }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
           <IconPlus size={14} /> Ajouter un employé
         </button>
       </div>
@@ -588,7 +831,7 @@ function EmployesView({ employes: initEmployes }) {
               <tr key={e.id} style={{ borderBottom: '1px solid #F2F2F7', cursor: 'pointer' }} onClick={() => openEdit(e)}>
                 <td style={{ padding: '12px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#007AFF20', color: '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#5B5BD620', color: '#5B5BD6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
                       {((e.prenom?.[0] || '') + (e.nom?.[0] || '')).toUpperCase()}
                     </div>
                     <div>
@@ -626,7 +869,7 @@ function EmployesView({ employes: initEmployes }) {
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: 12, color: '#6E6E73' }}>{e.telephone || '—'}</td>
                 <td style={{ padding: '12px 16px' }}>
-                  <button onClick={ev => { ev.stopPropagation(); openEdit(e); }} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#007AFF' }}>
+                  <button onClick={ev => { ev.stopPropagation(); openEdit(e); }} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#5B5BD6' }}>
                     Modifier
                   </button>
                 </td>
@@ -699,7 +942,7 @@ function EmployesView({ employes: initEmployes }) {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F2F7' }}>
                 <button type="button" onClick={() => setModal(null)} style={{ padding: '10px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
-                <button type="submit" disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: saving ? '#C7C7CC' : '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+                <button type="submit" disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: saving ? '#C7C7CC' : '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
                   {saving ? 'Enregistrement…' : modal === 'add' ? 'Créer l\'employé' : 'Enregistrer les modifications'}
                 </button>
               </div>
@@ -714,10 +957,10 @@ function EmployesView({ employes: initEmployes }) {
 /* ── Planning & Localisation ── */
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const HEURES = ['07h', '08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h'];
-const COLORS = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA', '#FF6B6B'];
+const COLORS = ['#5B5BD6', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA', '#FF6B6B'];
 
 const PLANNING_DEMO = [
-  { employeId: 1, nom: 'Pierre Martin', poste: 'Maçon', chantier: 'Rénovation façade — Leblanc', adresse: '24 rue Victor Hugo, Paris 15e', lat: 48.840, lng: 2.290, couleur: '#007AFF',
+  { employeId: 1, nom: 'Pierre Martin', poste: 'Maçon', chantier: 'Rénovation façade — Leblanc', adresse: '24 rue Victor Hugo, Paris 15e', lat: 48.840, lng: 2.290, couleur: '#5B5BD6',
     semaine: { Lun: { debut: 7, fin: 17, label: 'Chantier Leblanc' }, Mar: { debut: 7, fin: 17, label: 'Chantier Leblanc' }, Mer: { debut: 7, fin: 12, label: 'Chantier Leblanc' }, Jeu: null, Ven: { debut: 8, fin: 16, label: 'Chantier Leblanc' }, Sam: null } },
   { employeId: 2, nom: 'Jacques Durand', poste: 'Électricien', chantier: 'Installation électrique — SCI Horizon', adresse: '5 rue Pasteur, Créteil', lat: 48.790, lng: 2.455, couleur: '#34C759',
     semaine: { Lun: null, Mar: { debut: 8, fin: 18, label: 'SCI Horizon' }, Mer: { debut: 8, fin: 18, label: 'SCI Horizon' }, Jeu: { debut: 8, fin: 18, label: 'SCI Horizon' }, Ven: { debut: 8, fin: 14, label: 'SCI Horizon' }, Sam: null } },
@@ -903,76 +1146,210 @@ function PlanningLocalisationView({ employes: initEmployes }) {
 /* ── Congés ── */
 function CongesView() {
   const [conges, setConges] = useState([]);
-  const [form, setForm] = useState({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye' });
+  const [employes, setEmployes] = useState([]);
+  const [form, setForm] = useState({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye', motif: '' });
+  const [solde, setSolde] = useState(null);
+  const [filterStatut, setFilterStatut] = useState('tous');
+  const [filterEmploye, setFilterEmploye] = useState('tous');
+  const [refusModal, setRefusModal] = useState(null);
+  const [refusCommentaire, setRefusCommentaire] = useState('');
 
-  useEffect(() => { api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {}); }, []);
+  useEffect(() => {
+    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {});
+    api.get('/rh/employes').then(r => setEmployes(r.data.employes || [])).catch(() => {});
+  }, []);
+
   const refresh = () => api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {});
+
+  function nomEmploye(id) {
+    const emp = employes.find(e => String(e.id) === String(id));
+    return emp ? `${emp.prenom} ${emp.nom}` : `Employé #${id}`;
+  }
+
+  function handleEmployeChange(id) {
+    setForm(p => ({ ...p, employeId: id }));
+    setSolde(null);
+    if (id) {
+      api.get(`/rh/solde-conges/${id}`).then(r => setSolde(r.data)).catch(() => setSolde(null));
+    }
+  }
 
   async function soumettre(e) {
     e.preventDefault();
     await api.post('/rh/conges', form).catch(() => {});
     await refresh();
-    setForm({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye' });
+    setForm({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye', motif: '' });
+    setSolde(null);
   }
+
+  async function approuver(id) {
+    await api.put(`/rh/conges/${id}/valider`, { decision: 'approuvé' }).catch(() => {});
+    await refresh();
+  }
+
+  async function confirmerRefus() {
+    if (!refusModal) return;
+    await api.put(`/rh/conges/${refusModal.id}/valider`, { decision: 'refusé', commentaire: refusCommentaire }).catch(() => {});
+    setRefusModal(null);
+    setRefusCommentaire('');
+    await refresh();
+  }
+
+  const now = new Date();
+  const kpiEnAttente = conges.filter(c => c.statut === 'en_attente').length;
+  const kpiApprouvesMois = conges.filter(c => {
+    if (c.statut !== 'approuvé') return false;
+    const d = new Date(c.dateDebut);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  const kpiRefuses = conges.filter(c => c.statut === 'refusé').length;
+
+  const congesFiltres = conges.filter(c => {
+    if (filterStatut !== 'tous' && c.statut !== filterStatut) return false;
+    if (filterEmploye !== 'tous' && String(c.employeId) !== filterEmploye) return false;
+    return true;
+  });
+
+  const inputStyle = { padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, outline: 'none' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* KPI */}
+      <div style={{ display: 'flex', gap: 12 }}>
+        {[
+          { label: 'En attente', val: kpiEnAttente, bg: '#FFF7E6', color: '#92610A', border: '#F5C842' },
+          { label: 'Approuvées ce mois', val: kpiApprouvesMois, bg: '#E8F8EE', color: '#1A7F43', border: '#5CC88A' },
+          { label: 'Refusées', val: kpiRefuses, bg: '#FFE5E5', color: '#C0392B', border: '#F5A5A5' },
+        ].map(k => (
+          <div key={k.label} style={{ flex: 1, background: k.bg, border: `1px solid ${k.border}`, borderRadius: 12, padding: '12px 16px' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.val}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: k.color, opacity: 0.8, marginTop: 2 }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Formulaire */}
       <div style={{ background: '#fff', borderRadius: 14, padding: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 14px' }}>Nouvelle demande de congé</h3>
         <form onSubmit={soumettre} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 }}>Employé</label>
+            <select value={form.employeId} onChange={e => handleEmployeChange(e.target.value)} required style={{ ...inputStyle, minWidth: 180 }}>
+              <option value="">Sélectionner…</option>
+              {employes.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.prenom} {emp.nom}</option>
+              ))}
+            </select>
+            {solde && (
+              <div style={{ fontSize: 11, color: '#1A7F43', marginTop: 4, fontWeight: 600 }}>
+                Solde restant : {solde.soldeRestant ?? solde.joursRestants ?? '—'} j
+              </div>
+            )}
+          </div>
           {[
-            { lbl: 'ID Employé', key: 'employeId', type: 'text', w: 120, ph: 'Ex: 1' },
             { lbl: 'Début', key: 'dateDebut', type: 'date', w: 150 },
             { lbl: 'Fin',   key: 'dateFin',   type: 'date', w: 150 },
           ].map(f => (
             <div key={f.key}>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 }}>{f.lbl}</label>
-              <input type={f.type} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.ph}
-                style={{ width: f.w, padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, outline: 'none' }} required />
+              <input type={f.type} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                style={{ ...inputStyle, width: f.w }} required />
             </div>
           ))}
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 }}>Type</label>
-            <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} style={{ padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, outline: 'none' }}>
+            <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} style={inputStyle}>
               <option value="conge_paye">Congé payé</option>
               <option value="rtt">RTT</option>
               <option value="sans_solde">Sans solde</option>
             </select>
           </div>
-          <button type="submit" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+          <div style={{ flexBasis: '100%' }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 }}>Motif (optionnel)</label>
+            <textarea value={form.motif} onChange={e => setForm(p => ({ ...p, motif: e.target.value }))} rows={2}
+              placeholder="Raison de la demande…"
+              style={{ ...inputStyle, width: '100%', maxWidth: 500, resize: 'vertical', fontFamily: 'inherit' }} />
+          </div>
+          <button type="submit" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
             <IconPlus size={14} /> Soumettre
           </button>
         </form>
       </div>
 
+      {/* Filtres */}
+      <div style={{ background: '#fff', borderRadius: 14, padding: '12px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#6E6E73' }}>Filtres :</span>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#6E6E73', marginRight: 6 }}>Statut</label>
+          <select value={filterStatut} onChange={e => setFilterStatut(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, outline: 'none' }}>
+            <option value="tous">Tous</option>
+            <option value="en_attente">En attente</option>
+            <option value="approuvé">Approuvé</option>
+            <option value="refusé">Refusé</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#6E6E73', marginRight: 6 }}>Employé</label>
+          <select value={filterEmploye} onChange={e => setFilterEmploye(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, outline: 'none' }}>
+            <option value="tous">Tous</option>
+            {employes.map(emp => (
+              <option key={emp.id} value={String(emp.id)}>{emp.prenom} {emp.nom}</option>
+            ))}
+          </select>
+        </div>
+        <span style={{ fontSize: 12, color: '#8E8E93', marginLeft: 'auto' }}>{congesFiltres.length} résultat(s)</span>
+      </div>
+
+      {/* Tableau */}
       <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
-              {['Employé', 'Période', 'Jours', 'Type', 'Statut', 'Actions'].map(h => (
+              {['Employé', 'Période', 'Jours', 'Type', 'Motif', 'Statut', 'Actions'].map(h => (
                 <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {conges.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune demande de congé</td></tr>
-            ) : conges.map(c => (
+            {congesFiltres.length === 0 ? (
+              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune demande de congé</td></tr>
+            ) : congesFiltres.map(c => (
               <tr key={c.id} style={{ borderBottom: '1px solid #F2F2F7' }}>
-                <td style={{ padding: '12px 16px' }}>Employé #{c.employeId}</td>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>{nomEmploye(c.employeId)}</td>
                 <td style={{ padding: '12px 16px' }}>{c.dateDebut} → {c.dateFin}</td>
                 <td style={{ padding: '12px 16px' }}>{c.nbJours}j</td>
                 <td style={{ padding: '12px 16px', color: '#6E6E73', textTransform: 'capitalize' }}>{c.type?.replace('_', ' ')}</td>
+                <td style={{ padding: '12px 16px', color: '#6E6E73', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.motif || '—'}</td>
                 <td style={{ padding: '12px 16px' }}><StatutBadge statut={c.statut} /></td>
                 <td style={{ padding: '12px 16px' }}>
                   {c.statut === 'en_attente' && (
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => api.put(`/rh/conges/${c.id}/valider`, { decision: 'approuvé' }).then(refresh)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#D1F2E0', color: '#1A7F43', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                        <IconCheck size={11} /> Approuver
-                      </button>
-                      <button onClick={() => api.put(`/rh/conges/${c.id}/valider`, { decision: 'refusé' }).then(refresh)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                        <IconX size={11} /> Refuser
-                      </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={() => approuver(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#D1F2E0', color: '#1A7F43', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          <IconCheck size={11} /> Approuver
+                        </button>
+                        <button onClick={() => { setRefusModal({ id: c.id }); setRefusCommentaire(''); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          <IconX size={11} /> Refuser
+                        </button>
+                      </div>
+                      {refusModal?.id === c.id && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, background: '#FFF5F5', border: '1px solid #F5A5A5', borderRadius: 8, padding: 10 }}>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: '#C0392B' }}>Motif du refus</label>
+                          <input value={refusCommentaire} onChange={e => setRefusCommentaire(e.target.value)}
+                            placeholder="Raison du refus…"
+                            style={{ padding: '6px 8px', border: '1px solid #F5A5A5', borderRadius: 6, fontSize: 12, outline: 'none', minWidth: 200 }}
+                            autoFocus />
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={confirmerRefus} style={{ padding: '4px 10px', background: '#C0392B', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                              Confirmer le refus
+                            </button>
+                            <button onClick={() => setRefusModal(null)} style={{ padding: '4px 10px', background: '#F2F2F7', color: '#6E6E73', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </td>
@@ -1162,7 +1539,7 @@ function PaieView({ employes }) {
           )}
         </div>
         {(primeMens > 0 || primeAnn > 0) && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: typePrime === 'ppv' ? '#D1F2E0' : '#EBF5FF', borderRadius: 10, fontSize: 13, color: typePrime === 'ppv' ? '#1A7F43' : '#007AFF', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 12, padding: '10px 14px', background: typePrime === 'ppv' ? '#D1F2E0' : '#EBF5FF', borderRadius: 10, fontSize: 13, color: typePrime === 'ppv' ? '#1A7F43' : '#5B5BD6', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {typePrime === 'classique' ? (
               <>
                 <span>Brut de base : <strong>{formatCur(brutBase)}</strong></span>
@@ -1187,7 +1564,7 @@ function PaieView({ employes }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Notes de frais approuvées</h3>
             {fraisInclus.length > 0 && (
-              <span style={{ background: '#007AFF', color: '#fff', fontSize: 12, fontWeight: 700, borderRadius: 20, padding: '3px 12px' }}>
+              <span style={{ background: '#5B5BD6', color: '#fff', fontSize: 12, fontWeight: 700, borderRadius: 20, padding: '3px 12px' }}>
                 {formatCur(fraisTotal)} inclus
               </span>
             )}
@@ -1212,14 +1589,14 @@ function PaieView({ employes }) {
                   return (
                     <tr key={n.id} onClick={() => !paid && toggleFrais(n.id)} style={{ borderBottom: '1px solid #F8F8F8', cursor: paid ? 'default' : 'pointer', background: checked ? '#F0F9FF' : '#fff' }}>
                       <td style={{ padding: '9px 12px' }}>
-                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#007AFF' : '#C7C7CC'}`, background: checked ? '#007AFF' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#5B5BD6' : '#C7C7CC'}`, background: checked ? '#5B5BD6' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {checked && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
                       </td>
                       <td style={{ padding: '9px 12px', color: '#6E6E73' }}>{n.date}</td>
                       <td style={{ padding: '9px 12px' }}><span style={{ background: '#F2F2F7', borderRadius: 6, padding: '2px 8px', fontSize: 12 }}>{n.categorie}</span></td>
                       <td style={{ padding: '9px 12px' }}>{n.description}</td>
-                      <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 700, color: '#007AFF' }}>{formatCur(n.montant)}</td>
+                      <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 700, color: '#5B5BD6' }}>{formatCur(n.montant)}</td>
                     </tr>
                   );
                 })}
@@ -1227,7 +1604,7 @@ function PaieView({ employes }) {
               <tfoot>
                 <tr style={{ borderTop: '2px solid #E5E5EA', background: '#F8F9FA' }}>
                   <td colSpan={4} style={{ padding: '9px 12px', fontWeight: 700, fontSize: 13 }}>Total frais inclus dans la paie</td>
-                  <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: fraisTotal > 0 ? '#007AFF' : '#8E8E93' }}>{formatCur(fraisTotal)}</td>
+                  <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: fraisTotal > 0 ? '#5B5BD6' : '#8E8E93' }}>{formatCur(fraisTotal)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1257,7 +1634,7 @@ function PaieView({ employes }) {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #1C1C1E' }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#007AFF' }}>Bernard Martin BTP</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
                 <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.7, marginTop: 4 }}>
                   12 rue des Artisans, 69002 Lyon<br />
                   SIRET : 123 456 789 00012 · NAF : 4329A<br />
@@ -1266,7 +1643,7 @@ function PaieView({ employes }) {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#1C1C1E' }}>BULLETIN DE PAIE</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#007AFF', marginTop: 4 }}>Période : {periodeLabel}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#5B5BD6', marginTop: 4 }}>Période : {periodeLabel}</div>
                 <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 4 }}>Date de paiement : {new Date(annee, mois + 1, 0).toLocaleDateString('fr-FR')}</div>
               </div>
             </div>
@@ -1311,7 +1688,7 @@ function PaieView({ employes }) {
                   <span>Net salarial</span><span style={{ fontWeight: 600 }}>{formatCur(result.netAPayer)}</span>
                 </div>
                 {fraisTotal > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4, color: '#007AFF' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4, color: '#5B5BD6' }}>
                     <span>Remboursements frais</span><span style={{ fontWeight: 600 }}>+{formatCur(fraisTotal)}</span>
                   </div>
                 )}
@@ -1369,13 +1746,13 @@ function PaieView({ employes }) {
             {/* Frais remboursés */}
             {fraisTotal > 0 && (
               <div style={{ background: '#EBF5FF', border: '1px solid #BFD7F5', borderRadius: 10, padding: '12px 18px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, fontSize: 13, color: '#007AFF' }}>Remboursements de frais ({fraisInclus.length} note{fraisInclus.length > 1 ? 's' : ''})</span>
-                <span style={{ fontWeight: 700, fontSize: 15, color: '#007AFF' }}>+{formatCur(fraisTotal)}</span>
+                <span style={{ fontWeight: 600, fontSize: 13, color: '#5B5BD6' }}>Remboursements de frais ({fraisInclus.length} note{fraisInclus.length > 1 ? 's' : ''})</span>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#5B5BD6' }}>+{formatCur(fraisTotal)}</span>
               </div>
             )}
 
             {/* Net à payer */}
-            <div style={{ background: '#007AFF', color: '#fff', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: '#5B5BD6', color: '#fff', borderRadius: 10, padding: '14px 18px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 700, fontSize: 16 }}>NET À PAYER</span>
               <span style={{ fontWeight: 800, fontSize: 22 }}>{formatCur(netFinal)}</span>
             </div>
@@ -1457,7 +1834,7 @@ function PaieView({ employes }) {
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 24, overflowX: 'auto', paddingBottom: 4 }}>
           {[
-            { n: '1', label: 'Calcul du brut', sub: 'Base + heures sup\n+ primes soumises', color: '#007AFF' },
+            { n: '1', label: 'Calcul du brut', sub: 'Base + heures sup\n+ primes soumises', color: '#5B5BD6' },
             { n: '2', label: 'Fiche de paie', sub: 'Cotisations salariales\net patronales calculées', color: '#34C759' },
             { n: '3', label: 'DSN URSSAF', sub: 'Déclaration avant\nle 5 du mois M+1', color: '#FF9500' },
             { n: '4', label: 'Paiement charges', sub: 'Virement URSSAF\n+ caisses retraite', color: '#FF3B30' },
@@ -1479,7 +1856,7 @@ function PaieView({ employes }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
           {[
             { label: 'Net à payer', ratio: '100 %', desc: 'Ce que perçoit le salarié', color: '#34C759' },
-            { label: 'Salaire brut', ratio: '~ 130 % du net', desc: 'Net + cotisations salariales (22–25 %)', color: '#007AFF' },
+            { label: 'Salaire brut', ratio: '~ 130 % du net', desc: 'Net + cotisations salariales (22–25 %)', color: '#5B5BD6' },
             { label: 'Coût employeur total', ratio: '~ 170 % du net', desc: 'Brut + charges patronales (42–45 %)', color: '#FF9500' },
           ].map(c => (
             <div key={c.label} style={{ background: `${c.color}0D`, border: `1px solid ${c.color}30`, borderRadius: 10, padding: '12px 14px' }}>
@@ -1546,7 +1923,7 @@ function MasseSalarialeView({ employes = [] }) {
       {/* Header KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
         {[
-          { label: 'Masse salariale brute', val: totalBrut, color: '#007AFF' },
+          { label: 'Masse salariale brute', val: totalBrut, color: '#5B5BD6' },
           { label: 'Charges patronales', val: totalPat, color: '#FF9500' },
           { label: 'Frais remboursés', val: totalFrais, color: '#34C759' },
           { label: 'Coût total employeur', val: totalCout, color: '#FF3B30' },
@@ -1564,7 +1941,7 @@ function MasseSalarialeView({ employes = [] }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Évolution mensuelle {annee}</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {[{ color: '#007AFF', label: 'Brut' }, { color: '#FF9500', label: 'Charges' }, { color: '#34C759', label: 'Frais' }].map(l => (
+            {[{ color: '#5B5BD6', label: 'Brut' }, { color: '#FF9500', label: 'Charges' }, { color: '#34C759', label: 'Frais' }].map(l => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.color }} />
                 <span style={{ color: '#6E6E73' }}>{l.label}</span>
@@ -1593,7 +1970,7 @@ function MasseSalarialeView({ employes = [] }) {
               return (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 172 }}>
-                    <div title={`Brut: ${formatCur(m.totalBrut)}`} style={{ width: 10, height: brutH, background: '#007AFF', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
+                    <div title={`Brut: ${formatCur(m.totalBrut)}`} style={{ width: 10, height: brutH, background: '#5B5BD6', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
                     <div title={`Charges: ${formatCur(m.totalChargesPatronales)}`} style={{ width: 10, height: chargesH, background: '#FF9500', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
                     <div title={`Frais: ${formatCur(m.totalFrais)}`} style={{ width: 10, height: fraisH, background: '#34C759', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
                   </div>
@@ -1622,7 +1999,7 @@ function MasseSalarialeView({ employes = [] }) {
                   </div>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${(e.cout/maxCout)*100}%`, background: i===0?'#FF9500':i===1?'#007AFF':'#34C759', borderRadius: 3, transition: 'width 0.6s' }}/>
+                  <div style={{ height: '100%', width: `${(e.cout/maxCout)*100}%`, background: i===0?'#FF9500':i===1?'#5B5BD6':'#34C759', borderRadius: 3, transition: 'width 0.6s' }}/>
                 </div>
                 <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 2 }}>{e.poste}</div>
               </div>
@@ -1754,7 +2131,7 @@ function ZonesTrajetView({ employes = [] }) {
                 style={{ borderBottom: '1px solid #F2F2F7', cursor: 'pointer', background: String(z.zone) === String(zoneSelectionnee) ? '#EBF5FF' : '#fff', transition: 'background 0.1s' }}
               >
                 <td style={{ padding: '12px 14px' }}>
-                  <span style={{ fontWeight: 700, color: '#007AFF', fontSize: 14 }}>{z.label}</span>
+                  <span style={{ fontWeight: 700, color: '#5B5BD6', fontSize: 14 }}>{z.label}</span>
                 </td>
                 <td style={{ padding: '12px 14px', color: '#1C1C1E' }}>{z.distance}</td>
                 <td style={{ padding: '12px 14px' }}>
@@ -1828,7 +2205,7 @@ function ZonesTrajetView({ employes = [] }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
             {[
               { label: 'Indemnité / jour', value: formatCur(indemniteJour), color: '#34C759' },
-              { label: `Indemnité / mois (${joursParMois}j)`, value: formatCur(indemniteMois), color: '#007AFF' },
+              { label: `Indemnité / mois (${joursParMois}j)`, value: formatCur(indemniteMois), color: '#5B5BD6' },
               { label: 'Indemnité annuelle', value: formatCur(indemniteAnnee), color: '#FF9500' },
             ].map(k => (
               <div key={k.label} style={{ background: '#F8F9FA', borderRadius: 12, padding: '16px 18px', textAlign: 'center' }}>
@@ -1866,7 +2243,7 @@ function ZonesTrajetView({ employes = [] }) {
                     <td style={{ padding: '11px 14px', fontWeight: 600 }}>{e.prenom} {e.nom}</td>
                     <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{e.poste}</td>
                     <td style={{ padding: '11px 14px' }}>
-                      <span style={{ fontWeight: 700, color: '#007AFF', background: '#EBF5FF', padding: '2px 9px', borderRadius: 10, fontSize: 12 }}>{z.label}</span>
+                      <span style={{ fontWeight: 700, color: '#5B5BD6', background: '#EBF5FF', padding: '2px 9px', borderRadius: 10, fontSize: 12 }}>{z.label}</span>
                     </td>
                     <td style={{ padding: '11px 14px', fontWeight: 700, color: '#34C759' }}>
                       {mensuel > 0 ? formatCur(mensuel) : '—'}
