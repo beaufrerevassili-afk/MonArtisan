@@ -343,6 +343,7 @@ function RecrutementView() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [selectedCand, setSelectedCand] = useState(null);
+  const [candDetail, setCandDetail] = useState(null);
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
@@ -587,35 +588,13 @@ function RecrutementView() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {stageCands.map(c => (
-                      <div key={c.id} style={{ background: '#fff', borderRadius: 10, padding: '10px 12px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', borderLeft: `3px solid ${sc}` }}>
+                      <div key={c.id} onClick={() => setCandDetail(c)} style={{ background: '#fff', borderRadius: 10, padding: '10px 12px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', borderLeft: `3px solid ${sc}`, cursor: 'pointer' }}
+                        onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.12)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.07)'; }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', marginBottom: 1 }}>{c.prenom} {c.nom}</div>
                         <div style={{ fontSize: 11, color: '#8E8E93', marginBottom: 4 }}>{c.email}</div>
                         {c.telephone && <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>📞 {c.telephone}</div>}
-                        {c.lettre && (
-                          <button onClick={() => setSelectedCand(c)}
-                            style={{ fontSize: 10, color: '#5B5BD6', background: '#E3F2FD', border: 'none', borderRadius: 6, padding: '2px 7px', cursor: 'pointer', fontWeight: 700, marginBottom: 6 }}>
-                            Voir lettre
-                          </button>
-                        )}
-                        {/* Actions */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-                          {PIPELINE_STAGES.filter(s => s !== stage && s !== 'rejetée').map(s => (
-                            <button key={s} onClick={() => avancerCandidature(c.id, s)}
-                              style={{ fontSize: 10, color: PIPELINE_COLORS[s], background: PIPELINE_COLORS[s] + '18', border: 'none', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontWeight: 700 }}>
-                              → {PIPELINE_LABELS[s]}
-                            </button>
-                          ))}
-                          {stage !== 'rejetée' && (
-                            <button onClick={() => avancerCandidature(c.id, 'rejetée')}
-                              style={{ fontSize: 10, color: '#C0392B', background: '#FFE5E5', border: 'none', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontWeight: 700 }}>
-                              Rejeter
-                            </button>
-                          )}
-                        </div>
-                        <div style={{ marginTop: 6 }}>
-                          <input placeholder="Note interne…" value={c.noteInterne || ''} onChange={e => noterCandidature(c.id, e.target.value)}
-                            style={{ width: '100%', fontSize: 10, padding: '3px 6px', border: '1px solid #E5E5EA', borderRadius: 5, outline: 'none' }} />
-                        </div>
+                        <div style={{ fontSize: 10, color: '#5B5BD6', fontWeight: 600, marginTop: 4 }}>Cliquer pour voir le profil →</div>
                       </div>
                     ))}
                   </div>
@@ -627,28 +606,87 @@ function RecrutementView() {
       )}
 
       {/* Modal lettre de motivation */}
-      {selectedCand && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, padding: 28, maxWidth: 600, width: '100%', maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      {/* ── Panel détail candidature ── */}
+      {candDetail && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 9999, display: 'flex', justifyContent: 'flex-end' }}
+          onClick={e => { if (e.target === e.currentTarget) setCandDetail(null); }}>
+          <div style={{ width: '100%', maxWidth: 500, background: '#fff', height: '100%', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column' }}>
+            {/* Header sticky */}
+            <div style={{ padding: '18px 22px', borderBottom: '1px solid #F2F2F7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>{selectedCand.prenom} {selectedCand.nom}</h3>
-                <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>{selectedCand.email} {selectedCand.telephone ? `· ${selectedCand.telephone}` : ''}</p>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1C1C1E' }}>{candDetail.prenom} {candDetail.nom}</h3>
+                <StatutBadge statut={candDetail.statut} />
               </div>
-              <button onClick={() => setSelectedCand(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: '#8E8E93' }}>×</button>
+              <button onClick={() => setCandDetail(null)} style={{ background: '#F2F2F7', border: 'none', cursor: 'pointer', fontSize: 18, color: '#3A3A3C', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
-            {selectedCand.lettre && (
+
+            <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Coordonnées */}
+              <div style={{ background: '#F9F9FB', borderRadius: 12, padding: '14px 16px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Coordonnées</p>
+                <p style={{ margin: '4px 0', fontSize: 13, color: '#1C1C1E' }}>📧 <a href={`mailto:${candDetail.email}`} style={{ color: '#5B5BD6', textDecoration: 'none' }}>{candDetail.email}</a></p>
+                {candDetail.telephone && <p style={{ margin: '4px 0', fontSize: 13, color: '#1C1C1E' }}>📞 <a href={`tel:${candDetail.telephone}`} style={{ color: '#5B5BD6', textDecoration: 'none' }}>{candDetail.telephone}</a></p>}
+                <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8E8E93' }}>Candidature reçue le {new Date(candDetail.creeLe).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' })}</p>
+              </div>
+
+              {/* Lettre de motivation */}
+              {candDetail.lettre && (
+                <div>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lettre de motivation</p>
+                  <div style={{ background: '#FAFAFA', borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#3A3A3C', lineHeight: 1.75, whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto', border: '1px solid #F2F2F7' }}>
+                    {candDetail.lettre}
+                  </div>
+                </div>
+              )}
+
+              {/* CV / Expérience */}
+              {candDetail.cvTexte && (
+                <div>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expériences & CV</p>
+                  <div style={{ background: '#FAFAFA', borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#3A3A3C', lineHeight: 1.75, whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto', border: '1px solid #F2F2F7' }}>
+                    {candDetail.cvTexte}
+                  </div>
+                </div>
+              )}
+
+              {/* Note interne */}
               <div>
-                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Lettre de motivation</p>
-                <div style={{ background: '#F8F8F8', borderRadius: 10, padding: 16, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', color: '#1C1C1E' }}>{selectedCand.lettre}</div>
+                <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Note interne</p>
+                <textarea
+                  defaultValue={candDetail.noteInterne || ''}
+                  onBlur={async e => { if (e.target.value !== (candDetail.noteInterne || '')) { await noterCandidature(candDetail.id, e.target.value); setCandDetail(d => ({ ...d, noteInterne: e.target.value })); }}}
+                  rows={3}
+                  style={{ width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none' }}
+                  placeholder="Note privée visible uniquement par votre équipe…"
+                />
               </div>
-            )}
-            {selectedCand.cvTexte && (
-              <div style={{ marginTop: 16 }}>
-                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>CV / Expérience</p>
-                <div style={{ background: '#F8F8F8', borderRadius: 10, padding: 16, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', color: '#1C1C1E' }}>{selectedCand.cvTexte}</div>
+
+              {/* Actions */}
+              <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 16 }}>
+                <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Faire avancer la candidature</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { label: '📋 Marquer comme examinée', statut: 'examinée', bg: '#EEF2FF', color: '#5B5BD6', border: 'rgba(91,91,214,0.25)' },
+                    { label: '📞 Proposer un entretien', statut: 'entretien', bg: '#FFF7ED', color: '#C2610C', border: 'rgba(194,97,12,0.25)' },
+                    { label: '✅ Retenir / Embaucher', statut: 'retenue', bg: '#F0FDF4', color: '#1A7F43', border: 'rgba(26,127,67,0.25)' },
+                    { label: '❌ Rejeter', statut: 'rejetée', bg: '#FEF2F2', color: '#C0392B', border: 'rgba(192,57,43,0.25)' },
+                  ].map(({ label, statut, bg, color, border }) => (
+                    <button key={statut}
+                      disabled={candDetail.statut === statut}
+                      onClick={async () => {
+                        await avancerCandidature(candDetail.id, statut);
+                        setCandDetail(d => ({ ...d, statut }));
+                      }}
+                      style={{ padding: '11px 16px', background: candDetail.statut === statut ? '#F2F2F7' : bg, color: candDetail.statut === statut ? '#8E8E93' : color, border: `1px solid ${candDetail.statut === statut ? '#E5E5EA' : border}`, borderRadius: 10, cursor: candDetail.statut === statut ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left', transition: 'all 0.15s' }}>
+                      {label}{candDetail.statut === statut ? ' ✓ (actuel)' : ''}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ margin: '12px 0 0', fontSize: 11, color: '#8E8E93' }}>
+                  💡 Le candidat reçoit un email de notification à chaque changement de statut.
+                </p>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

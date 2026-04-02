@@ -4,10 +4,61 @@
 //  Routes patron (auth) : création, gestion, suivi pipeline
 // ============================================================
 
-const express = require('express');
-const router  = express.Router();
-const db      = require('../db');
+const express      = require('express');
+const router       = express.Router();
+const db           = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const nodemailer   = require('nodemailer');
+
+// ─── Mailer (optionnel — ne crashe pas si SMTP non configuré) ─
+function getMailer() {
+  if (!process.env.SMTP_HOST) return null;
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  });
+}
+
+const STATUT_NOTIF = {
+  examinée:  { emoji: '👀', sujet: 'Votre candidature est en cours d\'examen', msg: 'Bonne nouvelle ! Votre candidature a retenu l\'attention de l\'entreprise et est en cours d\'examen.' },
+  entretien: { emoji: '📞', sujet: 'Entretien proposé pour votre candidature', msg: 'L\'entreprise souhaite vous rencontrer ! Vous allez être contacté(e) prochainement pour fixer les modalités de l\'entretien.' },
+  retenue:   { emoji: '🎉', sujet: 'Votre candidature a été retenue !', msg: 'Félicitations ! Votre candidature a été retenue. L\'entreprise va prendre contact avec vous.' },
+  rejetée:   { emoji: '📋', sujet: 'Réponse concernant votre candidature', msg: 'Votre candidature a été examinée avec attention mais ne correspond pas aux besoins actuels. Nous vous souhaitons bonne continuation dans votre recherche.' },
+};
+
+async function envoyerEmailCandidature(candidature, statut, annonce) {
+  const notif = STATUT_NOTIF[statut];
+  if (!notif) return;
+  const mailer = getMailer();
+  if (!mailer) return;
+  const nomEntreprise = annonce?.nom_entreprise || annonce?.patron_nom || 'L\'entreprise';
+  await mailer.sendMail({
+    from: process.env.SMTP_FROM || `"MonArtisan Recrutement" <noreply@monartisan.fr>`,
+    to: candidature.email,
+    subject: `${notif.emoji} ${notif.sujet}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E5E5EA;">
+        <div style="background:linear-gradient(135deg,#5B5BD6,#7C3AED);padding:32px 28px;text-align:center;">
+          <div style="font-size:52px;margin-bottom:12px;">${notif.emoji}</div>
+          <h1 style="color:#fff;font-size:20px;margin:0;font-weight:800;">${notif.sujet}</h1>
+        </div>
+        <div style="padding:28px;">
+          <p>Bonjour <strong>${candidature.prenom} ${candidature.nom}</strong>,</p>
+          <p style="line-height:1.7;color:#3A3A3C;">${notif.msg}</p>
+          <div style="background:#F4F4F8;border-radius:12px;padding:16px 18px;margin:20px 0;">
+            <p style="margin:0;font-weight:700;color:#1C1C1E;">Poste : ${annonce?.titre || '—'}</p>
+            <p style="margin:6px 0 0;color:#6E6E73;font-size:14px;">Entreprise : ${nomEntreprise}</p>
+          </div>
+          <p style="color:#8E8E93;font-size:12px;margin-top:28px;border-top:1px solid #F2F2F7;padding-top:16px;">
+            Ce message a été envoyé automatiquement par MonArtisan. Ne pas répondre à cet email.
+          </p>
+        </div>
+      </div>
+    `,
+  }).catch(e => console.error('Email candidature:', e.message));
+}
 
 // ─── Migration auto des tables ─────────────────────────────
 async function ensureTables() {
@@ -292,6 +343,18 @@ router.put('/patron/candidatures/:id', authenticateToken, async (req, res) => {
     `, [statut, noteInterne, req.params.id, req.user.id]);
     if (!rows[0]) return res.status(404).json({ erreur: 'Candidature introuvable' });
     res.json({ candidature: mapCandidature(rows[0]) });
+
+    // Email de notification au candidat (async, n'impacte pas la réponse)
+    if (statut && STATUT_NOTIF[statut]) {
+      const { rows: annonceRows } = await db.query(
+        `SELECT a.titre, a.nom_entreprise, u.nom AS patron_nom
+         FROM annonces_recrutement a
+         LEFT JOIN users u ON u.id = a.patron_id
+         WHERE a.id = $1`,
+        [rows[0].annonce_id]
+      );
+      envoyerEmailCandidature(rows[0], statut, annonceRows[0]).catch(() => {});
+    }
   } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
