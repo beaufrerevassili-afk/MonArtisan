@@ -118,7 +118,7 @@ export default function DiagnosticDemolition({ onRetour }) {
             ['anneeConstruction','Année de construction'],
             ['surface','Surface (m²)'],
             ['usage','Usage (habitation/tertiaire/industriel)'],
-            ['proprietaire','Propriétaire / Maître d'ouvrage'],
+            ['proprietaire','Propriétaire / Maître d\'ouvrage'],
             ['permisNumero','N° permis de démolir'],
             ['datePermis','Date permis de démolir','date'],
           ].map(([k,lbl,type])=>(
@@ -239,10 +239,10 @@ export default function DiagnosticDemolition({ onRetour }) {
 
       {/* 8 — Qualifications opérateur */}
       <div style={CARD}>
-        <p style={SECTION_TITLE}>8. Qualifications de l'opérateur diagnostiqueur</p>
+        <p style={SECTION_TITLE}>8. Qualifications de l\'opérateur diagnostiqueur</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
           {[
-            ['nom','Nom et prénom de l'opérateur'],
+            ['nom','Nom et prénom de l\'opérateur'],
             ['qualification','N° certification (COFRAC/Certibiocide)'],
             ['organisme','Organisme certificateur'],
             ['attestation','N° attestation de compétences'],
