@@ -1,535 +1,262 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ─── Données ───────────────────────────────────────────────────────────────────
-
-const SECTEURS = [
-  {
-    id: 'btp',
-    emoji: '🔨',
-    label: 'Artisans & Travaux',
-    sub: 'Plombier, électricien, peintre...',
-    color: '#5B5BD6',
-    grad: 'linear-gradient(135deg, #5B5BD6, #7C3AED)',
-    bg: 'rgba(91,91,214,0.1)',
-    border: 'rgba(91,91,214,0.25)',
-    searches: ['Plombier urgence', 'Peintre appartement', 'Électricien'],
-  },
-  {
-    id: 'coiffure',
-    emoji: '✂️',
-    label: 'Coiffure & Beauté',
-    sub: 'Salon, barbier, institut...',
-    color: '#EC4899',
-    grad: 'linear-gradient(135deg, #EC4899, #A855F7)',
-    bg: 'rgba(236,72,153,0.1)',
-    border: 'rgba(236,72,153,0.25)',
-    searches: ['Coiffeur ce soir', 'Barbier', 'Balayage'],
-  },
-  {
-    id: 'restaurant',
-    emoji: '🍽️',
-    label: 'Restaurants',
-    sub: 'Table, livraison, traiteur...',
-    color: '#F97316',
-    grad: 'linear-gradient(135deg, #F97316, #EF4444)',
-    bg: 'rgba(249,115,22,0.1)',
-    border: 'rgba(249,115,22,0.25)',
-    searches: ['Table ce soir', 'Italien', 'Livraison'],
-  },
-  {
-    id: 'boulangerie',
-    emoji: '🥖',
-    label: 'Boulangeries',
-    sub: 'Pain, pâtisserie, viennoiseries...',
-    color: '#D97706',
-    grad: 'linear-gradient(135deg, #D97706, #DC2626)',
-    bg: 'rgba(217,119,6,0.1)',
-    border: 'rgba(217,119,6,0.25)',
-    searches: ['Pain au levain', 'Croissant', 'Commande gâteau'],
-  },
-  {
-    id: 'garage',
-    emoji: '🔧',
-    label: 'Garages & Auto',
-    sub: 'Réparation, entretien, pneus...',
-    color: '#10B981',
-    grad: 'linear-gradient(135deg, #10B981, #0891B2)',
-    bg: 'rgba(16,185,129,0.1)',
-    border: 'rgba(16,185,129,0.25)',
-    searches: ['Vidange rapide', 'Pneus hiver', 'Diagnostic'],
-  },
-  {
-    id: 'commerce',
-    emoji: '🛍️',
-    label: 'Commerces',
-    sub: 'Épicerie, fleuriste, pressing...',
-    color: '#6366F1',
-    grad: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-    bg: 'rgba(99,102,241,0.1)',
-    border: 'rgba(99,102,241,0.25)',
-    searches: ['Fleuriste', 'Pressing express', 'Épicerie fine'],
-  },
+const CATEGORIES = [
+  { id: 'coiffure',    emoji: '✂️',  label: 'Coiffure & Beauté'  },
+  { id: 'restaurant',  emoji: '🍽️', label: 'Restaurants'         },
+  { id: 'boulangerie', emoji: '🥖',  label: 'Boulangeries'        },
+  { id: 'garage',      emoji: '🔧',  label: 'Garages & Auto'      },
+  { id: 'btp',         emoji: '🔨',  label: 'Artisans & Travaux'  },
+  { id: 'commerce',    emoji: '🛍️', label: 'Commerces'           },
 ];
 
-const TENDANCES = [
-  '✂️ Coiffeur disponible aujourd\'hui',
-  '🔨 Plombier urgence',
-  '🍽️ Réserver une table',
-  '🥖 Commander un gâteau',
-  '🔧 Vidange rapide',
-  '🎨 Peintre appartement',
+// Professionnels en vedette (démo)
+const PROS_VEDETTE = [
+  { id: 1, secteur: 'coiffure',    nom: 'Salon Léa',       metier: 'Coiffeuse',         ville: 'Paris 11e',   note: 4.9, avis: 142, dispo: 'Dispo aujourd\'hui', prix: 'À partir de 35€', color: '#EC4899' },
+  { id: 2, secteur: 'restaurant',  nom: 'Chez Marco',       metier: 'Restaurant italien', ville: 'Lyon 2e',     note: 4.8, avis: 89,  dispo: 'Table ce soir',     prix: 'Menu 22€',        color: '#F97316' },
+  { id: 3, secteur: 'boulangerie', nom: 'Maison Dupont',    metier: 'Boulangerie',        ville: 'Bordeaux',    note: 4.9, avis: 213, dispo: 'Commande possible',  prix: 'À partir de 1,20€', color: '#D97706' },
+  { id: 4, secteur: 'coiffure',    nom: 'Barbershop Alex',  metier: 'Barbier',            ville: 'Marseille',   note: 5.0, avis: 67,  dispo: 'Dispo ce soir',     prix: 'À partir de 18€', color: '#EC4899' },
+  { id: 5, secteur: 'garage',      nom: 'Garage Martin',    metier: 'Mécanicien',         ville: 'Toulouse',    note: 4.7, avis: 54,  dispo: 'RDV demain',        prix: 'Devis gratuit',   color: '#10B981' },
+  { id: 6, secteur: 'btp',         nom: 'Tom Plomberie',    metier: 'Plombier',           ville: 'Nantes',      note: 4.8, avis: 98,  dispo: 'Urgent possible',   prix: 'Devis gratuit',   color: '#5B5BD6' },
 ];
 
-const AVIS = [
-  { nom: 'Camille R.', note: 5, texte: 'Coiffeur trouvé en 2 minutes, rdv le soir même. Impeccable !', secteur: '✂️ Coiffure', ville: 'Lyon' },
-  { nom: 'Marc D.', note: 5, texte: 'Plombier arrivé en 45min. Problème réglé, prix clair. Je recommande.', secteur: '🔨 BTP', ville: 'Paris' },
-  { nom: 'Sofia K.', note: 5, texte: 'Table réservée en 30 secondes, SMS de confirmation immédiat.', secteur: '🍽️ Restaurant', ville: 'Bordeaux' },
-];
-
-// ─── Composant carte secteur ───────────────────────────────────────────────────
-
-function SecteurCard({ s, onSearch }) {
+function ProCard({ pro }) {
   const navigate = useNavigate();
   const [hov, setHov] = useState(false);
+  const initials = pro.nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      onClick={() => navigate(`/${s.id}`)}
+      onClick={() => navigate(`/${pro.secteur}?focus=${pro.id}`)}
       style={{
-        background: hov ? s.bg : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${hov ? s.border : 'rgba(255,255,255,0.08)'}`,
-        borderRadius: 20,
-        padding: '22px 20px 18px',
-        cursor: 'pointer',
-        transition: 'all 0.22s cubic-bezier(0.34,1.1,0.64,1)',
-        transform: hov ? 'translateY(-5px)' : 'none',
-        boxShadow: hov ? `0 16px 40px ${s.color}25` : 'none',
+        flexShrink: 0, width: 220,
+        background: hov ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${hov ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
+        borderRadius: 18, overflow: 'hidden', cursor: 'pointer',
+        transition: 'all 0.22s ease',
+        transform: hov ? 'translateY(-4px)' : 'none',
+        boxShadow: hov ? '0 16px 40px rgba(0,0,0,0.3)' : 'none',
       }}
     >
-      {/* Icon */}
-      <div style={{
-        width: 52, height: 52, borderRadius: 16,
-        background: hov ? s.grad : `${s.color}18`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '1.5rem', marginBottom: 14,
-        transition: 'all 0.22s',
-        boxShadow: hov ? `0 6px 20px ${s.color}40` : 'none',
-      }}>
-        {s.emoji}
+      {/* Cover / avatar */}
+      <div style={{ height: 90, background: `${pro.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg, ${pro.color}, ${pro.color}99)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem', fontWeight: 800, color: '#fff', boxShadow: `0 4px 16px ${pro.color}50` }}>
+          {initials}
+        </div>
+        {/* Dispo badge */}
+        <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 20, padding: '2px 8px', fontSize: '0.65rem', fontWeight: 600, color: '#10B981' }}>
+          {pro.dispo}
+        </div>
       </div>
 
-      <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: 4 }}>
-        {s.label}
-      </div>
-      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: 16, lineHeight: 1.4 }}>
-        {s.sub}
-      </div>
+      <div style={{ padding: '12px 14px 14px' }}>
+        <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', marginBottom: 2 }}>{pro.nom}</div>
+        <div style={{ fontSize: '0.775rem', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{pro.metier} · {pro.ville}</div>
 
-      {/* Popular searches */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {s.searches.map(q => (
-          <button
-            key={q}
-            onClick={e => { e.stopPropagation(); onSearch(q, s.id); }}
-            style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: 8, padding: '5px 10px', fontSize: '0.75rem',
-              color: 'rgba(255,255,255,0.55)', cursor: 'pointer', textAlign: 'left',
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = `${s.color}20`; e.currentTarget.style.borderColor = `${s.color}40`; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}
-          >
-            🔍 {q}
-          </button>
-        ))}
-      </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B" stroke="none">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>{pro.note}</span>
+          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>({pro.avis} avis)</span>
+        </div>
 
-      {/* CTA */}
-      <div style={{
-        marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: hov ? s.color : 'rgba(255,255,255,0.3)', transition: 'color 0.2s', letterSpacing: '-0.01em' }}>
-          Voir les pros
-        </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={hov ? s.color : 'rgba(255,255,255,0.25)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ transition: 'all 0.2s', transform: hov ? 'translateX(4px)' : 'none' }}>
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: pro.color }}>{pro.prix}</span>
+          <span style={{ fontSize: '0.75rem', color: hov ? '#fff' : 'rgba(255,255,255,0.35)', fontWeight: 600, transition: 'color 0.2s' }}>Réserver →</span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Page principale ───────────────────────────────────────────────────────────
-
 export default function SecteurSelect() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [location, setLocation] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [tendanceIdx, setTendanceIdx] = useState(0);
-  const [avisIdx, setAvisIdx] = useState(0);
-  const inputRef = useRef(null);
 
-  useEffect(() => {
-    setMounted(true);
-    // Rotate trending searches
-    const t = setInterval(() => setTendanceIdx(i => (i + 1) % TENDANCES.length), 3000);
-    // Rotate testimonials
-    const a = setInterval(() => setAvisIdx(i => (i + 1) % AVIS.length), 4000);
-    return () => { clearInterval(t); clearInterval(a); };
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  const handleSearch = (q = query, secteur = null) => {
-    const params = new URLSearchParams();
-    if (q) params.set('q', q);
-    if (location) params.set('ou', location);
-    const base = secteur ? `/${secteur}` : '/btp';
-    navigate(`${base}?${params.toString()}`);
-  };
-
-  const handleQuickSearch = (q, secteur) => {
-    navigate(`/${secteur}?q=${encodeURIComponent(q)}`);
+  const handleSearch = () => {
+    if (!query.trim()) return;
+    // Detect sector from query
+    const q = query.toLowerCase();
+    if (q.includes('coiff') || q.includes('cheveux') || q.includes('barbier')) navigate(`/coiffure?q=${encodeURIComponent(query)}`);
+    else if (q.includes('restaurant') || q.includes('table') || q.includes('manger')) navigate(`/restaurant?q=${encodeURIComponent(query)}`);
+    else if (q.includes('pain') || q.includes('boulan') || q.includes('pâtis')) navigate(`/boulangerie?q=${encodeURIComponent(query)}`);
+    else if (q.includes('garage') || q.includes('voiture') || q.includes('méca')) navigate(`/garage?q=${encodeURIComponent(query)}`);
+    else if (q.includes('plombier') || q.includes('électricien') || q.includes('peintre') || q.includes('artisan')) navigate(`/btp?q=${encodeURIComponent(query)}`);
+    else navigate(`/btp?q=${encodeURIComponent(query)}`);
   };
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: '#08080F',
+      minHeight: '100vh', background: '#09090F',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-      color: '#fff',
-      overflowX: 'hidden',
+      color: '#fff', overflowX: 'hidden',
     }}>
-      {/* Background */}
+
+      {/* ── Subtle radial glow ── */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        backgroundImage: `
-          radial-gradient(ellipse 90% 55% at 50% -5%, rgba(91,91,214,0.16) 0%, transparent 55%),
-          radial-gradient(ellipse 50% 35% at 90% 90%, rgba(236,72,153,0.06) 0%, transparent 50%)
-        `,
-      }} />
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)`,
-        backgroundSize: '64px 64px',
+        background: 'radial-gradient(ellipse 100% 60% at 50% -10%, rgba(91,91,214,0.14) 0%, transparent 60%)',
       }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* ── Navbar ── */}
+        {/* ── Nav ── */}
         <nav style={{
+          position: 'sticky', top: 0, zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 clamp(20px, 5vw, 60px)', height: 60,
+          padding: '0 clamp(20px, 5vw, 56px)', height: 58,
+          background: 'rgba(9,9,15,0.9)', backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100,
-          background: 'rgba(8,8,15,0.85)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(91,91,214,0.4)' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.7)"/></svg>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(91,91,214,0.5)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.65)"/></svg>
             </div>
-            <span style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.025em' }}>
+            <span style={{ fontWeight: 800, fontSize: '0.9375rem', letterSpacing: '-0.03em' }}>
               Artisans<span style={{ background: 'linear-gradient(90deg, #A5A5FF, #C084FC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>
             </span>
           </div>
-
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => navigate('/recrutement')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8125rem', color: 'rgba(255,255,255,0.45)', padding: '6px 12px', borderRadius: 8 }}
-              onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button onClick={() => navigate('/recrutement')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.825rem', color: 'rgba(255,255,255,0.4)', padding: '6px 10px', borderRadius: 8, transition: 'color .15s' }}
+              onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.8)'}
+              onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.4)'}
             >Emploi</button>
-            <button onClick={() => navigate('/login')}
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '7px 16px', borderRadius: 9, fontSize: '0.875rem', fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
+            <button onClick={() => navigate('/login')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '7px 15px', borderRadius: 8, fontSize: '0.825rem', fontWeight: 500, color: 'rgba(255,255,255,0.75)', transition: 'all .15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.11)'; e.currentTarget.style.color='#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.06)'; e.currentTarget.style.color='rgba(255,255,255,0.75)'; }}
             >Connexion</button>
-            <button onClick={() => navigate('/register')}
-              style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '7px 16px', borderRadius: 9, fontSize: '0.875rem', fontWeight: 600, color: '#fff', boxShadow: '0 4px 14px rgba(91,91,214,0.35)' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+            <button onClick={() => navigate('/register')} style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '7px 15px', borderRadius: 8, fontSize: '0.825rem', fontWeight: 600, color: '#fff', boxShadow: '0 4px 12px rgba(91,91,214,0.35)', transition: 'transform .15s' }}
+              onMouseEnter={e => e.currentTarget.style.transform='translateY(-1px)'}
+              onMouseLeave={e => e.currentTarget.style.transform=''}
             >Inscription</button>
           </div>
         </nav>
 
         {/* ── Hero ── */}
         <div style={{
-          textAlign: 'center',
-          padding: 'clamp(52px, 9vh, 88px) clamp(20px, 5vw, 60px) clamp(40px, 6vh, 60px)',
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'none' : 'translateY(20px)',
-          transition: 'opacity 0.55s ease, transform 0.55s ease',
+          padding: 'clamp(64px, 11vh, 100px) clamp(20px, 5vw, 56px) clamp(48px, 7vh, 72px)',
+          textAlign: 'center', maxWidth: 780, margin: '0 auto',
+          opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(18px)',
+          transition: 'opacity .55s ease, transform .55s ease',
         }}>
-          {/* Live badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 24, padding: '5px 14px 5px 10px', marginBottom: 24 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', display: 'inline-block', boxShadow: '0 0 8px #10B981', animation: 'pulse 2s infinite' }} />
-            <span style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 600 }}>Des pros disponibles près de chez vous</span>
-          </div>
-
           <h1 style={{
-            fontSize: 'clamp(2.1rem, 5.5vw, 3.5rem)',
-            fontWeight: 900, lineHeight: 1.08,
-            letterSpacing: '-0.045em',
-            color: '#fff', margin: '0 auto 16px', maxWidth: 720,
+            fontSize: 'clamp(2.25rem, 6vw, 4rem)',
+            fontWeight: 900, lineHeight: 1.06, letterSpacing: '-0.05em',
+            color: '#fff', margin: '0 0 20px',
           }}>
-            Trouvez le bon{' '}
-            <span style={{
-              background: 'linear-gradient(135deg, #A5A5FF 0%, #C084FC 40%, #F472B6 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>
-              professionnel
+            Trouvez et réservez<br />
+            <span style={{ background: 'linear-gradient(135deg, #A5A5FF, #F472B6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              les meilleurs pros
             </span>
-            <br />près de chez vous
           </h1>
-
-          <p style={{
-            fontSize: 'clamp(0.9375rem, 2vw, 1.0625rem)',
-            color: 'rgba(255,255,255,0.45)',
-            margin: '0 auto 36px', maxWidth: 480,
-            lineHeight: 1.65, letterSpacing: '-0.01em',
-          }}>
-            Coiffeur, plombier, restaurant, boulangerie — réservez en quelques secondes, sans compte.
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: 'rgba(255,255,255,0.4)', margin: '0 0 36px', lineHeight: 1.6, letterSpacing: '-0.01em' }}>
+            Coiffeur, restaurant, artisan, boulangerie — sans compte, sans attente.
           </p>
 
-          {/* ── Barre de recherche ── */}
+          {/* Search bar */}
           <div style={{
-            display: 'flex', gap: 0, maxWidth: 620,
-            margin: '0 auto 24px',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.14)',
-            borderRadius: 16,
-            backdropFilter: 'blur(16px)',
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+            display: 'flex', maxWidth: 560, margin: '0 auto',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.13)',
+            borderRadius: 14, overflow: 'hidden',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(12px)',
           }}>
-            {/* Quoi */}
-            <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <svg style={{ position: 'absolute', left: 16, flexShrink: 0 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
               <input
-                ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                placeholder={TENDANCES[tendanceIdx]}
-                style={{
-                  width: '100%', background: 'none', border: 'none', outline: 'none',
-                  padding: '16px 16px 16px 44px',
-                  fontSize: '0.9375rem', color: '#fff',
-                  fontFamily: 'inherit', letterSpacing: '-0.01em',
-                }}
+                placeholder="Coiffeur, restaurant, plombier..."
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '0.9375rem', color: '#fff', fontFamily: 'inherit', padding: '15px 0', letterSpacing: '-0.01em' }}
               />
             </div>
-            {/* Séparateur */}
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '12px 0' }} />
-            {/* Où */}
-            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', minWidth: 140 }}>
-              <svg style={{ marginLeft: 14, flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              <input
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                placeholder="Ville, code postal"
-                style={{
-                  width: '100%', background: 'none', border: 'none', outline: 'none',
-                  padding: '16px 12px',
-                  fontSize: '0.9375rem', color: '#fff',
-                  fontFamily: 'inherit', letterSpacing: '-0.01em',
-                }}
-              />
-            </div>
-            {/* Bouton */}
-            <button
-              onClick={() => handleSearch()}
-              style={{
-                flexShrink: 0,
-                background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)',
-                border: 'none', cursor: 'pointer',
-                padding: '0 24px',
-                fontSize: '0.9375rem', fontWeight: 700, color: '#fff',
-                transition: 'opacity 0.15s',
-                letterSpacing: '-0.01em',
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-            >
-              Chercher
-            </button>
-          </div>
-
-          {/* Social proof mini */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            {/* Avatars */}
-            <div style={{ display: 'flex' }}>
-              {['#5B5BD6','#EC4899','#F97316','#10B981'].map((c, i) => (
-                <div key={c} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: '2px solid #08080F', marginLeft: i > 0 ? -8 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.625rem', fontWeight: 700, color: '#fff' }}>
-                  {['C','M','S','A'][i]}
-                </div>
-              ))}
-            </div>
-            <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '-0.01em' }}>
-              <strong style={{ color: 'rgba(255,255,255,0.7)' }}>4 800+</strong> réservations ce mois
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.75rem' }}>·</span>
-            <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.35)' }}>
-              ⭐ <strong style={{ color: 'rgba(255,255,255,0.7)' }}>4,8/5</strong> satisfaction
-            </span>
+            <button onClick={handleSearch} style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '0 22px', fontWeight: 700, color: '#fff', fontSize: '0.9375rem', transition: 'opacity .15s', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}
+              onMouseEnter={e => e.currentTarget.style.opacity='0.85'}
+              onMouseLeave={e => e.currentTarget.style.opacity='1'}
+            >Rechercher</button>
           </div>
         </div>
 
-        {/* ── Secteurs ── */}
-        <div style={{ padding: '0 clamp(20px, 5vw, 60px) clamp(40px, 6vh, 64px)', maxWidth: 1200, margin: '0 auto' }}>
-          <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginBottom: 20, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
-            Que cherchez-vous ?
-          </p>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 14,
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? 'none' : 'translateY(20px)',
-            transition: 'opacity 0.5s 0.15s, transform 0.5s 0.15s',
-          }}>
-            {SECTEURS.map((s, i) => (
-              <SecteurCard key={s.id} s={s} onSearch={handleQuickSearch} />
+        {/* ── Catégories ── */}
+        <div style={{ padding: '0 clamp(20px, 5vw, 56px) 56px', opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(14px)', transition: 'opacity .5s .1s, transform .5s .1s' }}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 680, margin: '0 auto' }}>
+            {CATEGORIES.map(c => (
+              <button key={c.id} onClick={() => navigate(`/${c.id}`)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 40, padding: '9px 18px', cursor: 'pointer', transition: 'all .2s', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}
+                onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#fff'; e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'; e.currentTarget.style.transform='translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.transform=''; }}
+              >
+                <span style={{ fontSize: '1rem' }}>{c.emoji}</span>
+                {c.label}
+              </button>
             ))}
           </div>
         </div>
 
-        {/* ── Comment ça marche ── */}
-        <div style={{
-          padding: 'clamp(40px, 6vh, 64px) clamp(20px, 5vw, 60px)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          background: 'rgba(255,255,255,0.015)',
-        }}>
-          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.375rem, 2.5vw, 1.75rem)', fontWeight: 800, letterSpacing: '-0.035em', margin: '0 0 36px' }}>
-            Simple comme bonjour
-          </h2>
-          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap', maxWidth: 900, margin: '0 auto' }}>
-            {[
-              { num: '1', titre: 'Choisissez', desc: 'Sélectionnez votre service et indiquez votre ville.', icon: '🔍' },
-              { num: '2', titre: 'Comparez', desc: 'Notes, disponibilités, tarifs — tout est transparent.', icon: '⭐' },
-              { num: '3', titre: 'Réservez', desc: 'Confirmez en 1 clic. Rappel automatique par SMS.', icon: '✅' },
-            ].map((step, i) => (
-              <div key={i} style={{ flex: '1 1 200px', maxWidth: 260, textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 12 }}>{step.icon}</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>{step.num}</span>
-                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>{step.titre}</span>
-                </div>
-                <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
-              </div>
-            ))}
+        {/* ── Pros en vedette ── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: 'clamp(36px, 5vh, 52px) 0 clamp(40px, 6vh, 60px)' }}>
+          <div style={{ padding: '0 clamp(20px, 5vw, 56px)', marginBottom: 20, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>Disponibles maintenant</span>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '-0.01em' }}
+              onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.8)'}
+              onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.4)'}
+            >Voir tout →</button>
+          </div>
+          {/* Horizontal scroll */}
+          <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '4px clamp(20px, 5vw, 56px) 8px', scrollbarWidth: 'none' }}>
+            {PROS_VEDETTE.map(pro => <ProCard key={pro.id} pro={pro} />)}
           </div>
         </div>
 
-        {/* ── Avis clients ── */}
-        <div style={{ padding: 'clamp(36px, 5vh, 56px) clamp(20px, 5vw, 60px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
-            <div style={{
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: 20, padding: '28px 28px 24px',
-              transition: 'opacity 0.4s',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 14 }}>
-                {[1,2,3,4,5].map(i => (
-                  <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B" stroke="none">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                ))}
-              </div>
-              <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.75)', fontStyle: 'italic', lineHeight: 1.65, margin: '0 0 18px' }}>
-                "{AVIS[avisIdx].texte}"
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
-                  {AVIS[avisIdx].nom[0]}
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#fff' }}>{AVIS[avisIdx].nom}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>{AVIS[avisIdx].secteur} · {AVIS[avisIdx].ville}</div>
-                </div>
-              </div>
-            </div>
-            {/* Dots */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 14 }}>
-              {AVIS.map((_, i) => (
-                <button key={i} onClick={() => setAvisIdx(i)}
-                  style={{ width: i === avisIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === avisIdx ? '#5B5BD6' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── CTA Pros ── */}
+        {/* ── Bandeau pro ── */}
         <div style={{
-          padding: 'clamp(36px, 5vh, 56px) clamp(20px, 5vw, 60px)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 20, flexWrap: 'wrap',
-          maxWidth: 1200, margin: '0 auto',
+          margin: '0 clamp(20px, 5vw, 56px) clamp(40px, 6vh, 60px)',
+          borderRadius: 20,
+          background: 'linear-gradient(135deg, rgba(91,91,214,0.12) 0%, rgba(124,58,237,0.08) 100%)',
+          border: '1px solid rgba(91,91,214,0.2)',
+          padding: 'clamp(24px, 4vh, 36px) clamp(20px, 4vw, 40px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap',
         }}>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>Vous êtes un professionnel ?</div>
-            <div style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>
-              Développez votre clientèle avec Artisans Pro
+            <div style={{ fontSize: '0.75rem', color: 'rgba(165,165,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, marginBottom: 6 }}>Vous êtes un professionnel ?</div>
+            <div style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.375rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 4 }}>
+              Publiez vos services, gérez vos réservations
             </div>
-            <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>
-              Visibilité, réservations en ligne, gestion simplifiée — gratuit pour commencer.
-            </div>
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.4)' }}>Gratuit pour commencer · Visibilité immédiate · Paiement sécurisé</div>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
-            <button onClick={() => navigate('/register')}
-              style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '12px 24px', borderRadius: 12, fontSize: '0.9375rem', fontWeight: 700, color: '#fff', boxShadow: '0 6px 20px rgba(91,91,214,0.35)', letterSpacing: '-0.01em' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
-            >
-              Rejoindre gratuitement →
-            </button>
-            <button onClick={() => navigate('/recrutement')}
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', padding: '12px 20px', borderRadius: 12, fontSize: '0.9375rem', fontWeight: 500, color: 'rgba(255,255,255,0.7)', letterSpacing: '-0.01em' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-            >
-              👷 Recrutement
-            </button>
-          </div>
+          <button onClick={() => navigate('/register')}
+            style={{ flexShrink: 0, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '12px 24px', borderRadius: 12, fontSize: '0.9375rem', fontWeight: 700, color: '#fff', boxShadow: '0 6px 20px rgba(91,91,214,0.35)', whiteSpace: 'nowrap', transition: 'transform .15s' }}
+            onMouseEnter={e => e.currentTarget.style.transform='translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform=''}
+          >
+            Rejoindre gratuitement →
+          </button>
         </div>
 
         {/* ── Footer ── */}
-        <div style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          padding: '16px clamp(20px, 5vw, 60px) 28px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: 12,
-        }}>
-          <span style={{ fontSize: '0.775rem', color: 'rgba(255,255,255,0.2)' }}>© 2025 Artisans Pro</span>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {[['CGU', '/cgu'], ['Connexion', '/login'], ['Inscription', '/register']].map(([l, p]) => (
-              <button key={p} onClick={() => navigate(p)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'rgba(255,255,255,0.28)', letterSpacing: '-0.01em' }}
-                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.28)'}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px clamp(20px, 5vw, 56px) 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <span style={{ fontSize: '0.775rem', color: 'rgba(255,255,255,0.18)' }}>© 2025 Artisans Pro</span>
+          <div style={{ display: 'flex', gap: 18 }}>
+            {[['CGU', '/cgu'], ['Connexion', '/login'], ['Recrutement', '/recrutement']].map(([l, p]) => (
+              <button key={p} onClick={() => navigate(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.775rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '-0.01em', transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.6)'}
+                onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.25)'}
               >{l}</button>
             ))}
           </div>
         </div>
 
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-      `}</style>
+      <style>{`input::placeholder{color:rgba(255,255,255,0.28);} *::-webkit-scrollbar{display:none;}`}</style>
     </div>
   );
 }

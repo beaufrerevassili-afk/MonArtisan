@@ -33,6 +33,7 @@ const patronRoutes        = require('./routes/patronRoutes');
 const artisanRoutes       = require('./routes/artisanRoutes');
 const notificationsRoutes  = require('./routes/notificationsRoutes');
 const recrutementRoutes    = require('./routes/recrutementRoutes');
+const reservationsRoutes   = require('./routes/reservationsRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -74,6 +75,7 @@ app.use(express.json({ limit: '500kb' }));
 app.use('/',             require('./routes/publicRoutes'));
 app.use('/',             authRoutes);
 app.use('/recrutement',  recrutementRoutes); // routes publiques + patron intégrées
+app.use('/reservations', reservationsRoutes); // réservations publiques sans compte
 
 // Authentifiées
 app.use('/dashboard',   dashboardRoutes);
