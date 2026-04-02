@@ -54,6 +54,7 @@ import CGU from './pages/public/CGU';
 import RecrutementPage from './pages/public/RecrutementPage';
 import SecteurSelect from './pages/public/SecteurSelect';
 import SecteurLanding from './pages/public/SecteurLanding';
+import CoiffurePage from './pages/public/CoiffurePage';
 import SignatureDevis from './pages/public/SignatureDevis';
 import DocumentView from './pages/public/DocumentView';
 import ForgotPassword from './pages/ForgotPassword';
@@ -83,6 +84,7 @@ function AppRoutes() {
       {/* ── Routes publiques ── */}
       <Route path="/" element={<SecteurSelect />} />
       <Route path="/btp" element={<Landing />} />
+      <Route path="/coiffure" element={<CoiffurePage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />
