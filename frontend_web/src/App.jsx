@@ -55,6 +55,8 @@ import RecrutementPage from './pages/public/RecrutementPage';
 import SecteurSelect from './pages/public/SecteurSelect';
 import SecteurLanding from './pages/public/SecteurLanding';
 import CoiffurePage from './pages/public/CoiffurePage';
+import RestaurantPage from './pages/public/RestaurantPage';
+import VacancesPage from './pages/public/VacancesPage';
 import SignatureDevis from './pages/public/SignatureDevis';
 import SalonDetailPage from './pages/public/SalonDetailPage';
 import DocumentView from './pages/public/DocumentView';
@@ -87,6 +89,8 @@ function AppRoutes() {
       <Route path="/btp" element={<Landing />} />
       <Route path="/coiffure" element={<CoiffurePage />} />
       <Route path="/coiffure/salon/:salonId" element={<SalonDetailPage />} />
+      <Route path="/restaurant" element={<RestaurantPage />} />
+      <Route path="/vacances" element={<VacancesPage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />

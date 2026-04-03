@@ -10,41 +10,124 @@ const CATEGORIES = [
   { id: 'boulangerie', emoji: '🥖',  label: 'Boulangerie',            sub: 'Pain, viennoiserie, pâtisserie' },
   { id: 'garage',      emoji: '🔧',  label: 'Auto & Mécanique',       sub: 'Garage, carrosserie, pneus' },
   { id: 'btp',         emoji: '🏗️', label: 'Artisans & Travaux',     sub: 'Plombier, électricien, maçon' },
-  { id: 'commerce',    emoji: '🛍️', label: 'Commerces de proximité', sub: 'Fleuriste, pressing, épicerie' },
+  { id: 'vacances',    emoji: '🏖️', label: 'Vacances & Séjours',     sub: 'Hôtels, villas, appartements' },
 ];
 
-const PROS_FEATURED = [
-  { id:1, secteur:'coiffure',    nom:'Salon Léa',        metier:'Coloriste · Paris 11e',     note:4.9, avis:142, grad:'linear-gradient(140deg,#E8C5D0,#C9A0C0)', initials:'SL' },
-  { id:2, secteur:'restaurant',  nom:'Chez Marco',        metier:'Cuisine italienne · Lyon',  note:4.8, avis:89,  grad:'linear-gradient(140deg,#E8C8A0,#C8A070)', initials:'CM' },
-  { id:3, secteur:'boulangerie', nom:'Maison Dupont',     metier:'Boulangerie · Bordeaux',    note:4.9, avis:213, grad:'linear-gradient(140deg,#E8D8A0,#C8B870)', initials:'MD' },
-  { id:4, secteur:'coiffure',    nom:'Barbershop Alex',   metier:'Barbier · Paris 3e',        note:5.0, avis:67,  grad:'linear-gradient(140deg,#A8B8D8,#7890BC)', initials:'BA' },
-  { id:5, secteur:'garage',      nom:'Garage Martin',     metier:'Mécanicien · Toulouse',     note:4.7, avis:54,  grad:'linear-gradient(140deg,#B0C0B0,#909888)', initials:'GM' },
-  { id:6, secteur:'btp',         nom:'Tom Plomberie',     metier:'Plombier certifié · Nantes',note:4.8, avis:98,  grad:'linear-gradient(140deg,#B8C8D8,#90A8C0)', initials:'TP' },
+const SUGGESTIONS = [
+  // Coiffure
+  { label: 'Coiffeur',          secteur: 'coiffure' },
+  { label: 'Barbier',           secteur: 'coiffure' },
+  { label: 'Coloriste',         secteur: 'coiffure' },
+  { label: 'Manucure',          secteur: 'coiffure' },
+  { label: 'Institut de beauté',secteur: 'coiffure' },
+  { label: 'Spa & bien-être',   secteur: 'coiffure' },
+  { label: 'Balayage',          secteur: 'coiffure' },
+  { label: 'Épilation',         secteur: 'coiffure' },
+  // Restaurant
+  { label: 'Restaurant',        secteur: 'restaurant' },
+  { label: 'Pizzeria',          secteur: 'restaurant' },
+  { label: 'Sushi',             secteur: 'restaurant' },
+  { label: 'Burger',            secteur: 'restaurant' },
+  { label: 'Cuisine italienne', secteur: 'restaurant' },
+  { label: 'Gastronomique',     secteur: 'restaurant' },
+  { label: 'Cuisine française', secteur: 'restaurant' },
+  { label: 'Végétarien',        secteur: 'restaurant' },
+  { label: 'Kebab',             secteur: 'restaurant' },
+  { label: 'Café & brunch',     secteur: 'restaurant' },
+  // Boulangerie
+  { label: 'Boulangerie',       secteur: 'boulangerie' },
+  { label: 'Pâtisserie',        secteur: 'boulangerie' },
+  { label: 'Traiteur',          secteur: 'boulangerie' },
+  { label: 'Viennoiserie',      secteur: 'boulangerie' },
+  // Garage
+  { label: 'Mécanicien',        secteur: 'garage' },
+  { label: 'Garage auto',       secteur: 'garage' },
+  { label: 'Carrosserie',       secteur: 'garage' },
+  { label: 'Pneumatiques',      secteur: 'garage' },
+  { label: 'Contrôle technique',secteur: 'garage' },
+  // BTP
+  { label: 'Plombier',          secteur: 'btp' },
+  { label: 'Électricien',       secteur: 'btp' },
+  { label: 'Maçon',             secteur: 'btp' },
+  { label: 'Peintre',           secteur: 'btp' },
+  { label: 'Menuisier',         secteur: 'btp' },
+  { label: 'Couvreur',          secteur: 'btp' },
+  { label: 'Chauffagiste',      secteur: 'btp' },
+  { label: 'Serrurier',         secteur: 'btp' },
+  { label: 'Carreleur',         secteur: 'btp' },
+  { label: 'Isolation',         secteur: 'btp' },
+  { label: 'Architecte',        secteur: 'btp' },
+  // Vacances
+  { label: 'Hôtel',                secteur: 'vacances' },
+  { label: 'Location de vacances', secteur: 'vacances' },
+  { label: "Chambre d'hôtes",      secteur: 'vacances' },
+  { label: 'Villa',                secteur: 'vacances' },
+  { label: 'Appartement',          secteur: 'vacances' },
+  { label: 'Insolite',             secteur: 'vacances' },
 ];
-
-function Stars({ note }) {
-  return <span>{[1,2,3,4,5].map(i=><span key={i} style={{color:i<=Math.round(note)?DS.gold:'#E0DDD8',fontSize:10}}>★</span>)}</span>;
-}
 
 export default function SecteurSelect() {
   const navigate = useNavigate();
   const [query, setQuery]   = useState('');
   const [mounted, setMounted] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef();
+  const dropdownRef = useRef();
 
   useEffect(() => { setMounted(true); }, []);
+
+  const filteredSuggestions = query.length >= 1
+    ? SUGGESTIONS.filter(s => s.label.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    : [];
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) && e.target !== inputRef.current) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const goToSecteur = (secteur, q = query) => {
+    navigate(`/${secteur}?q=${encodeURIComponent(q)}`);
+    setShowSuggestions(false);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!query.trim()) return;
-    const q = query.toLowerCase();
-    if (q.includes('coiff') || q.includes('cheveux') || q.includes('barbier') || q.includes('manucure') || q.includes('salon')) navigate(`/coiffure?q=${encodeURIComponent(query)}`);
-    else if (q.includes('restaurant') || q.includes('pizza') || q.includes('sushi')) navigate(`/restaurant?q=${encodeURIComponent(query)}`);
-    else if (q.includes('pain') || q.includes('boulan') || q.includes('patiss')) navigate(`/boulangerie?q=${encodeURIComponent(query)}`);
-    else if (q.includes('garage') || q.includes('voiture') || q.includes('pneu')) navigate(`/garage?q=${encodeURIComponent(query)}`);
-    else if (q.includes('plomb') || q.includes('elec') || q.includes('maçon') || q.includes('artisan')) navigate(`/btp?q=${encodeURIComponent(query)}`);
-    else navigate(`/btp?q=${encodeURIComponent(query)}`);
+    if (filteredSuggestions.length > 0) {
+      const target = filteredSuggestions[activeIdx >= 0 ? activeIdx : 0];
+      goToSecteur(target.secteur, target.label);
+    } else {
+      const q = query.toLowerCase();
+      if (q.includes('coiff') || q.includes('cheveux') || q.includes('barb') || q.includes('manuc') || q.includes('salon') || q.includes('spa'))
+        navigate(`/coiffure?q=${encodeURIComponent(query)}`);
+      else if (q.includes('resto') || q.includes('pizza') || q.includes('sushi') || q.includes('burger') || q.includes('manger') || q.includes('gastro'))
+        navigate(`/restaurant?q=${encodeURIComponent(query)}`);
+      else if (q.includes('pain') || q.includes('boulan') || q.includes('patiss') || q.includes('vienno'))
+        navigate(`/boulangerie?q=${encodeURIComponent(query)}`);
+      else if (q.includes('garage') || q.includes('voiture') || q.includes('pneu') || q.includes('mécani') || q.includes('mecani'))
+        navigate(`/garage?q=${encodeURIComponent(query)}`);
+      else if (q.includes('hotel') || q.includes('hôtel') || q.includes('vacanc') || q.includes('villa') || q.includes('appart') || q.includes('séjour') || q.includes('sejour'))
+        navigate(`/vacances?q=${encodeURIComponent(query)}`);
+      else
+        navigate(`/btp?q=${encodeURIComponent(query)}`);
+    }
   };
+
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || filteredSuggestions.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, filteredSuggestions.length - 1)); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
+    if (e.key === 'Escape')    { setShowSuggestions(false); setActiveIdx(-1); }
+  };
+
+  const catLabel = id => CATEGORIES.find(c => c.id === id)?.label || id;
+  const catEmoji = id => CATEGORIES.find(c => c.id === id)?.emoji || '';
 
   return (
     <div style={{ minHeight:'100vh', background:DS.bg, fontFamily:DS.font, color:DS.ink }}>
@@ -70,25 +153,62 @@ export default function SecteurSelect() {
             Trouvez et réservez les<br/>meilleurs professionnels
           </h1>
           <p style={{ fontSize:'clamp(1rem,2vw,1.125rem)', color:DS.muted, lineHeight:1.65, margin:'0 0 36px', fontWeight:400 }}>
-            Coiffeurs, artisans, restaurants, garages — réservez en quelques secondes, sans compte.
+            Coiffeurs, artisans, restaurants, hôtels — réservez en quelques secondes, sans compte.
           </p>
 
-          {/* Barre de recherche */}
-          <form onSubmit={handleSearch} style={{ maxWidth:560, margin:'0 auto', display:'flex', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.full, overflow:'hidden', boxShadow:DS.shadow.md, transition:'box-shadow .2s' }}
-            onFocusCapture={e => e.currentTarget.style.boxShadow=DS.shadow.lg}
-            onBlurCapture={e => e.currentTarget.style.boxShadow=DS.shadow.md}>
-            <div style={{ flex:1, display:'flex', alignItems:'center', padding:'0 20px', gap:10 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DS.subtle} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input ref={inputRef} value={query} onChange={e=>setQuery(e.target.value)}
-                placeholder="Coiffeur, plombier, restaurant…"
-                style={{ flex:1, border:'none', outline:'none', fontSize:15, color:DS.ink, background:'none', fontFamily:DS.font, padding:'15px 0' }} />
-            </div>
-            <button type="submit" style={{ padding:'0 28px', background:DS.ink, border:'none', cursor:'pointer', color:'#fff', fontSize:13, fontWeight:700, transition:'opacity .15s', borderRadius:`0 ${DS.r.full}px ${DS.r.full}px 0` }}
-              onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
-              onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
-              Rechercher
-            </button>
-          </form>
+          {/* Barre de recherche + autocomplete */}
+          <div style={{ position:'relative', maxWidth:560, margin:'0 auto' }}>
+            <form onSubmit={handleSearch}
+              style={{ display:'flex', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.full, overflow:'visible', boxShadow:DS.shadow.md, transition:'box-shadow .2s' }}
+              onFocusCapture={e => e.currentTarget.style.boxShadow=DS.shadow.lg}
+              onBlurCapture={e => e.currentTarget.style.boxShadow=DS.shadow.md}>
+              <div style={{ flex:1, display:'flex', alignItems:'center', padding:'0 20px', gap:10 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DS.subtle} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={e => { setQuery(e.target.value); setShowSuggestions(true); setActiveIdx(-1); }}
+                  onFocus={() => { if (query.length >= 1) setShowSuggestions(true); }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Coiffeur, plombier, restaurant, villa…"
+                  autoComplete="off"
+                  style={{ flex:1, border:'none', outline:'none', fontSize:15, color:DS.ink, background:'none', fontFamily:DS.font, padding:'15px 0' }}
+                />
+                {query && (
+                  <button type="button"
+                    onClick={() => { setQuery(''); setShowSuggestions(false); inputRef.current?.focus(); }}
+                    style={{ background:'none', border:'none', cursor:'pointer', color:DS.subtle, padding:2, display:'flex', flexShrink:0 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                )}
+              </div>
+              <button type="submit"
+                style={{ padding:'0 28px', background:DS.ink, border:'none', cursor:'pointer', color:'#fff', fontSize:13, fontWeight:700, transition:'opacity .15s', borderRadius:`0 ${DS.r.full}px ${DS.r.full}px 0`, flexShrink:0 }}
+                onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
+                onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                Rechercher
+              </button>
+            </form>
+
+            {/* Dropdown */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div ref={dropdownRef}
+                style={{ position:'absolute', top:'calc(100% + 8px)', left:0, right:0, background:DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, boxShadow:DS.shadow.lg, zIndex:200, overflow:'hidden' }}>
+                {filteredSuggestions.map((s, i) => (
+                  <div key={i}
+                    onMouseDown={() => goToSecteur(s.secteur, s.label)}
+                    onMouseEnter={() => setActiveIdx(i)}
+                    style={{ padding:'11px 18px', display:'flex', alignItems:'center', gap:12, cursor:'pointer', background:i===activeIdx?DS.bgSoft:'transparent', transition:'background .1s', borderBottom: i < filteredSuggestions.length-1 ? `1px solid ${DS.borderLight || DS.border}` : 'none' }}>
+                    <span style={{ fontSize:16 }}>{catEmoji(s.secteur)}</span>
+                    <span style={{ flex:1, fontSize:14, color:DS.ink, fontWeight:500 }}>{s.label}</span>
+                    <span style={{ fontSize:11, color:DS.subtle, background:DS.bgSoft, padding:'2px 9px', borderRadius:DS.r.full, flexShrink:0 }}>
+                      {catLabel(s.secteur)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -97,40 +217,13 @@ export default function SecteurSelect() {
         <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:'0 0 24px' }}>Explorer par catégorie</h2>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(168px,1fr))', gap:12 }}>
           {CATEGORIES.map(cat => (
-            <button key={cat.id} onClick={()=>navigate(`/${cat.id}`)}
+            <button key={cat.id} onClick={() => navigate(`/${cat.id}`)}
               style={{ padding:'20px 16px', background:DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font }}
               onMouseEnter={e=>{ e.currentTarget.style.background=DS.bgSoft; e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; }}
               onMouseLeave={e=>{ e.currentTarget.style.background=DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
               <div style={{ fontSize:26, marginBottom:10 }}>{cat.emoji}</div>
               <div style={{ fontSize:14, fontWeight:700, color:DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
               <div style={{ fontSize:11.5, color:DS.muted, lineHeight:1.4 }}>{cat.sub}</div>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Pros à la une ── */}
-      <section style={{ padding:'0 clamp(16px,5vw,48px) clamp(40px,6vh,64px)', maxWidth:1100, margin:'0 auto' }}>
-        <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:24 }}>
-          <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:0 }}>Professionnels à la une</h2>
-          <button onClick={()=>navigate('/coiffure')} style={{ fontSize:13, color:DS.accent, fontWeight:600, background:'none', border:'none', cursor:'pointer' }}>Voir plus →</button>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
-          {PROS_FEATURED.map(pro => (
-            <button key={pro.id} onClick={()=>navigate(`/${pro.secteur}`)}
-              style={{ background:DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, overflow:'hidden', cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font }}
-              onMouseEnter={e=>{ e.currentTarget.style.boxShadow=DS.shadow.md; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.borderColor='transparent'; }}
-              onMouseLeave={e=>{ e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='none'; e.currentTarget.style.borderColor=DS.border; }}>
-              <div style={{ height:72, background:pro.grad, display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, color:'rgba(255,255,255,0.9)', fontWeight:800 }}>{pro.initials}</div>
-              <div style={{ padding:'12px 14px' }}>
-                <div style={{ fontSize:14, fontWeight:700, color:DS.ink, letterSpacing:'-0.02em', marginBottom:2 }}>{pro.nom}</div>
-                <div style={{ fontSize:11.5, color:DS.muted, marginBottom:8 }}>{pro.metier}</div>
-                <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                  <Stars note={pro.note} />
-                  <span style={{ fontSize:12, fontWeight:700, color:DS.ink }}>{pro.note}</span>
-                  <span style={{ fontSize:11, color:DS.subtle }}>({pro.avis})</span>
-                </div>
-              </div>
             </button>
           ))}
         </div>
@@ -144,12 +237,14 @@ export default function SecteurSelect() {
           <p style={{ fontSize:14, color:DS.muted, lineHeight:1.6, margin:0 }}>Réservations en ligne, gestion agenda, paiements — tout en un.</p>
         </div>
         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-          <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'12px 24px', background:DS.ink, border:'none', borderRadius:DS.r.full, fontSize:13, fontWeight:700, color:'#fff', cursor:'pointer', transition:'opacity .15s', whiteSpace:'nowrap' }}
+          <button onClick={() => navigate('/register?role=patron')}
+            style={{ padding:'12px 24px', background:DS.ink, border:'none', borderRadius:DS.r.full, fontSize:13, fontWeight:700, color:'#fff', cursor:'pointer', transition:'opacity .15s', whiteSpace:'nowrap' }}
             onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
             onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
             Créer mon espace pro →
           </button>
-          <button onClick={()=>navigate('/recrutement')} style={{ padding:'12px 24px', background:'none', border:`1px solid ${DS.border}`, borderRadius:DS.r.full, fontSize:13, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'all .15s', whiteSpace:'nowrap' }}
+          <button onClick={() => navigate('/recrutement')}
+            style={{ padding:'12px 24px', background:'none', border:`1px solid ${DS.border}`, borderRadius:DS.r.full, fontSize:13, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'all .15s', whiteSpace:'nowrap' }}
             onMouseEnter={e=>{ e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.color=DS.ink; }}
             onMouseLeave={e=>{ e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.color=DS.muted; }}>
             Consulter les offres d'emploi
