@@ -78,6 +78,29 @@ const STEPS_ARTISAN = [
   { num: 4, label: 'Confirmation' },
 ];
 
+const LOGEMENT_TYPES_VACANCES = ['Maison', 'Villa', 'Appartement', 'Studio', "Chambre d'hôtes", 'Gîte', 'Insolite'];
+const LOGEMENT_TYPES_HOTEL    = ['Hôtel', 'Résidence de tourisme', 'Apart-hôtel', 'Auberge'];
+const EQUIPEMENTS_LIST = [
+  'Piscine', 'Wi-Fi', 'Parking', 'Jardin', 'Sauna', 'Climatisation',
+  'Animaux acceptés', 'Petit-déjeuner', 'Terrasse', 'Vue mer',
+  'Cuisine équipée', 'Lave-linge', 'Cheminée', 'Vélos',
+];
+
+const DOCUMENTS_HOTEL = [
+  { id: 'piece_identite',   label: "Pièce d'identité",         detail: 'CNI recto-verso ou passeport en cours de validité',   accept: 'image/*,.pdf',  required: true,  icon: '🪪' },
+  { id: 'kbis',             label: 'Extrait Kbis',              detail: "Moins de 3 mois — preuve d'immatriculation",          accept: '.pdf,image/*',  required: true,  icon: '🏢' },
+  { id: 'rc_pro',           label: 'Attestation RC Pro',        detail: 'Responsabilité Civile Professionnelle hôtellerie',    accept: '.pdf,image/*',  required: true,  icon: '🛡️' },
+  { id: 'rib',              label: 'RIB',                       detail: 'Pour recevoir vos paiements en toute sécurité',       accept: '.pdf,image/*',  required: true,  icon: '🏦' },
+  { id: 'licence',          label: "Licence d'exploitation",    detail: "Licence hôtelière si applicable",                     accept: '.pdf,image/*',  required: false, icon: '📋' },
+];
+
+const DOCUMENTS_VACANCES = [
+  { id: 'piece_identite',     label: "Pièce d'identité",             detail: 'CNI recto-verso ou passeport en cours de validité', accept: 'image/*,.pdf', required: true,  icon: '🪪' },
+  { id: 'rib',                label: 'RIB',                          detail: 'Pour recevoir vos paiements en toute sécurité',     accept: '.pdf,image/*', required: true,  icon: '🏦' },
+  { id: 'justif_logement',    label: 'Justificatif de logement',     detail: 'Acte de propriété ou contrat de bail',              accept: '.pdf,image/*', required: false, icon: '🏠' },
+  { id: 'attestation_assurance', label: 'Attestation assurance habitation', detail: 'Assurance couvrant la location saisonnière', accept: '.pdf,image/*', required: false, icon: '🛡️' },
+];
+
 // ─── Sous-composants ──────────────────────────────────────────────────────────
 
 function EyeIcon({ open }) {
@@ -228,6 +251,11 @@ export default function Register() {
   const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '' });
   // Données profil artisan
   const [profil, setProfil] = useState({ metier: '', siret: '', adresse: '', ville: '', experience: '', description: '' });
+  // Données logement (vacances / hôtel)
+  const [logement, setLogement] = useState({
+    type: '', prixNuit: '', capacite: '2', chambres: '1', surface: '',
+    siret: '', adresse: '', codePostal: '', ville: '', description: '', equipements: [],
+  });
   // Documents uploadés { id: File }
   const [documents, setDocuments] = useState({});
 
@@ -347,8 +375,19 @@ export default function Register() {
     return null;
   }
 
+  function validateStep2Logement() {
+    if (!logement.type)            return 'Sélectionnez le type de bien';
+    if (!logement.prixNuit || isNaN(logement.prixNuit) || Number(logement.prixNuit) <= 0)
+                                   return 'Le prix par nuit est requis';
+    if (!logement.ville.trim())    return 'La ville est requise';
+    if (!logement.description.trim()) return 'Décrivez brièvement votre hébergement';
+    if (secteur === 'hotel' && !logement.siret.trim()) return 'Le numéro SIRET est requis pour un hôtel';
+    if (secteur === 'hotel' && logement.siret.replace(/\s/g, '').length !== 14) return 'Le SIRET doit contenir 14 chiffres';
+    return null;
+  }
+
   function validateStep3() {
-    const manquants = DOCUMENTS_REQUIS
+    const manquants = currentDocs
       .filter(d => d.required && !documents[d.id])
       .map(d => d.label);
     if (manquants.length > 0) return `Documents manquants : ${manquants.join(', ')}`;
@@ -359,7 +398,7 @@ export default function Register() {
     setError('');
     let err = null;
     if (step === 1) err = validateStep1();
-    if (step === 2) err = validateStep2();
+    if (step === 2) err = isLogement ? validateStep2Logement() : validateStep2();
     if (step === 3) err = validateStep3();
     if (err) { setError(err); return; }
     setStep(s => s + 1);
@@ -392,6 +431,25 @@ export default function Register() {
           documents:    docsMetadata,
           statut_verification: 'en_attente',
         }),
+        ...(isLogement && {
+          telephone:    compte.telephone,
+          secteur,
+          logement: {
+            type:        logement.type,
+            prixNuit:    Number(logement.prixNuit),
+            capacite:    Number(logement.capacite),
+            chambres:    Number(logement.chambres),
+            surface:     logement.surface ? Number(logement.surface) : null,
+            siret:       logement.siret.replace(/\s/g, '') || null,
+            adresse:     logement.adresse,
+            codePostal:  logement.codePostal,
+            ville:       logement.ville,
+            description: logement.description,
+            equipements: logement.equipements,
+          },
+          documents:    docsMetadata,
+          statut_verification: 'en_attente',
+        }),
       };
 
       const { data } = await api.post('/register', payload);
@@ -415,10 +473,14 @@ export default function Register() {
 
   // ─── Rendu principal ─────────────────────────────────────────────────────────
 
-  const isArtisan = role === 'artisan';
-  const isPatron  = role === 'patron';
-  const isPro = isArtisan || isPatron;
-  const maxWidth  = (isArtisan && step === 3) ? 600 : 440;
+  const isArtisan  = role === 'artisan';
+  const isPatron   = role === 'patron';
+  const isPro      = isArtisan || isPatron;
+  const isLogement = isPatron && (secteur === 'vacances' || secteur === 'hotel');
+  const currentDocs = isLogement
+    ? (secteur === 'hotel' ? DOCUMENTS_HOTEL : DOCUMENTS_VACANCES)
+    : DOCUMENTS_REQUIS;
+  const maxWidth   = (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
   if (step === 5) {
@@ -623,8 +685,169 @@ export default function Register() {
           </div>
         )}
 
+        {/* ══ STEP 2 — Logement (vacances / hôtel) ═════════════════════════════ */}
+        {step === 2 && isLogement && (
+          <div className="reg-card">
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: DS.ink, marginBottom: 20 }}>
+              {secteur === 'hotel' ? 'Votre établissement hôtelier' : 'Votre logement'}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Type de bien */}
+              <div>
+                <label className="reg-label">Type de {secteur === 'hotel' ? "l'établissement" : 'bien'} <span style={{ color: '#F87171' }}>*</span></label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {(secteur === 'hotel' ? LOGEMENT_TYPES_HOTEL : LOGEMENT_TYPES_VACANCES).map(t => (
+                    <button
+                      key={t} type="button"
+                      onClick={() => setLogement({ ...logement, type: t })}
+                      style={{
+                        padding: '8px 14px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 600,
+                        border: `1.5px solid ${logement.type === t ? DS.accent : DS.border}`,
+                        background: logement.type === t ? DS.accentMuted : DS.bg,
+                        color: logement.type === t ? DS.accent : DS.ink2,
+                        cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s',
+                      }}
+                    >{t}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prix et capacité */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="reg-label">Prix par nuit (€) <span style={{ color: '#F87171' }}>*</span></label>
+                  <input
+                    className="reg-input" type="number" min="1" placeholder="80"
+                    value={logement.prixNuit}
+                    onChange={e => setLogement({ ...logement, prixNuit: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="reg-label">Capacité (personnes) <span style={{ color: '#F87171' }}>*</span></label>
+                  <select className="reg-select" value={logement.capacite} onChange={e => setLogement({ ...logement, capacite: e.target.value })}>
+                    {[1,2,3,4,5,6,7,8,9,10,12,15,20].map(n => <option key={n} value={n}>{n} personne{n > 1 ? 's' : ''}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Chambres et surface */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="reg-label">Nombre de chambres</label>
+                  <select className="reg-select" value={logement.chambres} onChange={e => setLogement({ ...logement, chambres: e.target.value })}>
+                    {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} chambre{n > 1 ? 's' : ''}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="reg-label">Surface (m²)</label>
+                  <input
+                    className="reg-input" type="number" min="1" placeholder="65"
+                    value={logement.surface}
+                    onChange={e => setLogement({ ...logement, surface: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Adresse */}
+              <div>
+                <label className="reg-label">Adresse <span style={{ color: '#F87171' }}>*</span></label>
+                <input className="reg-input" placeholder="18 rue des Oliviers" value={logement.adresse} onChange={e => setLogement({ ...logement, adresse: e.target.value })} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+                <div>
+                  <label className="reg-label">Code postal <span style={{ color: '#F87171' }}>*</span></label>
+                  <input className="reg-input" placeholder="75001" value={logement.codePostal} onChange={e => setLogement({ ...logement, codePostal: e.target.value })} />
+                </div>
+                <div>
+                  <label className="reg-label">Ville <span style={{ color: '#F87171' }}>*</span></label>
+                  <input className="reg-input" placeholder="Paris, Nice, Bordeaux…" value={logement.ville} onChange={e => setLogement({ ...logement, ville: e.target.value })} />
+                </div>
+              </div>
+
+              {/* SIRET — requis pour hôtel, optionnel pour vacances */}
+              <div>
+                <label className="reg-label">
+                  Numéro SIRET {secteur === 'hotel' && <span style={{ color: '#F87171' }}>*</span>}
+                  {secteur === 'vacances' && <span style={{ fontWeight: 400, color: DS.subtle, marginLeft: 4 }}>— optionnel</span>}
+                </label>
+                <input
+                  className="reg-input"
+                  type="text"
+                  placeholder="123 456 789 01234"
+                  maxLength={17}
+                  value={logement.siret}
+                  onChange={e => {
+                    const v = e.target.value.replace(/[^\d]/g, '');
+                    const f = v.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+                    setLogement({ ...logement, siret: f });
+                  }}
+                />
+                <p style={{ fontSize: '0.75rem', color: DS.subtle, marginTop: 5 }}>
+                  {secteur === 'hotel' ? 'SIRET de votre établissement hôtelier (14 chiffres)' : 'Si vous exercez en tant que loueur professionnel'}
+                </p>
+              </div>
+
+              {/* Équipements */}
+              <div>
+                <label className="reg-label">Équipements disponibles</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {EQUIPEMENTS_LIST.map(eq => {
+                    const checked = logement.equipements.includes(eq);
+                    return (
+                      <button
+                        key={eq} type="button"
+                        onClick={() => setLogement({
+                          ...logement,
+                          equipements: checked
+                            ? logement.equipements.filter(e => e !== eq)
+                            : [...logement.equipements, eq],
+                        })}
+                        style={{
+                          padding: '7px 12px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500,
+                          border: `1.5px solid ${checked ? DS.green : DS.border}`,
+                          background: checked ? DS.greenBg : DS.bg,
+                          color: checked ? DS.green : DS.ink2,
+                          cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s',
+                        }}
+                      >
+                        {checked ? '✓ ' : ''}{eq}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="reg-label">Description du logement <span style={{ color: '#F87171' }}>*</span></label>
+                <textarea
+                  className="reg-input" rows={4}
+                  placeholder={secteur === 'hotel'
+                    ? "Décrivez votre établissement : ambiance, services, situation géographique, points forts…"
+                    : "Décrivez votre logement : emplacement, vue, ambiance, ce qui le rend unique…"
+                  }
+                  value={logement.description}
+                  onChange={e => setLogement({ ...logement, description: e.target.value })}
+                  style={{ resize: 'vertical' }}
+                />
+                <p style={{ fontSize: '0.75rem', color: logement.description.length > 30 ? DS.green : DS.subtle, marginTop: 5 }}>
+                  {logement.description.length} / 1000 caractères
+                </p>
+              </div>
+
+              {error && <ErrorBox message={error} />}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => { setStep(1); setError(''); }} className="reg-btn-secondary" style={{ flex: 1 }}>← Retour</button>
+                <button onClick={nextStep} className="reg-btn-primary" style={{ flex: 2 }}>Continuer →</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ══ STEP 2 — Profil professionnel ════════════════════════════════════ */}
-        {step === 2 && isPro && (
+        {step === 2 && isPro && !isLogement && (
           <div className="reg-card">
             <h2 style={{ fontSize: '1rem', fontWeight: 700, color: DS.ink, marginBottom: 20 }}>Votre profil professionnel</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -794,18 +1017,18 @@ export default function Register() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {DOCUMENTS_REQUIS.map(doc => (
+              {currentDocs.map(doc => (
                 <FileUploadZone key={doc.id} doc={doc} file={documents[doc.id] || null} onChange={setDoc} />
               ))}
             </div>
 
             <div style={{ margin: '20px 0 16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.75rem', color: DS.subtle }}>
-                <span>{Object.values(documents).filter(Boolean).length} / {DOCUMENTS_REQUIS.filter(d => d.required).length} documents obligatoires</span>
-                <span style={{ color: DS.accent, fontWeight: 600 }}>{Math.round(Object.values(documents).filter(Boolean).length / DOCUMENTS_REQUIS.filter(d => d.required).length * 100)}%</span>
+                <span>{Object.values(documents).filter(Boolean).length} / {currentDocs.filter(d => d.required).length} documents obligatoires</span>
+                <span style={{ color: DS.accent, fontWeight: 600 }}>{Math.round(Object.values(documents).filter(Boolean).length / currentDocs.filter(d => d.required).length * 100)}%</span>
               </div>
               <div style={{ height: 4, background: DS.bgMuted, borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ height: '100%', background: DS.accent, borderRadius: 3, width: `${Math.round(Object.values(documents).filter(Boolean).length / DOCUMENTS_REQUIS.filter(d => d.required).length * 100)}%`, transition: 'width 0.4s ease' }} />
+                <div style={{ height: '100%', background: DS.accent, borderRadius: 3, width: `${Math.round(Object.values(documents).filter(Boolean).length / currentDocs.filter(d => d.required).length * 100)}%`, transition: 'width 0.4s ease' }} />
               </div>
             </div>
 
@@ -828,15 +1051,28 @@ export default function Register() {
               <RecapRow label="Téléphone" value={compte.telephone} />
             </RecapSection>
 
-            <RecapSection title="Profil professionnel">
-              <RecapRow label="Métier"      value={profil.metier}     />
-              <RecapRow label="SIRET"       value={profil.siret}      />
-              <RecapRow label="Ville"       value={profil.ville}      />
-              <RecapRow label="Expérience"  value={profil.experience} />
-            </RecapSection>
+            {isLogement ? (
+              <RecapSection title={secteur === 'hotel' ? 'Établissement' : 'Logement'}>
+                <RecapRow label="Type"            value={logement.type}                                 />
+                <RecapRow label="Prix / nuit"     value={logement.prixNuit ? `${logement.prixNuit} €` : ''} />
+                <RecapRow label="Capacité"        value={logement.capacite ? `${logement.capacite} personnes` : ''} />
+                <RecapRow label="Chambres"        value={logement.chambres ? `${logement.chambres} chambre(s)` : ''} />
+                <RecapRow label="Surface"         value={logement.surface  ? `${logement.surface} m²` : ''} />
+                <RecapRow label="Ville"           value={[logement.codePostal, logement.ville].filter(Boolean).join(' ')} />
+                <RecapRow label="SIRET"           value={logement.siret}                                />
+                <RecapRow label="Équipements"     value={logement.equipements.length > 0 ? logement.equipements.join(', ') : ''} />
+              </RecapSection>
+            ) : (
+              <RecapSection title="Profil professionnel">
+                <RecapRow label="Métier"      value={profil.metier}     />
+                <RecapRow label="SIRET"       value={profil.siret}      />
+                <RecapRow label="Ville"       value={profil.ville}      />
+                <RecapRow label="Expérience"  value={profil.experience} />
+              </RecapSection>
+            )}
 
             <RecapSection title="Documents">
-              {DOCUMENTS_REQUIS.map(doc => (
+              {currentDocs.map(doc => (
                 <div key={doc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${DS.border}` }}>
                   <span style={{ fontSize: '0.8125rem', color: DS.muted }}>{doc.icon} {doc.label}</span>
                   {documents[doc.id]
