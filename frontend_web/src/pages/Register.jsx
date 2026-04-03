@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import DS from '../design/ds';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -196,7 +197,7 @@ function FileUploadZone({ doc, file, onChange }) {
             </div>
             <div>
               <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>
-                Glissez ou <span style={{ color: '#818CF8' }}>parcourez</span>
+                Glissez ou <span style={{ color: DS.accent }}>parcourez</span>
               </p>
               <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>PDF, JPG, PNG — max 10 Mo</p>
             </div>
@@ -213,7 +214,11 @@ function FileUploadZone({ doc, file, onChange }) {
 export default function Register() {
   const { login }   = useAuth();
   const navigate    = useNavigate();
-  const [role, setRole]   = useState('client');
+  const [searchParams]    = useSearchParams();
+  const urlRole    = searchParams.get('role') || 'client';
+  const urlSecteur = searchParams.get('secteur') || 'btp';
+  const [role, setRole]   = useState(urlRole);
+  const [secteur] = useState(urlSecteur);
   const [step, setStep]   = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -409,6 +414,8 @@ export default function Register() {
   // ─── Rendu principal ─────────────────────────────────────────────────────────
 
   const isArtisan = role === 'artisan';
+  const isPatron  = role === 'patron';
+  const isPro = isArtisan || isPatron;
   const maxWidth  = (isArtisan && step === 3) ? 600 : 440;
 
   // Page de succès artisan
@@ -515,33 +522,29 @@ export default function Register() {
 
         {/* Logo + titre */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 20 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(91,91,214,0.35)' }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-            </div>
-            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
-              Artisans<span style={{ background: 'linear-gradient(135deg, #818CF8, #A78BFA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}> Pro</span>
-            </span>
-          </div>
-          <h1 style={{ fontSize: '1.625rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#fff', marginBottom: 6 }}>
-            {isArtisan ? 'Rejoindre la plateforme' : 'Créer votre compte'}
+          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, fontWeight:900, color:DS.ink, letterSpacing:'-0.05em', marginBottom:16, fontFamily:DS.font }}>
+            Artisans<span style={{color:DS.gold}}>.</span>
+          </button>
+          <h1 style={{ fontSize: '1.625rem', fontWeight: 800, letterSpacing: '-0.04em', color: DS.ink, marginBottom: 6 }}>
+            {role==='artisan' ? 'Rejoindre la plateforme' : role==='patron' ? 'Créer mon espace pro' : 'Créer votre compte'}
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9375rem' }}>
-            {isArtisan ? 'Développez votre activité avec Artisans Pro' : 'Trouvez les meilleurs artisans près de chez vous'}
+          <p style={{ color: DS.muted, fontSize: '0.9375rem' }}>
+            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…' : role==='patron' ? `Gérez votre activité ${secteur} en ligne` : 'Développez votre activité avec Artisans.'}
           </p>
         </div>
 
         {/* Sélecteur rôle (seulement step 1) */}
         {step === 1 && (
-          <div style={{ padding: 5, marginBottom: 16, display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 13, border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ padding: 5, marginBottom: 16, display: 'flex', gap: 4, background: DS.bgSoft, borderRadius: DS.r.full, border: `1px solid ${DS.border}` }}>
             {[
-              { value: 'client',  label: '👤 Je cherche un artisan' },
-              { value: 'artisan', label: '🔨 Je suis artisan'        },
+              { value: 'client',  label: '👤 Je suis client' },
+              { value: 'artisan', label: '🔨 Je suis artisan' },
+              { value: 'patron',  label: '🏢 J'ai une entreprise' },
             ].map(r => (
               <button
                 key={r.value}
                 onClick={() => { setRole(r.value); setError(''); }}
-                style={{ flex: 1, padding: '10px', borderRadius: 9, fontSize: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: role === r.value ? 'linear-gradient(135deg, #5B5BD6, #7C3AED)' : 'transparent', color: role === r.value ? '#fff' : 'rgba(255,255,255,0.45)', boxShadow: role === r.value ? '0 4px 14px rgba(91,91,214,0.35)' : 'none', fontFamily: 'inherit' }}
+                style={{ flex: 1, padding: '10px', borderRadius: DS.r.full, fontSize: '0.8125rem', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: role === r.value ? DS.accent : 'transparent', color: role === r.value ? '#fff' : DS.muted, fontFamily: DS.font }}
               >
                 {r.label}
               </button>
@@ -566,26 +569,27 @@ export default function Register() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="reg-label">Prénom et nom complet</label>
-                <input className="reg-input" type="text" placeholder={isArtisan ? 'Carlos Garcia' : 'Marie Dupont'} value={compte.nom} onChange={e => setCompte({ ...compte, nom: e.target.value })} autoComplete="name" />
+                <label htmlFor="reg-nom" className="reg-label">Prénom et nom complet</label>
+                <input id="reg-nom" className="reg-input" type="text" placeholder={isArtisan ? 'Carlos Garcia' : 'Marie Dupont'} value={compte.nom} onChange={e => setCompte({ ...compte, nom: e.target.value })} autoComplete="name" />
               </div>
 
               <div>
-                <label className="reg-label">Adresse e-mail</label>
-                <input className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => setCompte({ ...compte, email: e.target.value })} autoComplete="email" />
+                <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
+                <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => setCompte({ ...compte, email: e.target.value })} autoComplete="email" />
               </div>
 
               {isArtisan && (
                 <div>
-                  <label className="reg-label">Numéro de téléphone <span style={{ color: '#F87171' }}>*</span></label>
-                  <input className="reg-input" type="tel" placeholder="06 12 34 56 78" value={compte.telephone} onChange={e => setCompte({ ...compte, telephone: e.target.value })} autoComplete="tel" />
+                  <label htmlFor="reg-tel" className="reg-label">Numéro de téléphone <span style={{ color: '#F87171' }}>*</span></label>
+                  <input id="reg-tel" className="reg-input" type="tel" placeholder="06 12 34 56 78" value={compte.telephone} onChange={e => setCompte({ ...compte, telephone: e.target.value })} autoComplete="tel" />
                 </div>
               )}
 
               <div>
-                <label className="reg-label">Mot de passe <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>— 8 caractères minimum</span></label>
+                <label htmlFor="reg-password" className="reg-label">Mot de passe <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>— 8 caractères minimum</span></label>
                 <div style={{ position: 'relative' }}>
                   <input
+                    id="reg-password"
                     className="reg-input"
                     type={showPwd ? 'text' : 'password'}
                     placeholder="••••••••"
@@ -594,7 +598,7 @@ export default function Register() {
                     autoComplete="new-password"
                     style={{ paddingRight: 44 }}
                   />
-                  <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', display: 'flex', padding: 2 }}>
+                  <button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', display: 'flex', padding: 2 }}>
                     <EyeIcon open={showPwd} />
                   </button>
                 </div>
@@ -722,7 +726,7 @@ export default function Register() {
                 )}
                 {siretStatus === 'idle' && profil.siret.replace(/\s/g, '').length < 14 && (
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 5 }}>
-                    Vérification automatique sur <span style={{ color: '#818CF8' }}>registre national entreprises</span>
+                    Vérification automatique sur <span style={{ color: DS.accent }}>registre national entreprises</span>
                   </p>
                 )}
               </div>

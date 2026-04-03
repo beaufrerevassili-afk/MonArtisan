@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import DS from '../../design/ds';
+import PublicNavbar from '../../components/public/PublicNavbar';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -388,58 +391,10 @@ export default function Landing() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F4F4F8', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: DS.bgSoft, fontFamily: DS.font }}>
 
-      {/* ══════════════════ NAVBAR ══════════════════ */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(8,8,15,0.75)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(20px, 5vw, 60px)', height: 64,
-      }}>
-        {/* Logo + Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(91,91,214,0.4)' }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="white" stroke="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22" fill="rgba(255,255,255,0.7)"/>
-              </svg>
-            </div>
-            <span style={{ fontWeight: 800, fontSize: '1.0625rem', color: '#fff', letterSpacing: '-0.025em' }}>Artisans<span style={{ background: 'linear-gradient(90deg, #A5A5FF, #C084FC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span></span>
-          </div>
-
-          {/* Recrutement nav link */}
-          <button onClick={() => navigate('/recrutement')}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', borderRadius: 20, padding: '5px 14px 5px 10px', cursor: 'pointer', transition: 'all 0.15s', backdropFilter: 'blur(8px)' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.13)'; e.currentTarget.style.borderColor = 'rgba(165,165,255,0.3)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.13)'; }}>
-            <span style={{ fontSize: '1rem' }}>👷</span>
-            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.01em' }}>Ils recrutent</span>
-            {annonces.length > 0 && (
-              <span style={{ background: '#5B5BD6', color: '#fff', fontSize: '0.625rem', fontWeight: 800, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.02em' }}>{annonces.length}</span>
-            )}
-          </button>
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => navigate('/login')}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', padding: '8px 18px', borderRadius: 10, fontSize: '0.875rem', fontWeight: 500, color: 'rgba(255,255,255,0.85)', transition: 'all 0.15s', letterSpacing: '-0.01em', backdropFilter: 'blur(8px)' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; }}>
-            Se connecter
-          </button>
-          <button onClick={() => navigate('/register')}
-            style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', border: 'none', cursor: 'pointer', padding: '8px 18px', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, color: '#fff', transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)', letterSpacing: '-0.01em', boxShadow: '0 4px 14px rgba(91,91,214,0.4)' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(91,91,214,0.5)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(91,91,214,0.4)'; }}>
-            Créer un compte
-          </button>
-        </div>
-      </nav>
+      <RecrutementBanner secteur="btp" />
+      <PublicNavbar />
 
       {/* ══════════════════ HERO ══════════════════ */}
       <div className="hero-bg" style={{ padding: 'clamp(60px, 10vh, 100px) clamp(20px, 5vw, 60px) clamp(80px, 12vh, 120px)', textAlign: 'center' }}>
@@ -460,7 +415,7 @@ export default function Landing() {
         </h1>
 
         {/* Sub */}
-        <p className="hero-sub" style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: 'rgba(255,255,255,0.55)', marginBottom: 48, maxWidth: 520, margin: '0 auto 48px', lineHeight: 1.65, fontWeight: 400 }}>
+        <p className="hero-sub" style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: DS.muted, marginBottom: 48, maxWidth: 520, margin: '0 auto 48px', lineHeight: 1.65, fontWeight: 400 }}>
           Devis gratuit sous 24h · Paiement sécurisé · Avis vérifiés par de vrais clients
         </p>
 
@@ -658,10 +613,10 @@ export default function Landing() {
 
             <div style={{ position: 'relative', zIndex: 1 }}>
               <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'rgba(165,165,255,0.8)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pour les artisans</p>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 16, maxWidth: 560, margin: '0 auto 16px' }}>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 16, maxWidth: 560, margin: '0 auto 16px' }}>
                 Développez votre activité avec Artisans Pro
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
+              <p style={{ color: DS.muted, fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
                 Gérez votre agenda, vos devis et vos factures depuis une seule plateforme. Simple, rapide, professionnel.
               </p>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>

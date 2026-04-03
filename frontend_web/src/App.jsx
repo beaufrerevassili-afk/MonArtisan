@@ -56,6 +56,7 @@ import SecteurSelect from './pages/public/SecteurSelect';
 import SecteurLanding from './pages/public/SecteurLanding';
 import CoiffurePage from './pages/public/CoiffurePage';
 import SignatureDevis from './pages/public/SignatureDevis';
+import SalonDetailPage from './pages/public/SalonDetailPage';
 import DocumentView from './pages/public/DocumentView';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -85,6 +86,7 @@ function AppRoutes() {
       <Route path="/" element={<SecteurSelect />} />
       <Route path="/btp" element={<Landing />} />
       <Route path="/coiffure" element={<CoiffurePage />} />
+      <Route path="/coiffure/salon/:salonId" element={<SalonDetailPage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />

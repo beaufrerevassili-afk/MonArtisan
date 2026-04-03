@@ -1,22 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import DS from '../../design/ds';
+import PublicNavbar from '../../components/public/PublicNavbar';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-// ─── Design System ────────────────────────────────────────────────────────────
-const DS = {
-  bg:      '#FAFAF8',
-  white:   '#FFFFFF',
-  surface: '#F4F3F0',
-  ink:     '#0A0A0A',
-  muted:   '#6B6B6B',
-  subtle:  '#AAAAAA',
-  border:  '#E8E7E4',
-  gold:    '#C9A96E',
-  green:   '#2A7C2A',
-  greenBg: '#EEF6EE',
-};
 
 // ─── Config par secteur ────────────────────────────────────────────────────────
 const SECTEUR_CONFIG = {
@@ -279,38 +268,8 @@ export default function SecteurLanding() {
   return (
     <div style={{ minHeight:'100vh', background:DS.bg, fontFamily:"-apple-system,'SF Pro Display','Inter','Helvetica Neue',sans-serif", color:DS.ink }}>
 
-      {/* ── Bandeau recrutement ── */}
-      <div onClick={()=>navigate('/recrutement')}
-        style={{ background:'#F9F6EE', borderBottom:`1px solid #EDE8D4`, padding:'10px 32px', display:'flex', alignItems:'center', justifyContent:'center', gap:10, cursor:'pointer', transition:'background .15s' }}
-        onMouseEnter={e=>e.currentTarget.style.background='#F3EFE2'}
-        onMouseLeave={e=>e.currentTarget.style.background='#F9F6EE'}>
-        <span style={{ width:6, height:6, borderRadius:'50%', background:DS.gold, boxShadow:`0 0 8px rgba(201,169,110,0.7)`, flexShrink:0 }} />
-        <span style={{ fontSize:13, color:'#7A6840' }}>Des entreprises du secteur {cfg.label.toLowerCase()} recrutent</span>
-        <span style={{ fontSize:13, color:'#5A4820', fontWeight:700, display:'flex', alignItems:'center', gap:4 }}>
-          Voir les offres
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </span>
-      </div>
-
-      {/* ── Navbar ── */}
-      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 32px', height:56, background:'rgba(250,250,248,0.95)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${DS.border}` }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:17, fontWeight:800, color:DS.ink, letterSpacing:'-0.05em', fontFamily:'inherit' }}>
-            Artisans<span style={{ color:DS.gold }}>.</span>
-          </button>
-          <span style={{ color:DS.border }}>›</span>
-          <span style={{ fontSize:13, color:DS.muted, fontWeight:500 }}>{cfg.emoji} {cfg.label}</span>
-        </div>
-        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-          <button onClick={()=>navigate('/recrutement')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:DS.muted, padding:'6px 10px', transition:'color .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.color=DS.ink} onMouseLeave={e=>e.currentTarget.style.color=DS.muted}>Emploi</button>
-          <button onClick={()=>navigate('/login')} style={{ padding:'7px 16px', background:'none', border:`1px solid ${DS.border}`, borderRadius:100, fontSize:12, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'all .15s' }}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=DS.ink;e.currentTarget.style.color=DS.ink;}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=DS.border;e.currentTarget.style.color=DS.muted;}}>Se connecter</button>
-          <button onClick={()=>navigate(`/register?secteur=${secteur}`)} style={{ padding:'7px 20px', background:DS.ink, border:'none', borderRadius:100, fontSize:12, fontWeight:600, color:'#fff', cursor:'pointer', transition:'opacity .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Créer un compte</button>
-        </div>
-      </nav>
+      <RecrutementBanner secteur={secteur} />
+      <PublicNavbar />
 
       {/* ── Hero ── */}
       <div style={{ background:DS.white, borderBottom:`1px solid ${DS.border}`, padding:'clamp(40px,7vh,64px) 32px clamp(28px,4vh,44px)', textAlign:'center', opacity:mounted?1:0, transform:mounted?'none':'translateY(14px)', transition:'opacity .5s, transform .5s' }}>

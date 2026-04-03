@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import DS from '../../design/ds';
+import PublicNavbar from '../../components/public/PublicNavbar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const CONTRATS = ['Tous', 'CDI', 'CDD', 'Alternance', 'Stage', 'Freelance', 'Intérim'];
@@ -199,16 +201,7 @@ export default function RecrutementPage() {
 
   return (
     <div style={{ height:'100vh',background:'#fff',fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif",color:'#0A0A0A',display:'flex',flexDirection:'column',overflow:'hidden' }}>
-      {/* Nav */}
-      <nav style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 clamp(20px,5vw,48px)',height:56,borderBottom:'1px solid #E8E7E4',background:'rgba(255,255,255,0.95)',backdropFilter:'blur(20px)',flexShrink:0,zIndex:100 }}>
-        <button onClick={()=>navigate('/')} style={{ background:'none',border:'none',cursor:'pointer',fontSize:17,fontWeight:800,color:'#0A0A0A',letterSpacing:'-0.05em',display:'flex',alignItems:'center',gap:2,fontFamily:'inherit' }}>
-          Artisans<span style={{ color:'#C9A96E' }}>.</span>
-        </button>
-        <div style={{ display:'flex',gap:6,alignItems:'center' }}>
-          <button onClick={()=>navigate('/login')} style={{ background:'none',border:'1px solid #E8E7E4',cursor:'pointer',padding:'7px 16px',borderRadius:100,fontSize:'0.8rem',fontWeight:500,color:'#6B6B6B',transition:'all .15s' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='#0A0A0A';e.currentTarget.style.color='#0A0A0A';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#E8E7E4';e.currentTarget.style.color='#6B6B6B';}}>Se connecter</button>
-          <button onClick={()=>navigate('/register')} style={{ background:'#0A0A0A',border:'none',cursor:'pointer',padding:'7px 20px',borderRadius:100,fontSize:'0.8rem',fontWeight:600,color:'#fff',transition:'opacity .15s' }} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>Créer un compte</button>
-        </div>
-      </nav>
+      <PublicNavbar />
 
       {/* Hero recherche */}
       <div style={{ background:'#fff',borderBottom:'1px solid #F0F0F0',padding:'clamp(36px,6vh,60px) clamp(20px,5vw,56px) clamp(28px,4vh,44px)',flexShrink:0,opacity:mounted?1:0,transform:mounted?'none':'translateY(12px)',transition:'opacity .5s,transform .5s' }}>
