@@ -12,6 +12,30 @@ const METIERS = [
   'Isolation', 'Climatisation', 'Plâtrerie', 'Charpente', 'Vitrier', 'Autre',
 ];
 
+const METIERS_PAR_SECTEUR = {
+  btp:        METIERS,
+  coiffure:   ['Coiffeur·se', 'Barbier', 'Coloriste', 'Manucure / Prothésiste ongulaire', 'Esthéticien·ne', 'Maquilleur·se', 'Responsable salon', 'Autre'],
+  restaurant: ['Chef cuisinier·ère', 'Gérant·e de restaurant', 'Maître d\'hôtel', 'Pizzaiolo', 'Traiteur·e', 'Pâtissier·ère', 'Barman / Barmaid', 'Autre'],
+};
+
+const DOCUMENTS_COIFFURE = [
+  { id: 'piece_identite',   label: "Pièce d'identité",       detail: 'CNI recto-verso ou passeport en cours de validité',       accept: 'image/*,.pdf', required: true,  icon: '🪪' },
+  { id: 'kbis',             label: 'Extrait Kbis',            detail: "Moins de 3 mois — preuve d'immatriculation de l'entreprise", accept: '.pdf,image/*', required: true,  icon: '🏢' },
+  { id: 'rc_pro',           label: 'Attestation RC Pro',      detail: 'Responsabilité Civile Professionnelle en cours de validité', accept: '.pdf,image/*', required: true,  icon: '🛡️' },
+  { id: 'rib',              label: 'RIB',                     detail: 'Pour recevoir vos paiements en toute sécurité',             accept: '.pdf,image/*', required: true,  icon: '🏦' },
+  { id: 'diplome_coiffure', label: 'Diplôme / CAP Coiffure',  detail: 'CAP, BP ou titre professionnel de coiffure',               accept: '.pdf,image/*', required: true,  icon: '🎓' },
+  { id: 'attestation_urssaf', label: 'Attestation de vigilance URSSAF', detail: 'À télécharger sur urssaf.fr — moins de 6 mois',   accept: '.pdf,image/*', required: false, icon: '📋' },
+];
+
+const DOCUMENTS_RESTAURANT = [
+  { id: 'piece_identite',    label: "Pièce d'identité",           detail: 'CNI recto-verso ou passeport en cours de validité',          accept: 'image/*,.pdf', required: true,  icon: '🪪' },
+  { id: 'kbis',              label: 'Extrait Kbis',               detail: "Moins de 3 mois — preuve d'immatriculation de l'entreprise",  accept: '.pdf,image/*', required: true,  icon: '🏢' },
+  { id: 'rc_pro',            label: 'Attestation RC Pro',         detail: 'Responsabilité Civile Professionnelle en cours de validité',  accept: '.pdf,image/*', required: true,  icon: '🛡️' },
+  { id: 'rib',               label: 'RIB',                        detail: 'Pour recevoir vos paiements en toute sécurité',               accept: '.pdf,image/*', required: true,  icon: '🏦' },
+  { id: 'permis_exploit',    label: "Permis d'exploitation",      detail: 'Obligatoire pour tout établissement servant de l\'alcool',    accept: '.pdf,image/*', required: true,  icon: '📋' },
+  { id: 'attestation_urssaf', label: 'Attestation de vigilance URSSAF', detail: 'À télécharger sur urssaf.fr — moins de 6 mois',         accept: '.pdf,image/*', required: false, icon: '📄' },
+];
+
 const DOCUMENTS_REQUIS = [
   {
     id:       'piece_identite',
@@ -240,8 +264,8 @@ export default function Register() {
   const [searchParams]    = useSearchParams();
   const urlRole    = searchParams.get('role') || 'client';
   const urlSecteur = searchParams.get('secteur') || 'btp';
-  const [role, setRole]   = useState(urlRole);
-  const [secteur] = useState(urlSecteur);
+  const [role, setRole]     = useState(urlRole);
+  const [secteur, setSecteur] = useState(urlSecteur);
   const [step, setStep]   = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -479,7 +503,10 @@ export default function Register() {
   const isLogement = isPatron && (secteur === 'vacances' || secteur === 'hotel');
   const currentDocs = isLogement
     ? (secteur === 'hotel' ? DOCUMENTS_HOTEL : DOCUMENTS_VACANCES)
+    : secteur === 'coiffure' ? DOCUMENTS_COIFFURE
+    : secteur === 'restaurant' ? DOCUMENTS_RESTAURANT
     : DOCUMENTS_REQUIS;
+  const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
   const maxWidth   = (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
@@ -593,7 +620,9 @@ export default function Register() {
             {role==='artisan' ? 'Rejoindre la plateforme' : role==='patron' ? 'Créer mon espace pro' : 'Créer votre compte'}
           </h1>
           <p style={{ color: DS.muted, fontSize: '0.9375rem' }}>
-            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…' : role==='patron' ? `Gérez votre activité ${secteur} en ligne` : 'Développez votre activité avec Freample.'}
+            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…'
+              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne', restaurant:'Gérez votre restaurant en ligne', vacances:'Gérez vos locations de vacances en ligne', hotel:'Gérez votre hôtel en ligne'}[secteur] || 'Créez votre espace professionnel')
+              : 'Développez votre activité avec Freample.'}
           </p>
         </div>
 
@@ -616,6 +645,35 @@ export default function Register() {
           </div>
         )}
 
+        {/* Sélecteur secteur (patron uniquement, step 1) */}
+        {step === 1 && isPatron && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: DS.subtle, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {[
+                { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux' },
+                { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté' },
+                { id: 'restaurant', emoji: '🍽️', label: 'Restauration' },
+                { id: 'vacances',   emoji: '🏖️', label: 'Location vacances' },
+                { id: 'hotel',      emoji: '🏨', label: 'Hôtellerie' },
+              ].map(s => (
+                <button key={s.id} type="button"
+                  onClick={() => { setSecteur(s.id); setError(''); }}
+                  style={{
+                    padding: '8px 14px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 600,
+                    border: `1.5px solid ${secteur === s.id ? DS.accent : DS.border}`,
+                    background: secteur === s.id ? DS.accentMuted : DS.bg,
+                    color: secteur === s.id ? DS.accent : DS.ink2,
+                    cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s',
+                  }}
+                >
+                  {s.emoji} {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Step indicator artisan */}
         {isPro && <StepIndicator steps={STEPS_ARTISAN} current={step} />}
 
@@ -626,7 +684,16 @@ export default function Register() {
               <div style={{ background: DS.accentMuted, border: `1px solid ${DS.accentLight}`, borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
                 <span style={{ flexShrink: 0, fontSize: '1rem' }}>ℹ️</span>
                 <p style={{ fontSize: '0.8125rem', color: DS.accent, lineHeight: 1.5 }}>
-                  <strong>Processus de vérification obligatoire</strong> — Pour garantir la sécurité de nos clients, chaque artisan est vérifié avant activation : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.
+                  {isArtisan
+                    ? <><strong>Processus de vérification obligatoire</strong> — Pour garantir la sécurité de nos clients, chaque artisan est vérifié avant activation : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.</>
+                    : secteur === 'coiffure'
+                    ? <><strong>Vérification du salon</strong> — Kbis, RC Pro, diplôme de coiffure requis pour activer votre espace.</>
+                    : secteur === 'restaurant'
+                    ? <><strong>Vérification de l'établissement</strong> — Kbis, RC Pro et permis d'exploitation requis pour activer votre espace.</>
+                    : (secteur === 'vacances' || secteur === 'hotel')
+                    ? <><strong>Vérification du logement</strong> — Pièce d'identité et RIB requis. Documents supplémentaires selon le type d'hébergement.</>
+                    : <><strong>Processus de vérification obligatoire</strong> — Pièce d'identité, Kbis, RC Pro et attestation URSSAF requis pour activer votre compte.</>
+                  }
                 </p>
               </div>
             )}
@@ -849,14 +916,16 @@ export default function Register() {
         {/* ══ STEP 2 — Profil professionnel ════════════════════════════════════ */}
         {step === 2 && isPro && !isLogement && (
           <div className="reg-card">
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: DS.ink, marginBottom: 20 }}>Votre profil professionnel</h2>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: DS.ink, marginBottom: 20 }}>
+              {secteur === 'coiffure' ? 'Votre salon' : secteur === 'restaurant' ? 'Votre restaurant' : 'Votre profil professionnel'}
+            </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               <div>
                 <label className="reg-label">Métier principal <span style={{ color: '#F87171' }}>*</span></label>
                 <select className="reg-select" value={profil.metier} onChange={e => setProfil({ ...profil, metier: e.target.value })}>
                   <option value="">Sélectionnez votre métier</option>
-                  {METIERS.map(m => <option key={m} value={m}>{m}</option>)}
+                  {currentMetiers.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
 
@@ -980,7 +1049,7 @@ export default function Register() {
                 <textarea
                   className="reg-input"
                   rows={3}
-                  placeholder="Décrivez vos spécialités, votre zone d'intervention, vos points forts..."
+                  placeholder={secteur === 'coiffure' ? "Décrivez votre salon : spécialités, ambiance, équipe, points forts..." : secteur === 'restaurant' ? "Décrivez votre restaurant : cuisine, ambiance, spécialités, points forts..." : "Décrivez vos spécialités, votre zone d'intervention, vos points forts..."}
                   value={profil.description}
                   onChange={e => setProfil({ ...profil, description: e.target.value })}
                   style={{ resize: 'vertical' }}
