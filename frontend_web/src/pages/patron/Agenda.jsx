@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
@@ -49,7 +49,7 @@ function fromNow(s) {
 
 /* ── Event types ───────────────────────────────────────── */
 const TYPES = {
-  rdv:      { label: 'RDV',          color: '#007AFF', bg: '#EBF5FF',  dot: '#007AFF' },
+  rdv:      { label: 'RDV',          color: '#5B5BD6', bg: '#EBF5FF',  dot: '#5B5BD6' },
   chantier: { label: 'Chantier',     color: '#34C759', bg: '#ECFDF5',  dot: '#34C759' },
   echeance: { label: 'Échéance',     color: '#FF9500', bg: '#FFFBEB',  dot: '#FF9500' },
   ct:       { label: 'CT Véhicule',  color: '#FF3B30', bg: '#FFF1F0',  dot: '#FF3B30' },
@@ -77,6 +77,16 @@ const DEMO_EVENTS = [
 const SALARIES = ['Martin D.', 'Sophie R.', 'Karim B.', 'Lucas P.', 'Emma V.'];
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+const HORAIRES_PAR_SECTEUR = {
+  btp:        { debut: '07:30', fin: '17:30', joursTravail: [0,1,2,3,4]    }, // Lun-Ven
+  coiffure:   { debut: '09:00', fin: '19:00', joursTravail: [1,2,3,4,5]    }, // Mar-Sam
+  restaurant: { debut: '10:00', fin: '23:00', joursTravail: [0,1,2,3,4,5,6] }, // tous
+  vacances:   { debut: '08:00', fin: '20:00', joursTravail: [0,1,2,3,4,5,6] },
+  hotel:      { debut: '06:00', fin: '22:00', joursTravail: [0,1,2,3,4,5,6] },
+  default:    { debut: '08:00', fin: '18:00', joursTravail: [0,1,2,3,4]    },
+};
+const JOURS_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 const FORM_VIDE = { type: 'rdv', title: '', heure: '', salarie: '', lieu: '', note: '', date: '' };
 
@@ -124,7 +134,7 @@ function DemoBanner() {
 
 /* ── Main ──────────────────────────────────────────────── */
 export default function Agenda() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [view, setView] = useState('month'); // 'month' | 'week'
   const [cursor, setCursor] = useState(new Date(TODAY));
   const [events, setEvents] = useState([]);
@@ -133,6 +143,26 @@ export default function Agenda() {
   const [form, setForm] = useState(FORM_VIDE);
   const [addSubmitted, setAddSubmitted] = useState(false);
   const [filterType, setFilterType] = useState('all');
+  const [showHoraires, setShowHoraires] = useState(false);
+
+  // Horaires de travail — initialisés selon le secteur de l'utilisateur
+  const secteur = user?.secteur || 'default';
+  const defaultH = HORAIRES_PAR_SECTEUR[secteur] || HORAIRES_PAR_SECTEUR.default;
+  const [horaires, setHoraires] = useState(() => {
+    try {
+      const saved = localStorage.getItem('agenda_horaires');
+      return saved ? JSON.parse(saved) : defaultH;
+    } catch { return defaultH; }
+  });
+
+  function saveHoraires(h) {
+    setHoraires(h);
+    try { localStorage.setItem('agenda_horaires', JSON.stringify(h)); } catch {}
+  }
+
+  function resetHoraires() {
+    saveHoraires(defaultH);
+  }
 
   /* Load agenda events from API, then merge real chantiers/missions */
   useEffect(() => {
@@ -216,7 +246,7 @@ export default function Agenda() {
   /* ── Add event ── */
   function openAdd(date) {
     setAddingDate(date);
-    setForm({ ...FORM_VIDE, date: ymd(date) });
+    setForm({ ...FORM_VIDE, date: ymd(date), heure: horaires.debut });
     setSelectedEvent(null);
     setAddSubmitted(false);
   }
@@ -290,7 +320,18 @@ export default function Agenda() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <div>
             <h1 style={{ marginBottom: 4 }}>Agenda</h1>
-            <p style={{ fontSize: '0.875rem' }}>RDV, chantiers, échéances et contrôles techniques</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <p style={{ fontSize: '0.875rem' }}>RDV, chantiers, échéances et contrôles techniques</p>
+              <button
+                onClick={() => setShowHoraires(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                title="Configurer les horaires de travail"
+              >
+                🕐 {horaires.debut} – {horaires.fin}
+              </button>
+            </div>
           </div>
           <button className="btn-primary" onClick={() => openAdd(TODAY)}>+ Ajouter un événement</button>
         </div>
@@ -486,6 +527,36 @@ export default function Agenda() {
             </div>
           ))}
         </div>
+
+        {/* Horaires */}
+        <div className="card" style={{ padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text)' }}>Horaires de travail</p>
+            <button onClick={() => setShowHoraires(true)} style={{ fontSize: '0.75rem', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
+              Modifier
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Ouverture</div>
+              <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text)' }}>{horaires.debut}</div>
+            </div>
+            <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Fermeture</div>
+              <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text)' }}>{horaires.fin}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            {JOURS_LABELS.map((j, i) => {
+              const actif = horaires.joursTravail.includes(i);
+              return (
+                <span key={j} style={{ padding: '2px 7px', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 600, background: actif ? 'var(--primary)' : 'var(--bg)', color: actif ? '#fff' : 'var(--text-tertiary)' }}>
+                  {j}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Event detail panel */}
@@ -643,6 +714,83 @@ export default function Agenda() {
         </div>
       )}
     </div>
+
+    {/* ── Horaires modal ── */}
+    {showHoraires && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)' }}
+        onClick={() => setShowHoraires(false)}>
+        <div onClick={e => e.stopPropagation()} style={{ background: 'var(--card)', borderRadius: 16, padding: 28, width: 400, boxShadow: 'var(--shadow-md)', animation: 'scaleIn 0.15s ease-out' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3>Horaires de travail</h3>
+            <button onClick={() => setShowHoraires(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+          </div>
+
+          {/* Secteur presets */}
+          <div style={{ marginBottom: 20 }}>
+            <label className="label">Préréglages par secteur</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {Object.entries({
+                btp:        '🏗️ BTP',
+                coiffure:   '✂️ Coiffure',
+                restaurant: '🍽️ Restaurant',
+                hotel:      '🏨 Hôtel',
+                vacances:   '🏖️ Location',
+              }).map(([s, label]) => (
+                <button key={s} type="button"
+                  onClick={() => setHoraires(HORAIRES_PAR_SECTEUR[s])}
+                  style={{ padding: '5px 11px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600, border: '1px solid var(--border)', background: secteur === s ? 'var(--primary)' : 'var(--bg)', color: secteur === s ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all .12s' }}
+                  onMouseEnter={e => { if (secteur !== s) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}}
+                  onMouseLeave={e => { if (secteur !== s) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}}
+                >
+                  {label} ({HORAIRES_PAR_SECTEUR[s].debut}–{HORAIRES_PAR_SECTEUR[s].fin})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time inputs */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            <div>
+              <label className="label">Heure d'ouverture</label>
+              <input className="input" type="time" value={horaires.debut}
+                onChange={e => setHoraires(h => ({ ...h, debut: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Heure de fermeture</label>
+              <input className="input" type="time" value={horaires.fin}
+                onChange={e => setHoraires(h => ({ ...h, fin: e.target.value }))} />
+            </div>
+          </div>
+
+          {/* Day toggles */}
+          <div style={{ marginBottom: 20 }}>
+            <label className="label">Jours de travail</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {JOURS_LABELS.map((j, i) => {
+                const actif = horaires.joursTravail.includes(i);
+                return (
+                  <button key={j} type="button"
+                    onClick={() => setHoraires(h => ({
+                      ...h,
+                      joursTravail: actif
+                        ? h.joursTravail.filter(d => d !== i)
+                        : [...h.joursTravail, i].sort(),
+                    }))}
+                    style={{ flex: 1, padding: '7px 0', borderRadius: 8, fontSize: '0.75rem', fontWeight: 600, border: `1.5px solid ${actif ? 'var(--primary)' : 'var(--border)'}`, background: actif ? 'var(--primary)' : 'var(--bg)', color: actif ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all .12s' }}
+                  >{j}</button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-primary" style={{ flex: 1 }} onClick={() => { saveHoraires(horaires); setShowHoraires(false); }}>Enregistrer</button>
+            <button className="btn-secondary" onClick={resetHoraires}>Réinitialiser</button>
+            <button className="btn-secondary" onClick={() => setShowHoraires(false)}>Annuler</button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
