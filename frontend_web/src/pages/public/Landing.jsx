@@ -396,31 +396,52 @@ export default function Landing() {
       <RecrutementBanner secteur="btp" />
       <PublicNavbar />
 
-      {/* ── En-tête ── */}
-      <div style={{ background: DS.bg, borderBottom: `1px solid ${DS.border}`, padding: '20px clamp(16px,4vw,48px) 0' }}>
+      {/* ── Hero ── */}
+      <section style={{ background: 'linear-gradient(160deg, #FFF8F0 0%, #FFFAF5 60%, #F8F6FF 100%)', borderBottom: `1px solid ${DS.border}`, padding: 'clamp(36px,6vw,64px) clamp(16px,4vw,48px) 0' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
-          {/* Titre + CTA */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h1 style={{ fontSize: 'clamp(1.375rem,3vw,1.875rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.045em', margin: 0, lineHeight: 1.1 }}>
-                Trouvez votre artisan idéal
-              </h1>
-              <p style={{ fontSize: 13, color: DS.muted, margin: '5px 0 0' }}>Plombiers, électriciens, menuisiers — certifiés partout en France</p>
+          {/* Badge + titre */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 14px', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: DS.r.full, fontSize: 11.5, color: '#EA580C', fontWeight: 700, letterSpacing: 0.3, marginBottom: 18 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#F97316' }} />
+              Artisans & Travaux · Certifiés RGE
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/register?role=artisan')}
-                style={{ padding: '9px 18px', background: DS.bgSoft, border: `1px solid ${DS.border}`, borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 600, color: DS.ink, cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => { e.currentTarget.style.background = DS.bgMuted; e.currentTarget.style.borderColor = DS.ink; }}
-                onMouseLeave={e => { e.currentTarget.style.background = DS.bgSoft; e.currentTarget.style.borderColor = DS.border; }}>
-                🔨 Je suis artisan
-              </button>
-              <button onClick={() => navigate('/register')}
-                style={{ padding: '9px 18px', background: DS.accent, border: 'none', borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => e.currentTarget.style.background = DS.accentHover}
-                onMouseLeave={e => e.currentTarget.style.background = DS.accent}>
-                Créer un compte gratuit
-              </button>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <h1 style={{ fontSize: 'clamp(1.625rem,3.5vw,2.25rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.045em', margin: 0, lineHeight: 1.1 }}>
+                  Trouvez votre artisan idéal
+                </h1>
+                <p style={{ fontSize: 14, color: DS.muted, margin: '8px 0 0', lineHeight: 1.5 }}>Plombiers, électriciens, menuisiers — vérifiés et certifiés partout en France</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 4 }}>
+                <button onClick={() => navigate('/register?role=artisan')}
+                  style={{ padding: '9px 18px', background: DS.bgSoft, border: `1px solid ${DS.border}`, borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 600, color: DS.ink, cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = DS.bgMuted; e.currentTarget.style.borderColor = DS.ink; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = DS.bgSoft; e.currentTarget.style.borderColor = DS.border; }}>
+                  🔨 Je suis artisan
+                </button>
+                <button onClick={() => navigate('/register')}
+                  style={{ padding: '9px 18px', background: '#F97316', border: 'none', borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#EA580C'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#F97316'}>
+                  Créer un compte gratuit
+                </button>
+              </div>
+            </div>
+
+            {/* Stats rapides */}
+            <div style={{ display: 'flex', gap: 'clamp(16px,3vw,32px)', flexWrap: 'wrap', marginTop: 20, marginBottom: 4 }}>
+              {[
+                { val: '2 400+', label: 'artisans vérifiés' },
+                { val: '24h',    label: 'délai devis moyen' },
+                { val: '4.8/5',  label: 'note moyenne' },
+                { val: '100%',   label: 'RC Pro contrôlée' },
+              ].map(s => (
+                <div key={s.val} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                  <span style={{ fontSize: 'clamp(14px,2vw,18px)', fontWeight: 800, color: '#EA580C', letterSpacing: '-0.03em' }}>{s.val}</span>
+                  <span style={{ fontSize: 12, color: DS.muted, fontWeight: 500 }}>{s.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -516,7 +537,7 @@ export default function Landing() {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* ══════════════════ RESULTS ══════════════════ */}
       <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(32px, 5vw, 56px) clamp(20px, 5vw, 60px) 80px' }}>
@@ -616,7 +637,7 @@ export default function Landing() {
             <div style={{ position: 'relative', zIndex: 1 }}>
               <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'rgba(165,165,255,0.8)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pour les artisans</p>
               <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 16, maxWidth: 560, margin: '0 auto 16px' }}>
-                Développez votre activité avec Artisans Pro
+                Développez votre activité avec Freample
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
                 Gérez votre agenda, vos devis et vos factures depuis une seule plateforme. Simple, rapide, professionnel.
