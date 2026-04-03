@@ -216,7 +216,7 @@ export default function SecteurSelect() {
       <section style={{ margin:'0 clamp(16px,5vw,48px) clamp(40px,6vh,64px)', background:DS.bgSoft, border:`1px solid ${DS.border}`, borderRadius:DS.r.xl, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,48px)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontSize:10, fontWeight:700, color:DS.gold, textTransform:'uppercase', letterSpacing:3, marginBottom:10 }}>Vous êtes professionnel ?</div>
-          <h3 style={{ fontSize:'clamp(1.25rem,3vw,1.625rem)', fontWeight:800, color:DS.ink, letterSpacing:'-0.04em', margin:'0 0 8px' }}>Développez votre activité<br/>avec Artisans.</h3>
+          <h3 style={{ fontSize:'clamp(1.25rem,3vw,1.625rem)', fontWeight:800, color:DS.ink, letterSpacing:'-0.04em', margin:'0 0 8px' }}>Développez votre activité<br/>avec Freample.</h3>
           <p style={{ fontSize:14, color:DS.muted, lineHeight:1.6, margin:0 }}>Réservations en ligne, gestion agenda, paiements — tout en un.</p>
         </div>
         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>

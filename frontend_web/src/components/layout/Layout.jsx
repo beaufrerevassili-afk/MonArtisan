@@ -141,6 +141,43 @@ const PATRON_GROUPS = [
   },
 ];
 
+// Flat menus for non-BTP patron sectors
+const PATRON_SECTOR_MENUS = {
+  coiffure: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',  Icon: IconHome       },
+    { label: 'Agenda & RDV',      path: '/patron/agenda',     Icon: IconCalendar   },
+    { label: 'Services & Tarifs', path: '/patron/dashboard',  Icon: IconDocument   },
+    { label: 'Clients',           path: '/patron/clients-rfm',Icon: IconTeam       },
+    { label: 'Équipe',            path: '/patron/rh',         Icon: IconTeam       },
+    { label: 'Finance',           path: '/patron/finance',    Icon: IconFinance    },
+    { label: 'Mon profil',        path: '/patron/profil',     Icon: IconUser       },
+  ],
+  restaurant: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',  Icon: IconHome       },
+    { label: 'Réservations',      path: '/patron/agenda',     Icon: IconCalendar   },
+    { label: 'Plan de salle',     path: '/patron/dashboard',  Icon: IconBuilding   },
+    { label: 'Ma carte',          path: '/patron/dashboard',  Icon: IconDocument   },
+    { label: 'Équipe',            path: '/patron/rh',         Icon: IconTeam       },
+    { label: 'Finance',           path: '/patron/finance',    Icon: IconFinance    },
+    { label: 'Mon profil',        path: '/patron/profil',     Icon: IconUser       },
+  ],
+  vacances: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',  Icon: IconHome       },
+    { label: 'Réservations',      path: '/patron/agenda',     Icon: IconCalendar   },
+    { label: 'Chambres',          path: '/patron/dashboard',  Icon: IconBuilding   },
+    { label: 'Check-in / Check-out', path: '/patron/dashboard', Icon: IconDocument },
+    { label: 'Équipe',            path: '/patron/rh',         Icon: IconTeam       },
+    { label: 'Finance',           path: '/patron/finance',    Icon: IconFinance    },
+    { label: 'Mon profil',        path: '/patron/profil',     Icon: IconUser       },
+  ],
+};
+
+const PATRON_SECTOR_HEADERS = {
+  coiffure:   { label: '✂️ Coiffure',        color: '#E535AB', bg: '#FFF0F8' },
+  restaurant: { label: '🍽️ Restaurant',      color: '#FF6000', bg: '#FFF3E8' },
+  vacances:   { label: '🏨 Hôtel & Vacances', color: '#0080FF', bg: '#E8F4FF' },
+};
+
 const DEMO_NOTIFS = [
   { id: 1, text: 'Nouveau devis accepté par M. Rousseau', time: 'Il y a 5 min', unread: true },
   { id: 2, text: 'Contrôle technique à renouveler : AA-123-BB', time: 'Il y a 1 h',  unread: true },
@@ -433,7 +470,7 @@ export default function Layout({ children }) {
                 </svg>
               </div>
               <span style={{ fontWeight: 800, fontSize: '0.9375rem', letterSpacing: '-0.025em', whiteSpace: 'nowrap', color: 'var(--text)' }}>
-                Artisans<span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>
+                Freample<span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>
               </span>
             </div>
           )}
@@ -556,11 +593,39 @@ export default function Layout({ children }) {
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-          {(isPatron || (isFondateur && location.pathname.startsWith('/patron'))) ? (
-            PATRON_GROUPS.map(group => (
+          {(isPatron || (isFondateur && location.pathname.startsWith('/patron'))) ? (() => {
+            const sectorMenu = isPatron && user?.secteur ? PATRON_SECTOR_MENUS[user.secteur] : null;
+            const sectorHdr  = isPatron && user?.secteur ? PATRON_SECTOR_HEADERS[user.secteur] : null;
+            if (sectorMenu) {
+              return (
+                <>
+                  {sectorHdr && !collapsed && (
+                    <div style={{ margin:'0 4px 10px', padding:'8px 12px', borderRadius:10, background:sectorHdr.bg, border:`1px solid ${sectorHdr.color}30`, fontSize:'0.8125rem', fontWeight:700, color:sectorHdr.color }}>
+                      {sectorHdr.label}
+                    </div>
+                  )}
+                  {sectorMenu.map(({ label, path, Icon }) => {
+                    const active = location.pathname === path && path !== '/patron/dashboard' ? false : location.pathname === path;
+                    const isDash = path === '/patron/dashboard';
+                    const isActive = isDash ? location.pathname === '/patron/dashboard' : location.pathname === path;
+                    return (
+                      <Link key={label} to={path} className={`nav-item${isActive ? ' active' : ''}`}
+                        style={{ padding: collapsed ? '8px' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', marginBottom:2, overflow:'hidden' }}
+                        title={collapsed ? label : undefined}
+                        onClick={isMobile ? () => setMobileOpen(false) : undefined}
+                      >
+                        <Icon size={17} />
+                        {!collapsed && <span style={{ whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{label}</span>}
+                      </Link>
+                    );
+                  })}
+                </>
+              );
+            }
+            return PATRON_GROUPS.map(group => (
               <NavGroup key={group.id} group={group} collapsed={collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
-            ))
-          ) : (
+            ));
+          })() : (
             <>
               {/* Sector header badge for client tabs */}
               {sectorHeader && !collapsed && (

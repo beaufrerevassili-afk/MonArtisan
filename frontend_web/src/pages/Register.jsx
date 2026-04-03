@@ -587,13 +587,13 @@ export default function Register() {
         {/* Logo + titre */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, fontWeight:900, color:DS.ink, letterSpacing:'-0.05em', marginBottom:16, fontFamily:DS.font }}>
-            Artisans<span style={{color:DS.gold}}>.</span>
+            Freample<span style={{color:DS.gold}}>.</span>
           </button>
           <h1 style={{ fontSize: '1.625rem', fontWeight: 800, letterSpacing: '-0.04em', color: DS.ink, marginBottom: 6 }}>
             {role==='artisan' ? 'Rejoindre la plateforme' : role==='patron' ? 'Créer mon espace pro' : 'Créer votre compte'}
           </h1>
           <p style={{ color: DS.muted, fontSize: '0.9375rem' }}>
-            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…' : role==='patron' ? `Gérez votre activité ${secteur} en ligne` : 'Développez votre activité avec Artisans.'}
+            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…' : role==='patron' ? `Gérez votre activité ${secteur} en ligne` : 'Développez votre activité avec Freample.'}
           </p>
         </div>
 

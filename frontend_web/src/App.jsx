@@ -33,6 +33,9 @@ import PaiementsClient from './pages/client/Paiements';
 import ParrainageClient from './pages/client/Parrainage';
 import ProfilClient from './pages/client/Profil';
 import DashboardPatron from './pages/patron/Dashboard';
+import DashboardCoiffure from './pages/patron/DashboardCoiffure';
+import DashboardRestaurant from './pages/patron/DashboardRestaurant';
+import DashboardHotel from './pages/patron/DashboardHotel';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
 import RH from './pages/patron/RH';
@@ -66,6 +69,15 @@ import Missions from './pages/shared/Missions';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
+
+function PatronDashboard() {
+  const { user } = useAuth();
+  const secteur = user?.secteur;
+  if (secteur === 'coiffure')   return <DashboardCoiffure />;
+  if (secteur === 'restaurant') return <DashboardRestaurant />;
+  if (secteur === 'vacances')   return <DashboardHotel />;
+  return <DashboardPatron />;
+}
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -128,7 +140,7 @@ function AppRoutes() {
         <ProtectedRoute roles={['patron']}>
           <Layout>
             <Routes>
-              <Route path="dashboard" element={<DashboardPatron />} />
+              <Route path="dashboard" element={<PatronDashboard />} />
               <Route path="missions"   element={<ChantiersEtMissions />} />
               <Route path="chantiers"  element={<Navigate to="/patron/missions" replace />} />
               <Route path="finance"   element={<Finance />} />

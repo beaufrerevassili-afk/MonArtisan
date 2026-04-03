@@ -34,7 +34,7 @@ export default function PublicNavbar({ subNav = null, transparent = false }) {
           display: 'flex', alignItems: 'center', gap: 2, fontFamily: DS.font,
           lineHeight: 1,
         }}>
-          Artisans<span style={{ color: DS.gold }}>.</span>
+          Freample<span style={{ color: DS.gold }}>.</span>
         </button>
 
         {/* Actions droite */}

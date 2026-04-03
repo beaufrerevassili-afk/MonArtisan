@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         if (payload.exp * 1000 > Date.now()) {
-          setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role });
+          setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role, secteur: payload.secteur || null });
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
           sessionStorage.removeItem('token');
@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.post('/login', { email, motdepasse });
     sessionStorage.setItem('token', data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role });
+    setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role, secteur: data.secteur || null });
     return data;
   }
 

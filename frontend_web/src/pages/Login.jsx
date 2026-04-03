@@ -151,7 +151,7 @@ export default function Login() {
               onClick={() => navigate('/')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 14, fontSize: 17, fontWeight: 800, color: DS.ink, letterSpacing: '-0.05em', fontFamily: DS.font, lineHeight: 1 }}
             >
-              Artisans<span style={{ color: DS.gold }}>.</span>
+              Freample<span style={{ color: DS.gold }}>.</span>
             </button>
             <h1 style={{ fontSize: 'clamp(1.25rem,3vw,1.625rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.15 }}>
               {sectorCfg ? 'Connectez-vous' : 'Bon retour 👋'}
