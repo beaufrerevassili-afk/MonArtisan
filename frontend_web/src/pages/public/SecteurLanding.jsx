@@ -9,11 +9,8 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // ─── Config par secteur ────────────────────────────────────────────────────────
 const SECTEUR_CONFIG = {
-  restaurant:  { label:'Restaurants',                emoji:'🍽️', placeholder:'Cuisine, ambiance, adresse…', filtres:['Tous','Sur place','À emporter','Livraison','Traiteur'] },
-  boulangerie: { label:'Boulangeries & Pâtisseries', emoji:'🥖', placeholder:'Pain, viennoiserie, gâteau…',  filtres:['Tous','Boulangerie','Pâtisserie','Bio','Livraison'] },
-  garage:      { label:'Garages & Auto',             emoji:'🔧', placeholder:'Vidange, pneus, diagnostic…', filtres:['Tous','Mécanique','Carrosserie','Pneus','Diagnostic'] },
-  commerce:    { label:'Commerces de proximité',     emoji:'🛍️', placeholder:'Fleuriste, pressing, épicerie…',filtres:['Tous','Fleuriste','Pressing','Épicerie','Librairie'] },
-  coiffure:    { label:'Coiffure & Beauté',          emoji:'✂️', placeholder:'Coupe, couleur, balayage…',   filtres:['Tous','Salon','Barbier','Institut','Domicile'] },
+  restaurant: { label:'Restaurants',            emoji:'🍽️', placeholder:'Cuisine, ambiance, adresse…', filtres:['Tous','Sur place','À emporter','Livraison','Traiteur'] },
+  coiffure:   { label:'Coiffure & Beauté',      emoji:'✂️', placeholder:'Coupe, couleur, balayage…',   filtres:['Tous','Salon','Barbier','Institut','Domicile'] },
 };
 
 // ─── Données démo ──────────────────────────────────────────────────────────────
@@ -23,20 +20,6 @@ const PROS_DEMO = {
     { id:2, nom:'Le Bistrot Paulette', type:'Sur place', ville:'Lyon 6e', note:4.9, avis:201, dispo:true, bio:'Cuisine française, produits du marché, vins naturels.', grad:'linear-gradient(140deg,#D4B0A0,#B09080)', initials:'BP', services:[{nom:'Formule midi',prix:19},{nom:'Menu dégustation',prix:48}], horaires:'Mar–Sam · 12h–14h · 19h30–22h' },
     { id:3, nom:'Sushi Kokoro', type:'Sur place', ville:'Lyon 3e', note:4.7, avis:134, dispo:true, bio:'Sushis artisanaux, poissons frais quotidiens.', grad:'linear-gradient(140deg,#A8B8C8,#8898A8)', initials:'SK', services:[{nom:'Menu déjeuner',prix:15},{nom:'Plateau sushis',prix:22},{nom:'Omakase',prix:55}], horaires:'Lun–Sam · 12h–14h30 · 19h–22h' },
     { id:4, nom:'La Brasserie du Port', type:'Sur place', ville:'Lyon 1er', note:4.5, avis:312, dispo:false, bio:'Brasserie emblématique avec vue sur la Saône.', grad:'linear-gradient(140deg,#C0B8A8,#A09880)', initials:'BP', services:[{nom:'Formule brasserie',prix:24},{nom:'Fruits de mer',prix:38}], horaires:'Lun–Dim · 11h30–23h' },
-  ],
-  boulangerie: [
-    { id:1, nom:'Maison Dupont', type:'Boulangerie', ville:'Bordeaux Centre', note:4.9, avis:213, dispo:true, bio:'Pain au levain, pains spéciaux, viennoiseries artisanales.', grad:'linear-gradient(140deg,#E8C890,#C8A860)', initials:'MD', services:[{nom:'Baguette tradition',prix:1.20},{nom:'Pain au levain 500g',prix:4.50},{nom:'Croissant',prix:1.40}], horaires:'Lun–Sam · 7h–19h30' },
-    { id:2, nom:'Pâtisserie Laurent', type:'Pâtisserie', ville:'Bordeaux Chartrons', note:4.8, avis:98, dispo:true, bio:'Pâtisseries fines, gâteaux d\'anniversaire sur commande.', grad:'linear-gradient(140deg,#D4C0B0,#B4A090)', initials:'PL', services:[{nom:'Éclair',prix:3.80},{nom:'Paris-Brest',prix:4.20},{nom:'Gâteau sur commande',prix:45}], horaires:'Mar–Sam · 8h–19h' },
-    { id:3, nom:'Le Four du Quartier', type:'Boulangerie', ville:'Bordeaux Saint-Michel', note:4.6, avis:156, dispo:true, bio:'Boulangerie familiale depuis 30 ans. Recettes transmises.', grad:'linear-gradient(140deg,#C8B898,#A89870)', initials:'FQ', services:[{nom:'Pain de campagne',prix:3.80},{nom:'Baguette',prix:1.10}], horaires:'Lun–Sam · 6h30–19h' },
-  ],
-  garage: [
-    { id:1, nom:'Garage Martin', type:'Mécanique', ville:'Toulouse Nord', note:4.7, avis:54, dispo:true, bio:'Mécanique générale, diagnostic, révision constructeur.', grad:'linear-gradient(140deg,#B0C0B0,#909888)', initials:'GM', services:[{nom:'Vidange',prix:69},{nom:'Diagnostic OBD',prix:45},{nom:'Révision complète',prix:199}], horaires:'Lun–Ven · 8h–18h · Sam 8h–12h' },
-    { id:2, nom:'AutoService Pro', type:'Carrosserie', ville:'Toulouse Centre', note:4.5, avis:87, dispo:true, bio:'Carrosserie, peinture, débosselage sans peinture.', grad:'linear-gradient(140deg,#C0B8A8,#A09888)', initials:'AS', services:[{nom:'Débosselage PDR',prix:120},{nom:'Retouche peinture',prix:200},{nom:'Remplacement pare-chocs',prix:350}], horaires:'Lun–Ven · 8h30–18h30' },
-    { id:3, nom:'Pneus Express', type:'Pneus', ville:'Toulouse Est', note:4.8, avis:203, dispo:false, bio:'Spécialiste pneumatiques, équilibrage, géométrie.', grad:'linear-gradient(140deg,#A8A8B8,#888898)', initials:'PE', services:[{nom:'Montage pneu (x4)',prix:40},{nom:'Géométrie',prix:89},{nom:'Équilibrage',prix:30}], horaires:'Lun–Sam · 8h–18h' },
-  ],
-  commerce: [
-    { id:1, nom:'Fleurs & Sens', type:'Fleuriste', ville:'Paris 15e', note:4.9, avis:67, dispo:true, bio:'Compositions florales créatives, livraison dans Paris.', grad:'linear-gradient(140deg,#C8D8B8,#A8B898)', initials:'FS', services:[{nom:'Bouquet de saison',prix:35},{nom:'Composition sur-mesure',prix:65},{nom:'Livraison Paris',prix:8}], horaires:'Mar–Sam · 9h–19h' },
-    { id:2, nom:'Pressing du Marché', type:'Pressing', ville:'Paris 14e', note:4.6, avis:145, dispo:true, bio:'Nettoyage à sec express, blanchisserie, retouches.', grad:'linear-gradient(140deg,#B8C8D8,#98A8B8)', initials:'PM', services:[{nom:'Chemise',prix:4.50},{nom:'Costume',prix:18},{nom:'Veste seule',prix:10}], horaires:'Lun–Sam · 8h–19h30' },
   ],
 };
 

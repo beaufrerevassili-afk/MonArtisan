@@ -5,12 +5,10 @@ import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 
 const CATEGORIES = [
-  { id: 'coiffure',    emoji: '✂️',  label: 'Coiffure & Beauté',     sub: 'Coiffeurs, barbiers, instituts' },
-  { id: 'restaurant',  emoji: '🍽️', label: 'Restaurants',            sub: 'Sur place, livraison, traiteur' },
-  { id: 'boulangerie', emoji: '🥖',  label: 'Boulangerie',            sub: 'Pain, viennoiserie, pâtisserie' },
-  { id: 'garage',      emoji: '🔧',  label: 'Auto & Mécanique',       sub: 'Garage, carrosserie, pneus' },
-  { id: 'btp',         emoji: '🏗️', label: 'Artisans & Travaux',     sub: 'Plombier, électricien, maçon' },
-  { id: 'vacances',    emoji: '🏖️', label: 'Vacances & Séjours',     sub: 'Hôtels, villas, appartements' },
+  { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
+  { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
+  { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements' },
+  { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
 ];
 
 const SUGGESTIONS = [
@@ -34,17 +32,6 @@ const SUGGESTIONS = [
   { label: 'Végétarien',        secteur: 'restaurant' },
   { label: 'Kebab',             secteur: 'restaurant' },
   { label: 'Café & brunch',     secteur: 'restaurant' },
-  // Boulangerie
-  { label: 'Boulangerie',       secteur: 'boulangerie' },
-  { label: 'Pâtisserie',        secteur: 'boulangerie' },
-  { label: 'Traiteur',          secteur: 'boulangerie' },
-  { label: 'Viennoiserie',      secteur: 'boulangerie' },
-  // Garage
-  { label: 'Mécanicien',        secteur: 'garage' },
-  { label: 'Garage auto',       secteur: 'garage' },
-  { label: 'Carrosserie',       secteur: 'garage' },
-  { label: 'Pneumatiques',      secteur: 'garage' },
-  { label: 'Contrôle technique',secteur: 'garage' },
   // BTP
   { label: 'Plombier',          secteur: 'btp' },
   { label: 'Électricien',       secteur: 'btp' },
@@ -108,10 +95,6 @@ export default function SecteurSelect() {
         navigate(`/coiffure?q=${encodeURIComponent(query)}`);
       else if (q.includes('resto') || q.includes('pizza') || q.includes('sushi') || q.includes('burger') || q.includes('manger') || q.includes('gastro'))
         navigate(`/restaurant?q=${encodeURIComponent(query)}`);
-      else if (q.includes('pain') || q.includes('boulan') || q.includes('patiss') || q.includes('vienno'))
-        navigate(`/boulangerie?q=${encodeURIComponent(query)}`);
-      else if (q.includes('garage') || q.includes('voiture') || q.includes('pneu') || q.includes('mécani') || q.includes('mecani'))
-        navigate(`/garage?q=${encodeURIComponent(query)}`);
       else if (q.includes('hotel') || q.includes('hôtel') || q.includes('vacanc') || q.includes('villa') || q.includes('appart') || q.includes('séjour') || q.includes('sejour'))
         navigate(`/vacances?q=${encodeURIComponent(query)}`);
       else

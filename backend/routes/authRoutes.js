@@ -43,8 +43,8 @@ router.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (re
     const valide = await bcrypt.compare(motdepasse, user.motdepasse);
     if (!valide) return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom }, SECRET, { expiresIn: '8h' });
-    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, userId: user.id, nom: user.nom, email: user.email });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom, secteur: user.secteur || null }, SECRET, { expiresIn: '8h' });
+    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, secteur: user.secteur || null, userId: user.id, nom: user.nom, email: user.email });
   } catch (err) {
     console.error('Erreur /login :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });

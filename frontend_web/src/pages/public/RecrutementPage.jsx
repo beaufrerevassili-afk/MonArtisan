@@ -9,20 +9,18 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const CONTRATS = ['Tous', 'CDI', 'CDD', 'Alternance', 'Stage', 'Freelance', 'Intérim'];
 
 const SECTEURS = [
-  { id: 'tous',        label: 'Tous',         emoji: '🔍' },
-  { id: 'coiffure',    label: 'Coiffure',      emoji: '✂️' },
-  { id: 'btp',         label: 'BTP',           emoji: '🏗️' },
-  { id: 'restaurant',  label: 'Restaurant',    emoji: '🍽️' },
-  { id: 'boulangerie', label: 'Boulangerie',   emoji: '🥖' },
-  { id: 'garage',      label: 'Garage',        emoji: '🔧' },
+  { id: 'tous',       label: 'Tous',       emoji: '🔍' },
+  { id: 'coiffure',   label: 'Coiffure',   emoji: '✂️' },
+  { id: 'btp',        label: 'BTP',        emoji: '🏗️' },
+  { id: 'restaurant', label: 'Restaurant', emoji: '🍽️' },
+  { id: 'vacances',   label: 'Hôtellerie', emoji: '🏨' },
 ];
 
 const SECTEUR_COLOR = {
-  coiffure:    { bg:'#FDF2F8', border:'#F9A8D4', text:'#9D174D' },
-  btp:         { bg:'#FFF7ED', border:'#FED7AA', text:'#92400E' },
-  restaurant:  { bg:'#FFFBEB', border:'#FDE68A', text:'#78350F' },
-  boulangerie: { bg:'#FEF9C3', border:'#FDE047', text:'#713F12' },
-  garage:      { bg:'#F0FDF4', border:'#BBF7D0', text:'#14532D' },
+  coiffure:   { bg:'#FDF2F8', border:'#F9A8D4', text:'#9D174D' },
+  btp:        { bg:'#EEF2FF', border:'#C7D2FE', text:'#3730A3' },
+  restaurant: { bg:'#FFF7ED', border:'#FED7AA', text:'#92400E' },
+  vacances:   { bg:'#EFF6FF', border:'#BFDBFE', text:'#1E40AF' },
 };
 
 const DEMO_OFFRES = [
@@ -31,8 +29,8 @@ const DEMO_OFFRES = [
   { id:3, poste:'Plombier chauffagiste N2/N3', entreprise:'PlombiPro', localisation:'Lyon', type_contrat:'CDI', salaire:'2 400–3 000€/mois', description:'Installation et dépannage chauffage, plomberie sanitaire. Permis B indispensable. Véhicule de société fourni.', competences:'Soudure cuivre, PAC, Chauffe-eau, Sanitaire', urgent:false, teletravail:false, created_at: new Date(Date.now()-2*86400000).toISOString(), secteur:'btp' },
   { id:4, poste:'Électricien(ne) N3P1', entreprise:'Énergie et Co', localisation:'Marseille', type_contrat:'CDI', salaire:'2 300–2 900€/mois', description:"Travaux d'installation électrique en neuf et rénovation. Habilitations BR/B2V requises.", competences:'Électricité HTA, Domotique, Habilitation électrique', urgent:false, teletravail:false, created_at: new Date(Date.now()-3*86400000).toISOString(), secteur:'btp' },
   { id:5, poste:'Chef de rang', entreprise:'Chez Marco', localisation:'Lyon 2e', type_contrat:'CDI', salaire:'2 100–2 500€/mois', description:'Restaurant gastronomique cherche chef de rang expérimenté. Service du soir, 5 soirs/semaine.', competences:'Service en salle, Cave, Anglais professionnel', urgent:false, teletravail:false, created_at: new Date(Date.now()-4*86400000).toISOString(), secteur:'restaurant' },
-  { id:6, poste:'Boulanger qualifié', entreprise:'Maison Dupont', localisation:'Bordeaux', type_contrat:'CDI', salaire:'2 000–2 400€/mois', description:'Fabrication de pains au levain, viennoiseries. Travail en équipe, matins uniquement. CAP Boulangerie exigé.', competences:'Levain naturel, Pétrissage, Façonnage, Cuisson', urgent:false, teletravail:false, created_at: new Date(Date.now()-5*86400000).toISOString(), secteur:'boulangerie' },
-  { id:7, poste:'Alternant Mécanicien Auto', entreprise:'Garage Martin', localisation:'Toulouse', type_contrat:'Alternance', salaire:'SMIC selon âge', description:'Formation en alternance mécanicien automobile. Accueil, diagnostic, entretien courant. BAC Pro ou BTS en cours.', competences:'Entretien, Diagnostic OBD, Pneumatiques', urgent:false, teletravail:false, created_at: new Date(Date.now()-6*86400000).toISOString(), secteur:'garage' },
+  { id:6, poste:'Réceptionniste hôtel', entreprise:'Hôtel Le Rivage', localisation:'Nice', type_contrat:'CDI', salaire:'2 000–2 400€/mois', description:'Accueil clientèle internationale, gestion des réservations, conciergerie. Anglais courant obligatoire.', competences:'Logiciel hôtelier, Anglais, Accueil', urgent:false, teletravail:false, created_at: new Date(Date.now()-5*86400000).toISOString(), secteur:'vacances' },
+  { id:7, poste:'Gouvernant(e) d\'étage', entreprise:'Hôtel Le Rivage', localisation:'Nice', type_contrat:'CDD', salaire:'1 900–2 200€/mois', description:'Supervision de l\'entretien des chambres et des parties communes. Encadrement d\'une équipe de 6 personnes.', competences:'Management, Qualité, Hôtellerie', urgent:true, teletravail:false, created_at: new Date(Date.now()-6*86400000).toISOString(), secteur:'vacances' },
 ];
 
 // ─── Modal candidature ─────────────────────────────────────────────────────────
