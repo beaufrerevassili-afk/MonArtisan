@@ -541,7 +541,7 @@ export default function Register() {
             {[
               { value: 'client',  label: '👤 Je suis client' },
               { value: 'artisan', label: '🔨 Je suis artisan' },
-              { value: 'patron',  label: '🏢 J'ai une entreprise' },
+              { value: 'patron',  label: "🏢 J'ai une entreprise" },
             ].map(r => (
               <button
                 key={r.value}
