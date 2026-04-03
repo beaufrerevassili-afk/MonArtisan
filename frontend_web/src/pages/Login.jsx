@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const COMPTES_DEMO = [
@@ -23,16 +23,27 @@ const FEATURES = [
   { icon: '✦', text: 'Paiements sécurisés' },
 ];
 
+const PUBLIC_SECTORS = ['vacances', 'restaurant', 'coiffure', 'btp'];
+
 export default function Login() {
   const { user, login } = useAuth();
   const navigate        = useNavigate();
+  const [searchParams]  = useSearchParams();
+  const fromSector      = searchParams.get('from');
   const [form, setForm]       = useState({ email: '', motdepasse: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [focused, setFocused] = useState('');
 
-  if (user) return <Navigate to={REDIRECTIONS[user.role] || '/'} replace />;
+  const getDestination = (role) => {
+    if (role === 'client' && fromSector && PUBLIC_SECTORS.includes(fromSector)) {
+      return `/client/dashboard?tab=${fromSector}`;
+    }
+    return REDIRECTIONS[role] || '/';
+  };
+
+  if (user) return <Navigate to={getDestination(user.role)} replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -40,7 +51,7 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(form.email, form.motdepasse);
-      navigate(REDIRECTIONS[data.role] || '/');
+      navigate(getDestination(data.role));
     } catch (err) {
       setError(err.response?.data?.erreur || 'Identifiants incorrects');
     } finally {
@@ -53,7 +64,7 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(compte.email, compte.motdepasse);
-      navigate(REDIRECTIONS[data.role] || '/');
+      navigate(getDestination(data.role));
     } catch (err) {
       setError(err.response?.data?.erreur || 'Identifiants incorrects');
     } finally {
@@ -351,7 +362,7 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <label style={{
+              <label htmlFor="login-email" style={{
                 display: 'block', marginBottom: 8,
                 fontSize: '0.8125rem', fontWeight: 600,
                 color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em',
@@ -359,6 +370,7 @@ export default function Login() {
                 Adresse e-mail
               </label>
               <input
+                id="login-email"
                 type="email"
                 className="login-input"
                 value={form.email}
@@ -373,7 +385,7 @@ export default function Login() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <label style={{
+                <label htmlFor="login-password" style={{
                   fontSize: '0.8125rem', fontWeight: 600,
                   color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em',
                 }}>
@@ -389,6 +401,7 @@ export default function Login() {
               </div>
               <div style={{ position: 'relative' }}>
                 <input
+                  id="login-password"
                   type={showPwd ? 'text' : 'password'}
                   className="login-input"
                   value={form.motdepasse}
@@ -403,6 +416,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPwd(!showPwd)}
+                  aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   style={{
                     position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                     background: 'none', border: 'none', cursor: 'pointer',
@@ -423,7 +437,10 @@ export default function Login() {
             </div>
 
             {error && (
-              <div style={{
+              <div
+                role="alert"
+                aria-live="assertive"
+                style={{
                 background: 'rgba(220,38,38,0.1)',
                 border: '1px solid rgba(220,38,38,0.25)',
                 borderRadius: 10, padding: '11px 14px',
@@ -462,6 +479,7 @@ export default function Login() {
                 key={c.email}
                 onClick={() => remplirDemo(c)}
                 className="login-demo-btn"
+                aria-label={`Se connecter en tant que ${c.role}`}
               >
                 <div style={{
                   width: 30, height: 30, borderRadius: 8, flexShrink: 0,

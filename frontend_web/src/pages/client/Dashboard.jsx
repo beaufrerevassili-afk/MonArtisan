@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import DS from '../../design/ds';
 import { useAuth } from '../../context/AuthContext';
 import { IconPlus, IconSearch, IconMissions, IconCheck, IconStar, IconMapPin, IconShield, IconX, IconPhoto, IconAlert, IconClock, IconChevronDown } from '../../components/ui/Icons';
 
@@ -50,7 +52,7 @@ const DEVIS_RECUS_DEMO = [
       { desc: 'Plomberie + robinetterie neuve', qte: 1, pu: 720 },
       { desc: 'Main d\'œuvre', qte: 16, pu: 65 },
     ],
-    color: '#007AFF', statut: 'en_attente',
+    color: '#5B5BD6', statut: 'en_attente',
   },
   {
     id: 'DV-2024-019', mission: 'Rénovation salle de bain 12 m²', artisan: 'Dupont Rénovation', note: 4.5, nbAvis: 89,
@@ -76,8 +78,19 @@ const DEVIS_RECUS_DEMO = [
   },
 ];
 
+const TABS = [
+  { id: 'accueil',     label: '🏠', title: 'Accueil'      },
+  { id: 'btp',        label: '🔨', title: 'BTP & Travaux' },
+  { id: 'coiffure',   label: '✂️', title: 'Coiffure'      },
+  { id: 'restaurant', label: '🍽️', title: 'Restaurant'    },
+  { id: 'vacances',   label: '🏖️', title: 'Vacances'      },
+];
+
 export default function DashboardClient() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'accueil');
   const [data, setData]           = useState(null);
   const [artisans, setArtisans]   = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -186,7 +199,42 @@ export default function DashboardClient() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+      {/* ── Tab navigation ── */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${DS.border}`, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 0, background: DS.bg, position: 'sticky', top: 0, zIndex: 10 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '14px 20px', border: 'none', background: 'none', cursor: 'pointer',
+              borderBottom: `2.5px solid ${activeTab === t.id ? DS.accent : 'transparent'}`,
+              color: activeTab === t.id ? DS.accent : DS.muted,
+              fontWeight: activeTab === t.id ? 700 : 400,
+              fontSize: 13.5, fontFamily: DS.font, whiteSpace: 'nowrap', marginBottom: -1,
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'color .15s',
+            }}>
+            <span>{t.label}</span>
+            <span>{t.title}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ══ ACCUEIL TAB ══════════════════════════════════════════════════════════ */}
+      {activeTab === 'accueil' && <AccueilTab user={user} navigate={navigate} setActiveTab={setActiveTab} />}
+
+      {/* ══ COIFFURE TAB ═════════════════════════════════════════════════════════ */}
+      {activeTab === 'coiffure' && <CoiffureTab navigate={navigate} />}
+
+      {/* ══ RESTAURANT TAB ═══════════════════════════════════════════════════════ */}
+      {activeTab === 'restaurant' && <RestaurantTab navigate={navigate} />}
+
+      {/* ══ VACANCES TAB ═════════════════════════════════════════════════════════ */}
+      {activeTab === 'vacances' && <VacancesTab navigate={navigate} />}
+
+      {/* ══ BTP TAB ══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'btp' && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28, paddingTop: 28 }}>
 
       {/* Hero search — même apparence que la page d'accueil */}
       <div style={{ background: 'linear-gradient(160deg, #0A0F1E 0%, #0A2550 60%, #004FA3 100%)', borderRadius: 20, padding: '32px 28px 28px', margin: '-28px -28px 0', position: 'relative' }}>
@@ -206,7 +254,7 @@ export default function DashboardClient() {
               style={{ flex: 1, border: 'none', outline: 'none', padding: '10px 14px', fontSize: '0.9375rem', color: '#1D1D1F', background: 'transparent', fontFamily: 'inherit' }}
             />
             <button onClick={rechercherArtisans}
-              style={{ background: '#007AFF', color: '#fff', border: 'none', cursor: 'pointer', padding: '11px 22px', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+              style={{ background: '#5B5BD6', color: '#fff', border: 'none', cursor: 'pointer', padding: '11px 22px', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
               Rechercher
             </button>
           </div>
@@ -216,9 +264,9 @@ export default function DashboardClient() {
             {/* Ville */}
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, background: ville ? '#EBF5FF' : 'rgba(255,255,255,0.12)', border: ville ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)' }}>
-                <IconMapPin size={12} color={ville ? '#007AFF' : 'rgba(255,255,255,0.8)'} />
+                <IconMapPin size={12} color={ville ? '#5B5BD6' : 'rgba(255,255,255,0.8)'} />
                 <input type="text" value={villeInput} onChange={e => { setVilleInput(e.target.value); if (!e.target.value) setVille(''); }} placeholder="Ville"
-                  style={{ background: 'none', border: 'none', outline: 'none', fontSize: '0.8125rem', color: ville ? '#007AFF' : 'rgba(255,255,255,0.9)', fontWeight: 500, width: 90, fontFamily: 'inherit' }} />
+                  style={{ background: 'none', border: 'none', outline: 'none', fontSize: '0.8125rem', color: ville ? '#5B5BD6' : 'rgba(255,255,255,0.9)', fontWeight: 500, width: 90, fontFamily: 'inherit' }} />
               </div>
               {villeSuggestions.length > 0 && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200, background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', minWidth: 180, overflow: 'hidden' }}>
@@ -237,7 +285,7 @@ export default function DashboardClient() {
             {/* Métier */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => { setMetierOpen(!metierOpen); setDispoOpen(false); setNoteOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: metier ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: metier ? '#007AFF' : 'rgba(255,255,255,0.9)', border: metier ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: metier ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: metier ? '#5B5BD6' : 'rgba(255,255,255,0.9)', border: metier ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 {metier || 'Métier'} <IconChevronDown size={12} />
               </button>
               {metierOpen && (
@@ -245,7 +293,7 @@ export default function DashboardClient() {
                   <button onClick={() => { setMetier(''); setMetierOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: 'none', border: 'none', color: '#6E6E73' }}>Tous les métiers</button>
                   {CATEGORIES.map(m => (
                     <button key={m} onClick={() => { setMetier(m); setMetierOpen(false); }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: metier === m ? '#EBF5FF' : 'none', color: metier === m ? '#007AFF' : '#1D1D1F', border: 'none', fontWeight: metier === m ? 600 : 400 }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: metier === m ? '#EBF5FF' : 'none', color: metier === m ? '#5B5BD6' : '#1D1D1F', border: 'none', fontWeight: metier === m ? 600 : 400 }}
                       onMouseEnter={e => { if (metier !== m) e.currentTarget.style.background = '#F5F5F7'; }}
                       onMouseLeave={e => { if (metier !== m) e.currentTarget.style.background = 'none'; }}>
                       {m}
@@ -258,14 +306,14 @@ export default function DashboardClient() {
             {/* Disponibilité */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => { setDispoOpen(!dispoOpen); setMetierOpen(false); setNoteOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: disponibilite ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: disponibilite ? '#007AFF' : 'rgba(255,255,255,0.9)', border: disponibilite ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: disponibilite ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: disponibilite ? '#5B5BD6' : 'rgba(255,255,255,0.9)', border: disponibilite ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 {DISPONIBILITES.find(d => d.value === disponibilite)?.label || 'Disponibilité'} <IconChevronDown size={12} />
               </button>
               {dispoOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200, background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', overflow: 'hidden', minWidth: 200 }}>
                   {DISPONIBILITES.map(d => (
                     <button key={d.value} onClick={() => { setDispo(d.value); setDispoOpen(false); }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: disponibilite === d.value ? '#EBF5FF' : 'none', color: disponibilite === d.value ? '#007AFF' : '#1D1D1F', border: 'none', fontWeight: disponibilite === d.value ? 600 : 400 }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: disponibilite === d.value ? '#EBF5FF' : 'none', color: disponibilite === d.value ? '#5B5BD6' : '#1D1D1F', border: 'none', fontWeight: disponibilite === d.value ? 600 : 400 }}
                       onMouseEnter={e => { if (disponibilite !== d.value) e.currentTarget.style.background = '#F5F5F7'; }}
                       onMouseLeave={e => { if (disponibilite !== d.value) e.currentTarget.style.background = 'none'; }}>
                       {d.label}
@@ -278,14 +326,14 @@ export default function DashboardClient() {
             {/* Note */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => { setNoteOpen(!noteOpen); setMetierOpen(false); setDispoOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: noteMin ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: noteMin ? '#007AFF' : 'rgba(255,255,255,0.9)', border: noteMin ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500, background: noteMin ? '#EBF5FF' : 'rgba(255,255,255,0.12)', color: noteMin ? '#5B5BD6' : 'rgba(255,255,255,0.9)', border: noteMin ? '1px solid rgba(0,122,255,0.3)' : '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 {NOTES.find(n => n.value === noteMin)?.label || 'Note'} <IconChevronDown size={12} />
               </button>
               {noteOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200, background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', overflow: 'hidden', minWidth: 160 }}>
                   {NOTES.map(n => (
                     <button key={n.value} onClick={() => { setNoteMin(n.value); setNoteOpen(false); }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: noteMin === n.value ? '#EBF5FF' : 'none', color: noteMin === n.value ? '#007AFF' : '#1D1D1F', border: 'none', fontWeight: noteMin === n.value ? 600 : 400 }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 13px', fontSize: '0.8125rem', cursor: 'pointer', background: noteMin === n.value ? '#EBF5FF' : 'none', color: noteMin === n.value ? '#5B5BD6' : '#1D1D1F', border: 'none', fontWeight: noteMin === n.value ? 600 : 400 }}
                       onMouseEnter={e => { if (noteMin !== n.value) e.currentTarget.style.background = '#F5F5F7'; }}
                       onMouseLeave={e => { if (noteMin !== n.value) e.currentTarget.style.background = 'none'; }}>
                       {n.label}
@@ -340,7 +388,7 @@ export default function DashboardClient() {
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {[
-                  { key: 'creation', icon: '🏗️', title: 'Création / Rénovation', desc: 'Travaux planifiés, aménagement, rénovation complète', color: '#007AFF', bg: '#EBF5FF' },
+                  { key: 'creation', icon: '🏗️', title: 'Création / Rénovation', desc: 'Travaux planifiés, aménagement, rénovation complète', color: '#5B5BD6', bg: '#EBF5FF' },
                   { key: 'depannage', icon: '🚨', title: 'Dépannage urgent', desc: 'Panne, fuite, urgence — intervention rapide nécessaire', color: '#FF3B30', bg: '#FFE5E5' },
                 ].map(t => (
                   <div
@@ -474,7 +522,7 @@ export default function DashboardClient() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
           {artisans.map(a => {
-            const colors = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA'];
+            const colors = ['#5B5BD6', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA'];
             const bg = colors[(a.id || 0) % colors.length];
             const initials = (a.nom || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             const dispoMap = {
@@ -495,7 +543,7 @@ export default function DashboardClient() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
                         <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#1D1D1F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nom}</span>
-                        {a.verified && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="1.8" strokeLinecap="round"><path d="M9 12l2 2 4-4M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>}
+                        {a.verified && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B5BD6" strokeWidth="1.8" strokeLinecap="round"><path d="M9 12l2 2 4-4M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>}
                       </div>
                       <span style={{ fontSize: '0.8125rem', color: '#6E6E73', fontWeight: 500 }}>{a.metier || a.specialite}</span>
                     </div>
@@ -517,9 +565,9 @@ export default function DashboardClient() {
                     <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: dispo.bg2, color: dispo.color2 }}>{dispo.label}</span>
                     <button
                       onClick={() => setShowForm(true)}
-                      style={{ background: '#007AFF', color: '#fff', border: 'none', cursor: 'pointer', padding: '7px 14px', borderRadius: 8, fontSize: '0.8125rem', fontWeight: 600, transition: 'background 0.15s' }}
+                      style={{ background: '#5B5BD6', color: '#fff', border: 'none', cursor: 'pointer', padding: '7px 14px', borderRadius: 8, fontSize: '0.8125rem', fontWeight: 600, transition: 'background 0.15s' }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#0066CC'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#007AFF'; }}>
+                      onMouseLeave={e => { e.currentTarget.style.background = '#5B5BD6'; }}>
                       Contacter
                     </button>
                   </div>
@@ -578,7 +626,7 @@ export default function DashboardClient() {
                           {d.statut === 'accepte' && <span style={{ fontSize: 11, fontWeight: 700, background: '#D1F2E0', color: '#1A7F43', padding: '1px 9px', borderRadius: 20 }}>✓ Accepté</span>}
                           {d.statut === 'refuse' && <span style={{ fontSize: 11, fontWeight: 700, background: '#F2F2F7', color: '#8E8E93', padding: '1px 9px', borderRadius: 20 }}>Refusé</span>}
                           {isPrix && d.statut === 'en_attente' && <span style={{ fontSize: 11, fontWeight: 700, background: '#D1F2E0', color: '#1A7F43', padding: '1px 9px', borderRadius: 20 }}>💰 Meilleur prix</span>}
-                          {isRapide && !isPrix && d.statut === 'en_attente' && <span style={{ fontSize: 11, fontWeight: 700, background: '#EBF5FF', color: '#007AFF', padding: '1px 9px', borderRadius: 20 }}>⚡ Plus rapide</span>}
+                          {isRapide && !isPrix && d.statut === 'en_attente' && <span style={{ fontSize: 11, fontWeight: 700, background: '#EBF5FF', color: '#5B5BD6', padding: '1px 9px', borderRadius: 20 }}>⚡ Plus rapide</span>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6E6E73', marginBottom: 2 }}>
                           {[1,2,3,4,5].map(i => <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill={i <= Math.round(d.note) ? '#FF9500' : 'none'} stroke="#FF9500" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" strokeLinejoin="round"/></svg>)}
@@ -763,7 +811,7 @@ export default function DashboardClient() {
                           </tr>
                           <tr>
                             <td colSpan={4} style={{ textAlign: 'right', fontSize: 14, fontWeight: 800, color: '#1D1D1F', paddingTop: 4 }}>Total TTC</td>
-                            <td style={{ textAlign: 'right', fontSize: 16, fontWeight: 800, color: '#007AFF', paddingTop: 4 }}>{f.ttc.toLocaleString('fr-FR')} €</td>
+                            <td style={{ textAlign: 'right', fontSize: 16, fontWeight: 800, color: '#5B5BD6', paddingTop: 4 }}>{f.ttc.toLocaleString('fr-FR')} €</td>
                           </tr>
                         </tfoot>
                       </table>
@@ -799,6 +847,9 @@ export default function DashboardClient() {
           </div>
         </div>
       )}
+      </div>
+      )} {/* end BTP tab */}
+
     </div>
   );
 }
@@ -817,6 +868,398 @@ function StatCard({ label, valeur, Icon, color = 'blue' }) {
       </div>
       <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.03em', lineHeight: 1 }}>{valeur}</p>
       <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: 6 }}>{label}</p>
+    </div>
+  );
+}
+
+// ─── Chart components ────────────────────────────────────────────────────────
+
+function BarChart({ data }) {
+  const max = Math.max(...data.map(d => d.total), 1);
+  const H = 100, barW = 28, gap = 10;
+  const W = data.length * (barW + gap) - gap + 44;
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H + 32}`} style={{ overflow: 'visible', display: 'block' }}>
+      {[0, 0.5, 1].map(pct => (
+        <React.Fragment key={pct}>
+          <line x1={36} x2={W} y1={H - pct * H} y2={H - pct * H} stroke="#F2F2F7" strokeWidth={1} />
+          <text x={32} y={H - pct * H + 4} textAnchor="end" fontSize={9} fill="#AEAEB2">
+            {pct === 0 ? '0' : pct === 0.5 ? `${Math.round(max / 2000)}k` : `${Math.round(max / 1000)}k`}
+          </text>
+        </React.Fragment>
+      ))}
+      {data.map((d, i) => {
+        const barH = Math.max((d.total / max) * H, 2);
+        const x = 38 + i * (barW + gap);
+        const y = H - barH;
+        const isLast = i === data.length - 1;
+        return (
+          <g key={i}>
+            <rect x={x} y={0} width={barW} height={H} rx={4} fill="#F5F5F7" />
+            <rect x={x} y={y} width={barW} height={barH} rx={4}
+              fill={isLast ? DS.accent : DS.accentLight || '#C7C7FF'} />
+            <text x={x + barW / 2} y={H + 18} textAnchor="middle"
+              fontSize={10} fill={isLast ? DS.ink : '#8E8E93'} fontWeight={isLast ? 600 : 400}>
+              {d.mois}
+            </text>
+            {isLast && (
+              <text x={x + barW / 2} y={y - 6} textAnchor="middle"
+                fontSize={9} fill={DS.accent} fontWeight={700}>
+                {(d.total / 1000).toFixed(1)}k€
+              </text>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function DonutChart({ segments }) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
+  const r = 42;
+  const circ = 2 * Math.PI * r;
+  let prevLen = 0;
+
+  return (
+    <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+      <svg width={110} height={110} viewBox="0 0 110 110" style={{ flexShrink: 0 }}>
+        <circle cx={55} cy={55} r={r} fill="none" stroke="#F5F5F7" strokeWidth={16} />
+        {segments.map((seg, i) => {
+          const dashLen = (seg.value / total) * circ;
+          const dashOffset = circ * 0.25 - prevLen;
+          prevLen += dashLen;
+          return (
+            <circle key={i} cx={55} cy={55} r={r}
+              fill="none" stroke={seg.color} strokeWidth={16}
+              strokeDasharray={`${dashLen} ${circ - dashLen}`}
+              strokeDashoffset={dashOffset}
+            />
+          );
+        })}
+        <text x={55} y={51} textAnchor="middle" fontSize={12} fontWeight={700} fill="#1D1D1F">
+          {(total / 1000).toFixed(1)}k€
+        </text>
+        <text x={55} y={65} textAnchor="middle" fontSize={10} fill="#8E8E93">total</text>
+      </svg>
+      <div style={{ flex: 1, minWidth: 140 }}>
+        {segments.map((seg, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: seg.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#6E6E73', flex: 1 }}>{seg.label}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#1D1D1F' }}>
+              {seg.value.toLocaleString('fr-FR')} €
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Accueil Tab ─────────────────────────────────────────────────────────────
+
+const MONTHLY_DATA = [
+  { mois: 'Oct', total: 1130 },
+  { mois: 'Nov', total: 2420 },
+  { mois: 'Déc', total: 840  },
+  { mois: 'Jan', total: 3200 },
+  { mois: 'Fév', total: 1600 },
+  { mois: 'Mar', total: 12700 },
+];
+
+const DONUT_SEGMENTS = [
+  { label: '🔨 BTP & Travaux', value: 12000, color: '#5B5BD6' },
+  { label: '✂️ Coiffure',      value: 400,   color: '#E535AB' },
+  { label: '🍽️ Restaurant',    value: 200,   color: '#FF9500' },
+  { label: '🏖️ Vacances',      value: 100,   color: '#34C759' },
+];
+
+const RECENT_ACTIVITY = [
+  { date: '22 mar', label: 'Rénovation salle de bain', sector: 'BTP',        amount: 9500, icon: '🔨', color: '#5B5BD6', statut: 'payée'   },
+  { date: '18 mar', label: 'Coupe + coloration',       sector: 'Coiffure',   amount: 85,   icon: '✂️', color: '#E535AB', statut: 'payée'   },
+  { date: '15 mar', label: 'Trattoria Genovese',       sector: 'Restaurant', amount: 62,   icon: '🍽️', color: '#FF9500', statut: 'payée'   },
+  { date: '12 mar', label: 'Pose carrelage T3',        sector: 'BTP',        amount: 3200, icon: '🔨', color: '#5B5BD6', statut: 'payée'   },
+  { date: '05 mar', label: "Vacances Côte d'Azur",     sector: 'Vacances',   amount: 420,  icon: '🏖️', color: '#34C759', statut: 'à venir' },
+];
+
+function AccueilTab({ user, navigate, setActiveTab }) {
+  const prenom = user?.nom?.split(' ')[0] || 'vous';
+  const KPI = [
+    { label: 'Dépenses totales', value: '12 700 €', icon: '💶', sub: '6 derniers mois',       color: '#5B5BD6', bg: '#EBF5FF', tab: null },
+    { label: 'Ce mois-ci',       value: '1 600 €',  icon: '📅', sub: '↓ 8 % vs mois dernier', color: '#1A7A3C', bg: '#ECFDF5', tab: null },
+    { label: 'Missions actives', value: '2',         icon: '⚡', sub: 'En cours de traitement', color: '#FF9500', bg: '#FFF8EC', tab: 'btp' },
+    { label: 'Services utilisés',value: '3',         icon: '🎯', sub: 'BTP · Coiffure · Resto', color: '#AF52DE', bg: '#F5EEFF', tab: null },
+  ];
+
+  return (
+    <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 22 }}>
+      {/* Welcome banner */}
+      <div style={{ background: 'linear-gradient(135deg, #F0EEFF 0%, #E8F0FF 100%)', borderRadius: 16, padding: '20px 24px', border: '1px solid #DDD8FF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+        <div>
+          <p style={{ fontSize: 12, fontWeight: 700, color: DS.accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>Tableau de bord</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: DS.ink, letterSpacing: '-0.03em', marginBottom: 4 }}>Bonjour, {prenom} 👋</h1>
+          <p style={{ fontSize: 13.5, color: DS.muted }}>Retrouvez toutes vos activités et dépenses en un seul endroit.</p>
+        </div>
+        <button onClick={() => setActiveTab('btp')}
+          style={{ padding: '11px 22px', background: DS.accent, color: '#fff', border: 'none', borderRadius: DS.r.full, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: DS.font }}>
+          + Nouvelle demande BTP
+        </button>
+      </div>
+
+      {/* KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
+        {KPI.map((kpi, i) => (
+          <div key={i}
+            onClick={() => kpi.tab && setActiveTab(kpi.tab)}
+            style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '18px 20px', cursor: kpi.tab ? 'pointer' : 'default' }}
+            onMouseEnter={e => { if (kpi.tab) e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginBottom: 12 }}>
+              {kpi.icon}
+            </div>
+            <p style={{ fontSize: '1.375rem', fontWeight: 800, color: DS.ink, letterSpacing: '-0.03em', lineHeight: 1 }}>{kpi.value}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: DS.ink2, marginTop: 4 }}>{kpi.label}</p>
+            <p style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>{kpi.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 18 }}>
+        <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '20px 22px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink, marginBottom: 2 }}>Évolution des dépenses</p>
+          <p style={{ fontSize: 11, color: DS.muted, marginBottom: 18 }}>6 derniers mois (€ TTC)</p>
+          <BarChart data={MONTHLY_DATA} />
+        </div>
+        <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '20px 22px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink, marginBottom: 2 }}>Répartition par secteur</p>
+          <p style={{ fontSize: 11, color: DS.muted, marginBottom: 18 }}>Sur 6 mois</p>
+          <DonutChart segments={DONUT_SEGMENTS} />
+        </div>
+      </div>
+
+      {/* Recent activity */}
+      <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink }}>Activité récente</p>
+          <span style={{ fontSize: 11, color: DS.muted }}>5 dernières transactions</span>
+        </div>
+        {RECENT_ACTIVITY.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 20px', borderBottom: i < RECENT_ACTIVITY.length - 1 ? `1px solid ${DS.border}` : 'none' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: item.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0 }}>
+              {item.icon}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: DS.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</p>
+              <p style={{ fontSize: 11, color: DS.muted, marginTop: 1 }}>{item.sector} · {item.date}</p>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink }}>{item.amount.toLocaleString('fr-FR')} €</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: item.statut === 'payée' ? '#1A7A3C' : '#FF9500', marginTop: 1 }}>{item.statut}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick links to sectors */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
+        {[
+          { id: 'btp', label: 'BTP & Travaux', icon: '🔨', desc: 'Artisans, devis, chantiers', grad: 'linear-gradient(135deg,#EBF5FF,#D6EDFF)' },
+          { id: 'coiffure', label: 'Coiffure', icon: '✂️', desc: 'Salons, RDV', grad: 'linear-gradient(135deg,#FFF0F8,#FFE0F2)' },
+          { id: 'restaurant', label: 'Restaurant', icon: '🍽️', desc: 'Commander, réserver', grad: 'linear-gradient(135deg,#FFF8EC,#FFE8C0)' },
+          { id: 'vacances', label: 'Vacances', icon: '🏖️', desc: 'Logements, séjours', grad: 'linear-gradient(135deg,#ECFDF5,#D1F5E8)' },
+        ].map(s => (
+          <button key={s.id} onClick={() => setActiveTab(s.id)}
+            style={{ background: s.grad, borderRadius: 14, border: 'none', padding: '16px', textAlign: 'left', cursor: 'pointer', transition: 'transform .15s', fontFamily: DS.font }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+            <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink, marginBottom: 3 }}>{s.label}</p>
+            <p style={{ fontSize: 11, color: DS.muted }}>{s.desc}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Coiffure Tab ─────────────────────────────────────────────────────────────
+
+const SALONS_DEMO = [
+  { nom: 'Atelier Lumière', ville: 'Paris 11e', note: 4.9, avis: 312, prix: 'À partir de 35 €', dispo: 'Disponible aujourd\'hui', grad: 'linear-gradient(140deg,#FFB3D1,#FF6B9E)', initials: 'AL' },
+  { nom: 'Studio Mane',     ville: 'Paris 3e',  note: 4.8, avis: 189, prix: 'À partir de 28 €', dispo: 'Demain',                   grad: 'linear-gradient(140deg,#B3D1FF,#6B9EFF)', initials: 'SM' },
+  { nom: 'Coupe & Co',      ville: 'Paris 18e', note: 4.7, avis: 278, prix: 'À partir de 20 €', dispo: 'Cette semaine',             grad: 'linear-gradient(140deg,#D1FFB3,#6BFF9E)', initials: 'CC' },
+];
+
+function CoiffureTab({ navigate }) {
+  const [q, setQ] = useState('');
+  const [ville, setVille] = useState('');
+
+  return (
+    <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Hero */}
+      <div style={{ background: 'linear-gradient(135deg, #2D0A22 0%, #6B0F3A 60%, #B5006E 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coiffure & Beauté</p>
+        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Trouvez votre salon</h2>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '5px 5px 5px 16px', display: 'flex', gap: 0, alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Coupe, couleur, brushing…"
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
+          <input value={ville} onChange={e => setVille(e.target.value)} placeholder="Paris…"
+            style={{ width: 90, border: 'none', borderLeft: `1px solid ${DS.border}`, outline: 'none', fontSize: 14, color: DS.ink, background: 'none', padding: '8px 12px', fontFamily: DS.font }} />
+          <button onClick={() => navigate('/coiffure')}
+            style={{ background: '#E535AB', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>
+            Chercher
+          </button>
+        </div>
+      </div>
+
+      {/* Featured salons */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Salons à proximité</p>
+          <button onClick={() => navigate('/coiffure')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+            Voir tout →
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SALONS_DEMO.map((s, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: s.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', fontWeight: 800, flexShrink: 0 }}>{s.initials}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{s.nom}</p>
+                <p style={{ fontSize: 11.5, color: DS.muted, marginTop: 2 }}>{s.ville} · ★ {s.note} ({s.avis}) · {s.prix}</p>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#1A7A3C', marginBottom: 6 }}>{s.dispo}</p>
+                <button onClick={() => navigate('/coiffure')}
+                  style={{ padding: '7px 14px', background: DS.ink, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+                  Réserver
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Restaurant Tab ───────────────────────────────────────────────────────────
+
+const RESTOS_DEMO = [
+  { nom: 'Trattoria Genovese', type: 'Italien',    ville: 'Paris 11e', note: 4.9, avis: 312, prixMin: 14, dispo: true,  grad: 'linear-gradient(140deg,#E8C8A0,#C8A070)', initials: 'TG' },
+  { nom: 'Sakura Sushi',       type: 'Sushi',      ville: 'Paris 3e',  note: 4.8, avis: 189, prixMin: 18, dispo: true,  grad: 'linear-gradient(140deg,#E8A0B0,#C87090)', initials: 'SS' },
+  { nom: 'Big Smoke Burgers',  type: 'Burger',     ville: 'Paris 18e', note: 4.7, avis: 278, prixMin: 12, dispo: true,  grad: 'linear-gradient(140deg,#E8B870,#C89040)', initials: 'BS' },
+];
+
+function RestaurantTab({ navigate }) {
+  const [q, setQ] = useState('');
+  const [ville, setVille] = useState('');
+
+  return (
+    <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ background: 'linear-gradient(135deg, #1A0800 0%, #5C2800 60%, #FF6000 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Gastronomie</p>
+        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Commander ou réserver</h2>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '5px 5px 5px 16px', display: 'flex', gap: 0, alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Pizza, sushi, burger…"
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
+          <input value={ville} onChange={e => setVille(e.target.value)} placeholder="Paris…"
+            style={{ width: 90, border: 'none', borderLeft: `1px solid ${DS.border}`, outline: 'none', fontSize: 14, color: DS.ink, background: 'none', padding: '8px 12px', fontFamily: DS.font }} />
+          <button onClick={() => navigate('/restaurant')}
+            style={{ background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>
+            Chercher
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Restaurants à proximité</p>
+          <button onClick={() => navigate('/restaurant')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+            Voir tout →
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {RESTOS_DEMO.map((r, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: r.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', fontWeight: 800, flexShrink: 0 }}>{r.initials}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{r.nom}</p>
+                <p style={{ fontSize: 11.5, color: DS.muted, marginTop: 2 }}>{r.type} · {r.ville} · ★ {r.note} · À partir de {r.prixMin} €</p>
+              </div>
+              <button onClick={() => navigate('/restaurant')}
+                style={{ padding: '7px 14px', background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0 }}>
+                Commander
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Vacances Tab ─────────────────────────────────────────────────────────────
+
+const LOGEMENTS_DEMO = [
+  { nom: 'Villa Azur · Côte d\'Azur', type: 'Villa', ville: 'Nice', note: 4.97, avis: 183, prix: 280, nuits: 3, grad: 'linear-gradient(140deg,#A0C8E8,#70A0C8)', initials: 'VA' },
+  { nom: 'Chalet Montagne · Savoie',  type: 'Chalet', ville: 'Annecy', note: 4.88, avis: 96, prix: 195, nuits: 7, grad: 'linear-gradient(140deg,#C8E8A0,#A0C870)', initials: 'CM' },
+  { nom: 'Appartement Haussmann',     type: 'Appartement', ville: 'Paris 8e', note: 4.82, avis: 241, prix: 120, nuits: 2, grad: 'linear-gradient(140deg,#E8D0A0,#C8B070)', initials: 'AH' },
+];
+
+function VacancesTab({ navigate }) {
+  const [dest, setDest] = useState('');
+  const [voyageurs, setVoyageurs] = useState(2);
+
+  return (
+    <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ background: 'linear-gradient(135deg, #001A33 0%, #003D7A 60%, #0080FF 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hébergements</p>
+        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Trouvez votre logement idéal</h2>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '5px 5px 5px 16px', display: 'flex', gap: 0, alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', flexWrap: 'wrap' }}>
+          <input value={dest} onChange={e => setDest(e.target.value)} placeholder="Destination : Paris, Nice, Bordeaux…"
+            style={{ flex: 1, minWidth: 140, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: `1px solid ${DS.border}`, padding: '8px 14px' }}>
+            <button onClick={() => setVoyageurs(Math.max(1, voyageurs - 1))} style={{ width: 24, height: 24, borderRadius: '50%', border: `1px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>−</button>
+            <span style={{ fontSize: 13, color: DS.ink, minWidth: 60, textAlign: 'center' }}>{voyageurs} voyageur{voyageurs > 1 ? 's' : ''}</span>
+            <button onClick={() => setVoyageurs(voyageurs + 1)} style={{ width: 24, height: 24, borderRadius: '50%', border: `1px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>+</button>
+          </div>
+          <button onClick={() => navigate('/vacances')}
+            style={{ background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>
+            Rechercher
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Logements populaires</p>
+          <button onClick={() => navigate('/vacances')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+            Voir tout →
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {LOGEMENTS_DEMO.map((l, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 14, border: `1px solid ${DS.border}`, padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: l.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', fontWeight: 800, flexShrink: 0 }}>{l.initials}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.nom}</p>
+                <p style={{ fontSize: 11.5, color: DS.muted, marginTop: 2 }}>{l.type} · {l.ville} · ★ {l.note} ({l.avis})</p>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 800, color: DS.ink }}>{l.prix} €<span style={{ fontSize: 11, fontWeight: 400, color: DS.muted }}> /nuit</span></p>
+                <button onClick={() => navigate('/vacances')}
+                  style={{ marginTop: 6, padding: '6px 12px', background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+                  Réserver
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
