@@ -1211,9 +1211,20 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                     <div style={{ fontSize:20, fontWeight:800, color:'#1C1C1E' }}>{doc?.nom}</div>
                     <div style={{ fontSize:13, color:'#6E6E73', marginTop:4 }}>{doc?.freq} · MAJ : {data?.dateMAJ || new Date().toLocaleDateString('fr-FR')}</div>
                   </div>
-                  <div style={{ display:'flex', gap:8, flexShrink:0 }}>
-                    <button onClick={()=>window.print()} style={{ padding:'7px 14px', background:'#1C1C1E', color:'#fff', border:'none', borderRadius:9, cursor:'pointer', fontSize:12, fontWeight:700 }}>PDF</button>
-                    <button onClick={()=>setViewDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#8E8E93' }}>✕</button>
+                  <div style={{ display:'flex', gap:6, flexShrink:0, flexWrap:'wrap', alignItems:'center' }}>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 10px', borderRadius:12, fontSize:11, fontWeight:700, background:'#D1F2E0', color:'#1A7F43' }}>
+                      ✓ Enregistré
+                    </span>
+                    <button onClick={()=>window.print()} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', background:'#1C1C1E', color:'#fff', border:'none', borderRadius:9, cursor:'pointer', fontSize:12, fontWeight:700 }} title="Exporter en PDF / Imprimer">
+                      <IconDownload size={12}/> PDF
+                    </button>
+                    <button onClick={()=>{ const s=doc?.nom||'Document QSE'; window.open(`mailto:?subject=${encodeURIComponent(s)}&body=${encodeURIComponent('Veuillez trouver ci-joint le document : '+s)}`,'_blank'); }} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', background:'#fff', color:'#1C1C1E', border:'1px solid #E5E5EA', borderRadius:9, cursor:'pointer', fontSize:12, fontWeight:600 }} title="Envoyer par e-mail">
+                      ✉️ Email
+                    </button>
+                    <button onClick={()=>window.print()} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', background:'#fff', color:'#1C1C1E', border:'1px solid #E5E5EA', borderRadius:9, cursor:'pointer', fontSize:12, fontWeight:600 }} title="Imprimer">
+                      🖨️ Imprimer
+                    </button>
+                    <button onClick={()=>setViewDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#8E8E93', paddingLeft:4 }}>✕</button>
                   </div>
                 </div>
 
@@ -1312,8 +1323,8 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                                 </>
                               )}
                               {estCree && (
-                                <button onClick={()=>{ setViewDoc(doc.id); setTimeout(()=>window.print(),200); }} style={{ padding:'5px 9px', background:'#F2F2F7', color:'#3C3C43', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
-                                  <IconDownload size={11}/> PDF
+                                <button onClick={()=>setViewDoc(doc.id)} style={{ padding:'5px 9px', background:'#F2F2F7', color:'#3C3C43', border:'none', borderRadius:7, cursor:'pointer', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:4 }} title="Exporter / imprimer / e-mail">
+                                  <IconDownload size={11}/> Exporter
                                 </button>
                               )}
                             </div>

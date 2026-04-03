@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { genererAffichageObligatoire } from '../../utils/qsePDF';
 
 const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 };
@@ -44,6 +44,236 @@ const AFFICHAGES_RISQUES = [
   { id: 'manutention', cat: 'Ergonomie', titre: 'Interdiction de manutention > 25 kg seul', ref: 'Art. R4541-9 CT', desc: 'Affichage des limites de charges, recommandation NIOSH, utilisation aides mécaniques', emplacement: 'Zones de manutention', obligatoire: false },
 ];
 
+/* ── Banque d'affiches Freample ── */
+const AFFICHES = [
+  {
+    id: 'urgence',
+    titre: 'Numéros d\'urgence',
+    desc: 'SAMU, Pompiers, Police, antipoison — à afficher à tous les postes',
+    couleur: '#E53935',
+    emoji: '🚨',
+    ref: 'Art. R4227-34 CT',
+    lignes: [
+      { num: '15', label: 'SAMU' },
+      { num: '18', label: 'Pompiers' },
+      { num: '17', label: 'Police' },
+      { num: '15', label: 'Antipoison' },
+      { num: '112', label: 'Urgences EU' },
+    ],
+  },
+  {
+    id: 'incendie',
+    titre: 'Consignes incendie',
+    desc: 'Procédure d\'évacuation, extincteurs, rassemblement',
+    couleur: '#FF6D00',
+    emoji: '🔥',
+    ref: 'Art. R4227-34 CT',
+    consignes: [
+      'Donnez l\'alerte',
+      'Appelez les pompiers (18 ou 112)',
+      'Évacuez le bâtiment',
+      'Ne prenez pas l\'ascenseur',
+      'Rejoignez le point de rassemblement',
+      'N\'ouvrez pas les portes chaudes',
+    ],
+  },
+  {
+    id: 'harcelement',
+    titre: 'Harcèlement moral & sexuel',
+    desc: 'Définition, sanctions et coordonnées — obligatoire',
+    couleur: '#5B5BD6',
+    emoji: '🤝',
+    ref: 'Art. L1152-4 et L1153-5 CT',
+    contenu: 'Toute personne est protégée contre le harcèlement moral et sexuel. Ces comportements sont passibles de sanctions disciplinaires et pénales.\n\nDéfenseur des droits : 09 69 39 00 00\nMinistère du travail : travail-emploi.gouv.fr',
+  },
+  {
+    id: 'tabac',
+    titre: 'Interdiction de fumer',
+    desc: 'Signalétique obligatoire dans les lieux de travail couverts',
+    couleur: '#1A237E',
+    emoji: '🚭',
+    ref: 'Art. R3512-2 CSP',
+    contenu: 'Il est INTERDIT de fumer et de vapoter dans cet établissement.\n\nContrevenants passibles d\'une amende de 450 €.',
+  },
+  {
+    id: 'epi',
+    titre: 'EPI obligatoires',
+    desc: 'Port des équipements de protection individuelle',
+    couleur: '#E65100',
+    emoji: '⛑️',
+    ref: 'Art. R4323-91 CT',
+    epis: ['👷 Casque de sécurité', '👟 Chaussures de sécurité', '🧤 Gants de protection', '🦺 Gilet haute visibilité', '🥽 Lunettes de protection'],
+  },
+  {
+    id: 'horaires',
+    titre: 'Horaires de travail',
+    desc: 'Affichage des heures de début, fin et repos hebdomadaire',
+    couleur: '#1B5E20',
+    emoji: '🕐',
+    ref: 'Art. D3171-1 CT',
+    contenu: 'Les horaires collectifs de travail sont affichés conformément aux dispositions légales.\n\nLundi au vendredi : 08h00 – 17h00\nPause déjeuner : 12h00 – 13h00\nRéférence : [Votre convention collective]',
+  },
+];
+
+function PosterPreview({ affiche, nomEntreprise, logoUrl }) {
+  const bg = affiche.couleur;
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, border: `2px solid ${bg}`, overflow: 'hidden', fontFamily: 'Arial, sans-serif', width: '100%', minHeight: 280 }}>
+      {/* Header */}
+      <div style={{ background: bg, color: '#fff', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: 28 }}>{affiche.emoji}</span>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: '-0.03em' }}>{affiche.titre.toUpperCase()}</div>
+          <div style={{ fontSize: 10, opacity: 0.8, marginTop: 2 }}>{affiche.ref}</div>
+        </div>
+        {logoUrl && <img src={logoUrl} alt="logo" style={{ width: 40, height: 40, objectFit: 'contain', marginLeft: 'auto', borderRadius: 6, background: '#fff', padding: 3 }} />}
+      </div>
+      {/* Body */}
+      <div style={{ padding: '14px 16px 12px' }}>
+        {affiche.lignes && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {affiche.lignes.map(l => (
+              <div key={l.num} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F8F9FA', borderRadius: 8, padding: '8px 12px' }}>
+                <span style={{ fontSize: 22, fontWeight: 900, color: bg, minWidth: 48, textAlign: 'center' }}>{l.num}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#1C1C1E' }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {affiche.consignes && (
+          <ol style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {affiche.consignes.map((c, i) => (
+              <li key={i} style={{ fontSize: 12, color: '#1C1C1E', fontWeight: 500, lineHeight: 1.5 }}>{c}</li>
+            ))}
+          </ol>
+        )}
+        {affiche.contenu && (
+          <p style={{ fontSize: 12, color: '#1C1C1E', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 }}>{affiche.contenu}</p>
+        )}
+        {affiche.epis && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {affiche.epis.map((e, i) => <div key={i} style={{ fontSize: 12, fontWeight: 600, color: '#1C1C1E' }}>{e}</div>)}
+          </div>
+        )}
+      </div>
+      {/* Footer */}
+      <div style={{ background: '#F8F9FA', borderTop: `1px solid ${bg}30`, padding: '8px 16px', fontSize: 10, color: '#8E8E93', display: 'flex', justifyContent: 'space-between' }}>
+        <span>{nomEntreprise || 'Votre entreprise'}</span>
+        <span>Freample.fr · Document réglementaire gratuit</span>
+      </div>
+    </div>
+  );
+}
+
+function BanqueAffiches() {
+  const [nomEntreprise, setNomEntreprise] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const logoInputRef = useRef();
+  const printRef = useRef();
+
+  const selected = AFFICHES.find(a => a.id === selectedId);
+
+  function handleLogo(e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => setLogoUrl(ev.target.result);
+    reader.readAsDataURL(f);
+  }
+
+  function handlePrint() {
+    const content = printRef.current?.innerHTML;
+    if (!content) return;
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>${selected?.titre}</title><style>body{margin:24px;font-family:Arial,sans-serif;}@media print{body{margin:0;}}</style></head><body>${content}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400);
+  }
+
+  return (
+    <div>
+      {/* Intro */}
+      <div style={{ background: 'linear-gradient(135deg, #EEF2FF, #F5F3FF)', border: '1px solid #C7D2FE', borderRadius: 14, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <span style={{ fontSize: 28 }}>🎨</span>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#3730A3', marginBottom: 4 }}>Banque d'affiches Freample — Gratuit</div>
+          <div style={{ fontSize: 13, color: '#4F46E5', lineHeight: 1.5 }}>
+            Choisissez un modèle, entrez votre nom d'entreprise et logo (optionnel), puis exportez / imprimez l'affiche en un clic.
+          </div>
+        </div>
+      </div>
+
+      {/* Personnalisation */}
+      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <label style={lbl}>Nom de l'entreprise</label>
+          <input value={nomEntreprise} onChange={e => setNomEntreprise(e.target.value)} placeholder="Bernard Martin BTP" style={inp} />
+        </div>
+        <div>
+          <label style={lbl}>Logo (optionnel)</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button type="button" onClick={() => logoInputRef.current?.click()} style={{ padding: '9px 16px', border: '1px solid #E5E5EA', borderRadius: 9, background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+              📁 Importer logo
+            </button>
+            {logoUrl && (
+              <>
+                <img src={logoUrl} alt="logo" style={{ height: 36, borderRadius: 6, border: '1px solid #E5E5EA' }} />
+                <button type="button" onClick={() => setLogoUrl('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 16 }}>✕</button>
+              </>
+            )}
+            <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogo} />
+          </div>
+        </div>
+      </div>
+
+      {/* Template grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14, marginBottom: 24 }}>
+        {AFFICHES.map(a => (
+          <div key={a.id}
+            onClick={() => setSelectedId(a.id === selectedId ? null : a.id)}
+            style={{ background: '#fff', borderRadius: 12, border: `2px solid ${selectedId === a.id ? a.couleur : '#E5E5EA'}`, padding: '14px 16px', cursor: 'pointer', transition: 'all .15s', boxShadow: selectedId === a.id ? `0 4px 16px ${a.couleur}30` : '0 1px 4px rgba(0,0,0,.06)' }}
+            onMouseEnter={e => { if (selectedId !== a.id) e.currentTarget.style.borderColor = a.couleur + '88'; }}
+            onMouseLeave={e => { if (selectedId !== a.id) e.currentTarget.style.borderColor = '#E5E5EA'; }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 22 }}>{a.emoji}</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>{a.titre}</div>
+                <div style={{ fontSize: 10, color: a.couleur, fontWeight: 600 }}>{a.ref}</div>
+              </div>
+              {selectedId === a.id && <span style={{ marginLeft: 'auto', fontSize: 16, color: a.couleur }}>✓</span>}
+            </div>
+            <div style={{ fontSize: 11.5, color: '#6E6E73', lineHeight: 1.4 }}>{a.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Preview + export */}
+      {selected && (
+        <div style={{ background: '#F8F9FA', borderRadius: 16, padding: '20px 22px', border: '1px solid #E5E5EA' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#1C1C1E' }}>Aperçu — {selected.titre}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: selected.couleur, color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                🖨️ Imprimer / Exporter PDF
+              </button>
+              <button onClick={() => { const s=selected.titre; window.open(`mailto:?subject=${encodeURIComponent('Affiche : '+s)}&body=${encodeURIComponent('Veuillez trouver en pièce jointe l\'affiche réglementaire : '+s)}`, '_blank'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: '#fff', color: '#1C1C1E', border: '1px solid #E5E5EA', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                ✉️ E-mail
+              </button>
+              <button onClick={() => setSelectedId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 20 }}>✕</button>
+            </div>
+          </div>
+          <div ref={printRef} style={{ maxWidth: 480, margin: '0 auto' }}>
+            <PosterPreview affiche={selected} nomEntreprise={nomEntreprise} logoUrl={logoUrl} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CheckCard({ item, checked, onToggle, onEmplacementChange, emplacement }) {
   return (
     <div style={{ background: checked ? '#F0FFF4' : '#fff', border: `1px solid ${checked ? '#34C759' : '#E5E5EA'}`, borderRadius: 12, padding: '14px 16px', transition: 'all .15s' }}>
@@ -77,6 +307,7 @@ function CheckCard({ item, checked, onToggle, onEmplacementChange, emplacement }
 }
 
 export default function AffichageObligatoire({ onRetour }) {
+  const [activeTab, setActiveTab] = useState('checklist'); // 'checklist' | 'banque'
   const [entrepriseInfo, setEntrepriseInfo] = useState({
     nom: 'Bernard Martin BTP',
     siret: '123 456 789 00012',
@@ -153,20 +384,40 @@ export default function AffichageObligatoire({ onRetour }) {
   return (
     <div>
       {/* En-tête */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <button onClick={onRetour} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B5BD6', fontSize: 14, fontWeight: 600, padding: '0 0 4px' }}>
             ← Retour aux documents
           </button>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Tableau d'Affichage Obligatoire</h2>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>
-            Art. L1221-13 CT · Checklist complète des affichages obligatoires en entreprise et sur chantier BTP
+            Art. L1221-13 CT · Checklist des affichages + banque d'affiches Freample
           </p>
         </div>
-        <button onClick={handleExportPDF} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
-          ⬇ Exporter PDF officiel
-        </button>
+        {activeTab === 'checklist' && (
+          <button onClick={handleExportPDF} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
+            ⬇ Exporter PDF officiel
+          </button>
+        )}
       </div>
+
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: 0, background: '#F2F2F7', borderRadius: 10, padding: 4, marginBottom: 20, width: 'fit-content' }}>
+        {[
+          { id: 'checklist', label: '✅ Checklist conformité' },
+          { id: 'banque',    label: '🎨 Banque d\'affiches Freample' },
+        ].map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            style={{ padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all .15s', background: activeTab === t.id ? '#fff' : 'transparent', color: activeTab === t.id ? '#5B5BD6' : '#6E6E73', boxShadow: activeTab === t.id ? '0 1px 4px rgba(0,0,0,.1)' : 'none' }}
+          >{t.label}</button>
+        ))}
+      </div>
+
+      {/* Banque d'affiches */}
+      {activeTab === 'banque' && <BanqueAffiches />}
+
+      {/* Checklist (existing content) */}
+      {activeTab !== 'banque' && <>
 
       {/* Score de conformité */}
       <div style={{ background: '#fff', borderRadius: 14, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,.08)', marginBottom: 20 }}>
@@ -377,6 +628,7 @@ export default function AffichageObligatoire({ onRetour }) {
           {entrepriseInfo.nom} — SIRET : {entrepriseInfo.siret} · Document généré le {new Date().toLocaleDateString('fr-FR')}
         </div>
       </div>
+      </>}
     </div>
   );
 }
