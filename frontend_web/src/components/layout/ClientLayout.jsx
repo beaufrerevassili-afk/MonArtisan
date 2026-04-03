@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -24,6 +24,15 @@ export default function ClientLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = e => { setIsMobile(e.matches); if (!e.matches) setMobileOpen(false); };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
@@ -34,6 +43,13 @@ export default function ClientLayout({ children }) {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
+      {/* Mobile overlay */}
+      {isMobile && mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 40 }}
+        />
+      )}
       <style>{`
         .cl-nav-item {
           display: flex; align-items: center; gap: 10px;
@@ -57,16 +73,22 @@ export default function ClientLayout({ children }) {
       `}</style>
 
       {/* Sidebar */}
-      <aside style={{
-        width: collapsed ? 64 : 256,
-        minWidth: collapsed ? 64 : 256,
+      <aside aria-label="Menu principal" style={{
+        width:    isMobile ? 0 : (collapsed ? 64 : 256),
+        minWidth: isMobile ? 0 : (collapsed ? 64 : 256),
         background: 'linear-gradient(180deg, #0D0D1A 0%, #0A0A14 100%)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 0.22s cubic-bezier(0.25,0.46,0.45,0.94), min-width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
+        transition: 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94), width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
         overflow: 'hidden',
-        zIndex: 10,
+        zIndex: 50,
+        ...(isMobile ? {
+          position: 'fixed',
+          width: 256,
+          top: 0, bottom: 0, left: 0,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        } : {}),
       }}>
 
         {/* Logo + toggle */}
@@ -92,12 +114,13 @@ export default function ClientLayout({ children }) {
                 </svg>
               </div>
               <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#fff', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-                Artisans<span style={{ background: 'linear-gradient(135deg, #818CF8, #A78BFA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}> Pro</span>
+                Freample
               </span>
             </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Ouvrir le menu' : 'Réduire le menu'}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6,
@@ -206,6 +229,7 @@ export default function ClientLayout({ children }) {
           <button
             onClick={handleLogout}
             className="cl-nav-item"
+            aria-label="Se déconnecter"
             style={{
               width: '100%', cursor: 'pointer',
               padding: collapsed ? 10 : '8px 12px',
