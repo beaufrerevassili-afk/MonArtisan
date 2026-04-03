@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
@@ -29,18 +29,60 @@ function IconMoon({ size = 16 }) {
 }
 
 /* ── Menu structure ────────────────────────────────────── */
-const MENUS = {
-  client: [
-    { label: 'Tableau de bord',    path: '/client/dashboard',  Icon: IconHome       },
-    { label: 'Trouver un artisan', path: '/client/recherche',  Icon: IconSearch     },
-    { label: 'Mes devis',          path: '/client/devis',       Icon: IconDocument   },
-    { label: 'Travaux passés',     path: '/client/travaux',     Icon: IconMissions   },
-    { label: 'Mes avis',           path: '/client/avis',        Icon: IconStar       },
-    { label: 'Messagerie',         path: '/client/messagerie',  Icon: IconMessage    },
-    { label: 'Paiements',          path: '/client/paiements',   Icon: IconCreditCard },
-    { label: 'Parrainage',         path: '/client/parrainage',  Icon: IconGift       },
-    { label: 'Mon profil',         path: '/client/profil',      Icon: IconUser       },
+
+// Client menus per sector tab
+const CLIENT_TAB_MENUS = {
+  accueil: [
+    { label: 'Tableau de bord',  path: '/client/dashboard',                   Icon: IconHome       },
+    { label: 'Paiements',        path: '/client/paiements',                   Icon: IconCreditCard },
+    { label: 'Messagerie',       path: '/client/messagerie',                  Icon: IconMessage    },
+    { label: 'Parrainage',       path: '/client/parrainage',                  Icon: IconGift       },
+    { label: 'Mon profil',       path: '/client/profil',                      Icon: IconUser       },
   ],
+  btp: [
+    { label: '← Tableau de bord', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
+    { label: 'Mes missions',      path: '/client/travaux',                     Icon: IconMissions  },
+    { label: 'Mes devis',         path: '/client/devis',                       Icon: IconDocument  },
+    { label: 'Paiements',         path: '/client/paiements',                   Icon: IconCreditCard},
+    { label: 'Mes avis',          path: '/client/avis',                        Icon: IconStar      },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage   },
+    { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
+  ],
+  coiffure: [
+    { label: '← Tableau de bord', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
+    { label: 'Mes rendez-vous',   path: '/coiffure',                           Icon: IconCalendar  },
+    { label: 'Salons favoris',    path: '/coiffure',                           Icon: IconStar      },
+    { label: 'Historique',        path: '/client/travaux',                     Icon: IconMissions  },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage   },
+    { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
+  ],
+  restaurant: [
+    { label: '← Tableau de bord', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
+    { label: 'Mes réservations',  path: '/restaurant',                         Icon: IconCalendar  },
+    { label: 'Mes commandes',     path: '/restaurant',                         Icon: IconMissions  },
+    { label: 'Mes habitudes',     path: '/restaurant',                         Icon: IconStar      },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage   },
+    { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
+  ],
+  vacances: [
+    { label: '← Tableau de bord', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
+    { label: 'Mes séjours',       path: '/vacances',                           Icon: IconCalendar  },
+    { label: 'Logements favoris', path: '/vacances',                           Icon: IconStar      },
+    { label: 'Mes voyageurs',     path: '/client/profil',                      Icon: IconUser      },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage   },
+    { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
+  ],
+};
+
+const SECTOR_HEADERS = {
+  btp:        { label: '🔨 BTP & Travaux',  color: '#5B5BD6', bg: '#EBF5FF' },
+  coiffure:   { label: '✂️ Coiffure',        color: '#E535AB', bg: '#FFF0F8' },
+  restaurant: { label: '🍽️ Restaurant',      color: '#FF6000', bg: '#FFF3E8' },
+  vacances:   { label: '🏖️ Vacances',        color: '#0080FF', bg: '#E8F4FF' },
+};
+
+const MENUS = {
+  client: CLIENT_TAB_MENUS.accueil, // default; overridden dynamically
   patron: null, // groups used instead
   super_admin: [
     { label: 'Administration',  path: '/admin/dashboard',  Icon: IconSettings },
@@ -222,6 +264,8 @@ function NotifBell({ isMobile }) {
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(o => !o)}
+        aria-label="Notifications"
+        aria-expanded={open}
         style={{
           position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--text-secondary)', padding: '6px', borderRadius: 8,
@@ -295,6 +339,7 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const [search, setSearch] = useState('');
@@ -314,8 +359,12 @@ export default function Layout({ children }) {
   }, [dark]);
 
   const isFondateur = user?.role === 'fondateur';
-  const menu = MENUS[user?.role] || [];
   const isPatron = user?.role === 'patron';
+  const isClient = user?.role === 'client';
+  const clientTab = isClient ? (searchParams.get('tab') || 'accueil') : null;
+  const activeClientMenu = isClient ? (CLIENT_TAB_MENUS[clientTab] || CLIENT_TAB_MENUS.accueil) : null;
+  const sectorHeader = clientTab ? SECTOR_HEADERS[clientTab] : null;
+  const menu = isClient ? activeClientMenu : (MENUS[user?.role] || []);
   const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   // Flat list for search across all patron items
@@ -340,7 +389,7 @@ export default function Layout({ children }) {
       )}
 
       {/* Sidebar */}
-      <aside style={{
+      <aside aria-label="Menu principal" style={{
         // Sur mobile : position fixed → hors du flux flex → width 0 pour ne pas pousser le contenu
         width:    isMobile ? 0 : (collapsed ? 64 : 'var(--sidebar-width)'),
         minWidth: isMobile ? 0 : (collapsed ? 64 : 'var(--sidebar-width)'),
@@ -390,6 +439,7 @@ export default function Layout({ children }) {
           )}
           <button
             onClick={() => setDark(d => !d)}
+            aria-label={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--text-tertiary)', padding: 4, borderRadius: 6,
@@ -405,6 +455,7 @@ export default function Layout({ children }) {
           </button>
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Ouvrir le menu' : 'Réduire le menu'}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--text-tertiary)', padding: 4, borderRadius: 6,
@@ -510,30 +561,51 @@ export default function Layout({ children }) {
               <NavGroup key={group.id} group={group} collapsed={collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
             ))
           ) : (
-            (isFondateur && location.pathname.startsWith('/client') ? MENUS.client :
-             isFondateur && location.pathname.startsWith('/artisan') ? MENUS.artisan :
-             menu
-            ).map(({ label, path, Icon }) => {
-              const active = location.pathname === path;
-              return (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`nav-item${active ? ' active' : ''}`}
-                  style={{
-                    padding: collapsed ? '8px' : '8px 12px',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    marginBottom: 2,
-                    overflow: 'hidden',
-                  }}
-                  title={collapsed ? label : undefined}
-                >
-                  <Icon size={17} />
-                  {!collapsed && <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}
-                </Link>
-              );
-            })
-          )}
+            <>
+              {/* Sector header badge for client tabs */}
+              {sectorHeader && !collapsed && (
+                <div style={{
+                  margin: '0 4px 10px',
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  background: sectorHeader.bg,
+                  border: `1px solid ${sectorHeader.color}30`,
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: sectorHeader.color,
+                }}>
+                  {sectorHeader.label}
+                </div>
+              )}
+              {(isFondateur && location.pathname.startsWith('/client') ? CLIENT_TAB_MENUS.accueil :
+                isFondateur && location.pathname.startsWith('/artisan') ? MENUS.artisan :
+                menu
+              ).map(({ label, path, Icon, isBack }) => {
+                const active = !isBack && location.pathname === path;
+                return (
+                  <Link
+                    key={label}
+                    to={path}
+                    className={`nav-item${active ? ' active' : ''}`}
+                    style={{
+                      padding: collapsed ? '8px' : '8px 12px',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      marginBottom: isBack ? 6 : 2,
+                      overflow: 'hidden',
+                      opacity: isBack ? 0.65 : 1,
+                      borderBottom: isBack && !collapsed ? '1px solid var(--border-light)' : 'none',
+                      paddingBottom: isBack && !collapsed ? 10 : undefined,
+                    }}
+                    title={collapsed ? label : undefined}
+                    onClick={isMobile ? () => setMobileOpen(false) : undefined}
+                  >
+                    <Icon size={17} />
+                    {!collapsed && <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}
+                  </Link>
+                );
+              })}</>
+          )
+          }
         </nav>
 
         {/* User profile */}
@@ -561,6 +633,7 @@ export default function Layout({ children }) {
                   display: 'flex', alignItems: 'center',
                   transition: 'var(--transition)', flexShrink: 0,
                 }}
+                aria-label="Se déconnecter"
                 title="Se déconnecter"
                 onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-tertiary)'; }}
@@ -594,6 +667,7 @@ export default function Layout({ children }) {
           {isMobile && (
             <button
               onClick={() => setMobileOpen(o => !o)}
+              aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '6px', borderRadius: 8, display: 'flex', alignItems: 'center', flexShrink: 0, minWidth: 32, minHeight: 32, justifyContent: 'center' }}
             >
               <IconMenu size={18} />

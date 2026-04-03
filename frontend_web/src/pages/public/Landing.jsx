@@ -397,32 +397,38 @@ export default function Landing() {
       <PublicNavbar />
 
       {/* ══════════════════ HERO ══════════════════ */}
-      <div className="hero-bg" style={{ padding: 'clamp(60px, 10vh, 100px) clamp(20px, 5vw, 60px) clamp(80px, 12vh, 120px)', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(160deg, #0A0F1E 0%, #0A2550 55%, #1245A0 100%)', padding: 'clamp(52px, 9vh, 90px) clamp(20px, 5vw, 60px) clamp(64px, 10vh, 100px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+
+        {/* Subtle orbs */}
+        <div style={{ position: 'absolute', top: '-20%', left: '10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,91,214,0.18) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '5%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(18,69,160,0.25) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
         {/* Trust badge */}
-        <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(12px)', borderRadius: 24, padding: '6px 16px 6px 10px', marginBottom: 32, border: '1px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(29,185,84,0.2)', border: '1px solid rgba(29,185,84,0.3)', borderRadius: 20, padding: '2px 8px' }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', boxShadow: '0 0 6px #1DB954' }} />
-            <span style={{ fontSize: '0.6875rem', color: '#4ADE80', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Vérifié</span>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(12px)', borderRadius: 24, padding: '6px 16px 6px 10px', marginBottom: 32, border: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(52,199,89,0.18)', border: '1px solid rgba(52,199,89,0.3)', borderRadius: 20, padding: '2px 8px' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34C759', boxShadow: '0 0 6px rgba(52,199,89,0.8)' }} />
+            <span style={{ fontSize: '0.6875rem', color: '#34C759', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Vérifié</span>
           </div>
           <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>Artisans certifiés partout en France</span>
         </div>
 
         {/* Headline */}
-        <h1 className="hero-title" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.045em', lineHeight: 1.0, marginBottom: 20, maxWidth: 780, margin: '0 auto 20px' }}>
+        <h1 style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.045em', lineHeight: 1.05, marginBottom: 20, maxWidth: 760, margin: '0 auto 20px', position: 'relative', zIndex: 1 }}>
           Trouvez votre artisan<br />
-          <span style={{ background: 'linear-gradient(90deg, #A5A5FF 0%, #C084FC 40%, #F472B6 100%)', backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'gradientShift 5s ease infinite' }}>idéal, maintenant</span>
+          <span style={{ background: 'linear-gradient(90deg, #A5A5FF 0%, #818CF8 50%, #C084FC 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            idéal, maintenant
+          </span>
         </h1>
 
         {/* Sub */}
-        <p className="hero-sub" style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: DS.muted, marginBottom: 48, maxWidth: 520, margin: '0 auto 48px', lineHeight: 1.65, fontWeight: 400 }}>
+        <p style={{ fontSize: 'clamp(0.9375rem, 1.8vw, 1.0625rem)', color: 'rgba(255,255,255,0.55)', marginBottom: 48, maxWidth: 500, margin: '0 auto 44px', lineHeight: 1.7, fontWeight: 400, position: 'relative', zIndex: 1 }}>
           Devis gratuit sous 24h · Paiement sécurisé · Avis vérifiés par de vrais clients
         </p>
 
         {/* ══ SEARCH BOX ══ */}
-        <div className="hero-search search-glass" style={{ padding: '6px', maxWidth: 700, margin: '0 auto 20px', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ background: '#fff', borderRadius: 16, padding: '5px', maxWidth: 700, margin: '0 auto 20px', display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 16px 48px rgba(0,0,0,0.3)', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, padding: '0 16px' }}>
-            <IconSearch size={18} color="rgba(255,255,255,0.5)" />
+            <IconSearch size={17} color={DS.muted} />
             <input
               type="text"
               value={query}
@@ -431,22 +437,22 @@ export default function Landing() {
               placeholder="Quel artisan cherchez-vous ?"
               style={{
                 flex: 1, border: 'none', outline: 'none',
-                padding: '12px 0', fontSize: '1rem',
-                color: '#fff', background: 'transparent',
+                padding: '12px 0', fontSize: '0.9375rem',
+                color: DS.ink, background: 'transparent',
                 fontFamily: 'inherit', fontWeight: 400,
               }}
             />
           </div>
           <button onClick={search}
-            style={{ background: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', color: '#fff', border: 'none', cursor: 'pointer', padding: '13px 28px', borderRadius: 14, fontSize: '0.9375rem', fontWeight: 700, transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(91,91,214,0.4)', letterSpacing: '-0.01em' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(91,91,214,0.5)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(91,91,214,0.4)'; }}>
+            style={{ background: DS.accent, color: '#fff', border: 'none', cursor: 'pointer', padding: '13px 28px', borderRadius: 12, fontSize: '0.9375rem', fontWeight: 700, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
+            onMouseEnter={e => e.currentTarget.style.background = DS.accentHover || '#4338CA'}
+            onMouseLeave={e => e.currentTarget.style.background = DS.accent}>
             Rechercher
           </button>
         </div>
 
         {/* ══ FILTER PILLS ══ */}
-        <div className="filters-row" style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 10 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 10 }} onClick={e => e.stopPropagation()}>
 
           {/* Ville */}
           <div style={{ position: 'relative' }}>

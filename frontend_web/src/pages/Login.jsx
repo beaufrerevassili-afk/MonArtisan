@@ -8,6 +8,18 @@ const COMPTES_DEMO = [
   { role: 'Artisan', email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669', icon: '🔨' },
 ];
 
+// Comptes de référence par secteur (à créer côté backend)
+const COMPTES_SECTEURS = [
+  { secteur: 'BTP',        role: 'Patron',  email: 'patron.btp@demo.com',        motdepasse: 'patron123',  color: '#5B5BD6', icon: '🔨' },
+  { secteur: 'BTP',        role: 'Employé', email: 'employe.btp@demo.com',        motdepasse: 'employe123', color: '#7C85D6', icon: '👷' },
+  { secteur: 'Coiffure',   role: 'Patron',  email: 'patron.coiffure@demo.com',    motdepasse: 'patron123',  color: '#E535AB', icon: '✂️' },
+  { secteur: 'Coiffure',   role: 'Employé', email: 'employe.coiffure@demo.com',   motdepasse: 'employe123', color: '#FF6DC4', icon: '💇' },
+  { secteur: 'Restaurant', role: 'Patron',  email: 'patron.restaurant@demo.com',  motdepasse: 'patron123',  color: '#FF6000', icon: '🍽️' },
+  { secteur: 'Restaurant', role: 'Employé', email: 'employe.restaurant@demo.com', motdepasse: 'employe123', color: '#FF9333', icon: '👨‍🍳' },
+  { secteur: 'Hôtel',      role: 'Patron',  email: 'patron.hotel@demo.com',       motdepasse: 'patron123',  color: '#0080FF', icon: '🏨' },
+  { secteur: 'Hôtel',      role: 'Employé', email: 'employe.hotel@demo.com',      motdepasse: 'employe123', color: '#33A0FF', icon: '🛎️' },
+];
+
 const REDIRECTIONS = {
   client:      '/client/dashboard',
   patron:      '/patron/dashboard',
@@ -498,9 +510,45 @@ export default function Login() {
             ))}
           </div>
 
+          {/* Sector reference accounts */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '28px 0 16px' }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+            <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.75rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+              Comptes sectoriels (à venir)
+            </span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {COMPTES_SECTEURS.map((c, i) => (
+              <div key={i} style={{
+                padding: '9px 12px', borderRadius: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                  background: `${c.color}22`, border: `1px solid ${c.color}44`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.75rem',
+                }}>
+                  {c.icon}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: c.color, marginBottom: 1 }}>
+                    {c.secteur} — {c.role}
+                  </div>
+                  <div style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.25)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {c.email}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Register link */}
           <p style={{
-            textAlign: 'center', marginTop: 32,
+            textAlign: 'center', marginTop: 28,
             color: 'rgba(255,255,255,0.3)', fontSize: '0.875rem',
           }}>
             Pas encore de compte ?{' '}
