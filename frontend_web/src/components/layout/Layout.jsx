@@ -470,7 +470,7 @@ export default function Layout({ children }) {
                 </svg>
               </div>
               <span style={{ fontWeight: 800, fontSize: '0.9375rem', letterSpacing: '-0.025em', whiteSpace: 'nowrap', color: 'var(--text)' }}>
-                Freample<span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>
+                Freample{(isPatron || user?.role === 'artisan' || isFondateur) && <span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> Pro</span>}
               </span>
             </div>
           )}
