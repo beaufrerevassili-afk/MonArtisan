@@ -22,6 +22,7 @@ const TABS = [
   { id:'paiements',    icon:'💳', label:'Paiements' },
   { id:'clients',      icon:'👥', label:'Clients' },
   { id:'rapports',     icon:'📊', label:'Rapports' },
+  { id:'parametres',   icon:'⚙️', label:'Paramètres' },
 ];
 
 const TABLE_STATUS = {
@@ -153,7 +154,7 @@ function FideliteBadge({ fidelite }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-const RESTO_TAB_MAP = { tables:'tables', commandes:'commandes', reservations:'reservations', menu:'menu', paiements:'paiements', clients:'clients', rapports:'rapports' };
+const RESTO_TAB_MAP = { tables:'tables', commandes:'commandes', reservations:'reservations', menu:'menu', paiements:'paiements', clients:'clients', rapports:'rapports', parametres:'parametres' };
 
 export default function DashboardRestaurant() {
   const { user } = useAuth();
@@ -205,6 +206,13 @@ export default function DashboardRestaurant() {
   const [payFilter, setPayFilter] = useState('tous');
   const [clientSearch, setClientSearch] = useState('');
   const [virementAmount, setVirementAmount] = useState('');
+  const [restoSettings, setRestoSettings] = useState({
+    nom: 'Le Bistrot Parisien', adresse: '12 rue de Rivoli, 75001 Paris', tel: '01 42 33 44 55', email: 'contact@bistrot-parisien.fr',
+    ouverture: '10:00', fermeture: '23:00',
+    jours: [true, true, true, true, true, true, false], // Lun-Sam ouverts, Dim fermé
+    notifResa: true, notifPaiement: true, notifAnnulation: true,
+    fermetures: [{ debut: '2026-08-01', fin: '2026-08-15', motif: 'Congés annuels' }],
+  });
 
   // ── Computed ──────────────────────────────────────────────────────────────
   const tablesOccupees  = tables.filter(t => !['libre','partie'].includes(t.statut)).length;
@@ -725,6 +733,74 @@ export default function DashboardRestaurant() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── TAB: Paramètres ── */}
+      {tab === 'parametres' && (
+        <div>
+          <div style={{ fontSize:16, fontWeight:700, color:'#1C1C1E', marginBottom:20 }}>Paramètres du restaurant</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            {/* Infos restaurant */}
+            <div style={CARD_STYLE}>
+              <div style={SECTION_HDR}>Informations</div>
+              {[{label:'Nom du restaurant',key:'nom'},{label:'Adresse',key:'adresse'},{label:'Téléphone',key:'tel'},{label:'Email',key:'email'}].map(f=>(
+                <div key={f.key} style={{marginBottom:14}}>
+                  <label style={{fontSize:13,fontWeight:600,color:'#555',display:'block',marginBottom:5}}>{f.label}</label>
+                  <input value={restoSettings[f.key]} onChange={e=>setRestoSettings(p=>({...p,[f.key]:e.target.value}))} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1px solid #E5E7EB',fontSize:14,fontFamily:'inherit',outline:'none',boxSizing:'border-box'}} />
+                </div>
+              ))}
+            </div>
+
+            {/* Horaires */}
+            <div style={CARD_STYLE}>
+              <div style={SECTION_HDR}>Horaires d'ouverture</div>
+              <div style={{display:'flex',gap:12,marginBottom:16}}>
+                <div style={{flex:1}}>
+                  <label style={{fontSize:13,fontWeight:600,color:'#555',display:'block',marginBottom:5}}>Ouverture</label>
+                  <input type="time" value={restoSettings.ouverture} onChange={e=>setRestoSettings(p=>({...p,ouverture:e.target.value}))} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1px solid #E5E7EB',fontSize:14,fontFamily:'inherit',outline:'none',boxSizing:'border-box'}} />
+                </div>
+                <div style={{flex:1}}>
+                  <label style={{fontSize:13,fontWeight:600,color:'#555',display:'block',marginBottom:5}}>Fermeture</label>
+                  <input type="time" value={restoSettings.fermeture} onChange={e=>setRestoSettings(p=>({...p,fermeture:e.target.value}))} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1px solid #E5E7EB',fontSize:14,fontFamily:'inherit',outline:'none',boxSizing:'border-box'}} />
+                </div>
+              </div>
+              <div style={{marginBottom:16}}>
+                <label style={{fontSize:13,fontWeight:600,color:'#555',display:'block',marginBottom:8}}>Jours d'ouverture</label>
+                <div style={{display:'flex',gap:6}}>
+                  {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((j,i)=>(
+                    <button key={j} onClick={()=>setRestoSettings(p=>{const jours=[...p.jours]; jours[i]=!jours[i]; return{...p,jours};})} style={{width:44,height:44,borderRadius:10,border:`2px solid ${restoSettings.jours[i]?R:'#E5E7EB'}`,background:restoSettings.jours[i]?R_SOFT:'#fff',color:restoSettings.jours[i]?R:'#888',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>{j}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fermetures exceptionnelles */}
+              <div style={SECTION_HDR}>Fermetures exceptionnelles</div>
+              {restoSettings.fermetures.map((f,i)=>(
+                <div key={i} style={{display:'flex',gap:8,alignItems:'center',marginBottom:8,padding:'8px 12px',background:'#FAFAFA',borderRadius:8}}>
+                  <span style={{flex:1,fontSize:13}}>{f.debut} → {f.fin} · {f.motif}</span>
+                  <button onClick={()=>setRestoSettings(p=>({...p,fermetures:p.fermetures.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'#DC2626',cursor:'pointer',fontWeight:700}}>✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div style={{...CARD_STYLE,marginTop:20}}>
+            <div style={SECTION_HDR}>Notifications</div>
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              {[{key:'notifResa',label:'Nouvelle réservation',desc:'Être notifié à chaque nouvelle réservation'},{key:'notifPaiement',label:'Paiement reçu',desc:'Notification quand un client paie sa commande'},{key:'notifAnnulation',label:'Annulation',desc:'Alerte si un client annule sa réservation'}].map(n=>(
+                <div key={n.key} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',background:'#FAFAFA',borderRadius:10}}>
+                  <div><div style={{fontSize:14,fontWeight:600}}>{n.label}</div><div style={{fontSize:12,color:'#888',marginTop:2}}>{n.desc}</div></div>
+                  <button onClick={()=>setRestoSettings(p=>({...p,[n.key]:!p[n.key]}))} style={{width:48,height:26,borderRadius:13,border:'none',cursor:'pointer',background:restoSettings[n.key]?R:'#D1D5DB',position:'relative',transition:'background .2s'}}>
+                    <div style={{width:22,height:22,borderRadius:'50%',background:'#fff',position:'absolute',top:2,left:restoSettings[n.key]?24:2,transition:'left .2s',boxShadow:'0 1px 3px rgba(0,0,0,.2)'}} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={()=>showToast('Paramètres sauvegardés')} style={{...BTN_PRIMARY,marginTop:20,padding:'12px 24px'}}>💾 Sauvegarder les paramètres</button>
         </div>
       )}
 

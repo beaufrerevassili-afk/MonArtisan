@@ -1002,10 +1002,6 @@ function AccueilTab({ user, navigate, setActiveTab }) {
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: DS.ink, letterSpacing: '-0.03em', marginBottom: 4 }}>Bonjour, {prenom} 👋</h1>
           <p style={{ fontSize: 13.5, color: DS.muted }}>Retrouvez toutes vos activités et dépenses en un seul endroit.</p>
         </div>
-        <button onClick={() => setActiveTab('btp')}
-          style={{ padding: '11px 22px', background: DS.accent, color: '#fff', border: 'none', borderRadius: DS.r.full, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: DS.font }}>
-          + Nouvelle demande BTP
-        </button>
       </div>
 
       {/* KPI cards */}
@@ -1093,16 +1089,65 @@ const SALONS_DEMO = [
   { nom: 'Coupe & Co',      ville: 'Paris 18e', note: 4.7, avis: 278, prix: 'À partir de 20 €', dispo: 'Cette semaine',             grad: 'linear-gradient(140deg,#D1FFB3,#6BFF9E)', initials: 'CC' },
 ];
 
+const MES_RDV_COIFFURE = [
+  { id:1, salon:'Studio Beauté', prestation:'Coupe + Brushing', date:'2026-04-06', heure:'14:30', duree:'1h', prix:55, statut:'a_venir', code:'FRP-4812' },
+  { id:2, salon:'L\'Atelier Coiffure', prestation:'Coloration + Soin', date:'2026-04-12', heure:'10:00', duree:'1h30', prix:95, statut:'a_venir', code:'FRP-5923' },
+  { id:3, salon:'Studio Beauté', prestation:'Balayage miel', date:'2026-03-20', heure:'11:00', duree:'2h', prix:130, statut:'termine', code:'FRP-2741' },
+  { id:4, salon:'Hair & Co', prestation:'Coupe femme', date:'2026-03-05', heure:'16:00', duree:'45min', prix:42, statut:'termine', code:'FRP-1630' },
+];
+
 function CoiffureTab({ navigate }) {
   const [q, setQ] = useState('');
   const [ville, setVille] = useState('');
+  const rdvAVenir = MES_RDV_COIFFURE.filter(r => r.statut === 'a_venir');
+  const rdvPasses = MES_RDV_COIFFURE.filter(r => r.statut === 'termine');
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Hero */}
+      {/* Mes RDV à venir */}
+      {rdvAVenir.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Mes rendez-vous à venir</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {rdvAVenir.map(r => (
+              <div key={r.id} style={{ background: '#fff', borderRadius: 14, border: '2px solid #E535AB30', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF0F8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✂️</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{r.prestation}</p>
+                  <p style={{ fontSize: 12, color: DS.muted, marginTop: 2 }}>{r.salon} · {new Date(r.date).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' })} à {r.heure} · {r.duree}</p>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: '#E535AB' }}>{r.prix}€</p>
+                  <span style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>{r.code}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Historique récent */}
+      {rdvPasses.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Historique récent</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {rdvPasses.map(r => (
+              <div key={r.id} style={{ background: '#FAFAFA', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center', opacity: 0.8 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: DS.ink }}>{r.prestation} — {r.salon}</p>
+                  <p style={{ fontSize: 11, color: DS.muted }}>{new Date(r.date).toLocaleDateString('fr-FR')} · {r.prix}€</p>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#D1FAE5', padding: '2px 8px', borderRadius: 10 }}>✓ Terminé</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hero recherche */}
       <div style={{ background: 'linear-gradient(135deg, #2D0A22 0%, #6B0F3A 60%, #B5006E 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Coiffure & Beauté</p>
-        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Trouvez votre salon</h2>
+        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Réserver un nouveau RDV</h2>
         <div style={{ background: '#fff', borderRadius: 12, padding: '5px 5px 5px 16px', display: 'flex', gap: 0, alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Coupe, couleur, brushing…"
             style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
@@ -1115,13 +1160,11 @@ function CoiffureTab({ navigate }) {
         </div>
       </div>
 
-      {/* Featured salons */}
+      {/* Salons à proximité */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Salons à proximité</p>
-          <button onClick={() => navigate('/coiffure')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
-            Voir tout →
-          </button>
+          <button onClick={() => navigate('/coiffure')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>Voir tout →</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {SALONS_DEMO.map((s, i) => (
@@ -1134,9 +1177,7 @@ function CoiffureTab({ navigate }) {
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: '#1A7A3C', marginBottom: 6 }}>{s.dispo}</p>
                 <button onClick={() => navigate('/coiffure')}
-                  style={{ padding: '7px 14px', background: DS.ink, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
-                  Réserver
-                </button>
+                  style={{ padding: '7px 14px', background: DS.ink, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>Réserver</button>
               </div>
             </div>
           ))}
@@ -1154,12 +1195,62 @@ const RESTOS_DEMO = [
   { nom: 'Big Smoke Burgers',  type: 'Burger',     ville: 'Paris 18e', note: 4.7, avis: 278, prixMin: 12, dispo: true,  grad: 'linear-gradient(140deg,#E8B870,#C89040)', initials: 'BS' },
 ];
 
+const MES_RESAS_RESTO = [
+  { id:1, restaurant:'Trattoria Genovese', date:'2026-04-05', heure:'20:00', personnes:2, montant:0, statut:'a_venir', code:'FRE-4812' },
+  { id:2, restaurant:'Sakura Sushi', date:'2026-04-10', heure:'19:30', personnes:4, montant:0, statut:'a_venir', code:'FRE-5923' },
+  { id:3, restaurant:'Big Smoke Burgers', date:'2026-03-28', heure:'12:30', personnes:2, montant:48, statut:'termine', code:'FRE-2741' },
+  { id:4, restaurant:'Trattoria Genovese', date:'2026-03-15', heure:'20:00', personnes:3, montant:92, statut:'termine', code:'FRE-1630' },
+];
+
 function RestaurantTab({ navigate }) {
   const [q, setQ] = useState('');
   const [ville, setVille] = useState('');
+  const resaAVenir = MES_RESAS_RESTO.filter(r => r.statut === 'a_venir');
+  const resaPassees = MES_RESAS_RESTO.filter(r => r.statut === 'termine');
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Réservations à venir */}
+      {resaAVenir.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Mes réservations à venir</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {resaAVenir.map(r => (
+              <div key={r.id} style={{ background: '#fff', borderRadius: 14, border: '2px solid #F9731630', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🍽️</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{r.restaurant}</p>
+                  <p style={{ fontSize: 12, color: DS.muted, marginTop: 2 }}>{new Date(r.date).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' })} à {r.heure} · {r.personnes} pers.</p>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#F97316', background: '#FEF3C7', padding: '3px 8px', borderRadius: 10 }}>À venir</span>
+                  <p style={{ fontSize: 10, color: '#888', fontFamily: 'monospace', marginTop: 4 }}>{r.code}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Commandes passées */}
+      {resaPassees.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Commandes récentes</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {resaPassees.map(r => (
+              <div key={r.id} style={{ background: '#FAFAFA', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center', opacity: 0.8 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: DS.ink }}>{r.restaurant}</p>
+                  <p style={{ fontSize: 11, color: DS.muted }}>{new Date(r.date).toLocaleDateString('fr-FR')} · {r.personnes} pers. · {r.montant}€</p>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#D1FAE5', padding: '2px 8px', borderRadius: 10 }}>✓ Terminé</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hero recherche */}
       <div style={{ background: 'linear-gradient(135deg, #1A0800 0%, #5C2800 60%, #FF6000 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Gastronomie</p>
         <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Commander ou réserver</h2>
@@ -1169,18 +1260,15 @@ function RestaurantTab({ navigate }) {
           <input value={ville} onChange={e => setVille(e.target.value)} placeholder="Paris…"
             style={{ width: 90, border: 'none', borderLeft: `1px solid ${DS.border}`, outline: 'none', fontSize: 14, color: DS.ink, background: 'none', padding: '8px 12px', fontFamily: DS.font }} />
           <button onClick={() => navigate('/restaurant')}
-            style={{ background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>
-            Chercher
-          </button>
+            style={{ background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>Chercher</button>
         </div>
       </div>
 
+      {/* Restaurants */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Restaurants à proximité</p>
-          <button onClick={() => navigate('/restaurant')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
-            Voir tout →
-          </button>
+          <button onClick={() => navigate('/restaurant')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>Voir tout →</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {RESTOS_DEMO.map((r, i) => (
@@ -1191,9 +1279,7 @@ function RestaurantTab({ navigate }) {
                 <p style={{ fontSize: 11.5, color: DS.muted, marginTop: 2 }}>{r.type} · {r.ville} · ★ {r.note} · À partir de {r.prixMin} €</p>
               </div>
               <button onClick={() => navigate('/restaurant')}
-                style={{ padding: '7px 14px', background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0 }}>
-                Commander
-              </button>
+                style={{ padding: '7px 14px', background: '#FF6000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0 }}>Commander</button>
             </div>
           ))}
         </div>
@@ -1210,15 +1296,64 @@ const LOGEMENTS_DEMO = [
   { nom: 'Appartement Haussmann',     type: 'Appartement', ville: 'Paris 8e', note: 4.82, avis: 241, prix: 120, nuits: 2, grad: 'linear-gradient(140deg,#E8D0A0,#C8B070)', initials: 'AH' },
 ];
 
+const MES_SEJOURS = [
+  { id:1, logement:'Villa Azur · Côte d\'Azur', arrivee:'2026-04-15', depart:'2026-04-20', nuits:5, voyageurs:2, prix:1400, statut:'a_venir', code:'FRV-4812' },
+  { id:2, logement:'Chalet Montagne · Savoie', arrivee:'2026-02-10', depart:'2026-02-17', nuits:7, voyageurs:4, prix:1365, statut:'termine', code:'FRV-2741' },
+  { id:3, logement:'Appartement Haussmann · Paris', arrivee:'2026-01-05', depart:'2026-01-07', nuits:2, voyageurs:2, prix:240, statut:'termine', code:'FRV-1630' },
+];
+
 function VacancesTab({ navigate }) {
   const [dest, setDest] = useState('');
   const [voyageurs, setVoyageurs] = useState(2);
+  const sejoursAVenir = MES_SEJOURS.filter(s => s.statut === 'a_venir');
+  const sejoursPasses = MES_SEJOURS.filter(s => s.statut === 'termine');
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Séjours à venir */}
+      {sejoursAVenir.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Mes séjours à venir</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {sejoursAVenir.map(s => (
+              <div key={s.id} style={{ background: '#fff', borderRadius: 14, border: '2px solid #0080FF30', padding: '14px 18px', display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#E8F4FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏖️</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{s.logement}</p>
+                  <p style={{ fontSize: 12, color: DS.muted, marginTop: 2 }}>{new Date(s.arrivee).toLocaleDateString('fr-FR', { day:'numeric', month:'short' })} → {new Date(s.depart).toLocaleDateString('fr-FR', { day:'numeric', month:'short' })} · {s.nuits} nuits · {s.voyageurs} voyageurs</p>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: '#0080FF' }}>{s.prix}€</p>
+                  <span style={{ fontSize: 10, color: '#888', fontFamily: 'monospace' }}>{s.code}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Séjours passés */}
+      {sejoursPasses.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Séjours passés</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {sejoursPasses.map(s => (
+              <div key={s.id} style={{ background: '#FAFAFA', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center', opacity: 0.8 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: DS.ink }}>{s.logement}</p>
+                  <p style={{ fontSize: 11, color: DS.muted }}>{new Date(s.arrivee).toLocaleDateString('fr-FR')} → {new Date(s.depart).toLocaleDateString('fr-FR')} · {s.nuits} nuits · {s.prix}€</p>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#D1FAE5', padding: '2px 8px', borderRadius: 10 }}>✓ Terminé</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hero recherche */}
       <div style={{ background: 'linear-gradient(135deg, #001A33 0%, #003D7A 60%, #0080FF 100%)', borderRadius: 16, padding: '28px 24px', color: '#fff' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hébergements</p>
-        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Trouvez votre logement idéal</h2>
+        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 18 }}>Réserver un logement</h2>
         <div style={{ background: '#fff', borderRadius: 12, padding: '5px 5px 5px 16px', display: 'flex', gap: 0, alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', flexWrap: 'wrap' }}>
           <input value={dest} onChange={e => setDest(e.target.value)} placeholder="Destination : Paris, Nice, Bordeaux…"
             style={{ flex: 1, minWidth: 140, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
@@ -1228,18 +1363,15 @@ function VacancesTab({ navigate }) {
             <button onClick={() => setVoyageurs(voyageurs + 1)} style={{ width: 24, height: 24, borderRadius: '50%', border: `1px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>+</button>
           </div>
           <button onClick={() => navigate('/vacances')}
-            style={{ background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>
-            Rechercher
-          </button>
+            style={{ background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>Rechercher</button>
         </div>
       </div>
 
+      {/* Logements */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Logements populaires</p>
-          <button onClick={() => navigate('/vacances')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
-            Voir tout →
-          </button>
+          <button onClick={() => navigate('/vacances')} style={{ background: 'none', border: 'none', fontSize: 13, color: DS.accent, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>Voir tout →</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {LOGEMENTS_DEMO.map((l, i) => (
@@ -1252,9 +1384,7 @@ function VacancesTab({ navigate }) {
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <p style={{ fontSize: 13, fontWeight: 800, color: DS.ink }}>{l.prix} €<span style={{ fontSize: 11, fontWeight: 400, color: DS.muted }}> /nuit</span></p>
                 <button onClick={() => navigate('/vacances')}
-                  style={{ marginTop: 6, padding: '6px 12px', background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
-                  Réserver
-                </button>
+                  style={{ marginTop: 6, padding: '6px 12px', background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>Réserver</button>
               </div>
             </div>
           ))}

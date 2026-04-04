@@ -903,7 +903,7 @@ export default function DashboardCoiffure() {
                 </div>
               </div>
 
-              <button style={{ width:'100%', padding:'8px 0', borderRadius:10, border:'1.5px solid #E8E6E1', background:'transparent', color:'#888', fontWeight:600, fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>
+              <button onClick={() => setTab('rdv')} style={{ width:'100%', padding:'8px 0', borderRadius:10, border:'1.5px solid #E8E6E1', background:'transparent', color:'#888', fontWeight:600, fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>
                 Voir planning
               </button>
             </div>
