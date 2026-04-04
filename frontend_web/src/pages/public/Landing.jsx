@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import HideForClient from '../../components/public/HideForClient';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -627,8 +628,8 @@ export default function Landing() {
           </div>
         )}
 
-        {/* ══ CTA section ══ */}
-        {!loading && (
+        {/* ══ CTA section (caché pour clients) ══ */}
+        {!loading && (<HideForClient>
           <div className="reveal" style={{ marginTop: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #0A0A14 0%, #12103A 50%, #1E0A3C 100%)', padding: 'clamp(40px, 6vw, 64px) clamp(24px, 5vw, 56px)', textAlign: 'center' }}>
             {/* Orbs */}
             <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,91,214,0.3) 0%, transparent 70%)', top: -80, right: '10%', pointerEvents: 'none' }} />
@@ -652,7 +653,7 @@ export default function Landing() {
               </div>
             </div>
           </div>
-        )}
+        </HideForClient>)}
       </div>
 
       {/* ══ MODAL LISTE OFFRES ══ */}

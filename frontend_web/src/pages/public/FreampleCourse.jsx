@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import HideForClient from '../../components/public/HideForClient';
 
 const U = {
   black: '#000000', white: '#FFFFFF', gray: '#F3F3F3', grayDark: '#E5E5E5',
@@ -160,8 +161,8 @@ export default function FreampleCourse() {
         </div>
       </div>
 
-      {/* ── CTA Chauffeur ── */}
-      <div style={{ padding:'56px 24px', textAlign:'center' }}>
+      {/* ── CTA Chauffeur (caché pour clients) ── */}
+      <HideForClient><div style={{ padding:'56px 24px', textAlign:'center' }}>
         <div style={{ maxWidth:600, margin:'0 auto' }}>
           <h2 style={{ fontSize:28, fontWeight:700, marginBottom:12 }}>Devenez chauffeur Freample</h2>
           <p style={{ fontSize:15, color:U.textSec, marginBottom:28, lineHeight:1.5 }}>
@@ -182,7 +183,7 @@ export default function FreampleCourse() {
             </button>
           </div>
         </div>
-      </div>
+      </div></HideForClient>
 
       {/* ── Footer ── */}
       <div style={{ padding:'28px 24px', borderTop:`1px solid ${U.grayDark}`, textAlign:'center' }}>

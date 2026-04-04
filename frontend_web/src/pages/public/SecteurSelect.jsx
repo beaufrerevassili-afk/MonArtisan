@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import HideForClient from '../../components/public/HideForClient';
 
 const CATEGORIES = [
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
@@ -243,8 +244,8 @@ export default function SecteurSelect() {
         </div>
       </section>
 
-      {/* ── CTA professionnels ── */}
-      <section style={{ margin:'0 clamp(16px,5vw,48px) clamp(40px,6vh,64px)', background:DS.bgSoft, border:`1px solid ${DS.border}`, borderRadius:DS.r.xl, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,48px)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' }}>
+      {/* ── CTA professionnels (caché pour les clients) ── */}
+      <HideForClient><section style={{ margin:'0 clamp(16px,5vw,48px) clamp(40px,6vh,64px)', background:DS.bgSoft, border:`1px solid ${DS.border}`, borderRadius:DS.r.xl, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,48px)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontSize:10, fontWeight:700, color:DS.gold, textTransform:'uppercase', letterSpacing:3, marginBottom:10 }}>Vous êtes professionnel ?</div>
           <h3 style={{ fontSize:'clamp(1.25rem,3vw,1.625rem)', fontWeight:800, color:DS.ink, letterSpacing:'-0.04em', margin:'0 0 8px' }}>Développez votre activité<br/>avec Freample.</h3>
@@ -258,7 +259,7 @@ export default function SecteurSelect() {
             Créer mon espace pro →
           </button>
         </div>
-      </section>
+      </section></HideForClient>
     </div>
   );
 }

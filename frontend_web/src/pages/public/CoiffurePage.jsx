@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import HideForClient from '../../components/public/HideForClient';
 
 // ── Planity-inspired colors ─────────────────────────────────────────────────
 const P = {
@@ -279,26 +280,23 @@ export default function CoiffurePage() {
         </div>
       </div>
 
-      {/* ── CTA Pro ── */}
-      <div style={{ background:P.dark, padding:'56px clamp(16px,4vw,48px)', textAlign:'center' }}>
-        <div style={{ maxWidth:600, margin:'0 auto' }}>
-          <h2 style={{ fontSize:24, fontWeight:700, color:'#fff', marginBottom:12 }}>Vous êtes professionnel ?</h2>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.6)', marginBottom:28, lineHeight:1.5 }}>
-            Rejoignez Freample et gérez vos réservations, paiements et clients depuis une seule plateforme.
-          </p>
-          <button onClick={() => navigate('/register?secteur=coiffure')}
-            style={{
-              padding:'14px 32px', background:P.primary, color:'#fff',
-              border:'none', borderRadius:8, fontSize:15, fontWeight:600,
-              cursor:'pointer', transition:'background 0.15s', minHeight:48,
-              fontFamily:P.font,
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = P.primaryHover}
-            onMouseLeave={e => e.currentTarget.style.background = P.primary}>
-            Créer mon espace pro →
-          </button>
+      {/* ── CTA Pro (caché pour clients) ── */}
+      <HideForClient>
+        <div style={{ background:P.dark, padding:'56px clamp(16px,4vw,48px)', textAlign:'center' }}>
+          <div style={{ maxWidth:600, margin:'0 auto' }}>
+            <h2 style={{ fontSize:24, fontWeight:700, color:'#fff', marginBottom:12 }}>Vous êtes professionnel ?</h2>
+            <p style={{ fontSize:15, color:'rgba(255,255,255,0.6)', marginBottom:28, lineHeight:1.5 }}>
+              Rejoignez Freample et gérez vos réservations, paiements et clients depuis une seule plateforme.
+            </p>
+            <button onClick={() => navigate('/register?secteur=coiffure')}
+              style={{ padding:'14px 32px', background:P.primary, color:'#fff', border:'none', borderRadius:8, fontSize:15, fontWeight:600, cursor:'pointer', transition:'background 0.15s', minHeight:48, fontFamily:P.font }}
+              onMouseEnter={e => e.currentTarget.style.background = P.primaryHover}
+              onMouseLeave={e => e.currentTarget.style.background = P.primary}>
+              Créer mon espace pro →
+            </button>
+          </div>
         </div>
-      </div>
+      </HideForClient>
 
       {/* ── Footer mini ── */}
       <div style={{ padding:'32px clamp(16px,4vw,48px)', borderTop:`1px solid ${P.border}`, textAlign:'center' }}>

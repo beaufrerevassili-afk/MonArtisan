@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import HideForClient from '../../components/public/HideForClient';
 
 const E = {
   black: '#000000', white: '#FFFFFF', gray: '#F3F3F3', grayDark: '#E5E5E5',
@@ -209,7 +210,8 @@ export default function FreampleEat() {
         </div>
       </div>
 
-      {/* ── CTA Restaurateur ── */}
+      {/* ── CTA Restaurateur + Livreur (caché pour clients) ── */}
+      <HideForClient>
       <div style={{ background:E.black, padding:'56px 24px', textAlign:'center' }}>
         <div style={{ maxWidth:600, margin:'0 auto' }}>
           <h2 style={{ fontSize:24, fontWeight:700, color:E.white, marginBottom:12 }}>Vous êtes restaurateur ?</h2>
@@ -240,6 +242,7 @@ export default function FreampleEat() {
           </button>
         </div>
       </div>
+      </HideForClient>
 
       {/* ── Footer ── */}
       <div style={{ padding:'28px 24px', borderTop:`1px solid ${E.grayDark}`, textAlign:'center' }}>
