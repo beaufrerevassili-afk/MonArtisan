@@ -189,17 +189,6 @@ export default function FreampleCom() {
         </div>
       </div>
 
-      {/* ══ CTA PRO ══ */}
-      <HideForClient>
-        <div style={{ background:C.dark, padding:'40px 24px', textAlign:'center' }}>
-          <div style={{ fontSize:18, fontWeight:700, color:'#fff', marginBottom:8 }}>Vous êtes professionnel ?</div>
-          <p style={{ fontSize:14, color:'rgba(255,255,255,0.5)', marginBottom:20 }}>Gérez vos projets, devis et clients depuis votre dashboard.</p>
-          <button onClick={()=>navigate('/register?secteur=com')} style={{ padding:'12px 28px', background:C.primary, color:'#fff', border:'none', borderRadius:8, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
-            Créer mon espace pro →
-          </button>
-        </div>
-      </HideForClient>
-
       {/* ══ BOUTON WHATSAPP FLOTTANT ══ */}
       <a href="https://wa.me/33612345678?text=Bonjour, je suis intéressé par Freample Com" target="_blank" rel="noopener noreferrer"
         style={{ position:'fixed', bottom:24, right:24, width:56, height:56, borderRadius:'50%', background:'#25D366', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 16px rgba(37,211,102,0.4)', zIndex:100, textDecoration:'none', transition:'transform .2s' }}
