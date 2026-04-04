@@ -197,7 +197,13 @@ function PortfolioSection() {
 export default function FreampleCom() {
   const navigate = useNavigate();
   const [openTarif, setOpenTarif] = useState(0);
-  const [demandeForm, setDemandeForm] = useState({ nom:'', email:'', type:'', budget:'', description:'' });
+  const [briefStep, setBriefStep] = useState(1);
+  const [brief, setBrief] = useState({
+    nom:'', email:'', telephone:'',
+    type:'', format:'', quantite:'1', frequence:'ponctuel',
+    style:'', reference:'', musique:'sousTitres',
+    description:'', deadline:'', budget:'',
+  });
   const [demandeSent, setDemandeSent] = useState(false);
 
   return (
@@ -495,74 +501,203 @@ export default function FreampleCom() {
         </div>
       </div>
 
-      {/* ── Formulaire de demande ── */}
+      {/* ── Brief structuré Fiverr-style (3 étapes) ── */}
       <div id="demande" style={{ padding:'64px 24px', background:C.soft, borderTop:`1px solid ${C.border}` }}>
-        <div style={{ maxWidth:600, margin:'0 auto' }}>
-          <h2 style={{ fontSize:26, fontWeight:800, textAlign:'center', marginBottom:8 }}>Demandez un devis gratuit</h2>
-          <p style={{ fontSize:15, color:C.textSec, textAlign:'center', marginBottom:32 }}>Décrivez votre projet, on vous répond en moins de 24h</p>
+        <div style={{ maxWidth:640, margin:'0 auto' }}>
+          <h2 style={{ fontSize:26, fontWeight:800, textAlign:'center', marginBottom:8 }}>Commander un service</h2>
+          <p style={{ fontSize:15, color:C.textSec, textAlign:'center', marginBottom:24 }}>Remplissez le brief en 3 étapes — réponse en moins de 24h</p>
+
+          {/* Progress bar */}
+          <div style={{ display:'flex', gap:8, marginBottom:32 }}>
+            {['Votre projet','Brief créatif','Vos coordonnées'].map((s,i) => (
+              <div key={s} style={{ flex:1 }}>
+                <div style={{ height:4, borderRadius:2, background: i+1 <= briefStep ? C.primary : '#E5E5E5', transition:'background .3s', marginBottom:6 }} />
+                <div style={{ fontSize:12, fontWeight: i+1 === briefStep ? 700 : 400, color: i+1 <= briefStep ? C.primary : C.textLight }}>{i+1}. {s}</div>
+              </div>
+            ))}
+          </div>
+
           <div style={{ background:C.bg, borderRadius:16, padding:'28px 24px', border:`1px solid ${C.border}`, boxShadow:'0 4px 16px rgba(0,0,0,0.04)' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
-              <div>
-                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Votre nom / entreprise *</label>
-                <input value={demandeForm.nom} onChange={e=>setDemandeForm(p=>({...p,nom:e.target.value}))} placeholder="Ex: @emma.lifestyle, Salon Léa..." style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
-              </div>
-              <div>
-                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Email *</label>
-                <input type="email" value={demandeForm.email} onChange={e=>setDemandeForm(p=>({...p,email:e.target.value}))} placeholder="vous@email.com" style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
-              </div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
-              <div>
-                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Type de prestation *</label>
-                <select value={demandeForm.type} onChange={e=>setDemandeForm(p=>({...p,type:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
-                  <option value="">Choisir...</option>
-                  <option>Montage vidéo (TikTok, Reels, YouTube)</option>
-                  <option>Gestion réseaux sociaux</option>
-                  <option>Design graphique (Logo, visuels)</option>
-                  <option>Publicité en ligne (Meta Ads, Google)</option>
-                  <option>Pack complet (plusieurs services)</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Budget estimé</label>
-                <select value={demandeForm.budget} onChange={e=>setDemandeForm(p=>({...p,budget:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
-                  <option value="">Non défini</option>
-                  <option>Moins de 100€</option>
-                  <option>100€ — 300€</option>
-                  <option>300€ — 500€</option>
-                  <option>500€ — 1 000€</option>
-                  <option>Plus de 1 000€</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ marginBottom:14 }}>
-              <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Décrivez votre projet *</label>
-              <textarea value={demandeForm.description} onChange={e=>setDemandeForm(p=>({...p,description:e.target.value}))} placeholder="Ex: Je souhaite un pack de 10 TikToks par mois pour promouvoir mon salon de coiffure. Style dynamique, sous-titres colorés, musique tendance..." rows={4} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', resize:'vertical', lineHeight:1.5 }} />
-            </div>
-            <div style={{ marginBottom:20 }}>
-              <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Fichiers / exemples (optionnel)</label>
-              <div onClick={()=>setDemandeSent(false)} style={{ border:`2px dashed ${C.border}`, borderRadius:10, padding:'20px', textAlign:'center', cursor:'pointer', background:'#FAFAFA' }}>
-                <div style={{ fontSize:28, marginBottom:6 }}>📎</div>
-                <div style={{ fontSize:14, color:C.textSec }}>Cliquez pour ajouter des fichiers (vidéos, images, brief...)</div>
-                <div style={{ fontSize:12, color:C.textLight, marginTop:4 }}>PDF, MP4, JPG, PNG — max 50 Mo</div>
-              </div>
-            </div>
+
             {demandeSent ? (
-              <div style={{ textAlign:'center', padding:'20px 0' }}>
-                <div style={{ width:52, height:52, borderRadius:'50%', background:'#D1FAE5', margin:'0 auto 12px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24 }}>✓</div>
-                <div style={{ fontSize:16, fontWeight:700, color:C.text, marginBottom:4 }}>Demande envoyée !</div>
-                <div style={{ fontSize:14, color:C.textSec }}>Nous vous répondrons sous 24h à {demandeForm.email}</div>
+              <div style={{ textAlign:'center', padding:'24px 0' }}>
+                <div style={{ width:64, height:64, borderRadius:'50%', background:'#D1FAE5', margin:'0 auto 16px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>✓</div>
+                <div style={{ fontSize:20, fontWeight:800, color:C.text, marginBottom:6 }}>Brief envoyé !</div>
+                <div style={{ fontSize:14, color:C.textSec, marginBottom:4 }}>Nous analysons votre projet et vous répondrons sous 24h</div>
+                <div style={{ fontSize:14, color:C.primary, fontWeight:600 }}>{brief.email}</div>
+                <div style={{ marginTop:20, padding:'16px', background:C.soft, borderRadius:12, textAlign:'left' }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:8 }}>Récapitulatif :</div>
+                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.6 }}>
+                    {brief.type} · {brief.format} · {brief.quantite} vidéo{brief.quantite>1?'s':''}<br/>
+                    Style : {brief.style || '—'} · Fréquence : {brief.frequence}<br/>
+                    {brief.deadline && `Deadline : ${brief.deadline}`}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <button onClick={()=>{
-                if(!demandeForm.nom||!demandeForm.email||!demandeForm.type||!demandeForm.description) return;
-                setDemandeSent(true);
-              }} style={{ width:'100%', padding:'14px', background:C.primary, color:'#fff', border:'none', borderRadius:12, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'background .15s', minHeight:48 }}
-                onMouseEnter={e=>e.currentTarget.style.background=C.primaryHover}
-                onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
-                Envoyer ma demande →
+            ) : (<>
+
+            {/* ── Étape 1 : Type de projet ── */}
+            {briefStep === 1 && (<div>
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:14, fontWeight:700, color:C.text, display:'block', marginBottom:8 }}>Quel type de service ? *</label>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {[
+                    { v:'Montage vidéo', icon:'🎬', sub:'TikTok, Reels, YouTube' },
+                    { v:'Réseaux sociaux', icon:'📱', sub:'Gestion de comptes' },
+                    { v:'Design', icon:'🎨', sub:'Logo, visuels, branding' },
+                    { v:'Publicité', icon:'📈', sub:'Meta Ads, Google Ads' },
+                  ].map(t => (
+                    <button key={t.v} onClick={() => setBrief(p=>({...p, type:t.v}))}
+                      style={{ padding:'16px 14px', borderRadius:12, border:`2px solid ${brief.type===t.v?C.primary:C.border}`, background:brief.type===t.v?C.soft:C.bg, cursor:'pointer', textAlign:'left', fontFamily:C.font, transition:'all .15s' }}>
+                      <div style={{ fontSize:24, marginBottom:6 }}>{t.icon}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.text }}>{t.v}</div>
+                      <div style={{ fontSize:12, color:C.textSec }}>{t.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {brief.type === 'Montage vidéo' && (
+                <div style={{ marginBottom:18 }}>
+                  <label style={{ fontSize:14, fontWeight:700, color:C.text, display:'block', marginBottom:8 }}>Format *</label>
+                  <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                    {['TikTok / Reel (vertical)','YouTube Short','Vidéo YouTube (longue)','Clip promo','Stories'].map(f => (
+                      <button key={f} onClick={() => setBrief(p=>({...p, format:f}))}
+                        style={{ padding:'8px 16px', borderRadius:999, border:`1.5px solid ${brief.format===f?C.primary:C.border}`, background:brief.format===f?C.soft:C.bg, color:brief.format===f?C.primary:C.textSec, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:18 }}>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Quantité</label>
+                  <select value={brief.quantite} onChange={e=>setBrief(p=>({...p,quantite:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
+                    {['1','2','3','5','10','15','20','30'].map(n=><option key={n} value={n}>{n} vidéo{n>1?'s':''}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Fréquence</label>
+                  <select value={brief.frequence} onChange={e=>setBrief(p=>({...p,frequence:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
+                    <option value="ponctuel">Ponctuel (une fois)</option>
+                    <option value="hebdomadaire">Chaque semaine</option>
+                    <option value="mensuel">Chaque mois</option>
+                  </select>
+                </div>
+              </div>
+
+              <button onClick={() => { if(brief.type) setBriefStep(2); }}
+                style={{ width:'100%', padding:'14px', background:brief.type?C.primary:'#D0D0D0', color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:brief.type?'pointer':'not-allowed', fontFamily:C.font }}>
+                Continuer →
               </button>
-            )}
+            </div>)}
+
+            {/* ── Étape 2 : Brief créatif ── */}
+            {briefStep === 2 && (<div>
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:14, fontWeight:700, color:C.text, display:'block', marginBottom:8 }}>Style souhaité</label>
+                <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:12 }}>
+                  {['Dynamique / Énergique','Minimaliste / Clean','Fun / Décalé','Pro / Corporate','Cinématique / Épique','Doux / Apaisant'].map(s => (
+                    <button key={s} onClick={() => setBrief(p=>({...p, style:s}))}
+                      style={{ padding:'8px 14px', borderRadius:999, border:`1.5px solid ${brief.style===s?C.primary:C.border}`, background:brief.style===s?C.soft:C.bg, color:brief.style===s?C.primary:C.textSec, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Vidéo de référence / inspiration</label>
+                <input value={brief.reference} onChange={e=>setBrief(p=>({...p,reference:e.target.value}))} placeholder="Lien TikTok, Instagram ou YouTube d'une vidéo que vous aimez" style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+                <div style={{ fontSize:12, color:C.textLight, marginTop:4 }}>Aide le monteur à comprendre exactement ce que vous voulez</div>
+              </div>
+
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:14, fontWeight:700, color:C.text, display:'block', marginBottom:8 }}>Options</label>
+                <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                  {[
+                    { v:'sousTitres', label:'Sous-titres animés', icon:'💬' },
+                    { v:'musique', label:'Musique tendance', icon:'🎵' },
+                    { v:'transitions', label:'Transitions créatives', icon:'✨' },
+                    { v:'colorGrading', label:'Color grading', icon:'🎨' },
+                    { v:'voixOff', label:'Voix-off', icon:'🎙️' },
+                    { v:'miniature', label:'Miniature YouTube', icon:'🖼️' },
+                  ].map(o => (
+                    <button key={o.v} onClick={() => setBrief(p=>({...p, [o.v]: !p[o.v] }))}
+                      style={{ padding:'8px 14px', borderRadius:10, border:`1.5px solid ${brief[o.v]?C.primary:C.border}`, background:brief[o.v]?C.soft:C.bg, color:brief[o.v]?C.primary:C.textSec, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:C.font, display:'flex', alignItems:'center', gap:6 }}>
+                      {o.icon} {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Instructions complémentaires</label>
+                <textarea value={brief.description} onChange={e=>setBrief(p=>({...p,description:e.target.value}))} placeholder="Détails supplémentaires : ton, durée, éléments à inclure, texte à afficher..." rows={3} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', resize:'vertical', lineHeight:1.5 }} />
+              </div>
+
+              <div style={{ marginBottom:18 }}>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Vos rushes / fichiers source</label>
+                <div style={{ border:`2px dashed ${C.border}`, borderRadius:12, padding:'24px', textAlign:'center', cursor:'pointer', background:'#FAFAFA' }}>
+                  <div style={{ fontSize:32, marginBottom:8 }}>📁</div>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Glissez vos fichiers ici</div>
+                  <div style={{ fontSize:13, color:C.textSec, marginTop:4 }}>Vidéos brutes, images, logos, musiques...</div>
+                  <div style={{ fontSize:12, color:C.textLight, marginTop:4 }}>MP4, MOV, JPG, PNG, MP3 — max 500 Mo</div>
+                </div>
+              </div>
+
+              <div style={{ display:'flex', gap:10 }}>
+                <button onClick={() => setBriefStep(1)} style={{ flex:1, padding:'14px', background:C.bg, color:C.text, border:`1.5px solid ${C.border}`, borderRadius:12, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>← Retour</button>
+                <button onClick={() => setBriefStep(3)} style={{ flex:2, padding:'14px', background:C.primary, color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>Continuer →</button>
+              </div>
+            </div>)}
+
+            {/* ── Étape 3 : Coordonnées ── */}
+            {briefStep === 3 && (<div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Votre nom / pseudo *</label>
+                  <input value={brief.nom} onChange={e=>setBrief(p=>({...p,nom:e.target.value}))} placeholder="@emma.lifestyle, Salon Léa..." style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Email *</label>
+                  <input type="email" value={brief.email} onChange={e=>setBrief(p=>({...p,email:e.target.value}))} placeholder="vous@email.com" style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Téléphone</label>
+                  <input type="tel" value={brief.telephone} onChange={e=>setBrief(p=>({...p,telephone:e.target.value}))} placeholder="06 12 34 56 78" style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Deadline souhaitée</label>
+                  <input type="date" value={brief.deadline} onChange={e=>setBrief(p=>({...p,deadline:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+                </div>
+              </div>
+
+              {/* Récap */}
+              <div style={{ padding:'16px', background:C.soft, borderRadius:12, marginBottom:18, border:`1px solid ${C.border}` }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:8 }}>📋 Récapitulatif du brief</div>
+                <div style={{ fontSize:13, color:C.textSec, lineHeight:1.7 }}>
+                  <strong>Service :</strong> {brief.type || '—'}{brief.format ? ` · ${brief.format}` : ''}<br/>
+                  <strong>Quantité :</strong> {brief.quantite} · {brief.frequence}<br/>
+                  <strong>Style :</strong> {brief.style || 'Non précisé'}<br/>
+                  <strong>Options :</strong> {['sousTitres','musique','transitions','colorGrading','voixOff','miniature'].filter(k=>brief[k]).map(k=>({sousTitres:'Sous-titres',musique:'Musique',transitions:'Transitions',colorGrading:'Color grading',voixOff:'Voix-off',miniature:'Miniature'}[k])).join(', ') || 'Aucune'}
+                </div>
+              </div>
+
+              <div style={{ display:'flex', gap:10 }}>
+                <button onClick={() => setBriefStep(2)} style={{ flex:1, padding:'14px', background:C.bg, color:C.text, border:`1.5px solid ${C.border}`, borderRadius:12, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>← Retour</button>
+                <button onClick={() => { if(brief.nom && brief.email) setDemandeSent(true); }}
+                  style={{ flex:2, padding:'14px', background:(brief.nom&&brief.email)?C.primary:'#D0D0D0', color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:(brief.nom&&brief.email)?'pointer':'not-allowed', fontFamily:C.font }}>
+                  📩 Envoyer le brief
+                </button>
+              </div>
+            </div>)}
+
+            </>)}
           </div>
         </div>
       </div>
