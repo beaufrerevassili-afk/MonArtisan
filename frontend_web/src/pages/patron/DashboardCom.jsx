@@ -735,8 +735,8 @@ export default function DashboardCom() {
         <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
           <KpiCard label="CA ce mois" value={`${revenuMois}€`} accent={V} />
           <KpiCard label="Projets livrés" value={projets.filter(p=>p.statut==='livre'||p.statut==='paye').length} accent="#059669" />
-          <KpiCard label="Taux conversion devis" value="83%" accent="#3B82F6" />
-          <KpiCard label="Client top" value="Alex Fitness" sub="1 890€ de CA" accent="#EC4899" />
+          <KpiCard label="Projets en cours" value={projetsEnCours} accent="#3B82F6" />
+          <KpiCard label="Clients" value={projets.filter(p=>['livre','paye'].includes(p.statut)).length} sub="Projets livrés" accent="#EC4899" />
         </div>
         <div style={{ ...CARD, marginBottom:24 }}>
           <div style={HDR}>Revenus des 7 derniers jours</div>
