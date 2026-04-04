@@ -9,6 +9,7 @@ const CATEGORIES = [
   { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
   { id: 'eat',        emoji: '🛵', label: 'Freample Eat',        sub: 'Livraison de repas à domicile' },
   { id: 'course',     emoji: '🚗', label: 'Freample Course',     sub: 'VTC, courses, livraison colis' },
+  { id: 'com',        emoji: '🎬', label: 'Freample Com',        sub: 'Marketing, montage vidéo, design' },
   { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements' },
   { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
 ];
@@ -46,6 +47,16 @@ const SUGGESTIONS = [
   { label: 'Carreleur',         secteur: 'btp' },
   { label: 'Isolation',         secteur: 'btp' },
   { label: 'Architecte',        secteur: 'btp' },
+  // Freample Com
+  { label: 'Montage vidéo',        secteur: 'com' },
+  { label: 'TikTok',               secteur: 'com' },
+  { label: 'YouTube',              secteur: 'com' },
+  { label: 'Marketing',            secteur: 'com' },
+  { label: 'Design graphique',     secteur: 'com' },
+  { label: 'Logo',                 secteur: 'com' },
+  { label: 'Réseaux sociaux',      secteur: 'com' },
+  { label: 'Community management', secteur: 'com' },
+  { label: 'Publicité en ligne',   secteur: 'com' },
   // Freample Eat
   { label: 'Livraison repas',      secteur: 'eat' },
   { label: 'Commander à manger',   secteur: 'eat' },
@@ -109,6 +120,8 @@ export default function SecteurSelect() {
         navigate(`/coiffure?q=${encodeURIComponent(query)}`);
       else if (q.includes('resto') || q.includes('pizza') || q.includes('sushi') || q.includes('burger') || q.includes('manger') || q.includes('gastro'))
         navigate(`/restaurant?q=${encodeURIComponent(query)}`);
+      else if (q.includes('montage') || q.includes('tiktok') || q.includes('youtube') || q.includes('market') || q.includes('design') || q.includes('logo') || q.includes('vidéo') || q.includes('video') || q.includes('commun'))
+        navigate(`/com?q=${encodeURIComponent(query)}`);
       else if (q.includes('livr') || q.includes('eat') || q.includes('command') || q.includes('repas'))
         navigate(`/eat?q=${encodeURIComponent(query)}`);
       else if (q.includes('vtc') || q.includes('chauffeur') || q.includes('course') || q.includes('taxi') || q.includes('colis') || q.includes('transport'))

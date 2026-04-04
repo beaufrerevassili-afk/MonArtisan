@@ -38,6 +38,8 @@ import DashboardRestaurant from './pages/patron/DashboardRestaurant';
 import DashboardHotel from './pages/patron/DashboardHotel';
 import DashboardCourse from './pages/patron/DashboardCourse';
 import DashboardEat from './pages/patron/DashboardEat';
+import DashboardCom from './pages/patron/DashboardCom';
+import FreampleCom from './pages/public/FreampleCom';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
 import RH from './pages/patron/RH';
@@ -82,6 +84,7 @@ function PatronDashboard() {
   if (secteur === 'vacances')   return <DashboardHotel />;
   if (secteur === 'course')     return <DashboardCourse />;
   if (secteur === 'eat')        return <DashboardEat />;
+  if (secteur === 'com')        return <DashboardCom />;
   return <DashboardPatron />;
 }
 
@@ -111,6 +114,7 @@ function AppRoutes() {
       <Route path="/vacances" element={<VacancesPage />} />
       <Route path="/eat" element={<FreampleEat />} />
       <Route path="/course" element={<FreampleCourse />} />
+      <Route path="/com" element={<FreampleCom />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />

@@ -35,6 +35,10 @@ const SECTEUR_COMPTES = {
     { role: 'Patron Eat',  email: 'patron.eat@demo.com',  motdepasse: 'patron123',  color: '#05944F', icon: '🛵' },
     { role: 'Livreur Eat', email: 'employe.eat@demo.com', motdepasse: 'employe123', color: '#22C55E', icon: '📦' },
   ],
+  com: [
+    { role: 'Patron Com',  email: 'patron.com@demo.com',  motdepasse: 'patron123',  color: '#8B5CF6', icon: '🎬' },
+    { role: 'Monteur Com', email: 'employe.com@demo.com', motdepasse: 'employe123', color: '#A78BFA', icon: '🎨' },
+  ],
 };
 
 const GENERIC_DEMO = [
@@ -51,6 +55,7 @@ const SECTOR_CONFIG = {
   vacances:   { label: 'Vacances & Hôtel', color: '#0080FF', bg: '#E8F4FF', icon: '🏖️' },
   course:     { label: 'Course VTC',       color: '#000000', bg: '#F3F3F3', icon: '🚗' },
   eat:        { label: 'Freample Eat',     color: '#05944F', bg: '#F0FDF4', icon: '🛵' },
+  com:        { label: 'Freample Com',    color: '#8B5CF6', bg: '#F5F3FF', icon: '🎬' },
 };
 
 const REDIRECTIONS = {

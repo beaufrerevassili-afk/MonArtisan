@@ -207,6 +207,17 @@ const PATRON_SECTOR_MENUS = {
     { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
     { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
   ],
+  com: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
+    { label: 'Projets',           path: '/patron/dashboard?onglet=projets',     Icon: IconMissions   },
+    { label: 'Devis',             path: '/patron/dashboard?onglet=devis',       Icon: IconDocument   },
+    { label: 'Facturation',       path: '/patron/dashboard?onglet=factures',    Icon: IconCreditCard },
+    { label: 'Clients',           path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
+    { label: 'Grille tarifaire',  path: '/patron/dashboard?onglet=tarifs',      Icon: IconFinance    },
+    { label: 'Équipe',            path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam       },
+    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
+    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
+  ],
 };
 
 const PATRON_SECTOR_HEADERS = {
@@ -215,6 +226,7 @@ const PATRON_SECTOR_HEADERS = {
   vacances:   { label: '🏨 Hôtel & Vacances', color: '#0080FF', bg: '#E8F4FF' },
   course:     { label: '🚗 Freample Course',  color: '#000000', bg: '#F3F3F3' },
   eat:        { label: '🛵 Freample Eat',     color: '#05944F', bg: '#F0FDF4' },
+  com:        { label: '🎬 Freample Com',    color: '#8B5CF6', bg: '#F5F3FF' },
 };
 
 const DEMO_NOTIFS = [
