@@ -35,13 +35,14 @@ const PROJET_STATUS = {
 };
 
 const PROJETS_INIT = [
-  { id:1, titre:'Pack 10 TikToks — @emma.lifestyle', client:'Emma Lifestyle', type:'Montage vidéo', categorie:'TikTok', montant:349, statut:'en_cours', monteur:'Maxime D.', dateDebut:'2026-04-01', dateFin:'2026-04-08', revisions:1, fichiers:10, notes:'Style dynamique, sous-titres colorés', devisRef:'DC-2026-018' },
-  { id:2, titre:'Vidéo YouTube — Salon Léa', client:'Salon Léa', type:'Montage vidéo', categorie:'YouTube', montant:199, statut:'revision', monteur:'Maxime D.', dateDebut:'2026-04-02', dateFin:'2026-04-06', revisions:2, fichiers:1, notes:'Présentation du salon, ambiance chaleureuse', devisRef:'DC-2026-019' },
-  { id:3, titre:'Gestion Instagram — Big Smoke', client:'Big Smoke Burgers', type:'Réseaux sociaux', categorie:'Instagram', montant:699, statut:'en_cours', monteur:'Sarah K.', dateDebut:'2026-04-01', dateFin:'2026-04-30', revisions:0, fichiers:12, notes:'3 posts/semaine + stories quotidiennes', devisRef:'DC-2026-015' },
-  { id:4, titre:'Logo + Charte — Taco Loco', client:'Taco Loco', type:'Design', categorie:'Branding', montant:249, statut:'livre', monteur:'Léa M.', dateDebut:'2026-03-25', dateFin:'2026-04-02', revisions:3, fichiers:5, notes:'Style mexicain moderne, couleurs vives', devisRef:'DC-2026-014' },
-  { id:5, titre:'5 Reels Instagram — @alex.fitness', client:'Alex Fitness', type:'Montage vidéo', categorie:'Reels', montant:199, statut:'demande', monteur:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Montage sportif, transitions rapides', devisRef:null },
-  { id:6, titre:'Campagne Meta Ads — La Trattoria', client:'La Trattoria', type:'Publicité', categorie:'Meta Ads', montant:399, statut:'paye', monteur:'Sarah K.', dateDebut:'2026-03-15', dateFin:'2026-03-31', revisions:1, fichiers:3, notes:'Objectif: +30% commandes en ligne', devisRef:'DC-2026-012' },
-  { id:7, titre:'Clip promo 30s — Freample Course', client:'Freample Course', type:'Montage vidéo', categorie:'Clip', montant:349, statut:'devis_envoye', monteur:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Clip publicitaire pour lancement', devisRef:'DC-2026-020' },
+  { id:1, titre:'Pack 10 TikToks — @emma.lifestyle', client:'Emma Lifestyle', type:'Montage vidéo', categorie:'TikTok', montant:349, statut:'en_cours', responsable:'Membre 2', dateDebut:'2026-04-01', dateFin:'2026-04-08', revisions:1, fichiers:10, notes:'Style dynamique, sous-titres colorés', devisRef:'DC-2026-018' },
+  { id:2, titre:'Vidéo YouTube — Salon Léa', client:'Salon Léa', type:'Montage vidéo', categorie:'YouTube', montant:199, statut:'revision', responsable:'Membre 2', dateDebut:'2026-04-02', dateFin:'2026-04-06', revisions:2, fichiers:1, notes:'Présentation du salon, ambiance chaleureuse', devisRef:'DC-2026-019' },
+  { id:3, titre:'Gestion Instagram — Big Smoke', client:'Big Smoke Burgers', type:'Réseaux sociaux', categorie:'Instagram', montant:699, statut:'en_cours', responsable:'Membre 3', dateDebut:'2026-04-01', dateFin:'2026-04-30', revisions:0, fichiers:12, notes:'3 posts/semaine + stories quotidiennes', devisRef:'DC-2026-015' },
+  { id:4, titre:'Logo + Charte — Taco Loco', client:'Taco Loco', type:'Design', categorie:'Branding', montant:249, statut:'livre', responsable:'Membre 3', dateDebut:'2026-03-25', dateFin:'2026-04-02', revisions:3, fichiers:5, notes:'Style mexicain moderne, couleurs vives', devisRef:'DC-2026-014' },
+  { id:5, titre:'5 Reels Instagram — @alex.fitness', client:'Alex Fitness', type:'Montage vidéo', categorie:'Reels', montant:199, statut:'demande', responsable:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Montage sportif, transitions rapides', devisRef:null },
+  { id:6, titre:'Campagne Meta Ads — La Trattoria', client:'La Trattoria', type:'Publicité', categorie:'Meta Ads', montant:399, statut:'paye', responsable:'Membre 3', dateDebut:'2026-03-15', dateFin:'2026-03-31', revisions:1, fichiers:3, notes:'Objectif: +30% commandes en ligne', devisRef:'DC-2026-012' },
+  { id:7, titre:'Clip promo 30s — Freample Course', client:'Freample Course', type:'Montage vidéo', categorie:'Clip', montant:349, statut:'devis_envoye', responsable:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Clip publicitaire pour lancement — usage interne', devisRef:'DC-2026-020' },
+  { id:8, titre:'Marketing Freample — Reels promo', client:'Freample (interne)', type:'Montage vidéo', categorie:'Reels', montant:0, statut:'en_cours', responsable:'Membre 2', dateDebut:'2026-04-03', dateFin:'2026-04-07', revisions:0, fichiers:5, notes:'5 Reels promo Freample pour Instagram et TikTok — projet interne', devisRef:null, interne:true },
 ];
 
 const DEVIS_INIT = [
@@ -69,10 +70,10 @@ const CLIENTS_INIT = [
 ];
 
 const EQUIPE_INIT = [
-  { id:1, nom:'Maxime Dupont', poste:'Monteur vidéo senior', specialite:'TikTok, YouTube', projetsActifs:2, ca:2480, dispo:true, color:'#8B5CF6' },
-  { id:2, nom:'Sarah Khelifi', poste:'Social Media Manager', specialite:'Instagram, Meta Ads', projetsActifs:2, ca:1798, dispo:true, color:'#EC4899' },
-  { id:3, nom:'Léa Martin', poste:'Designer graphique', specialite:'Logo, Branding, Print', projetsActifs:0, ca:890, dispo:true, color:'#3B82F6' },
-  { id:4, nom:'Hugo Bernard', poste:'Monteur vidéo junior', specialite:'Reels, Shorts', projetsActifs:0, ca:420, dispo:false, color:'#10B981' },
+  { id:1, nom:'Vassili B.', poste:'Directeur technique', specialite:'Développement, Produit, Stratégie', projetsActifs:1, projetsTotal:8, charge:30, dispo:true, color:'#8B5CF6' },
+  { id:2, nom:'Membre 2', poste:'Montage vidéo & Com', specialite:'TikTok, YouTube, Reels, Montage', projetsActifs:3, projetsTotal:15, charge:85, dispo:true, color:'#EC4899' },
+  { id:3, nom:'Membre 3', poste:'Design & Réseaux sociaux', specialite:'Logo, Branding, Instagram, Meta Ads', projetsActifs:2, projetsTotal:12, charge:60, dispo:true, color:'#3B82F6' },
+  { id:4, nom:'Membre 4', poste:'Commercial & Relations clients', specialite:'Prospection, Devis, Suivi client', projetsActifs:0, projetsTotal:0, charge:20, dispo:true, color:'#10B981' },
 ];
 
 import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
@@ -166,7 +167,7 @@ export default function DashboardCom() {
 
   // IMPROVEMENT 1: New project form
   const [newProjetForm, setNewProjetForm] = useState({
-    client:'', type:'Montage vidéo', categorie:'TikTok', titre:'', brief:'', deadline:'', monteur:'', budget:''
+    client:'', type:'Montage vidéo', categorie:'TikTok', titre:'', brief:'', deadline:'', responsable:'', budget:''
   });
 
   // IMPROVEMENT 4: Chat messages per project
@@ -200,7 +201,7 @@ export default function DashboardCom() {
       categorie: newProjetForm.categorie,
       montant: Number(newProjetForm.budget) || 0,
       statut: 'demande',
-      monteur: newProjetForm.monteur || null,
+      responsable: newProjetForm.responsable || null,
       dateDebut: null,
       dateFin: newProjetForm.deadline || null,
       revisions: 0,
@@ -210,7 +211,7 @@ export default function DashboardCom() {
     }]);
     showToast('Projet créé !');
     setModalNewProjet(false);
-    setNewProjetForm({ client:'', type:'Montage vidéo', categorie:'TikTok', titre:'', brief:'', deadline:'', monteur:'', budget:'' });
+    setNewProjetForm({ client:'', type:'Montage vidéo', categorie:'TikTok', titre:'', brief:'', deadline:'', responsable:'', budget:'' });
   };
 
   // IMPROVEMENT 5: Submit devis with lines
@@ -292,7 +293,7 @@ export default function DashboardCom() {
               <div style={{ width:40, height:40, borderRadius:10, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎬</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.type} · {p.monteur || 'Non assigné'} · {p.montant}€</div>
+                <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.type} · {p.responsable || 'À assigner'} · {p.montant}€</div>
               </div>
               <StatusBadge statut={p.statut} />
             </div>
@@ -315,7 +316,7 @@ export default function DashboardCom() {
             </div>
             <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:6 }}>{p.type} · {p.categorie} · {p.client}</div>
             <div style={{ display:'flex', gap:16, fontSize:12, color:'#8B8B8B' }}>
-              <span>👤 {p.monteur || 'Non assigné'}</span>
+              <span>👤 {p.responsable || 'À assigner'}</span>
               <span>📁 {p.fichiers} fichier{p.fichiers>1?'s':''}</span>
               <span>🔄 {p.revisions} révision{p.revisions>1?'s':''}</span>
             </div>
@@ -484,26 +485,75 @@ export default function DashboardCom() {
         </div>
       </div>)}
 
-      {/* TAB: Équipe */}
+      {/* TAB: Équipe interne */}
       {tab === 'equipe' && (<div>
-        <div style={{ fontSize:16, fontWeight:700, marginBottom:20 }}>Équipe créative</div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:14 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700 }}>Équipe Freample Com</div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Votre équipe interne — {equipe.length} membres</div>
+          </div>
+        </div>
+
+        {/* Vue charge de travail */}
+        <div style={{ ...CARD, marginBottom:20 }}>
+          <div style={HDR}>Charge de travail</div>
+          {equipe.map(e => (
+            <div key={e.id} style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
+              <div style={{ width:36, height:36, borderRadius:'50%', background:`${e.color}18`, border:`2px solid ${e.color}40`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, color:e.color, fontSize:12, flexShrink:0 }}>{e.nom.split(' ').map(n=>n[0]).join('')}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                  <span style={{ fontSize:13, fontWeight:700 }}>{e.nom}</span>
+                  <span style={{ fontSize:12, fontWeight:700, color: e.charge > 80 ? '#DC2626' : e.charge > 50 ? '#D97706' : '#16A34A' }}>{e.charge}%</span>
+                </div>
+                <div style={{ background:'#F3F3F3', borderRadius:4, height:6 }}>
+                  <div style={{ background: e.charge > 80 ? '#DC2626' : e.charge > 50 ? '#D97706' : '#16A34A', borderRadius:4, height:6, width:`${e.charge}%`, transition:'width .3s' }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Fiches membres */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:14 }}>
           {equipe.map(e => (
             <div key={e.id} style={CARD}>
               <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
-                <div style={{ width:44, height:44, borderRadius:'50%', background:`${e.color}18`, border:`2px solid ${e.color}40`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, color:e.color, fontSize:14 }}>{e.nom.split(' ').map(n=>n[0]).join('')}</div>
+                <div style={{ width:48, height:48, borderRadius:'50%', background:`${e.color}18`, border:`2px solid ${e.color}40`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, color:e.color, fontSize:15 }}>{e.nom.split(' ').map(n=>n[0]).join('')}</div>
                 <div>
-                  <div style={{ fontWeight:700, fontSize:14 }}>{e.nom}</div>
-                  <div style={{ fontSize:12, color:'#8B8B8B' }}>{e.poste}</div>
+                  <div style={{ fontWeight:700, fontSize:15 }}>{e.nom}</div>
+                  <div style={{ fontSize:13, color:'#8B8B8B' }}>{e.poste}</div>
                 </div>
               </div>
-              <div style={{ fontSize:12, color:'#8B8B8B', marginBottom:10 }}>🎯 {e.specialite}</div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}><span style={{ color:'#8B8B8B' }}>Projets actifs</span><span style={{ fontWeight:700 }}>{e.projetsActifs}</span></div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}><span style={{ color:'#8B8B8B' }}>CA généré</span><span style={{ fontWeight:700, color:V }}>{e.ca}€</span></div>
+              <div style={{ fontSize:12, color:'#8B8B8B', marginBottom:12, padding:'8px 12px', background:V_SOFT, borderRadius:8 }}>🎯 {e.specialite}</div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
+                <span style={{ color:'#8B8B8B' }}>Projets actifs</span>
+                <span style={{ fontWeight:700 }}>{e.projetsActifs}</span>
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
+                <span style={{ color:'#8B8B8B' }}>Projets réalisés</span>
+                <span style={{ fontWeight:700 }}>{e.projetsTotal}</span>
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
+                <span style={{ color:'#8B8B8B' }}>Charge</span>
+                <span style={{ fontWeight:700, color: e.charge > 80 ? '#DC2626' : e.charge > 50 ? '#D97706' : '#16A34A' }}>{e.charge}%</span>
+              </div>
               <div style={{ marginTop:10, display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ width:8, height:8, borderRadius:'50%', background: e.dispo ? '#16A34A' : '#DC2626' }} />
                 <span style={{ fontSize:12, fontWeight:600, color: e.dispo ? '#16A34A' : '#DC2626' }}>{e.dispo ? 'Disponible' : 'Occupé'}</span>
               </div>
+
+              {/* Projets assignés */}
+              {projets.filter(p => p.responsable === e.nom && !['paye','livre'].includes(p.statut)).length > 0 && (
+                <div style={{ marginTop:12, paddingTop:12, borderTop:'1px solid #F0F0F0' }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>Projets en cours</div>
+                  {projets.filter(p => p.responsable === e.nom && !['paye','livre'].includes(p.statut)).map(p => (
+                    <div key={p.id} style={{ fontSize:12, color:'#5E5E5E', marginBottom:4, display:'flex', justifyContent:'space-between' }}>
+                      <span>{p.titre.length > 30 ? p.titre.slice(0,30)+'…' : p.titre}</span>
+                      <StatusBadge statut={p.statut} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -558,7 +608,7 @@ export default function DashboardCom() {
             <div style={{ fontWeight:800, fontSize:18, marginBottom:2 }}>{modalProjet.titre}</div>
             <div style={{ color:'#8B8B8B', fontSize:14, marginBottom:16 }}>{modalProjet.type} · {modalProjet.categorie} · <StatusBadge statut={modalProjet.statut} /></div>
             <div style={{ ...CARD, background:'#FAFAFA', marginBottom:16 }}>
-              {[{l:'Client',v:modalProjet.client},{l:'Monteur',v:modalProjet.monteur||'Non assigné'},{l:'Montant',v:`${modalProjet.montant}€`},{l:'Fichiers',v:`${modalProjet.fichiers} fichier(s)`},{l:'Révisions',v:modalProjet.revisions},{l:'Devis',v:modalProjet.devisRef||'—'}].map(r => (
+              {[{l:'Client',v:modalProjet.client},{l:'Responsable',v:modalProjet.responsable||'À assigner'},{l:'Montant',v:`${modalProjet.montant}€`},{l:'Fichiers',v:`${modalProjet.fichiers} fichier(s)`},{l:'Révisions',v:modalProjet.revisions},{l:'Devis',v:modalProjet.devisRef||'—'}].map(r => (
                 <div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', fontSize:14, borderBottom:'1px solid #F0F0F0' }}>
                   <span style={{ color:'#8B8B8B' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
                 </div>
@@ -738,8 +788,8 @@ export default function DashboardCom() {
             </div>
 
             <div style={{ marginBottom:14 }}>
-              <label style={labelStyle}>Monteur assigné</label>
-              <select value={newProjetForm.monteur} onChange={e => setNewProjetForm(p => ({...p, monteur:e.target.value}))} style={inputStyle}>
+              <label style={labelStyle}>Responsable (équipe)</label>
+              <select value={newProjetForm.responsable} onChange={e => setNewProjetForm(p => ({...p, monteur:e.target.value}))} style={inputStyle}>
                 <option value="">Non assigné</option>
                 {EQUIPE_INIT.map(e => <option key={e.id} value={e.nom}>{e.nom} — {e.poste}</option>)}
               </select>
