@@ -37,7 +37,7 @@ const STOCK_ALERTS = [
 
 const MOIS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const METRICS = [
-  { key:'ca',             label:'CA',              color:'#007AFF' },
+  { key:'ca',             label:'CA',              color:'#5B5BD6' },
   { key:'masseSalariale', label:'Masse salariale',  color:'#FF9500' },
   { key:'frais',          label:'Frais',            color:'#AF52DE' },
   { key:'beneficeNet',    label:'Bénéfice net',     color:'#34C759' },
@@ -184,7 +184,7 @@ export default function DashboardPatron() {
         const nonLus = actualites.filter(a => !a.lu).length;
         const affiches = showAllActu ? actualites : actualites.slice(0, 4);
         const typeConfig = {
-          devis:   { label: 'Demande devis',  bg: '#EBF5FF', color: '#007AFF', dot: '#007AFF' },
+          devis:   { label: 'Demande devis',  bg: '#EBF5FF', color: '#5B5BD6', dot: '#5B5BD6' },
           mission: { label: 'Nouvelle mission', bg: '#FFF0E5', color: '#E65100', dot: '#FF6F00' },
           message: { label: 'Message',         bg: '#F5F0FF', color: '#6200EA', dot: '#7C4DFF' },
         };
@@ -242,7 +242,7 @@ export default function DashboardPatron() {
                           </div>
                         )}
                         {rdvActuSoumis && (
-                          <div style={{ background: '#EBF5FF', border: '1px solid #007AFF', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#1565C0' }}>
+                          <div style={{ background: '#EBF5FF', border: '1px solid #5B5BD6', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#1565C0' }}>
                             <div style={{ fontWeight: 700, marginBottom: 6 }}>📅 Rendez-vous proposé au client</div>
                             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                               <span><strong>Date :</strong> {new Date(rdvActuSoumis.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -257,7 +257,7 @@ export default function DashboardPatron() {
                         {!devisActuMode && !rdvActuMode && (
                           <>
                             <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 12 }}>Récapitulatif de la demande</div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                            <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
                               {[
                                 { label: 'Client', value: a.client },
                                 { label: 'Adresse', value: a.adresse || '—' },
@@ -279,13 +279,13 @@ export default function DashboardPatron() {
                               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                                 {!devisActuSoumis && (
                                   <button onClick={() => setDevisActuMode(true)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
                                     📄 Proposer un devis
                                   </button>
                                 )}
                                 {!rdvActuSoumis && (
                                   <button onClick={() => setRdvActuMode(true)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#fff', color: '#007AFF', border: '2px solid #007AFF', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#fff', color: '#5B5BD6', border: '2px solid #5B5BD6', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
                                     📅 Proposer un rendez-vous
                                   </button>
                                 )}
@@ -315,7 +315,7 @@ export default function DashboardPatron() {
                             <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 14 }}>
                               📅 Proposer un rendez-vous — <span style={{ color: 'var(--primary)' }}>{a.client}</span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                            <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
                               <div style={{ gridColumn: '1/-1' }}>
                                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Date *</label>
                                 <input type="date" required value={rdvForm.date} onChange={e => setRdvForm(p => ({ ...p, date: e.target.value }))}
@@ -353,7 +353,7 @@ export default function DashboardPatron() {
                                 Annuler
                               </button>
                               <button type="submit"
-                                style={{ padding: '10px 22px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                                style={{ padding: '10px 22px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
                                 Envoyer le rendez-vous
                               </button>
                             </div>
@@ -468,7 +468,7 @@ export default function DashboardPatron() {
       </div>
 
       {/* Chantiers + Pipeline */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
+      <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
 
         {/* Chantiers actifs */}
         <div className="card" style={{ padding: 0, overflow:'hidden' }}>
@@ -548,7 +548,7 @@ export default function DashboardPatron() {
       </div>
 
       {/* Factures impayées + Échéances */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
+      <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
 
         {/* Factures */}
         <div className="card" style={{ padding: 0, overflow:'hidden' }}>

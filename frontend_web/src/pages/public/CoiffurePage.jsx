@@ -86,12 +86,12 @@ export default function CoiffurePage() {
           onFocusCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.md}
           onBlurCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.sm}>
           <div style={{ flex:1.2, display:'flex', flexDirection:'column', padding:'10px 20px', borderRight:`1px solid ${DS.border}` }}>
-            <label style={{ fontSize:9, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2, marginBottom:3 }}>Que cherchez-vous ?</label>
-            <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Coupe, balayage, massage…" style={{ border:'none', outline:'none', fontSize:13.5, color:DS.ink, background:'none', fontFamily:DS.font }} />
+            <label style={{ fontSize:11, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:1.5, marginBottom:3 }}>Que cherchez-vous ?</label>
+            <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Coupe, balayage, massage…" style={{ border:'none', outline:'none', fontSize:16, color:DS.ink, background:'none', fontFamily:DS.font }} />
           </div>
           <div style={{ flex:1, display:'flex', flexDirection:'column', padding:'10px 20px' }}>
-            <label style={{ fontSize:9, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2, marginBottom:3 }}>Où ?</label>
-            <input value={ville} onChange={e=>setVille(e.target.value)} placeholder="Paris, Lyon…" style={{ border:'none', outline:'none', fontSize:13.5, color:DS.ink, background:'none', fontFamily:DS.font }} />
+            <label style={{ fontSize:11, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:1.5, marginBottom:3 }}>Où ?</label>
+            <input value={ville} onChange={e=>setVille(e.target.value)} placeholder="Paris, Lyon…" style={{ border:'none', outline:'none', fontSize:16, color:DS.ink, background:'none', fontFamily:DS.font }} />
           </div>
           <button style={{ padding:'0 24px', background:DS.ink, border:'none', cursor:'pointer', color:'#fff', fontSize:13, fontWeight:700, transition:'opacity .15s' }}
             onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
@@ -115,7 +115,7 @@ export default function CoiffurePage() {
           <div style={{ height:200, background:selected.grad, position:'relative', display:'flex', alignItems:'flex-end', padding:'0 28px 20px' }}>
             <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 30%, rgba(10,10,10,0.4))' }} />
             <div style={{ position:'relative', zIndex:1 }}>
-              <div style={{ fontSize:10, color:'rgba(255,255,255,0.75)', textTransform:'uppercase', letterSpacing:2.5, fontWeight:600, marginBottom:4 }}>{selected.type}</div>
+              <div style={{ fontSize:12, color:'rgba(255,255,255,0.75)', textTransform:'uppercase', letterSpacing:2, fontWeight:600, marginBottom:4 }}>{selected.type}</div>
               <div style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.05em' }}>{selected.nom}</div>
             </div>
           </div>

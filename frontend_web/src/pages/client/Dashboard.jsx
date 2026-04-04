@@ -1358,9 +1358,9 @@ function VacancesTab({ navigate }) {
           <input value={dest} onChange={e => setDest(e.target.value)} placeholder="Destination : Paris, Nice, Bordeaux…"
             style={{ flex: 1, minWidth: 140, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: `1px solid ${DS.border}`, padding: '8px 14px' }}>
-            <button onClick={() => setVoyageurs(Math.max(1, voyageurs - 1))} style={{ width: 24, height: 24, borderRadius: '50%', border: `1px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>−</button>
+            <button onClick={() => setVoyageurs(Math.max(1, voyageurs - 1))} style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700 }}>−</button>
             <span style={{ fontSize: 13, color: DS.ink, minWidth: 60, textAlign: 'center' }}>{voyageurs} voyageur{voyageurs > 1 ? 's' : ''}</span>
-            <button onClick={() => setVoyageurs(voyageurs + 1)} style={{ width: 24, height: 24, borderRadius: '50%', border: `1px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>+</button>
+            <button onClick={() => setVoyageurs(voyageurs + 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${DS.border}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700 }}>+</button>
           </div>
           <button onClick={() => navigate('/vacances')}
             style={{ background: '#0080FF', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font }}>Rechercher</button>

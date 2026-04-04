@@ -876,9 +876,9 @@ export default function DashboardRestaurant() {
                         <div style={{ flex:1, fontSize:13, fontWeight:600 }}>{item.plat}</div>
                         <div style={{ fontSize:13, color:R, fontWeight:700, minWidth:46, textAlign:'right' }}>{item.prix * item.qte}€</div>
                         <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                          <button onClick={() => changeQte(item.id, -1)} style={{ width:24, height:24, borderRadius:6, border:'1px solid #E5E7EB', background:'#fff', cursor:'pointer', fontWeight:700 }}>−</button>
+                          <button onClick={() => changeQte(item.id, -1)} style={{ width:34, height:34, borderRadius:8, border:'1px solid #E5E7EB', background:'#fff', cursor:'pointer', fontWeight:700, fontSize:15, display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>
                           <span style={{ fontSize:13, fontWeight:700, minWidth:18, textAlign:'center' }}>{item.qte}</span>
-                          <button onClick={() => changeQte(item.id, 1)} style={{ width:24, height:24, borderRadius:6, border:'1px solid #E5E7EB', background:'#fff', cursor:'pointer', fontWeight:700 }}>+</button>
+                          <button onClick={() => changeQte(item.id, 1)} style={{ width:34, height:34, borderRadius:8, border:'1px solid #E5E7EB', background:'#fff', cursor:'pointer', fontWeight:700, fontSize:15, display:'flex', alignItems:'center', justifyContent:'center' }}>+</button>
                         </div>
                       </div>
                     ))}
