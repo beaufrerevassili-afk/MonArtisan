@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
+import api from '../../services/api';
 
 const V = '#8B5CF6';
 const V_BG = '#F5F3FF';
@@ -35,62 +36,26 @@ const PROJET_STATUS = {
   paye:       { label:'Payé',       bg:'#F0FDF4', border:'#5EEAD4', color:'#0F766E' },
 };
 
-const PROJETS_INIT = [
-  { id:1, titre:'Pack 10 TikToks — @emma.lifestyle', client:'Emma Lifestyle', type:'Montage vidéo', categorie:'TikTok', montant:349, statut:'en_cours', responsable:'Membre 2', dateDebut:'2026-04-01', dateFin:'2026-04-08', revisions:1, fichiers:10, notes:'Style dynamique, sous-titres colorés', devisRef:'DC-2026-018' },
-  { id:2, titre:'Vidéo YouTube — Salon Léa', client:'Salon Léa', type:'Montage vidéo', categorie:'YouTube', montant:199, statut:'revision', responsable:'Membre 2', dateDebut:'2026-04-02', dateFin:'2026-04-06', revisions:2, fichiers:1, notes:'Présentation du salon, ambiance chaleureuse', devisRef:'DC-2026-019' },
-  { id:3, titre:'Gestion Instagram — Big Smoke', client:'Big Smoke Burgers', type:'Réseaux sociaux', categorie:'Instagram', montant:699, statut:'en_cours', responsable:'Membre 3', dateDebut:'2026-04-01', dateFin:'2026-04-30', revisions:0, fichiers:12, notes:'3 posts/semaine + stories quotidiennes', devisRef:'DC-2026-015' },
-  { id:4, titre:'Logo + Charte — Taco Loco', client:'Taco Loco', type:'Design', categorie:'Branding', montant:249, statut:'livre', responsable:'Membre 3', dateDebut:'2026-03-25', dateFin:'2026-04-02', revisions:3, fichiers:5, notes:'Style mexicain moderne, couleurs vives', devisRef:'DC-2026-014' },
-  { id:5, titre:'5 Reels Instagram — @alex.fitness', client:'Alex Fitness', type:'Montage vidéo', categorie:'Reels', montant:199, statut:'demande', responsable:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Montage sportif, transitions rapides', devisRef:null },
-  { id:6, titre:'Campagne Meta Ads — La Trattoria', client:'La Trattoria', type:'Publicité', categorie:'Meta Ads', montant:399, statut:'paye', responsable:'Membre 3', dateDebut:'2026-03-15', dateFin:'2026-03-31', revisions:1, fichiers:3, notes:'Objectif: +30% commandes en ligne', devisRef:'DC-2026-012' },
-  { id:7, titre:'Clip promo 30s — Freample Course', client:'Freample Course', type:'Montage vidéo', categorie:'Clip', montant:349, statut:'devis_envoye', responsable:null, dateDebut:null, dateFin:null, revisions:0, fichiers:0, notes:'Clip publicitaire pour lancement — usage interne', devisRef:'DC-2026-020' },
-  { id:8, titre:'Marketing Freample — Reels promo', client:'Freample (interne)', type:'Montage vidéo', categorie:'Reels', montant:0, statut:'en_cours', responsable:'Membre 2', dateDebut:'2026-04-03', dateFin:'2026-04-07', revisions:0, fichiers:5, notes:'5 Reels promo Freample pour Instagram et TikTok — projet interne', devisRef:null, interne:true },
-];
-
-const DEVIS_INIT = [
-  { id:'DC-2026-020', client:'Freample Course', objet:'Clip promotionnel 30s', montantHT:349, tva:20, statut:'envoye', date:'2026-04-03', validite:'30 jours' },
-  { id:'DC-2026-019', client:'Salon Léa', objet:'Vidéo YouTube présentation', montantHT:199, tva:20, statut:'accepte', date:'2026-04-01', validite:'30 jours' },
-  { id:'DC-2026-018', client:'Emma Lifestyle', objet:'Pack 10 TikToks', montantHT:349, tva:20, statut:'accepte', date:'2026-03-30', validite:'30 jours' },
-  { id:'DC-2026-015', client:'Big Smoke Burgers', objet:'Gestion Instagram 1 mois', montantHT:699, tva:20, statut:'accepte', date:'2026-03-25', validite:'30 jours' },
-  { id:'DC-2026-014', client:'Taco Loco', objet:'Logo + Charte graphique', montantHT:249, tva:20, statut:'accepte', date:'2026-03-20', validite:'30 jours' },
-  { id:'DC-2026-012', client:'La Trattoria', objet:'Campagne Meta Ads 2 semaines', montantHT:399, tva:20, statut:'paye', date:'2026-03-12', validite:'30 jours' },
-];
-
-const FACTURES_INIT = [
-  { id:'FC-2026-008', devis:'DC-2026-014', client:'Taco Loco', objet:'Logo + Charte graphique', montantHT:249, tva:20, dateEmission:'2026-04-02', statut:'envoyee' },
-  { id:'FC-2026-007', devis:'DC-2026-012', client:'La Trattoria', objet:'Campagne Meta Ads', montantHT:399, tva:20, dateEmission:'2026-03-31', statut:'payee' },
-  { id:'FC-2026-006', devis:'DC-2026-015', client:'Big Smoke Burgers', objet:'Gestion Instagram (acompte)', montantHT:350, tva:20, dateEmission:'2026-04-01', statut:'envoyee' },
-];
-
-const CLIENTS_INIT = [
-  { id:1, nom:'Emma Lifestyle', type:'Influenceuse', email:'emma@lifestyle.com', tel:'06 12 34 56 78', projets:4, ca:1240, fidelite:'vip', note:5 },
-  { id:2, nom:'Salon Léa', type:'Commerce', email:'contact@salonlea.fr', tel:'01 23 45 67 89', projets:3, ca:680, fidelite:'fidele', note:4.8 },
-  { id:3, nom:'Big Smoke Burgers', type:'Restaurant', email:'marketing@bigsmoke.fr', tel:'01 34 56 78 90', projets:2, ca:1398, fidelite:'vip', note:4.9 },
-  { id:4, nom:'Alex Fitness', type:'Influenceur', email:'alex@fitness.com', tel:'06 45 67 89 01', projets:6, ca:1890, fidelite:'vip', note:5 },
-  { id:5, nom:'Taco Loco', type:'Restaurant', email:'hello@tacoloco.fr', tel:'01 56 78 90 12', projets:1, ca:249, fidelite:'nouveau', note:4.5 },
-  { id:6, nom:'La Trattoria', type:'Restaurant', email:'contact@trattoria.fr', tel:'01 42 33 44 55', projets:2, ca:798, fidelite:'fidele', note:4.7 },
-];
+// ── Données vides — les vrais projets viennent de la base via /com/projets ──
+const PROJETS_INIT = [];
+const DEVIS_INIT = [];
+const FACTURES_INIT = [];
+const CLIENTS_INIT = [];
 
 const EQUIPE_INIT = [
-  { id:1, nom:'Vassili B.', poste:'Directeur technique', specialite:'Développement, Produit, Stratégie', projetsActifs:1, projetsTotal:8, charge:30, dispo:true, color:'#8B5CF6' },
-  { id:2, nom:'Membre 2', poste:'Montage vidéo & Com', specialite:'TikTok, YouTube, Reels, Montage', projetsActifs:3, projetsTotal:15, charge:85, dispo:true, color:'#EC4899' },
-  { id:3, nom:'Membre 3', poste:'Design & Réseaux sociaux', specialite:'Logo, Branding, Instagram, Meta Ads', projetsActifs:2, projetsTotal:12, charge:60, dispo:true, color:'#3B82F6' },
-  { id:4, nom:'Membre 4', poste:'Commercial & Relations clients', specialite:'Prospection, Devis, Suivi client', projetsActifs:0, projetsTotal:0, charge:20, dispo:true, color:'#10B981' },
+  { id:1, nom:'Vassili', poste:'Admin · Tech & Stratégie', specialite:'Développement, Produit, Direction', projetsActifs:0, projetsTotal:0, charge:0, dispo:true, color:'#8B5CF6' },
+  { id:2, nom:'Mathieu', poste:'Admin · Gestion & Com', specialite:'Gestion de projet, Stratégie, Relation client', projetsActifs:0, projetsTotal:0, charge:0, dispo:true, color:'#3B82F6' },
+  { id:3, nom:'Marius', poste:'Monteur · Vidéo & Prospection', specialite:'TikTok, YouTube, Reels, Montage, Prospection', projetsActifs:0, projetsTotal:0, charge:0, dispo:true, color:'#EC4899' },
+  { id:4, nom:'Maxence', poste:'Monteur · Vidéo & Création', specialite:'TikTok, Reels, Shorts, Montage, Effets', projetsActifs:0, projetsTotal:0, charge:0, dispo:true, color:'#10B981' },
 ];
 
 const REVENUS_7J = [
-  { jour:'Lun', montant:280 },{ jour:'Mar', montant:420 },{ jour:'Mer', montant:180 },
-  { jour:'Jeu', montant:520 },{ jour:'Ven', montant:390 },{ jour:'Sam', montant:150 },
+  { jour:'Lun', montant:0 },{ jour:'Mar', montant:0 },{ jour:'Mer', montant:0 },
+  { jour:'Jeu', montant:0 },{ jour:'Ven', montant:0 },{ jour:'Sam', montant:0 },
   { jour:'Dim', montant:0 },
 ];
 
-const PAIEMENTS_INIT = [
-  { id:'P001', date:'2026-04-04', client:'Emma Lifestyle', projet:'Pack 10 TikToks', montant:349, statut:'bloque', type:'paiement' },
-  { id:'P002', date:'2026-04-04', client:'Big Smoke Burgers', projet:'Gestion Instagram', montant:699, statut:'bloque', type:'paiement' },
-  { id:'P003', date:'2026-04-03', client:'Taco Loco', projet:'Logo + Charte', montant:249, statut:'libere', type:'paiement' },
-  { id:'P004', date:'2026-04-02', client:'La Trattoria', projet:'Campagne Meta Ads', montant:399, statut:'libere', type:'paiement' },
-  { id:'P005', date:'2026-04-01', client:'Alex Fitness', projet:'5 Reels Instagram', montant:199, statut:'libere', type:'paiement' },
-  { id:'VIRT1', date:'2026-03-31', client:'', projet:'Virement mensuel', montant:1200, statut:'vire', type:'virement' },
-];
+const PAIEMENTS_INIT = [];
 
 const DEMO_FILES = [
   { nom:'montage_v1.mp4', taille:'48 Mo', date:'2026-04-03' },
@@ -146,6 +111,34 @@ export default function DashboardCom() {
     if (o && TAB_MAP[o]) setTab(TAB_MAP[o]);
     else if (!o) setTab('accueil');
   }, [searchParams]);
+
+  // Charger les vrais projets depuis l'API
+  useEffect(() => {
+    api.get('/com/projets').then(r => {
+      if (r.data?.projets?.length) {
+        const mapped = r.data.projets.map(p => ({
+          id: p.id,
+          titre: `${p.type}${p.format ? ' · ' + p.format : ''} — ${p.client_nom}`,
+          client: p.client_nom,
+          type: p.type,
+          categorie: p.format || p.type,
+          montant: Number(p.montant_ht) || 0,
+          statut: p.statut === 'brief_recu' ? 'demande' : p.statut,
+          responsable: p.responsable || null,
+          dateDebut: p.created_at?.split('T')[0],
+          dateFin: p.deadline,
+          revisions: 0,
+          fichiers: 0,
+          notes: p.description || '',
+          devisRef: p.devis_ref || null,
+          clientEmail: p.client_email,
+          clientTel: p.client_telephone,
+          dbId: p.id,
+        }));
+        setProjets(mapped);
+      }
+    }).catch(() => {});
+  }, []);
 
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null),3500); };
