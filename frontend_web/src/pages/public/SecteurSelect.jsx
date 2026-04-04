@@ -8,10 +8,10 @@ import HideForClient from '../../components/public/HideForClient';
 const CATEGORIES = [
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
   { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
-  { id: 'eat',        emoji: '🛵', label: 'Freample Eat',        sub: 'Livraison de repas à domicile' },
-  { id: 'course',     emoji: '🚗', label: 'Freample Course',     sub: 'VTC, courses, livraison colis' },
+  { id: 'eat',        emoji: '🛵', label: 'Freample Eat',        sub: 'Livraison de repas à domicile', locked: true },
+  { id: 'course',     emoji: '🚗', label: 'Freample Course',     sub: 'VTC, courses, livraison colis', locked: true },
   { id: 'com',        emoji: '🎬', label: 'Freample Com',        sub: 'Marketing, montage vidéo, design' },
-  { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements' },
+  { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements', locked: true },
   { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
 ];
 
@@ -87,6 +87,31 @@ export default function SecteurSelect() {
   const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef();
   const dropdownRef = useRef();
+
+  // Chantier lock
+  const [lockModal, setLockModal] = useState(null); // locked cat id
+  const [lockEmail, setLockEmail] = useState('');
+  const [lockPwd, setLockPwd] = useState('');
+  const [lockError, setLockError] = useState('');
+  const [unlockedSectors, setUnlockedSectors] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('unlocked_sectors') || '[]'); } catch { return []; }
+  });
+
+  const handleUnlock = () => {
+    if (lockEmail === 'freamplecom@gmail.com' && lockPwd === 'freamplecomazerty19') {
+      const updated = [...new Set([...unlockedSectors, lockModal])];
+      setUnlockedSectors(updated);
+      sessionStorage.setItem('unlocked_sectors', JSON.stringify(updated));
+      setLockError('');
+      setLockEmail('');
+      setLockPwd('');
+      const targetId = lockModal;
+      setLockModal(null);
+      navigate(`/login?from=${targetId}`);
+    } else {
+      setLockError('Identifiants incorrects');
+    }
+  };
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -233,16 +258,22 @@ export default function SecteurSelect() {
       <section style={{ padding:'clamp(32px,5vh,52px) clamp(16px,5vw,48px)', maxWidth:1100, margin:'0 auto' }}>
         <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:'0 0 24px' }}>Explorer par catégorie</h2>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(168px,1fr))', gap:12 }}>
-          {CATEGORIES.map(cat => (
-            <button key={cat.id} onClick={() => navigate(`/${cat.id}`)}
-              style={{ padding:'20px 16px', background:DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font }}
-              onMouseEnter={e=>{ e.currentTarget.style.background=DS.bgSoft; e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background=DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
-              <div style={{ fontSize:26, marginBottom:10 }}>{cat.emoji}</div>
-              <div style={{ fontSize:14, fontWeight:700, color:DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
-              <div style={{ fontSize:11.5, color:DS.muted, lineHeight:1.4 }}>{cat.sub}</div>
-            </button>
-          ))}
+          {CATEGORIES.map(cat => {
+            const isLocked = cat.locked && !unlockedSectors.includes(cat.id);
+            return (
+              <button key={cat.id} onClick={() => isLocked ? setLockModal(cat.id) : navigate(`/${cat.id}`)}
+                style={{ padding:'20px 16px', background: isLocked ? '#F9FAFB' : DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font, position:'relative', overflow:'hidden' }}
+                onMouseEnter={e=>{ e.currentTarget.style.background = isLocked ? '#F3F4F6' : DS.bgSoft; if(!isLocked) { e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; } }}
+                onMouseLeave={e=>{ e.currentTarget.style.background = isLocked ? '#F9FAFB' : DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
+                <div style={{ fontSize:26, marginBottom:10, filter: isLocked ? 'grayscale(1) opacity(0.4)' : 'none' }}>{cat.emoji}</div>
+                <div style={{ fontSize:14, fontWeight:700, color: isLocked ? '#9CA3AF' : DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
+                <div style={{ fontSize:11.5, color:DS.muted, lineHeight:1.4 }}>{isLocked ? 'En cours de développement' : cat.sub}</div>
+                {isLocked && (
+                  <div style={{ position:'absolute', top:10, right:10, width:24, height:24, borderRadius:'50%', background:'#F3F4F6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12 }}>🚧</div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -262,6 +293,45 @@ export default function SecteurSelect() {
           </button>
         </div>
       </section></HideForClient>
+
+      {/* ── Modal déverrouillage ── */}
+      {lockModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}
+          onClick={() => { setLockModal(null); setLockError(''); setLockEmail(''); setLockPwd(''); }}>
+          <div style={{ background:'#fff', borderRadius:20, padding:'32px 28px', maxWidth:400, width:'100%', boxShadow:'0 24px 64px rgba(0,0,0,.2)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign:'center', marginBottom:20 }}>
+              <div style={{ fontSize:48, marginBottom:12 }}>🚧</div>
+              <div style={{ fontSize:20, fontWeight:800, color:DS.ink, marginBottom:4 }}>Accès restreint</div>
+              <div style={{ fontSize:14, color:DS.muted }}>Cette fonctionnalité est en cours de développement. Connectez-vous avec vos identifiants Freample pour accéder à la démo.</div>
+            </div>
+            <div style={{ marginBottom:14 }}>
+              <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Email</label>
+              <input type="email" value={lockEmail} onChange={e => setLockEmail(e.target.value)} placeholder="votre@email.com"
+                style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${DS.border}`, fontSize:15, fontFamily:DS.font, outline:'none', boxSizing:'border-box' }} />
+            </div>
+            <div style={{ marginBottom:14 }}>
+              <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Mot de passe</label>
+              <input type="password" value={lockPwd} onChange={e => setLockPwd(e.target.value)} placeholder="••••••••"
+                onKeyDown={e => { if(e.key === 'Enter') handleUnlock(); }}
+                style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${DS.border}`, fontSize:15, fontFamily:DS.font, outline:'none', boxSizing:'border-box' }} />
+            </div>
+            {lockError && (
+              <div style={{ padding:'10px 14px', background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:10, fontSize:13, color:'#DC2626', marginBottom:14 }}>
+                {lockError}
+              </div>
+            )}
+            <button onClick={handleUnlock}
+              style={{ width:'100%', padding:'13px', background:DS.ink, color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:DS.font, marginBottom:8 }}>
+              Débloquer l'accès
+            </button>
+            <button onClick={() => { setLockModal(null); setLockError(''); }}
+              style={{ width:'100%', padding:'10px', background:'none', color:DS.muted, border:'none', cursor:'pointer', fontFamily:DS.font, fontSize:14 }}>
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
