@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 const V = '#8B5CF6';
 const VBG = '#F5F3FF';
@@ -44,6 +45,29 @@ export default function ComClient() {
   const [chatMsg, setChatMsg] = useState('');
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null),3500); };
+
+  // Charger les vrais projets du client depuis l'API
+  useEffect(() => {
+    if (!user?.email) return;
+    api.get('/com/projets').then(r => {
+      if (r.data?.projets?.length) {
+        // Filtrer par email du client connecté
+        const miens = r.data.projets.filter(p => p.client_email === user.email);
+        if (miens.length) {
+          setProjets(miens.map(p => ({
+            id: p.id, titre: `${p.type}${p.format ? ' · '+p.format : ''}`,
+            responsable: 'Équipe Freample', type: p.type,
+            statut: p.statut === 'brief_recu' ? 'demande' : p.statut === 'devis_envoye' ? 'devis_recu' : p.statut,
+            montant: Number(p.montant_ht) || 0,
+            dateCommande: p.created_at?.split('T')[0],
+            dateLivraison: p.deadline,
+            avancement: p.statut === 'livre' || p.statut === 'paye' ? 100 : p.statut === 'en_cours' ? 50 : 0,
+            devis: p.devis_ref, fichiers:[], messages:[],
+          })));
+        }
+      }
+    }).catch(() => {});
+  }, [user]);
 
   const actifs = projets.filter(p=>!['valide'].includes(p.statut));
   const termines = projets.filter(p=>p.statut==='valide');

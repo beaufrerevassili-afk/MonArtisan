@@ -144,6 +144,7 @@ export default function DashboardCom() {
   const [modalNewProjet, setModalNewProjet] = useState(false);
   const [modalVirement, setModalVirement] = useState(false);
   const [projetFilter, setProjetFilter] = useState('tous');
+  const [mesTaches, setMesTaches] = useState(false); // filtre "Mes tâches"
   const [paiementFilter, setPaiementFilter] = useState('tous');
   const [clientSearch, setClientSearch] = useState('');
 
@@ -167,8 +168,48 @@ export default function DashboardCom() {
   const revenuMois = projets.reduce((s,p) => s+p.montant, 0);
   const maxRev = Math.max(...REVENUS_7J.map(r => r.montant), 1);
 
-  const filteredProjets = projetFilter === 'tous' ? projets : projets.filter(p => p.statut === projetFilter);
+  let filteredProjets = projetFilter === 'tous' ? projets : projets.filter(p => p.statut === projetFilter);
+  if (mesTaches) filteredProjets = filteredProjets.filter(p => p.responsable); // only assigned
   const filteredClients = clients.filter(c => c.nom.toLowerCase().includes(clientSearch.toLowerCase()));
+
+  // Calcul avancement auto : fichiers livrés / quantité totale
+  const getAvancement = (p) => {
+    const qte = Number(p.quantite) || 1;
+    const fait = Number(p.fichiersFaits) || 0;
+    if (p.statut === 'livre' || p.statut === 'paye') return 100;
+    if (p.statut === 'demande' || p.statut === 'devis_envoye') return 0;
+    if (fait >= qte) return 100;
+    return Math.round((fait / qte) * 100);
+  };
+
+  // Deadline urgence
+  const getUrgence = (p) => {
+    if (!p.dateFin) return null;
+    const diff = Math.ceil((new Date(p.dateFin) - new Date()) / (1000*60*60*24));
+    if (diff < 0) return 'retard';
+    if (diff <= 2) return 'urgent';
+    if (diff <= 5) return 'bientot';
+    return null;
+  };
+
+  // Incrémenter fichiers faits
+  const incrementFichier = async (projetId) => {
+    setProjets(prev => prev.map(p => {
+      if (p.id !== projetId) return p;
+      const fait = (Number(p.fichiersFaits) || 0) + 1;
+      const qte = Number(p.quantite) || 1;
+      return { ...p, fichiersFaits: fait, statut: fait >= qte ? 'livre' : p.statut };
+    }));
+    // Sync avec l'API
+    const p = projets.find(pr => pr.id === projetId);
+    if (p?.dbId) {
+      const fait = (Number(p.fichiersFaits) || 0) + 1;
+      const qte = Number(p.quantite) || 1;
+      if (fait >= qte) {
+        try { await api.put(`/com/projets/${p.dbId}/statut`, { statut:'livre' }); } catch(e) {}
+      }
+    }
+  };
 
   const filteredPaiements = paiementFilter === 'tous' ? paiements : paiements.filter(p => p.statut === paiementFilter);
   const paiementsBloques = paiements.filter(p => p.statut === 'bloque').reduce((s,p) => s+p.montant, 0);
@@ -368,22 +409,52 @@ export default function DashboardCom() {
       {tab === 'accueil' && (<div>
         <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
           <KpiCard label="Projets en cours" value={projetsEnCours} accent={V} />
+          <KpiCard label="Briefs à traiter" value={projets.filter(p=>p.statut==='demande').length} accent="#D97706" sub={projets.filter(p=>p.statut==='demande').length>0?'⚡ À répondre':'Aucun'} />
           <KpiCard label="CA livré" value={`${caTotal}€`} accent="#059669" />
           <KpiCard label="Revenu potentiel" value={`${revenuMois}€`} accent="#3B82F6" />
-          <KpiCard label="Clients actifs" value={clients.length} accent="#EC4899" />
         </div>
+
+        {/* Filtre Mes tâches */}
+        <div style={{ display:'flex', gap:8, marginBottom:16 }}>
+          <button onClick={()=>setMesTaches(false)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight:!mesTaches?700:500, background:!mesTaches?V:'#F3F3F3', color:!mesTaches?'#fff':'#666', fontFamily:'inherit', fontSize:'0.825rem' }}>Tous les projets</button>
+          <button onClick={()=>setMesTaches(true)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight:mesTaches?700:500, background:mesTaches?V:'#F3F3F3', color:mesTaches?'#fff':'#666', fontFamily:'inherit', fontSize:'0.825rem' }}>Assignés uniquement</button>
+        </div>
+
         <div style={CARD}>
           <div style={HDR}>Projets actifs</div>
-          {projets.filter(p => !['livre','paye'].includes(p.statut)).map(p => (
-            <div key={p.id} onClick={() => setModalProjet(p)} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background:'#FAFAFA', borderRadius:10, marginBottom:8, cursor:'pointer', border:'1px solid #F0F0F0' }}>
-              <div style={{ width:40, height:40, borderRadius:10, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎬</div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.type} · {p.responsable || 'À assigner'} · {p.montant}€</div>
+          {projets.filter(p => !['livre','paye','refuse'].includes(p.statut)).filter(p => !mesTaches || p.responsable).length === 0 && (
+            <div style={{ padding:24, textAlign:'center', color:'#8B8B8B', fontSize:14 }}>Aucun projet en cours — les briefs apparaîtront ici</div>
+          )}
+          {projets.filter(p => !['livre','paye','refuse'].includes(p.statut)).filter(p => !mesTaches || p.responsable).map(p => {
+            const avancement = getAvancement(p);
+            const urgence = getUrgence(p);
+            return (
+              <div key={p.id} onClick={() => setModalProjet(p)} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background: urgence==='retard'?'#FEF2F2':urgence==='urgent'?'#FFFBEB':'#FAFAFA', borderRadius:10, marginBottom:8, cursor:'pointer', border:`1px solid ${urgence==='retard'?'#FECACA':urgence==='urgent'?'#FDE68A':'#F0F0F0'}` }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎬</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontWeight:700, fontSize:14, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.titre}</div>
+                  <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.responsable || '⚠️ À assigner'} · {p.montant?p.montant+'€':'À définir'}</div>
+                  {/* Barre avancement */}
+                  {['en_cours','revision'].includes(p.statut) && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
+                      <div style={{ flex:1, background:'#F0F0F0', borderRadius:3, height:4 }}>
+                        <div style={{ background:V, borderRadius:3, height:4, width:`${avancement}%`, transition:'width .3s' }} />
+                      </div>
+                      <span style={{ fontSize:11, fontWeight:700, color:V }}>{avancement}%</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4, flexShrink:0 }}>
+                  <StatusBadge statut={p.statut} />
+                  {p.dateFin && (
+                    <span style={{ fontSize:11, fontWeight:600, color: urgence==='retard'?'#DC2626':urgence==='urgent'?'#D97706':'#8B8B8B' }}>
+                      {urgence==='retard'?'⚠️ En retard':urgence==='urgent'?'🔥 J-'+Math.ceil((new Date(p.dateFin)-new Date())/(1000*60*60*24)):'📅 '+p.dateFin}
+                    </span>
+                  )}
+                </div>
               </div>
-              <StatusBadge statut={p.statut} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>)}
 
@@ -394,21 +465,35 @@ export default function DashboardCom() {
             <button key={v} onClick={() => setProjetFilter(v)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight: projetFilter===v ? 700 : 500, background: projetFilter===v ? V : '#F3F3F3', color: projetFilter===v ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.825rem' }}>{l}</button>
           ))}
         </div>
-        {filteredProjets.map(p => (
-          <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:10, cursor:'pointer', padding:'16px 20px' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
-              <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
-              <StatusBadge statut={p.statut} />
+        {filteredProjets.length === 0 && <div style={{ ...CARD, padding:32, textAlign:'center', color:'#8B8B8B' }}>Aucun projet</div>}
+        {filteredProjets.map(p => {
+          const avancement = getAvancement(p);
+          const urgence = getUrgence(p);
+          const qte = Number(p.quantite)||1;
+          const fait = Number(p.fichiersFaits)||0;
+          return (
+            <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:10, cursor:'pointer', padding:'16px 20px', borderColor:urgence==='retard'?'#FECACA':urgence==='urgent'?'#FDE68A':undefined }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
+                <div style={{ fontWeight:700, fontSize:15, flex:1 }}>{p.titre}</div>
+                <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
+                  {urgence && <span style={{ fontSize:11, fontWeight:700, color:urgence==='retard'?'#DC2626':'#D97706' }}>{urgence==='retard'?'⚠️ Retard':'🔥 Urgent'}</span>}
+                  <StatusBadge statut={p.statut} />
+                </div>
+              </div>
+              <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:6 }}>{p.client} · 👤 {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
+              {/* Avancement */}
+              {['en_cours','revision'].includes(p.statut) && (
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
+                  <div style={{ flex:1, background:'#F0F0F0', borderRadius:3, height:5 }}>
+                    <div style={{ background:V, borderRadius:3, height:5, width:`${avancement}%` }} />
+                  </div>
+                  <span style={{ fontSize:12, fontWeight:700, color:V, minWidth:60, textAlign:'right' }}>{fait}/{qte} · {avancement}%</span>
+                </div>
+              )}
+              <div style={{ fontWeight:800, color:V, fontSize:16 }}>{p.montant?p.montant+'€':'À définir'}</div>
             </div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:6 }}>{p.type} · {p.categorie} · {p.client}</div>
-            <div style={{ display:'flex', gap:16, fontSize:12, color:'#8B8B8B' }}>
-              <span>👤 {p.responsable || 'À assigner'}</span>
-              <span>📁 {p.fichiers} fichier{p.fichiers>1?'s':''}</span>
-              <span>🔄 {p.revisions} révision{p.revisions>1?'s':''}</span>
-            </div>
-            <div style={{ fontWeight:800, color:V, fontSize:16, marginTop:8 }}>{p.montant}€</div>
-          </div>
-        ))}
+          );
+        })}
       </div>)}
 
       {/* TAB: Devis */}
@@ -710,7 +795,34 @@ export default function DashboardCom() {
               </div>
             )}
 
-            {/* IMPROVEMENT 2: Fichiers livrés */}
+            {/* Avancement : compteur fichiers */}
+            {['en_cours','revision'].includes(modalProjet.statut) && (() => {
+              const qte = Number(modalProjet.quantite)||1;
+              const fait = Number(projets.find(p=>p.id===modalProjet.id)?.fichiersFaits)||0;
+              const pct = Math.round((fait/qte)*100);
+              return (
+                <div style={{ ...CARD, background:V_SOFT, marginBottom:16, padding:'16px 20px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:'#5B21B6' }}>Avancement</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:V }}>{fait}/{qte} · {pct}%</div>
+                  </div>
+                  <div style={{ background:'rgba(255,255,255,0.5)', borderRadius:4, height:8, marginBottom:12 }}>
+                    <div style={{ background:V, borderRadius:4, height:8, width:`${pct}%`, transition:'width .3s' }} />
+                  </div>
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <button onClick={(e) => { e.stopPropagation(); incrementFichier(modalProjet.id); showToast(`${fait+1}/${qte} terminé${fait+1>1?'s':''}`); }}
+                      style={{ ...BTN, padding:'10px 18px', fontSize:13, display:'flex', alignItems:'center', gap:6 }}>
+                      ✅ +1 fichier terminé
+                    </button>
+                    <span style={{ fontSize:12, color:'#8B8B8B' }}>
+                      {fait >= qte ? '🎉 Tout est fait ! Prêt à livrer.' : `${qte - fait} restant${qte-fait>1?'s':''}`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Fichiers livrés */}
             {['en_cours','revision','livre','paye'].includes(modalProjet.statut) && (
               <div style={{ marginBottom:16 }}>
                 <div style={HDR}>📁 Fichiers livrés</div>
