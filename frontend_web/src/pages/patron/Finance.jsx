@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp, IconClock, IconUser } from '../../components/ui/Icons';
+import Facturation from './Facturation';
+import URSSAF from './URSSAF';
 
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
 
 const TABS = [
   { id: 'tableau-de-bord', label: "Vue d'ensemble" },
   { id: 'tresorerie',      label: 'Trésorerie'      },
+  { id: 'facturation',     label: 'Facturation'     },
+  { id: 'urssaf',          label: 'URSSAF'          },
   { id: 'salaires',        label: 'Salaires'        },
   { id: 'bareme-paiement', label: 'Barème paiement' },
 ];
@@ -89,9 +93,19 @@ const DEMO_SALARIES = {
   resume: { totalBrut: 10_450, totalNet: 8_360, totalChargesPatronales: 4_390 },
 };
 
+const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement' };
+
 export default function Finance() {
   const navigate = useNavigate();
-  const [tab, setTab]         = useState('tableau-de-bord');
+  const [searchParams] = useSearchParams();
+  const onglet = searchParams.get('onglet');
+  const [tab, setTab] = useState(FINANCE_TAB_MAP[onglet] || 'tableau-de-bord');
+
+  useEffect(() => {
+    const o = searchParams.get('onglet');
+    if (o && FINANCE_TAB_MAP[o]) setTab(FINANCE_TAB_MAP[o]);
+    else if (!o) setTab('tableau-de-bord');
+  }, [searchParams]);
   const [data, setData]       = useState(null);
   const [devis, setDevis]     = useState([]);
   const [factures, setFac]    = useState([]);
@@ -329,6 +343,12 @@ export default function Finance() {
 
           {/* Trésorerie */}
           {tab === 'tresorerie' && <TrésorerieView />}
+
+          {/* Facturation (composant importé) */}
+          {tab === 'facturation' && <Facturation />}
+
+          {/* URSSAF (composant importé) */}
+          {tab === 'urssaf' && <URSSAF />}
 
           {/* Salaires */}
           {tab === 'salaires' && <SalairesView />}

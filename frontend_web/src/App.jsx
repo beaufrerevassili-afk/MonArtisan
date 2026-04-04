@@ -146,13 +146,13 @@ function AppRoutes() {
               <Route path="finance"   element={<Finance />} />
               <Route path="rh"        element={<RH />} />
               <Route path="qse"       element={<QSE />} />
-              <Route path="urssaf"    element={<URSSAF />} />
+              <Route path="urssaf"    element={<Navigate to="/patron/finance?onglet=urssaf" replace />} />
               <Route path="devis-pro"  element={<DevisPro />} />
               <Route path="documents" element={<BanqueDocuments />} />
               <Route path="stock"     element={<Stock />} />
               <Route path="gestion-logiciel" element={<GestionLogiciel />} />
               <Route path="clients-rfm"      element={<ClientsRFM />} />
-              <Route path="facturation"      element={<Facturation />} />
+              <Route path="facturation"      element={<Navigate to="/patron/finance?onglet=facturation" replace />} />
               <Route path="agenda"           element={<Agenda />} />
               <Route path="rappel-juridique" element={<RappelJuridique />} />
               <Route path="reputation"       element={<Reputation />} />

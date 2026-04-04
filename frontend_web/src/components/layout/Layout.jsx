@@ -114,16 +114,18 @@ const PATRON_GROUPS = [
       { label: 'Missions & Chantiers', path: '/patron/missions', Icon: IconBuilding },
       { label: 'Agenda',          path: '/patron/agenda',    Icon: IconCalendar },
       { label: 'Devis Pro',       path: '/patron/devis-pro', Icon: IconDocument },
-      { label: 'Facturation',     path: '/patron/facturation', Icon: IconCreditCard },
     ],
   },
   {
     id: 'finances',
     label: 'Finances',
     items: [
-      { label: 'Finance',  path: '/patron/finance', Icon: IconFinance },
-      { label: 'URSSAF',   path: '/patron/urssaf',  Icon: IconBank },
-      { label: 'Stock',    path: '/patron/stock',   Icon: IconBox },
+      { label: 'Vue d\'ensemble', path: '/patron/finance',                    Icon: IconFinance    },
+      { label: 'Trésorerie',      path: '/patron/finance?onglet=tresorerie',  Icon: IconFinance    },
+      { label: 'Facturation',     path: '/patron/finance?onglet=facturation', Icon: IconCreditCard },
+      { label: 'URSSAF',          path: '/patron/finance?onglet=urssaf',      Icon: IconBank       },
+      { label: 'Salaires',        path: '/patron/finance?onglet=salaires',    Icon: IconBank       },
+      { label: 'Stock',           path: '/patron/stock',                      Icon: IconBox        },
     ],
   },
   {
