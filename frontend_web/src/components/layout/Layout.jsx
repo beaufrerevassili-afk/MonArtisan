@@ -95,13 +95,15 @@ const MENUS = {
     { label: 'Administration',  path: '/fondateur/dashboard', Icon: IconSettings },
   ],
   artisan: [
-    { label: 'Tableau de bord', path: '/artisan/dashboard',                    Icon: IconHome     },
-    { label: 'Mes missions',    path: '/artisan/dashboard?tab=missions',       Icon: IconMissions },
-    { label: 'Planning',        path: '/artisan/dashboard?tab=planning',       Icon: IconCalendar },
-    { label: 'Notes de frais',  path: '/artisan/dashboard?tab=frais',          Icon: IconDocument },
-    { label: 'Congés',          path: '/artisan/dashboard?tab=conges',         Icon: IconShield   },
-    { label: 'Messagerie',      path: '/artisan/dashboard?tab=messagerie',     Icon: IconMessage  },
-    { label: 'Mon profil',      path: '/artisan/dashboard?tab=profil',         Icon: IconUser     },
+    { label: 'Tableau de bord', path: '/artisan/dashboard',                    Icon: IconHome       },
+    { label: 'Mes missions',    path: '/artisan/dashboard?tab=missions',       Icon: IconMissions   },
+    { label: 'Planning',        path: '/artisan/dashboard?tab=planning',       Icon: IconCalendar   },
+    { label: 'Notes de frais',  path: '/artisan/dashboard?tab=frais',          Icon: IconDocument   },
+    { label: 'Frais chantier',  path: '/artisan/dashboard?tab=chantier',       Icon: IconBuilding   },
+    { label: 'Fiches de paie',  path: '/artisan/dashboard?tab=paie',           Icon: IconCreditCard },
+    { label: 'Congés',          path: '/artisan/dashboard?tab=conges',         Icon: IconShield     },
+    { label: 'Messagerie',      path: '/artisan/dashboard?tab=messagerie',     Icon: IconMessage    },
+    { label: 'Mon profil',      path: '/artisan/dashboard?tab=profil',         Icon: IconUser       },
   ],
 };
 

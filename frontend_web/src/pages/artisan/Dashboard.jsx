@@ -461,7 +461,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!fichier) { alert('Veuillez joindre le justificatif (photo ou PDF)'); return; }
+    // Justificatif optionnel
     setSaving(true);
     try {
       const r = await fetch(`${API}/rh/notes-frais`, {
@@ -499,7 +499,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
             {!fichier ? (
               <>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>Prendre en photo ou importer le justificatif</div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Justificatif <span style={{ fontWeight: 400, color: '#8E8E93' }}>(optionnel)</span></div>
                 <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 4 }}>Photo ou PDF — le logiciel scannera automatiquement les informations</div>
               </>
             ) : scanning ? (
@@ -821,7 +821,7 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                   <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Ex : Sacs de ciment × 20, location nacelle 1 journée…" style={inp} required />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={lbl}>Justificatif (facture, bon de livraison)</label>
+                  <label style={lbl}>Justificatif <span style={{ fontWeight: 400, color: '#8E8E93' }}>(optionnel)</span></label>
                   <div onClick={() => fileRef.current.click()} style={{ border: `2px dashed ${fichier ? '#34C759' : '#E5E5EA'}`, borderRadius: 10, padding: '12px 16px', cursor: 'pointer', background: fichier ? '#D1F2E020' : '#FAFAFA', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <input ref={fileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => setFichier(e.target.files[0])} />
                     <span style={{ fontSize: 20 }}>{fichier ? '✅' : '📎'}</span>
