@@ -57,16 +57,8 @@ const REVENUS_7J = [
 
 const PAIEMENTS_INIT = [];
 
-const DEMO_FILES = [
-  { nom:'montage_v1.mp4', taille:'48 Mo', date:'2026-04-03' },
-  { nom:'montage_v2_final.mp4', taille:'52 Mo', date:'2026-04-05' },
-];
-
-const DEMO_MESSAGES = [
-  { from:'Sarah K.', msg:'Brief reçu, je commence lundi !', time:'Lun 10:00', isMe:true },
-  { from:'Emma Lifestyle', msg:'Super ! Hâte de voir le résultat 😍', time:'Lun 10:15', isMe:false },
-  { from:'Sarah K.', msg:'Premier rendu envoyé, dis-moi ce que tu en penses', time:'Mar 16:00', isMe:true },
-];
+const DEMO_FILES = [];
+const DEMO_MESSAGES = [];
 
 function KpiCard({ label, value, sub, accent }) {
   return (

@@ -28,24 +28,13 @@ const STATUS = {
   livre:    { label:'Livré',     bg:'#D1FAE5', border:'#86EFAC', color:'#065F46' },
 };
 
-const PROJETS = [
-  { id:1, titre:'Pack 10 TikToks — @emma.lifestyle', client:'Emma Lifestyle', type:'TikTok', fichiers:10, revisions:1, deadline:'2026-04-08', montant:220, statut:'en_cours', notes:'Style dynamique, sous-titres colorés, musiques tendance' },
-  { id:2, titre:'Vidéo YouTube — Salon Léa', client:'Salon Léa', type:'YouTube', fichiers:1, revisions:2, deadline:'2026-04-06', montant:130, statut:'revision', notes:'Présentation salon, ambiance chaleureuse. Client veut revoir l\'intro.' },
-  { id:3, titre:'5 Reels Instagram — @alex.fitness', client:'Alex Fitness', type:'Reels', fichiers:5, revisions:0, deadline:'2026-04-10', montant:130, statut:'a_faire', notes:'Montage sportif, transitions rapides, texte motivationnel' },
-  { id:4, titre:'Clip promo — Big Smoke', client:'Big Smoke Burgers', type:'Clip', fichiers:1, revisions:1, deadline:'2026-04-05', montant:200, statut:'livre', notes:'30s promo pour Instagram et TikTok, style food-porn' },
-  { id:5, titre:'Stories quotidiennes — La Trattoria', client:'La Trattoria', type:'Stories', fichiers:7, revisions:0, deadline:'2026-04-07', montant:80, statut:'en_cours', notes:'Stories plats du jour, ambiance italienne' },
-];
+const PROJETS = [];
 
-const AVIS = [
-  { client:'Emma Lifestyle', note:5, commentaire:'Montages incroyables, exactement le style que je voulais !', date:'2026-04-03' },
-  { client:'Big Smoke Burgers', note:5, commentaire:'Le clip promo est parfait, on adore le rendu.', date:'2026-04-02' },
-  { client:'Alex Fitness', note:4, commentaire:'Bon travail, j\'attends la suite avec impatience.', date:'2026-03-28' },
-  { client:'La Trattoria', note:5, commentaire:'Les stories sont magnifiques, merci !', date:'2026-03-25' },
-];
+const AVIS = [];
 
 const GAINS_SEMAINE = [
-  { jour:'Lun', montant:130 },{ jour:'Mar', montant:200 },{ jour:'Mer', montant:80 },
-  { jour:'Jeu', montant:220 },{ jour:'Ven', montant:0 },{ jour:'Sam', montant:0 },
+  { jour:'Lun', montant:0 },{ jour:'Mar', montant:0 },{ jour:'Mer', montant:0 },
+  { jour:'Jeu', montant:0 },{ jour:'Ven', montant:0 },{ jour:'Sam', montant:0 },
   { jour:'Dim', montant:0 },
 ];
 

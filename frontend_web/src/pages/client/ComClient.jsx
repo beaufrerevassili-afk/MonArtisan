@@ -24,52 +24,8 @@ const STATUS = {
   retouche:     { label:'Retouches demandées', bg:'#FEE2E2', border:'#FCA5A5', color:'#DC2626' },
 };
 
-const MES_PROJETS = [
-  {
-    id:1, titre:'Pack 10 TikToks', responsable:'Équipe Freample', type:'Montage vidéo', statut:'livre',
-    montant:349, dateCommande:'2026-04-01', dateLivraison:'2026-04-05',
-    avancement:100, devis:'DC-2026-018',
-    fichiers:[
-      { id:1, nom:'tiktok_01_final.mp4', taille:'12 Mo', date:'2026-04-05', valide:null },
-      { id:2, nom:'tiktok_02_final.mp4', taille:'14 Mo', date:'2026-04-05', valide:null },
-      { id:3, nom:'tiktok_03_final.mp4', taille:'11 Mo', date:'2026-04-05', valide:null },
-      { id:4, nom:'tiktok_04_final.mp4', taille:'13 Mo', date:'2026-04-05', valide:null },
-      { id:5, nom:'tiktok_05_final.mp4', taille:'15 Mo', date:'2026-04-05', valide:null },
-    ],
-    messages:[
-      { from:'Freample Com', msg:'Salut ! J\'ai bien reçu ton brief. Je commence lundi.', time:'01/04 10:00', isMe:false },
-      { from:'Vous', msg:'Super ! Hâte de voir le résultat 😍', time:'01/04 10:15', isMe:true },
-      { from:'Freample Com', msg:'Les 5 premiers TikToks sont prêts ! Je t\'envoie ça.', time:'05/04 16:00', isMe:false },
-    ],
-  },
-  {
-    id:2, titre:'Gestion Instagram', responsable:'Équipe Freample', type:'Réseaux sociaux', statut:'en_cours',
-    montant:699, dateCommande:'2026-04-01', dateLivraison:'2026-04-30',
-    avancement:40, devis:'DC-2026-015',
-    fichiers:[],
-    messages:[
-      { from:'Freample Com', msg:'Planning éditorial validé, je commence les posts !', time:'02/04 09:00', isMe:false },
-      { from:'Vous', msg:'Parfait, j\'ai hâte de voir les premiers visuels', time:'02/04 09:30', isMe:true },
-    ],
-  },
-  {
-    id:3, titre:'5 Reels Instagram', responsable:null, type:'Montage vidéo', statut:'demande',
-    montant:199, dateCommande:'2026-04-04', dateLivraison:null,
-    avancement:0, devis:null,
-    fichiers:[],
-    messages:[],
-  },
-  {
-    id:4, titre:'Logo + Charte graphique', responsable:'Équipe Freample', type:'Design', statut:'valide',
-    montant:249, dateCommande:'2026-03-20', dateLivraison:'2026-04-02',
-    avancement:100, devis:'DC-2026-014',
-    fichiers:[
-      { id:1, nom:'logo_final.svg', taille:'0.8 Mo', date:'2026-04-02', valide:true },
-      { id:2, nom:'charte_graphique.pdf', taille:'4.2 Mo', date:'2026-04-02', valide:true },
-    ],
-    messages:[],
-  },
-];
+// Projets chargés depuis l'API — vide au départ
+const MES_PROJETS = [];
 
 function Badge({ statut }) {
   const s = STATUS[statut]; if(!s) return null;
