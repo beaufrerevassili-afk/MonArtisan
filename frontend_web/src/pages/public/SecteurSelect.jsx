@@ -257,12 +257,6 @@ export default function SecteurSelect() {
             onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
             Créer mon espace pro →
           </button>
-          <button onClick={() => navigate('/recrutement')}
-            style={{ padding:'12px 24px', background:'none', border:`1px solid ${DS.border}`, borderRadius:DS.r.full, fontSize:13, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'all .15s', whiteSpace:'nowrap' }}
-            onMouseEnter={e=>{ e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.color=DS.ink; }}
-            onMouseLeave={e=>{ e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.color=DS.muted; }}>
-            Consulter les offres d'emploi
-          </button>
         </div>
       </section>
     </div>
