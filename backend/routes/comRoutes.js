@@ -5,26 +5,24 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// ── Email config ──
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.COM_EMAIL || 'freamplecom@gmail.com',
-    pass: process.env.COM_EMAIL_PASSWORD || 'pszk uqqw osrk htyu',
-  },
-});
+// ── Email config (Resend) ──
+const resend = new Resend(process.env.RESEND_API_KEY || 're_MXvfZKdv_344N1BptPeCwJbX5UWqLcsGr');
 
 async function sendEmail(to, subject, html) {
   try {
-    await transporter.sendMail({
-      from: `"Freample Com" <${process.env.COM_EMAIL || 'freamplecom@gmail.com'}>`,
-      to,
+    const { data, error } = await resend.emails.send({
+      from: 'Freample Com <onboarding@resend.dev>',
+      to: [to],
       subject,
       html,
     });
-    console.log(`✉️ Email envoyé à ${to}: ${subject}`);
+    if (error) {
+      console.error('❌ Resend error:', error);
+      return false;
+    }
+    console.log(`✉️ Email envoyé à ${to}: ${subject} (id: ${data?.id})`);
     return true;
   } catch (err) {
     console.error('❌ Email error:', err.message);
