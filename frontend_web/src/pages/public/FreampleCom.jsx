@@ -12,6 +12,9 @@ const C = {
   font: "Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif",
 };
 
+// Tarifs lus depuis la source partagée (modifiables par le patron)
+const TARIFS_RAW = getTarifs();
+
 function getMinPrix(catName) {
   const cat = TARIFS_RAW.find(t => t.cat.toLowerCase().includes(catName.toLowerCase()));
   if (!cat || !cat.items.length) return '—';
@@ -24,9 +27,6 @@ const SERVICES = [
   { icon:'🎨', title:'Design Graphique', desc:'Logos, visuels, identité', price:`À partir de ${getMinPrix('Design')}€`, color:'linear-gradient(135deg,#10B981,#3B82F6)', features:['Logo & charte graphique','Visuels réseaux sociaux','Flyers & cartes de visite','Bannières web'] },
   { icon:'📈', title:'Publicité en ligne', desc:'Meta Ads, Google Ads, TikTok Ads', price:`À partir de ${getMinPrix('Publicité')}€/mois`, color:'linear-gradient(135deg,#F59E0B,#EC4899)', features:['Création de campagnes','Ciblage audience','A/B testing','Reporting ROI'] },
 ];
-
-// Tarifs lus depuis la source partagée (modifiables par le patron)
-const TARIFS_RAW = getTarifs();
 
 const TEMOIGNAGES = [
   { nom:'@emma.lifestyle', type:'Influenceuse', avatar:'EL', text:'Freample Com a transformé mon contenu TikTok. Les montages sont top et livrés en 48h !', note:5 },

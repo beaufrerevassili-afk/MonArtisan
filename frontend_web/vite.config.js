@@ -3,10 +3,6 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  build: {
-    minify: false,
-    sourcemap: true,
-  },
   server: {
     port: 3001,
     proxy: {
