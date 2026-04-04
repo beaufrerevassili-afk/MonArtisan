@@ -159,10 +159,12 @@ export default function SecteurSelect() {
         transition: 'opacity .55s ease, transform .55s ease',
       }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', background:DS.goldLight, border:`1px solid #EDE8D4`, borderRadius:DS.r.full, fontSize:12, color:DS.goldDark, fontWeight:600, letterSpacing:0.3, marginBottom:24 }}>
-            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.gold }} />
-            Plateforme de réservation & gestion pour pros
-          </div>
+          <HideForClient>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', background:DS.goldLight, border:`1px solid #EDE8D4`, borderRadius:DS.r.full, fontSize:12, color:DS.goldDark, fontWeight:600, letterSpacing:0.3, marginBottom:24 }}>
+              <span style={{ width:5, height:5, borderRadius:'50%', background:DS.gold }} />
+              Plateforme de réservation & gestion pour pros
+            </div>
+          </HideForClient>
 
           <h1 style={{ fontSize:'clamp(2rem,5.5vw,3.25rem)', fontWeight:900, letterSpacing:'-0.055em', lineHeight:1.08, margin:'0 0 18px', color:DS.ink }}>
             Trouvez et réservez les<br/>meilleurs professionnels
