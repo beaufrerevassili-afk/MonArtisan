@@ -214,7 +214,7 @@ export default function FreampleCom() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          MODAL BRIEF — Overlay plein écran, Fiverr-style
+          MODAL DEMANDE — Overlay plein écran, Fiverr-style
          ══════════════════════════════════════════════════════════ */}
       {step > 0 && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}
@@ -224,7 +224,7 @@ export default function FreampleCom() {
 
             {/* Header */}
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-              <div style={{ fontSize:18, fontWeight:800, color:C.text }}>{step===3?'Brief envoyé !':`Étape ${step}/2`}</div>
+              <div style={{ fontSize:18, fontWeight:800, color:C.text }}>{step===3?'Demande envoyée !':`Étape ${step}/2`}</div>
               <button onClick={()=>setStep(0)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:C.textLight }}>✕</button>
             </div>
 
@@ -352,7 +352,7 @@ export default function FreampleCom() {
             {/* ── Step 3: Confirmé ── */}
             {step === 3 && (<div style={{ textAlign:'center', padding:'16px 0' }}>
               <div style={{ width:56, height:56, borderRadius:'50%', background:'#D1FAE5', margin:'0 auto 14px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24 }}>✓</div>
-              <div style={{ fontSize:18, fontWeight:800, marginBottom:4 }}>Brief envoyé !</div>
+              <div style={{ fontSize:18, fontWeight:800, marginBottom:4 }}>Demande envoyée !</div>
               <div style={{ fontSize:14, color:C.textSec, marginBottom:20 }}>On vous répond sous 24h à <strong>{brief.email}</strong></div>
               <button onClick={()=>setStep(0)} style={{ padding:'12px 28px', background:C.primary, color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>Fermer</button>
             </div>)}

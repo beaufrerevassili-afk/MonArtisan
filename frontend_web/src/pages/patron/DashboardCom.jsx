@@ -287,7 +287,7 @@ export default function DashboardCom() {
     const dbId = projet.dbId || projet.id;
     try { await api.put(`/com/projets/${dbId}/statut`, { statut:'refuse' }); } catch(e) {}
     setProjets(prev => prev.filter(p => p.id !== projet.id));
-    showToast('Brief refusé — email envoyé au client');
+    showToast('Demande refusée — email envoyé au client');
     setModalProjet(null);
   };
 
@@ -451,12 +451,12 @@ export default function DashboardCom() {
 
       {/* ═══ VUE MONTEUR : ACCUEIL = TO-DO LIST ═══ */}
       {vue === 'monteur' && tab === 'accueil' && (<div>
-        {/* Briefs à traiter */}
+        {/* Demandes à traiter */}
         {projets.filter(p => p.statut === 'demande').length > 0 && (
           <div style={{ marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
               <span style={{ width:10, height:10, borderRadius:'50%', background:'#D97706', animation:'pulse 2s infinite' }} />
-              <span style={{ fontSize:15, fontWeight:800, color:'#D97706' }}>Briefs à traiter ({projets.filter(p=>p.statut==='demande').length})</span>
+              <span style={{ fontSize:15, fontWeight:800, color:'#D97706' }}>Demandes à traiter ({projets.filter(p=>p.statut==='demande').length})</span>
             </div>
             {projets.filter(p => p.statut === 'demande').map(p => (
               <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:8, cursor:'pointer', padding:'16px 20px', border:'2px solid #FDE68A', background:'#FFFBEB' }}>
@@ -559,7 +559,7 @@ export default function DashboardCom() {
           <div style={{ ...CARD, padding:40, textAlign:'center' }}>
             <div style={{ fontSize:48, marginBottom:12 }}>☕</div>
             <div style={{ fontSize:18, fontWeight:700, color:'#1C1C1E', marginBottom:6 }}>Rien à faire pour le moment</div>
-            <div style={{ fontSize:14, color:'#8B8B8B' }}>Les nouveaux briefs apparaîtront ici automatiquement</div>
+            <div style={{ fontSize:14, color:'#8B8B8B' }}>Les nouvelles demandes apparaîtront ici automatiquement</div>
           </div>
         )}
 
@@ -570,7 +570,7 @@ export default function DashboardCom() {
       {vue === 'gestion' && tab === 'accueil' && (<div>
         <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
           <KpiCard label="Projets en cours" value={projetsEnCours} accent={V} />
-          <KpiCard label="Briefs à traiter" value={projets.filter(p=>p.statut==='demande').length} accent="#D97706" sub={projets.filter(p=>p.statut==='demande').length>0?'⚡ À répondre':'Aucun'} />
+          <KpiCard label="Demandes à traiter" value={projets.filter(p=>p.statut==='demande').length} accent="#D97706" sub={projets.filter(p=>p.statut==='demande').length>0?'⚡ À répondre':'Aucun'} />
           <KpiCard label="CA livré" value={`${caTotal}€`} accent="#059669" />
           <KpiCard label="Revenu potentiel" value={`${revenuMois}€`} accent="#3B82F6" />
         </div>
@@ -584,7 +584,7 @@ export default function DashboardCom() {
         <div style={CARD}>
           <div style={HDR}>Projets actifs</div>
           {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).length === 0 && (
-            <div style={{ padding:24, textAlign:'center', color:'#8B8B8B', fontSize:14 }}>Aucun projet en cours — les briefs apparaîtront ici</div>
+            <div style={{ padding:24, textAlign:'center', color:'#8B8B8B', fontSize:14 }}>Aucun projet en cours — les demandes apparaîtront ici</div>
           )}
           {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).map(p => {
             const avancement = getAvancement(p);
@@ -967,7 +967,7 @@ export default function DashboardCom() {
                 </div>
               ))}
             </div>
-            {/* Brief détaillé */}
+            {/* Détails de la demande */}
             {(modalProjet.notes || modalProjet.style || modalProjet.reference || modalProjet.options?.length > 0) && (
               <div style={{ padding:'14px 16px', background:V_SOFT, borderRadius:10, marginBottom:16, fontSize:13, color:'#5B21B6' }}>
                 {modalProjet.style && <div style={{ marginBottom:4 }}><strong>Style :</strong> {modalProjet.style}</div>}
@@ -1065,7 +1065,7 @@ export default function DashboardCom() {
               {/* Brief reçu → Accepter / Contre-proposition / Refuser */}
               {modalProjet.statut === 'demande' && (
                 <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.06em' }}>Répondre au brief</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.06em' }}>Répondre à la demande</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                     <button onClick={() => accepterBrief(modalProjet)} style={{ ...BTN, width:'100%', padding:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
                       ✅ Accepter — Envoyer un devis automatique
@@ -1074,7 +1074,7 @@ export default function DashboardCom() {
                       📝 Contre-proposition — Modifier le prix
                     </button>
                     <button onClick={() => refuserBrief(modalProjet)} style={{ width:'100%', padding:'12px', background:'#FEF2F2', color:'#DC2626', border:'1px solid #FECACA', borderRadius:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                      ✗ Refuser ce brief
+                      ✗ Refuser cette demande
                     </button>
                   </div>
                 </div>
@@ -1251,7 +1251,7 @@ export default function DashboardCom() {
             </div>
 
             <div style={{ marginBottom:14 }}>
-              <label style={labelStyle}>Brief / Description</label>
+              <label style={labelStyle}>Description du projet</label>
               <textarea value={newProjetForm.brief} onChange={e => setNewProjetForm(p => ({...p, brief:e.target.value}))} rows={3} placeholder="Décrivez le projet, les attentes, le style souhaité..." style={{ ...inputStyle, resize:'vertical' }} />
             </div>
 

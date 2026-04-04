@@ -52,10 +52,10 @@ router.post('/briefs', async (req, res) => {
     // Envoyer email à l'équipe
     await sendEmail(
       process.env.COM_EMAIL || 'freamplecom@gmail.com',
-      `🎬 Nouveau brief Freample Com — ${nom}`,
+      `🎬 Nouvelle demande Freample Com — ${nom}`,
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#8B5CF6;">🎬 Nouveau brief reçu !</h2>
+        <h2 style="color:#8B5CF6;">🎬 Nouvelle demande reçue !</h2>
         <table style="width:100%;border-collapse:collapse;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Client</td><td style="padding:8px;border-bottom:1px solid #eee;">${nom}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;"><a href="mailto:${email}">${email}</a></td></tr>
@@ -80,7 +80,7 @@ router.post('/briefs', async (req, res) => {
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#8B5CF6;">Merci ${nom} ! 🎬</h2>
-        <p>Nous avons bien reçu votre brief. Notre équipe l'analyse et vous répondra sous <strong>24 heures</strong> avec un devis personnalisé.</p>
+        <p>Nous avons bien reçu votre demande. Notre équipe l'analyse et vous répondra sous <strong>24 heures</strong> avec un devis personnalisé.</p>
         <div style="margin:20px 0;padding:16px;background:#F5F3FF;border-radius:8px;">
           <strong>Récapitulatif :</strong><br/>
           Service : ${type}${format ? ' · ' + format : ''}<br/>
@@ -213,7 +213,7 @@ router.post('/projets/:id/refuser', authenticateToken, async (req, res) => {
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#8B5CF6;">Merci pour votre demande, ${p.client_nom} 🙏</h2>
-        <p>Après analyse de votre brief, nous ne sommes malheureusement pas en mesure de répondre à cette demande pour le moment.</p>
+        <p>Après analyse de votre demande, nous ne sommes malheureusement pas en mesure de répondre à cette demande pour le moment.</p>
         <p>N'hésitez pas à nous recontacter pour un futur projet — nous serions ravis de travailler avec vous !</p>
         <p style="color:#888;">— L'équipe Freample Com</p>
       </div>

@@ -361,7 +361,7 @@ function NotifBell({ isMobile }) {
             .filter(p => p.statut === 'brief_recu')
             .map((p, i) => ({
               id: p.id,
-              text: `🎬 Nouveau brief de ${p.client_nom} — ${p.type || 'Projet'}`,
+              text: `🎬 Nouvelle demande de ${p.client_nom} — ${p.type || 'Projet'}`,
               time: p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Récent',
               unread: true,
             }));
@@ -387,7 +387,7 @@ function NotifBell({ isMobile }) {
     }
   }, [user?.secteur]);
 
-  // Polling toutes les 30s pour les nouveaux briefs (Com uniquement)
+  // Polling toutes les 30s pour les nouvelles demandes (Com uniquement)
   useEffect(() => {
     if (user?.secteur !== 'com') return;
     const interval = setInterval(() => {
@@ -400,7 +400,7 @@ function NotifBell({ isMobile }) {
               const existingIds = prev.map(n => n.id);
               const newOnes = briefs.filter(p => !existingIds.includes(p.id)).map(p => ({
                 id: p.id,
-                text: `🎬 Nouveau brief de ${p.client_nom} — ${p.type || 'Projet'}`,
+                text: `🎬 Nouvelle demande de ${p.client_nom} — ${p.type || 'Projet'}`,
                 time: 'À l\'instant',
                 unread: true,
               }));
