@@ -33,7 +33,7 @@ function IconMoon({ size = 16 }) {
 // Client menus per sector tab
 const CLIENT_TAB_MENUS = {
   accueil: [
-    { label: 'Tableau de bord',  path: '/client/dashboard',                   Icon: IconHome       },
+    { label: 'Accueil',          path: '/client/dashboard',                   Icon: IconHome       },
     { label: 'Freample Com',     path: '/client/com',                         Icon: IconDocument   },
     { label: 'Paiements',        path: '/client/paiements',                   Icon: IconCreditCard },
     { label: 'Messagerie',       path: '/client/messagerie',                  Icon: IconMessage    },
@@ -41,7 +41,7 @@ const CLIENT_TAB_MENUS = {
     { label: 'Mon profil',       path: '/client/profil',                      Icon: IconUser       },
   ],
   btp: [
-    { label: '← Tableau de bord', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
+    { label: '← Accueil', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
     { label: 'Mes missions',      path: '/client/travaux',                     Icon: IconMissions  },
     { label: 'Mes devis',         path: '/client/devis',                       Icon: IconDocument  },
     { label: 'Paiements',         path: '/client/paiements',                   Icon: IconCreditCard},
@@ -50,7 +50,7 @@ const CLIENT_TAB_MENUS = {
     { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
   ],
   coiffure: [
-    { label: '← Tableau de bord', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
+    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
     { label: 'Mes rendez-vous',   path: '/client/dashboard?tab=coiffure',       Icon: IconCalendar  },
     { label: 'Salons favoris',    path: '/client/dashboard?tab=coiffure',       Icon: IconStar      },
     { label: 'Historique',        path: '/client/travaux',                       Icon: IconMissions  },
@@ -59,7 +59,7 @@ const CLIENT_TAB_MENUS = {
     { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
   ],
   restaurant: [
-    { label: '← Tableau de bord', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
+    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
     { label: 'Mes réservations',  path: '/client/dashboard?tab=restaurant',     Icon: IconCalendar  },
     { label: 'Mes commandes',     path: '/client/dashboard?tab=restaurant',     Icon: IconMissions  },
     { label: 'Mes habitudes',     path: '/client/dashboard?tab=restaurant',     Icon: IconStar      },
@@ -68,7 +68,7 @@ const CLIENT_TAB_MENUS = {
     { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
   ],
   vacances: [
-    { label: '← Tableau de bord', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
+    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
     { label: 'Mes séjours',       path: '/client/dashboard?tab=vacances',       Icon: IconCalendar  },
     { label: 'Logements favoris', path: '/client/dashboard?tab=vacances',       Icon: IconStar      },
     { label: 'Mes voyageurs',     path: '/client/profil',                       Icon: IconUser      },

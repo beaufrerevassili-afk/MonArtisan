@@ -840,29 +840,6 @@ export default function DashboardClient() {
         </div>
       )}
 
-      {/* Mes missions récentes */}
-      {data?.mes_missions?.length > 0 && (
-        <div>
-          <h2 style={{ marginBottom: 16 }}>Missions récentes</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {data.mes_missions.slice(0, 5).map(m => {
-              const sm = STATUT_MAP[m.statut];
-              return (
-                <div key={m.id} className="card" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.titre}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.description}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>{m.budget?.toLocaleString('fr-FR')} €</span>
-                    <span className={sm?.cls || 'badge badge-gray'}>{sm?.label || m.statut}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
       </div>
       )} {/* end BTP tab */}
 
@@ -1005,7 +982,7 @@ function AccueilTab({ user, navigate, setActiveTab }) {
   const KPI = [
     { label: 'Dépenses totales', value: '12 700 €', icon: '💶', sub: '6 derniers mois',       color: '#5B5BD6', bg: '#EBF5FF', tab: null },
     { label: 'Ce mois-ci',       value: '1 600 €',  icon: '📅', sub: '↓ 8 % vs mois dernier', color: '#1A7A3C', bg: '#ECFDF5', tab: null },
-    { label: 'Missions actives', value: '2',         icon: '⚡', sub: 'En cours de traitement', color: '#FF9500', bg: '#FFF8EC', tab: 'btp' },
+    { label: 'Commandes actives',value: '2',         icon: '⚡', sub: 'En cours de traitement', color: '#FF9500', bg: '#FFF8EC', tab: null },
     { label: 'Services utilisés',value: '3',         icon: '🎯', sub: 'BTP · Coiffure · Resto', color: '#AF52DE', bg: '#F5EEFF', tab: null },
   ];
 

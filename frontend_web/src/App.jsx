@@ -154,7 +154,7 @@ function AppRoutes() {
               <Route path="paiements"   element={<PaiementsClient />} />
               <Route path="parrainage"  element={<ParrainageClient />} />
               <Route path="profil"      element={<ProfilClient />} />
-              <Route path="missions"    element={<Missions />} />
+              <Route path="missions"    element={<Navigate to="/client/travaux" replace />} />
               <Route path="com"        element={<ComClient />} />
               <Route path="*"           element={<Navigate to="dashboard" replace />} />
             </Routes>
