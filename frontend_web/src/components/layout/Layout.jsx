@@ -239,13 +239,24 @@ const DEMO_NOTIFS = [
   { id: 4, text: 'Salarié Martin absent demain', time: 'Hier',                      unread: false },
 ];
 
-const ROLE_LABELS = {
-  client:      'Client',
-  patron:      'Patron Artisan',
-  artisan:     'Artisan',
-  super_admin: 'Super Admin',
-  fondateur:   'Fondateur',
+const ROLE_LABELS_BY_SECTOR = {
+  btp:        { patron:'Chef d\'entreprise BTP', artisan:'Artisan BTP' },
+  coiffure:   { patron:'Gérant Salon', artisan:'Coiffeur·se' },
+  restaurant: { patron:'Restaurateur', artisan:'Employé Restaurant' },
+  vacances:   { patron:'Hôtelier', artisan:'Réceptionniste' },
+  course:     { patron:'Gérant VTC', artisan:'Chauffeur' },
+  eat:        { patron:'Gérant Eat', artisan:'Livreur' },
+  com:        { patron:'Freample Com', artisan:'Monteur' },
 };
+function getRoleLabel(user) {
+  if (!user) return '';
+  if (user.role === 'client') return 'Client';
+  if (user.role === 'super_admin') return 'Super Admin';
+  if (user.role === 'fondateur') return 'Fondateur';
+  const sector = ROLE_LABELS_BY_SECTOR[user.secteur];
+  if (sector) return sector[user.role] || user.role;
+  return user.role === 'patron' ? 'Chef d\'entreprise' : 'Employé';
+}
 
 const FONDATEUR_VIEWS = [
   { key: 'admin',   label: 'Admin',   path: '/fondateur/dashboard', icon: '⚙️' },
@@ -742,7 +753,7 @@ export default function Layout({ children }) {
                   {user?.nom}
                 </p>
                 <p style={{ fontSize: '0.6875rem', color: 'var(--primary)', fontWeight: 600 }}>
-                  {ROLE_LABELS[user?.role] || user?.role}
+                  {getRoleLabel(user)}
                 </p>
               </div>
               <button
