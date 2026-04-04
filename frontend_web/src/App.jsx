@@ -31,6 +31,7 @@ import RechercheArtisan from './pages/client/RechercheArtisan';
 import Messagerie from './pages/client/Messagerie';
 import PaiementsClient from './pages/client/Paiements';
 import ParrainageClient from './pages/client/Parrainage';
+import ComClient from './pages/client/ComClient';
 import ProfilClient from './pages/client/Profil';
 import DashboardPatron from './pages/patron/Dashboard';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
@@ -153,6 +154,7 @@ function AppRoutes() {
               <Route path="parrainage"  element={<ParrainageClient />} />
               <Route path="profil"      element={<ProfilClient />} />
               <Route path="missions"    element={<Missions />} />
+              <Route path="com"        element={<ComClient />} />
               <Route path="*"           element={<Navigate to="dashboard" replace />} />
             </Routes>
           </Layout>

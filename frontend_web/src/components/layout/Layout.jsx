@@ -34,6 +34,7 @@ function IconMoon({ size = 16 }) {
 const CLIENT_TAB_MENUS = {
   accueil: [
     { label: 'Tableau de bord',  path: '/client/dashboard',                   Icon: IconHome       },
+    { label: 'Freample Com',     path: '/client/com',                         Icon: IconDocument   },
     { label: 'Paiements',        path: '/client/paiements',                   Icon: IconCreditCard },
     { label: 'Messagerie',       path: '/client/messagerie',                  Icon: IconMessage    },
     { label: 'Parrainage',       path: '/client/parrainage',                  Icon: IconGift       },

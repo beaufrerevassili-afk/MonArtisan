@@ -86,6 +86,16 @@ const TABS = [
   { id: 'vacances',   label: '🏖️', title: 'Vacances'      },
 ];
 
+const SERVICES_GRID = [
+  { id:'btp',        icon:'🏗️', label:'BTP & Travaux',   desc:'Artisans, devis, chantiers', color:'#5B5BD6', bg:'#EEF2FF', path:null },
+  { id:'coiffure',   icon:'✂️', label:'Coiffure',         desc:'RDV, salons, beauté',       color:'#E535AB', bg:'#FFF0F8', path:null },
+  { id:'restaurant', icon:'🍽️', label:'Restaurant',       desc:'Réservations, commandes',   color:'#FF6000', bg:'#FFF3E8', path:null },
+  { id:'course',     icon:'🚗', label:'Freample Course',  desc:'VTC, courses en ville',     color:'#000000', bg:'#F3F3F3', path:'/course' },
+  { id:'eat',        icon:'🛵', label:'Freample Eat',     desc:'Livraison de repas',        color:'#05944F', bg:'#F0FDF4', path:'/eat' },
+  { id:'com',        icon:'🎬', label:'Freample Com',     desc:'Montage vidéo, marketing',  color:'#8B5CF6', bg:'#F5F3FF', path:'/client/com' },
+  { id:'vacances',   icon:'🏖️', label:'Vacances',         desc:'Hôtels, locations',         color:'#0080FF', bg:'#E8F4FF', path:null },
+];
+
 export default function DashboardClient() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -1059,23 +1069,21 @@ function AccueilTab({ user, navigate, setActiveTab }) {
         ))}
       </div>
 
-      {/* Quick links to sectors */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
-        {[
-          { id: 'btp', label: 'BTP & Travaux', icon: '🔨', desc: 'Artisans, devis, chantiers', grad: 'linear-gradient(135deg,#EBF5FF,#D6EDFF)' },
-          { id: 'coiffure', label: 'Coiffure', icon: '✂️', desc: 'Salons, RDV', grad: 'linear-gradient(135deg,#FFF0F8,#FFE0F2)' },
-          { id: 'restaurant', label: 'Restaurant', icon: '🍽️', desc: 'Commander, réserver', grad: 'linear-gradient(135deg,#FFF8EC,#FFE8C0)' },
-          { id: 'vacances', label: 'Vacances', icon: '🏖️', desc: 'Logements, séjours', grad: 'linear-gradient(135deg,#ECFDF5,#D1F5E8)' },
-        ].map(s => (
-          <button key={s.id} onClick={() => setActiveTab(s.id)}
-            style={{ background: s.grad, borderRadius: 14, border: 'none', padding: '16px', textAlign: 'left', cursor: 'pointer', transition: 'transform .15s', fontFamily: DS.font }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: DS.ink, marginBottom: 3 }}>{s.label}</p>
-            <p style={{ fontSize: 11, color: DS.muted }}>{s.desc}</p>
-          </button>
-        ))}
+      {/* Services grid — super-app style */}
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 700, color: DS.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Tous vos services</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 12 }}>
+          {SERVICES_GRID.map(s => (
+            <button key={s.id} onClick={() => s.path ? navigate(s.path) : setActiveTab(s.id)}
+              style={{ background: '#fff', borderRadius: 16, border: `1px solid ${DS.border}`, padding: '18px 16px', textAlign: 'left', cursor: 'pointer', transition: 'all .18s', fontFamily: DS.font }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = s.color; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = DS.border; }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 12 }}>{s.icon}</div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: DS.ink, marginBottom: 3, letterSpacing: '-0.01em' }}>{s.label}</p>
+              <p style={{ fontSize: 12, color: DS.muted, lineHeight: 1.3 }}>{s.desc}</p>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
