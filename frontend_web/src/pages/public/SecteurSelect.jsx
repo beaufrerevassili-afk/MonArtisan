@@ -256,24 +256,44 @@ export default function SecteurSelect() {
 
       {/* ── Catégories ── */}
       <section style={{ padding:'clamp(32px,5vh,52px) clamp(16px,5vw,48px)', maxWidth:1100, margin:'0 auto' }}>
-        <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:'0 0 24px' }}>Explorer par catégorie</h2>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(168px,1fr))', gap:12 }}>
-          {CATEGORIES.map(cat => {
-            const isLocked = cat.locked && !unlockedSectors.includes(cat.id);
-            return (
-              <button key={cat.id} onClick={() => isLocked ? setLockModal(cat.id) : navigate(`/${cat.id}`)}
-                style={{ padding:'20px 16px', background: isLocked ? '#F9FAFB' : DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font, position:'relative', overflow:'hidden' }}
-                onMouseEnter={e=>{ e.currentTarget.style.background = isLocked ? '#F3F4F6' : DS.bgSoft; if(!isLocked) { e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; } }}
-                onMouseLeave={e=>{ e.currentTarget.style.background = isLocked ? '#F9FAFB' : DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
-                <div style={{ fontSize: cat.emoji.length > 2 ? 16 : 26, marginBottom:10, filter: isLocked ? 'grayscale(1) opacity(0.4)' : 'none', fontWeight: cat.emoji.length > 2 ? 800 : 400, color: isLocked ? '#9CA3AF' : DS.ink, letterSpacing: cat.emoji.length > 2 ? '-0.03em' : 0 }}>{cat.emoji}</div>
-                <div style={{ fontSize:14, fontWeight:700, color: isLocked ? '#9CA3AF' : DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
-                <div style={{ fontSize:11.5, color:DS.muted, lineHeight:1.4 }}>{isLocked ? 'En cours de développement' : cat.sub}</div>
-                {isLocked && (
-                  <div style={{ position:'absolute', top:10, right:10, width:24, height:24, borderRadius:'50%', background:'#F3F4F6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12 }}>🚧</div>
-                )}
-              </button>
-            );
-          })}
+
+        {/* Services disponibles */}
+        <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:'0 0 24px' }}>Nos services</h2>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
+          {CATEGORIES.filter(c => !c.locked).map(cat => (
+            <button key={cat.id} onClick={() => navigate(`/${cat.id}`)}
+              style={{ padding:'24px 20px', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=DS.bgSoft; e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background=DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
+              <div style={{ fontSize:28, marginBottom:12 }}>{cat.emoji}</div>
+              <div style={{ fontSize:15, fontWeight:700, color:DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
+              <div style={{ fontSize:12, color:DS.muted, lineHeight:1.4 }}>{cat.sub}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* En cours de développement */}
+        <div style={{ marginTop:48 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:20 }}>
+            <span style={{ fontSize:18 }}>🚧</span>
+            <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:0 }}>En cours de développement</h2>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(168px,1fr))', gap:12 }}>
+            {CATEGORIES.filter(c => c.locked).map(cat => {
+              const isUnlocked = unlockedSectors.includes(cat.id);
+              return (
+                <button key={cat.id} onClick={() => isUnlocked ? navigate(`/${cat.id}`) : setLockModal(cat.id)}
+                  style={{ padding:'18px 16px', background:'#F9FAFB', border:'1px dashed #D1D5DB', borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font, position:'relative', overflow:'hidden' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='#F3F4F6'; e.currentTarget.style.borderColor='#9CA3AF'; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='#F9FAFB'; e.currentTarget.style.borderColor='#D1D5DB'; }}>
+                  <div style={{ fontSize:15, fontWeight:800, color:'#9CA3AF', marginBottom:8, letterSpacing:'-0.03em' }}>{cat.emoji}</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#9CA3AF', marginBottom:3 }}>{cat.label}</div>
+                  <div style={{ fontSize:11, color:'#B0B0B0', lineHeight:1.4 }}>{cat.sub}</div>
+                  <div style={{ position:'absolute', top:8, right:8, fontSize:10, background:'#F3F4F6', padding:'2px 8px', borderRadius:20, color:'#9CA3AF', fontWeight:600 }}>Bientôt</div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
