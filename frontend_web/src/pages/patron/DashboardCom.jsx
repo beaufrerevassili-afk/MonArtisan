@@ -85,6 +85,7 @@ function FidBadge({ f }) {
 
 const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
 
+const MONTEUR_COLORS = { 'Marius':{ bg:'#DBEAFE', border:'#3B82F6', color:'#1D4ED8', dot:'#3B82F6' }, 'Maxence':{ bg:'#FEE2E2', border:'#EF4444', color:'#DC2626', dot:'#EF4444' }, 'Vassili':{ bg:'#F5F3FF', border:'#8B5CF6', color:'#5B21B6', dot:'#8B5CF6' }, 'Mathieu':{ bg:'#D1FAE5', border:'#10B981', color:'#065F46', dot:'#10B981' } };
 const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 
@@ -107,7 +108,7 @@ export default function DashboardCom() {
     try { return JSON.parse(localStorage.getItem('com_agenda') || '[]'); } catch { return []; }
   });
   const [agendaModal, setAgendaModal] = useState(null); // null | { jour, heure } | event object
-  const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'' });
+  const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
   const [semainOffset, setSemainOffset] = useState(0);
 
   useEffect(() => {
@@ -460,6 +461,66 @@ export default function DashboardCom() {
 
       {/* ═══ VUE MONTEUR : ACCUEIL = TO-DO LIST ═══ */}
       {vue === 'monteur' && tab === 'accueil' && (<div>
+
+        {/* ── Emploi du temps du jour ── */}
+        {(() => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const todayJour = (new Date().getDay() + 6) % 7; // 0=Lun
+          const todayEvents = agendaEvents.filter(e => e.date === todayStr || (e.jour === todayJour && !e.date));
+          const sortedEvents = [...todayEvents].sort((a,b) => (a.heure||'').localeCompare(b.heure||''));
+          const now = new Date();
+          const nowH = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+          return (
+            <div style={{ marginBottom:24 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                <div style={{ fontSize:15, fontWeight:800, color:'#1C1C1E' }}>📅 Aujourd'hui — {new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' })}</div>
+                <button onClick={() => setTab('agenda')} style={{ ...GHOST, padding:'6px 12px', fontSize:12 }}>Voir l'agenda →</button>
+              </div>
+
+              {sortedEvents.length === 0 ? (
+                <div style={{ ...CARD, padding:'20px', textAlign:'center', color:'#8B8B8B', border:'1px dashed #E9E5F5' }}>
+                  <div style={{ fontSize:14 }}>Aucun événement aujourd'hui</div>
+                  <button onClick={() => setTab('agenda')} style={{ ...GHOST, padding:'6px 14px', fontSize:12, marginTop:8 }}>+ Planifier</button>
+                </div>
+              ) : (
+                <div style={{ ...CARD, padding:0, overflow:'hidden' }}>
+                  {sortedEvents.map((evt, i) => {
+                    const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B', dot:'#8B8B8B' };
+                    const tc = { montage:{icon:'🎬'}, revision:{icon:'🔄'}, reunion:{icon:'📞'}, livraison:{icon:'📦'}, prospection:{icon:'🔍'}, perso:{icon:'👤'} };
+                    const isPast = evt.heureFin && evt.heureFin < nowH;
+                    const isCurrent = evt.heure <= nowH && (!evt.heureFin || evt.heureFin > nowH);
+                    return (
+                      <div key={evt.id || i} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom: i < sortedEvents.length-1 ? '1px solid #F0F0F0' : 'none', opacity: isPast ? 0.5 : 1, background: isCurrent ? mc.bg+'40' : 'transparent' }}>
+                        {/* Barre couleur monteur */}
+                        <div style={{ width:4, height:36, borderRadius:2, background:mc.dot, flexShrink:0 }} />
+                        {/* Heure */}
+                        <div style={{ minWidth:50, flexShrink:0 }}>
+                          <div style={{ fontSize:14, fontWeight:700, color: isCurrent ? mc.color : '#1C1C1E' }}>{evt.heure}</div>
+                          {evt.heureFin && <div style={{ fontSize:11, color:'#8B8B8B' }}>{evt.heureFin}</div>}
+                        </div>
+                        {/* Contenu */}
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:14, fontWeight:600, color:'#1C1C1E', display:'flex', alignItems:'center', gap:6 }}>
+                            {tc[evt.type]?.icon || '📌'} {evt.titre}
+                            {isPast && <span style={{ fontSize:11, color:'#8B8B8B' }}>✓</span>}
+                            {isCurrent && <span style={{ width:6, height:6, borderRadius:'50%', background:mc.dot, display:'inline-block', animation:'pulse 2s infinite' }} />}
+                          </div>
+                          {evt.projet && <div style={{ fontSize:12, color:'#8B8B8B' }}>🔗 {evt.projet}</div>}
+                        </div>
+                        {/* Badge monteur */}
+                        <div style={{ padding:'3px 10px', borderRadius:999, background:mc.bg, border:`1px solid ${mc.border}`, fontSize:11, fontWeight:700, color:mc.color, flexShrink:0 }}>
+                          {evt.personne || '—'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Demandes à traiter */}
         {projets.filter(p => p.statut === 'demande').length > 0 && (
           <div style={{ marginBottom:24 }}>
@@ -683,7 +744,7 @@ export default function DashboardCom() {
           setAgendaEvents(updated);
           localStorage.setItem('com_agenda', JSON.stringify(updated));
           setAgendaModal(null);
-          setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'' });
+          setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
           showToast(agendaModal?.id ? 'Événement modifié' : 'Événement ajouté');
         };
 
@@ -736,10 +797,10 @@ export default function DashboardCom() {
                     onMouseEnter={e => e.currentTarget.style.background='#FAFAFA'}
                     onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     {evts.map(evt => {
-                      const tc = typeColors[evt.type] || typeColors.montage;
+                      const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B' };
                       return (
                         <div key={evt.id} onClick={(e) => { e.stopPropagation(); setAgendaForm(evt); setAgendaModal(evt); }}
-                          style={{ background:tc.bg, border:`1px solid ${tc.border}`, borderRadius:6, padding:'3px 6px', fontSize:11, fontWeight:600, color:tc.color, marginBottom:2, cursor:'pointer' }}>
+                          style={{ background:mc.bg, border:`1px solid ${mc.border}`, borderLeft:`3px solid ${mc.border}`, borderRadius:6, padding:'3px 6px', fontSize:11, fontWeight:600, color:mc.color, marginBottom:2, cursor:'pointer' }}>
                           {evt.titre}
                         </div>
                       );
@@ -755,17 +816,17 @@ export default function DashboardCom() {
             </React.Fragment>))}
           </div>
 
-          {/* Légende */}
-          <div style={{ display:'flex', gap:12, marginTop:16, flexWrap:'wrap' }}>
-            {Object.entries(typeColors).map(([k,v]) => (
-              <div key={k} style={{ display:'flex', alignItems:'center', gap:4 }}>
-                <div style={{ width:12, height:12, borderRadius:3, background:v.bg, border:`1px solid ${v.border}` }} />
-                <span style={{ fontSize:12, color:'#8B8B8B' }}>{v.label}</span>
+          {/* Légende monteurs */}
+          <div style={{ display:'flex', gap:16, marginTop:16, flexWrap:'wrap' }}>
+            {Object.entries(MONTEUR_COLORS).map(([nom,mc]) => (
+              <div key={nom} style={{ display:'flex', alignItems:'center', gap:6 }}>
+                <div style={{ width:14, height:14, borderRadius:4, background:mc.bg, border:`2px solid ${mc.border}` }} />
+                <span style={{ fontSize:13, fontWeight:600, color:mc.color }}>{nom}</span>
               </div>
             ))}
-            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-              <div style={{ width:12, height:12, borderRadius:3, background:'#FEE2E2', border:'1px solid #FCA5A5' }} />
-              <span style={{ fontSize:12, color:'#8B8B8B' }}>📅 Deadline projet</span>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <div style={{ width:14, height:14, borderRadius:4, background:'#FEE2E2', border:'2px solid #FCA5A5' }} />
+              <span style={{ fontSize:13, fontWeight:600, color:'#DC2626' }}>Deadline</span>
             </div>
           </div>
 
@@ -801,6 +862,20 @@ export default function DashboardCom() {
                         {v.label}
                       </button>
                     ))}
+                  </div>
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Qui ?</label>
+                  <div style={{ display:'flex', gap:6 }}>
+                    {['Marius','Maxence','Vassili','Mathieu'].map(nom => {
+                      const mc = MONTEUR_COLORS[nom];
+                      return (
+                        <button key={nom} onClick={() => setAgendaForm(p=>({...p,personne:nom}))}
+                          style={{ padding:'7px 14px', borderRadius:999, border:`2px solid ${agendaForm.personne===nom?mc.border:'#E9E5F5'}`, background:agendaForm.personne===nom?mc.bg:'#fff', color:agendaForm.personne===nom?mc.color:'#8B8B8B', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+                          {nom}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div style={{ marginBottom:20 }}>
