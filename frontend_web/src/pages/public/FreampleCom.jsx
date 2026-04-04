@@ -89,7 +89,7 @@ export default function FreampleCom() {
               style={{ padding:'12px 24px', background:'#25D366', color:'#fff', border:'none', borderRadius:10, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:C.font, textDecoration:'none', textAlign:'center', display:'flex', alignItems:'center', gap:8 }}>
               💬 WhatsApp
             </a>
-            <a href="mailto:contact@freample.com?subject=Demande d'information Freample Com"
+            <a href="mailto:freamplecom@gmail.com?subject=Demande d'information Freample Com"
               style={{ padding:'12px 24px', background:C.bg, color:C.text, border:`1.5px solid ${C.border}`, borderRadius:10, fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:C.font, textDecoration:'none', textAlign:'center' }}>
               ✉️ Email
             </a>
