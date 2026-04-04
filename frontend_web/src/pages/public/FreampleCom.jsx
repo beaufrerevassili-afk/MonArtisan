@@ -33,6 +33,8 @@ const TEMOIGNAGES = [
 export default function FreampleCom() {
   const navigate = useNavigate();
   const [openTarif, setOpenTarif] = useState(0);
+  const [demandeForm, setDemandeForm] = useState({ nom:'', email:'', type:'', budget:'', description:'' });
+  const [demandeSent, setDemandeSent] = useState(false);
 
   return (
     <div style={{ minHeight:'100vh', background:C.bg, fontFamily:C.font, color:C.text }}>
@@ -55,7 +57,7 @@ export default function FreampleCom() {
             Montage vidéo, réseaux sociaux, design, publicité — boostez votre visibilité avec nos équipes créatives.
           </p>
           <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
-            <button onClick={() => navigate('/register?secteur=com')}
+            <button onClick={() => document.getElementById('demande')?.scrollIntoView({behavior:'smooth'})}
               style={{ padding:'14px 32px', background:'#fff', color:C.dark, border:'none', borderRadius:999, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'transform .15s' }}
               onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
               onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
@@ -164,19 +166,75 @@ export default function FreampleCom() {
         </div>
       </div>
 
-      {/* ── CTA ── */}
-      <div style={{ padding:'56px 24px', textAlign:'center' }}>
+      {/* ── Formulaire de demande ── */}
+      <div id="demande" style={{ padding:'64px 24px', background:C.soft, borderTop:`1px solid ${C.border}` }}>
         <div style={{ maxWidth:600, margin:'0 auto' }}>
-          <h2 style={{ fontSize:26, fontWeight:800, marginBottom:12 }}>Prêt à booster votre communication ?</h2>
-          <p style={{ fontSize:15, color:C.textSec, marginBottom:28, lineHeight:1.5 }}>
-            Demandez un devis gratuit. Réponse en moins de 24h.
-          </p>
-          <button onClick={() => navigate('/register?secteur=com')}
-            style={{ padding:'14px 36px', background:C.primary, color:'#fff', border:'none', borderRadius:999, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'background .15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = C.primaryHover}
-            onMouseLeave={e => e.currentTarget.style.background = C.primary}>
-            Demander un devis gratuit →
-          </button>
+          <h2 style={{ fontSize:26, fontWeight:800, textAlign:'center', marginBottom:8 }}>Demandez un devis gratuit</h2>
+          <p style={{ fontSize:15, color:C.textSec, textAlign:'center', marginBottom:32 }}>Décrivez votre projet, on vous répond en moins de 24h</p>
+          <div style={{ background:C.bg, borderRadius:16, padding:'28px 24px', border:`1px solid ${C.border}`, boxShadow:'0 4px 16px rgba(0,0,0,0.04)' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+              <div>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Votre nom / entreprise *</label>
+                <input value={demandeForm.nom} onChange={e=>setDemandeForm(p=>({...p,nom:e.target.value}))} placeholder="Ex: @emma.lifestyle, Salon Léa..." style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Email *</label>
+                <input type="email" value={demandeForm.email} onChange={e=>setDemandeForm(p=>({...p,email:e.target.value}))} placeholder="vous@email.com" style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' }} />
+              </div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+              <div>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Type de prestation *</label>
+                <select value={demandeForm.type} onChange={e=>setDemandeForm(p=>({...p,type:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
+                  <option value="">Choisir...</option>
+                  <option>Montage vidéo (TikTok, Reels, YouTube)</option>
+                  <option>Gestion réseaux sociaux</option>
+                  <option>Design graphique (Logo, visuels)</option>
+                  <option>Publicité en ligne (Meta Ads, Google)</option>
+                  <option>Pack complet (plusieurs services)</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Budget estimé</label>
+                <select value={demandeForm.budget} onChange={e=>setDemandeForm(p=>({...p,budget:e.target.value}))} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', background:'#fff' }}>
+                  <option value="">Non défini</option>
+                  <option>Moins de 100€</option>
+                  <option>100€ — 300€</option>
+                  <option>300€ — 500€</option>
+                  <option>500€ — 1 000€</option>
+                  <option>Plus de 1 000€</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ marginBottom:14 }}>
+              <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Décrivez votre projet *</label>
+              <textarea value={demandeForm.description} onChange={e=>setDemandeForm(p=>({...p,description:e.target.value}))} placeholder="Ex: Je souhaite un pack de 10 TikToks par mois pour promouvoir mon salon de coiffure. Style dynamique, sous-titres colorés, musique tendance..." rows={4} style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box', resize:'vertical', lineHeight:1.5 }} />
+            </div>
+            <div style={{ marginBottom:20 }}>
+              <label style={{ fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 }}>Fichiers / exemples (optionnel)</label>
+              <div onClick={()=>setDemandeSent(false)} style={{ border:`2px dashed ${C.border}`, borderRadius:10, padding:'20px', textAlign:'center', cursor:'pointer', background:'#FAFAFA' }}>
+                <div style={{ fontSize:28, marginBottom:6 }}>📎</div>
+                <div style={{ fontSize:14, color:C.textSec }}>Cliquez pour ajouter des fichiers (vidéos, images, brief...)</div>
+                <div style={{ fontSize:12, color:C.textLight, marginTop:4 }}>PDF, MP4, JPG, PNG — max 50 Mo</div>
+              </div>
+            </div>
+            {demandeSent ? (
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ width:52, height:52, borderRadius:'50%', background:'#D1FAE5', margin:'0 auto 12px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24 }}>✓</div>
+                <div style={{ fontSize:16, fontWeight:700, color:C.text, marginBottom:4 }}>Demande envoyée !</div>
+                <div style={{ fontSize:14, color:C.textSec }}>Nous vous répondrons sous 24h à {demandeForm.email}</div>
+              </div>
+            ) : (
+              <button onClick={()=>{
+                if(!demandeForm.nom||!demandeForm.email||!demandeForm.type||!demandeForm.description) return;
+                setDemandeSent(true);
+              }} style={{ width:'100%', padding:'14px', background:C.primary, color:'#fff', border:'none', borderRadius:12, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'background .15s', minHeight:48 }}
+                onMouseEnter={e=>e.currentTarget.style.background=C.primaryHover}
+                onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
+                Envoyer ma demande →
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

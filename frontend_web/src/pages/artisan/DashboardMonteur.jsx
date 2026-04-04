@@ -16,6 +16,7 @@ const TABS = [
   { id:'accueil', icon:'🏠', label:'Accueil' },
   { id:'projets', icon:'🎬', label:'Mes projets' },
   { id:'gains',   icon:'💰', label:'Mes gains' },
+  { id:'messages', icon:'💬', label:'Messages' },
   { id:'avis',    icon:'⭐', label:'Mes avis' },
   { id:'profil',  icon:'👤', label:'Mon profil' },
 ];
@@ -63,7 +64,7 @@ function Badge({ statut }) {
   return <span style={{ background:s.bg, color:s.color, border:`1px solid ${s.border}`, borderRadius:20, padding:'3px 10px', fontSize:12, fontWeight:600 }}>{s.label}</span>;
 }
 
-const TAB_MAP = { projets:'projets', gains:'gains', avis:'avis', profil:'profil' };
+const TAB_MAP = { projets:'projets', gains:'gains', messages:'messages', avis:'avis', profil:'profil' };
 
 export default function DashboardMonteur() {
   const { user } = useAuth();
@@ -178,6 +179,35 @@ export default function DashboardMonteur() {
         </div>
       </div>)}
 
+      {/* MESSAGES */}
+      {tab==='messages'&&(<div>
+        <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>Messages par projet</div>
+        {projets.filter(p=>['en_cours','revision','a_faire'].includes(p.statut)).map(p=>(
+          <div key={p.id} style={{ ...CARD, marginBottom:12, padding:'16px 20px' }}>
+            <div style={{ fontWeight:700, fontSize:14, marginBottom:12 }}>{p.titre}</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:12, maxHeight:200, overflowY:'auto' }}>
+              {[
+                {from:p.client, msg:'Salut ! Voici le brief détaillé pour le projet.', time:'10:00', isMe:false},
+                {from:'Vous', msg:'Parfait, je regarde ça et je commence !', time:'10:15', isMe:true},
+                {from:p.client, msg:'Tu penses livrer quand ?', time:'14:00', isMe:false},
+                {from:'Vous', msg:`Je vise le ${p.deadline}, comme prévu 👍`, time:'14:05', isMe:true},
+              ].map((m,i)=>(
+                <div key={i} style={{ display:'flex', justifyContent:m.isMe?'flex-end':'flex-start' }}>
+                  <div style={{ maxWidth:'70%', padding:'8px 12px', borderRadius:12, background:m.isMe?V:'#F3F3F3', color:m.isMe?'#fff':'#1C1C1E', fontSize:13, lineHeight:1.4 }}>
+                    <div style={{ fontSize:11, fontWeight:600, marginBottom:2, opacity:0.7 }}>{m.from} · {m.time}</div>
+                    {m.msg}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <input placeholder="Écrire un message..." style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none' }} />
+              <button onClick={()=>showToast('Message envoyé')} style={{ ...BTN, padding:'10px 16px' }}>Envoyer</button>
+            </div>
+          </div>
+        ))}
+      </div>)}
+
       {/* MES AVIS */}
       {tab==='avis'&&(<div>
         <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
@@ -227,6 +257,20 @@ export default function DashboardMonteur() {
               ))}
             </div>
             {modalProjet.notes&&<div style={{ padding:'12px 14px', background:'#EDE9FE', borderRadius:10, marginBottom:16, fontSize:13, color:'#5B21B6' }}>📝 Brief : {modalProjet.notes}</div>}
+            {/* Fichiers */}
+            <div style={{ marginBottom:16 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Fichiers livrés</div>
+              {['en_cours','revision','livre'].includes(modalProjet.statut) ? (
+                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                  {(modalProjet.statut==='livre'?[{nom:'montage_v2_final.mp4',taille:'52 Mo',date:'2026-04-05'},{nom:'montage_v1.mp4',taille:'48 Mo',date:'2026-04-03'}]:[]).map((f,i)=>(
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'#F5F3FF', borderRadius:8, fontSize:13 }}>
+                      <span>📄</span><span style={{ flex:1, fontWeight:600 }}>{f.nom}</span><span style={{ color:'#8B8B8B', fontSize:12 }}>{f.taille} · {f.date}</span>
+                    </div>
+                  ))}
+                  <button onClick={()=>showToast('Fichier ajouté')} style={{ ...GHOST, padding:'10px', fontSize:13, marginTop:4 }}>📎 Ajouter un fichier</button>
+                </div>
+              ) : <div style={{ fontSize:13, color:'#8B8B8B' }}>Aucun fichier pour le moment</div>}
+            </div>
             <div style={{ display:'flex', gap:10 }}>
               {modalProjet.statut==='a_faire'&&<button onClick={()=>{commencer(modalProjet.id);setModalProjet(null);}} style={{ ...BTN, flex:1, padding:'12px' }}>▶️ Commencer le projet</button>}
               {['en_cours','revision'].includes(modalProjet.statut)&&<button onClick={()=>livrer(modalProjet.id)} style={{ ...BTN, flex:1, padding:'12px', background:'#059669' }}>📦 Livrer au client</button>}
