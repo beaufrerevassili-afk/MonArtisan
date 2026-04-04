@@ -185,12 +185,36 @@ const PATRON_SECTOR_MENUS = {
     { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
     { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
   ],
+  course: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
+    { label: 'Courses',           path: '/patron/dashboard?onglet=courses',     Icon: IconMissions   },
+    { label: 'Historique',        path: '/patron/dashboard?onglet=historique',   Icon: IconDocument   },
+    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
+    { label: 'Véhicule',          path: '/patron/dashboard?onglet=vehicule',    Icon: IconBuilding   },
+    { label: 'Clients',           path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
+    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',  Icon: IconSettings   },
+    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
+    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
+  ],
+  eat: [
+    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
+    { label: 'Livraisons',        path: '/patron/dashboard?onglet=livraisons',  Icon: IconMissions   },
+    { label: 'Historique',        path: '/patron/dashboard?onglet=historique',   Icon: IconDocument   },
+    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
+    { label: 'Restaurants',       path: '/patron/dashboard?onglet=restaurants',  Icon: IconBuilding   },
+    { label: 'Livreurs',          path: '/patron/dashboard?onglet=livreurs',    Icon: IconTeam       },
+    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',  Icon: IconSettings   },
+    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
+    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
+  ],
 };
 
 const PATRON_SECTOR_HEADERS = {
-  coiffure:   { label: '✂️ Coiffure',        color: '#E535AB', bg: '#FFF0F8' },
-  restaurant: { label: '🍽️ Restaurant',      color: '#FF6000', bg: '#FFF3E8' },
+  coiffure:   { label: '✂️ Coiffure',         color: '#E535AB', bg: '#FFF0F8' },
+  restaurant: { label: '🍽️ Restaurant',       color: '#FF6000', bg: '#FFF3E8' },
   vacances:   { label: '🏨 Hôtel & Vacances', color: '#0080FF', bg: '#E8F4FF' },
+  course:     { label: '🚗 Freample Course',  color: '#000000', bg: '#F3F3F3' },
+  eat:        { label: '🛵 Freample Eat',     color: '#05944F', bg: '#F0FDF4' },
 };
 
 const DEMO_NOTIFS = [

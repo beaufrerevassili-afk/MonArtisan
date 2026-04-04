@@ -36,6 +36,8 @@ import DashboardPatron from './pages/patron/Dashboard';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
 import DashboardRestaurant from './pages/patron/DashboardRestaurant';
 import DashboardHotel from './pages/patron/DashboardHotel';
+import DashboardCourse from './pages/patron/DashboardCourse';
+import DashboardEat from './pages/patron/DashboardEat';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
 import RH from './pages/patron/RH';
@@ -78,6 +80,8 @@ function PatronDashboard() {
   if (secteur === 'coiffure')   return <DashboardCoiffure />;
   if (secteur === 'restaurant') return <DashboardRestaurant />;
   if (secteur === 'vacances')   return <DashboardHotel />;
+  if (secteur === 'course')     return <DashboardCourse />;
+  if (secteur === 'eat')        return <DashboardEat />;
   return <DashboardPatron />;
 }
 
