@@ -31,6 +31,18 @@ const COMPTES = [
   // ── Hôtel / Vacances ──
   { nom: 'Isabelle Garnier',  email: 'patron.hotel@demo.com',        motdepasse: 'patron123',  role: 'patron',  secteur: 'vacances', verified: true, ville: 'Nice' },
   { nom: 'Thomas Lefevre',    email: 'employe.hotel@demo.com',       motdepasse: 'employe123', role: 'artisan', secteur: 'vacances', verified: true, metier: 'Hôtellerie', siret: '444 555 666 00011', ville: 'Nice', experience: '3 ans', statut_verification: 'valide' },
+
+  // ── Freample Course (VTC) ──
+  { nom: 'Karim Haddad',      email: 'patron.course@demo.com',       motdepasse: 'patron123',  role: 'patron',  secteur: 'course',   verified: true, ville: 'Paris' },
+  { nom: 'Amine Diallo',      email: 'employe.course@demo.com',      motdepasse: 'employe123', role: 'artisan', secteur: 'course',   verified: true, metier: 'Chauffeur VTC', siret: '555 666 777 00011', ville: 'Paris', experience: '3 ans', statut_verification: 'valide' },
+
+  // ── Freample Eat (Livraison) ──
+  { nom: 'Léa Martin',        email: 'patron.eat@demo.com',          motdepasse: 'patron123',  role: 'patron',  secteur: 'eat',      verified: true, ville: 'Paris' },
+  { nom: 'Youssef Kaci',      email: 'employe.eat@demo.com',         motdepasse: 'employe123', role: 'artisan', secteur: 'eat',      verified: true, metier: 'Livreur', siret: '666 777 888 00011', ville: 'Paris', experience: '2 ans', statut_verification: 'valide' },
+
+  // ── Freample Com (Communication & Marketing) ──
+  { nom: 'Sarah Khelifi',     email: 'patron.com@demo.com',          motdepasse: 'patron123',  role: 'patron',  secteur: 'com',      verified: true, ville: 'Paris' },
+  { nom: 'Maxime Dupont',     email: 'employe.com@demo.com',         motdepasse: 'employe123', role: 'artisan', secteur: 'com',      verified: true, metier: 'Monteur vidéo', siret: '777 888 999 00011', ville: 'Paris', experience: '4 ans', statut_verification: 'valide' },
 ];
 
 async function run() {
