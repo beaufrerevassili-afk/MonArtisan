@@ -346,9 +346,72 @@ function NavGroup({ group, collapsed, location, onNavigate }) {
 /* ── Notification bell ─────────────────────────────────── */
 function NotifBell({ isMobile }) {
   const [open, setOpen] = useState(false);
-  const [notifs, setNotifs] = useState(DEMO_NOTIFS);
+  const [notifs, setNotifs] = useState([]);
   const ref = useRef(null);
+  const { user } = useAuth();
   const unreadCount = notifs.filter(n => n.unread).length;
+
+  // Charger les vraies notifications pour Freample Com
+  useEffect(() => {
+    if (user?.secteur === 'com') {
+      const api = require('../../services/api').default;
+      api.get('/com/projets').then(r => {
+        if (r.data?.projets?.length) {
+          const realNotifs = r.data.projets
+            .filter(p => p.statut === 'brief_recu')
+            .map((p, i) => ({
+              id: p.id,
+              text: `🎬 Nouveau brief de ${p.client_nom} — ${p.type || 'Projet'}`,
+              time: p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Récent',
+              unread: true,
+            }));
+          // Ajouter les projets en attente de réponse
+          const waiting = r.data.projets
+            .filter(p => p.statut === 'devis_envoye')
+            .map(p => ({
+              id: 1000 + p.id,
+              text: `⏳ Devis en attente — ${p.client_nom}`,
+              time: 'En cours',
+              unread: false,
+            }));
+          setNotifs([...realNotifs, ...waiting]);
+        } else {
+          setNotifs([{ id:0, text:'Aucune notification', time:'', unread:false }]);
+        }
+      }).catch(() => {
+        setNotifs([{ id:0, text:'Aucune notification', time:'', unread:false }]);
+      });
+    } else {
+      // Autres secteurs : garder les notifs démo
+      setNotifs(DEMO_NOTIFS);
+    }
+  }, [user?.secteur]);
+
+  // Polling toutes les 30s pour les nouveaux briefs (Com uniquement)
+  useEffect(() => {
+    if (user?.secteur !== 'com') return;
+    const interval = setInterval(() => {
+      const api = require('../../services/api').default;
+      api.get('/com/projets').then(r => {
+        if (r.data?.projets) {
+          const briefs = r.data.projets.filter(p => p.statut === 'brief_recu');
+          if (briefs.length > 0) {
+            setNotifs(prev => {
+              const existingIds = prev.map(n => n.id);
+              const newOnes = briefs.filter(p => !existingIds.includes(p.id)).map(p => ({
+                id: p.id,
+                text: `🎬 Nouveau brief de ${p.client_nom} — ${p.type || 'Projet'}`,
+                time: 'À l\'instant',
+                unread: true,
+              }));
+              return newOnes.length ? [...newOnes, ...prev] : prev;
+            });
+          }
+        }
+      }).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user?.secteur]);
 
   useEffect(() => {
     function onClickOutside(e) {
