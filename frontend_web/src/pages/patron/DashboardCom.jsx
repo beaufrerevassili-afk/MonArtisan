@@ -75,12 +75,7 @@ const EQUIPE_INIT = [
   { id:4, nom:'Hugo Bernard', poste:'Monteur vidéo junior', specialite:'Reels, Shorts', projetsActifs:0, ca:420, dispo:false, color:'#10B981' },
 ];
 
-const TARIFS_GRILLE = [
-  { cat:'Montage vidéo', items:[{nom:'TikTok / Reel (15-60s)',prix:49},{nom:'YouTube Short (60s-3min)',prix:89},{nom:'Vidéo YouTube (5-15min)',prix:199},{nom:'Clip promotionnel (30s-2min)',prix:349},{nom:'Pack 5 TikToks',prix:199},{nom:'Pack 10 TikToks',prix:349},{nom:'Pack 20 TikToks',prix:599}] },
-  { cat:'Réseaux sociaux', items:[{nom:'Gestion 1 réseau / mois',prix:299},{nom:'Gestion 3 réseaux / mois',prix:699},{nom:'Stratégie + audit complet',prix:149},{nom:'Shooting photo (10 visuels)',prix:249}] },
-  { cat:'Design graphique', items:[{nom:'Logo simple',prix:99},{nom:'Logo + charte graphique',prix:249},{nom:'Pack 10 visuels réseaux',prix:149},{nom:'Flyer / Affiche A4',prix:69},{nom:'Carte de visite (recto-verso)',prix:49}] },
-  { cat:'Publicité en ligne', items:[{nom:'Setup campagne (1 plateforme)',prix:199},{nom:'Gestion Ads mensuelle',prix:399},{nom:'Audit + recommandations',prix:99}] },
-];
+import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
 
 const REVENUS_7J = [
   { jour:'Lun', montant:280 },{ jour:'Mar', montant:420 },{ jour:'Mer', montant:180 },
@@ -140,6 +135,10 @@ export default function DashboardCom() {
   const [factures] = useState(FACTURES_INIT);
   const [clients] = useState(CLIENTS_INIT);
   const [equipe] = useState(EQUIPE_INIT);
+  const [tarifs, setTarifs] = useState(getTarifs);
+  const [editingTarif, setEditingTarif] = useState(null); // {catIdx, itemIdx}
+  const [editPrix, setEditPrix] = useState('');
+  const [editNom, setEditNom] = useState('');
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
 
   useEffect(() => {
@@ -426,22 +425,63 @@ export default function DashboardCom() {
         </div>
       </div>)}
 
-      {/* TAB: Grille tarifaire */}
+      {/* TAB: Grille tarifaire (éditable) */}
       {tab === 'tarifs' && (<div>
-        <div style={{ fontSize:16, fontWeight:700, marginBottom:20 }}>Grille tarifaire</div>
-        {TARIFS_GRILLE.map(t => (
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700 }}>Grille tarifaire</div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Modifiez les prix — les changements sont visibles immédiatement sur le site</div>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => { const r = resetTarifs(); setTarifs(r); showToast('Tarifs réinitialisés aux valeurs par défaut'); }} style={GHOST}>↺ Réinitialiser</button>
+          </div>
+        </div>
+        {tarifs.map((t, ci) => (
           <div key={t.cat} style={{ marginBottom:20 }}>
             <div style={HDR}>{t.cat}</div>
             <div style={{ ...CARD, padding:0, overflow:'hidden' }}>
-              {t.items.map((item,j) => (
-                <div key={j} style={{ display:'flex', justifyContent:'space-between', padding:'12px 20px', borderBottom: j < t.items.length-1 ? '1px solid #F0F0F0' : 'none' }}>
-                  <span style={{ fontSize:14 }}>{item.nom}</span>
-                  <span style={{ fontSize:14, fontWeight:800, color:V }}>{item.prix}€</span>
-                </div>
-              ))}
+              {t.items.map((item, ji) => {
+                const isEditing = editingTarif && editingTarif.catIdx === ci && editingTarif.itemIdx === ji;
+                return (
+                  <div key={item.id||ji} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', borderBottom: ji < t.items.length-1 ? '1px solid #F0F0F0' : 'none' }}>
+                    {isEditing ? (
+                      <>
+                        <input value={editNom} onChange={e=>setEditNom(e.target.value)} style={{ flex:1, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none' }} />
+                        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                          <input type="number" value={editPrix} onChange={e=>setEditPrix(e.target.value)} style={{ width:80, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', textAlign:'right' }} />
+                          <span style={{ fontSize:14, fontWeight:700, color:V }}>€</span>
+                        </div>
+                        <button onClick={() => {
+                          const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: cat.items.map((it, j) => j !== ji ? it : { ...it, nom: editNom, prix: Number(editPrix) }) });
+                          setTarifs(updated);
+                          saveTarifs(updated);
+                          setEditingTarif(null);
+                          showToast('Prix mis à jour — visible sur le site');
+                        }} style={{ ...BTN, padding:'7px 14px', fontSize:13 }}>✓</button>
+                        <button onClick={() => setEditingTarif(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#8B8B8B', fontSize:16 }}>✕</button>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ flex:1, fontSize:14 }}>{item.nom}</span>
+                        <span style={{ fontSize:15, fontWeight:800, color:V, minWidth:60, textAlign:'right' }}>{item.prix}€</span>
+                        <button onClick={() => { setEditingTarif({catIdx:ci, itemIdx:ji}); setEditPrix(String(item.prix)); setEditNom(item.nom); }}
+                          style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#8B8B8B', fontFamily:'inherit', transition:'all .15s' }}
+                          onMouseEnter={e=>{e.currentTarget.style.borderColor=V;e.currentTarget.style.color=V;}}
+                          onMouseLeave={e=>{e.currentTarget.style.borderColor='#E9E5F5';e.currentTarget.style.color='#8B8B8B';}}>
+                          ✎ Modifier
+                        </button>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}
+        <div style={{ padding:'14px 18px', background:V_SOFT, borderRadius:12, marginTop:8, display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{ fontSize:18 }}>💡</span>
+          <span style={{ fontSize:13, color:'#5B21B6' }}>Les modifications sont sauvegardées automatiquement et visibles immédiatement sur la page publique <strong>/com</strong></span>
+        </div>
       </div>)}
 
       {/* TAB: Équipe */}

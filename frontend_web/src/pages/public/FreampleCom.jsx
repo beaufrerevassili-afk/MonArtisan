@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import { getTarifs } from '../../data/tarifsCom';
 
 const C = {
   primary: '#8B5CF6', primaryHover: '#7C3AED', dark: '#0F0A1A', darkSoft: '#1A1128',
@@ -11,18 +12,21 @@ const C = {
   font: "Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif",
 };
 
+function getMinPrix(catName) {
+  const cat = TARIFS_RAW.find(t => t.cat.toLowerCase().includes(catName.toLowerCase()));
+  if (!cat || !cat.items.length) return '—';
+  return Math.min(...cat.items.map(i => i.prix));
+}
+
 const SERVICES = [
-  { icon:'🎬', title:'Montage Vidéo', desc:'TikTok, Reels, YouTube Shorts', price:'À partir de 49€', color:'linear-gradient(135deg,#EC4899,#8B5CF6)', features:['Montage dynamique','Sous-titres auto','Musique tendance','Transitions pro'] },
-  { icon:'📱', title:'Réseaux Sociaux', desc:'Gestion de comptes & stratégie', price:'À partir de 299€/mois', color:'linear-gradient(135deg,#3B82F6,#8B5CF6)', features:['Planning éditorial','Création de contenu','Community management','Reporting mensuel'] },
-  { icon:'🎨', title:'Design Graphique', desc:'Logos, visuels, identité', price:'À partir de 99€', color:'linear-gradient(135deg,#10B981,#3B82F6)', features:['Logo & charte graphique','Visuels réseaux sociaux','Flyers & cartes de visite','Bannières web'] },
-  { icon:'📈', title:'Publicité en ligne', desc:'Meta Ads, Google Ads, TikTok Ads', price:'À partir de 199€/mois', color:'linear-gradient(135deg,#F59E0B,#EC4899)', features:['Création de campagnes','Ciblage audience','A/B testing','Reporting ROI'] },
+  { icon:'🎬', title:'Montage Vidéo', desc:'TikTok, Reels, YouTube Shorts', price:`À partir de ${getMinPrix('Montage')}€`, color:'linear-gradient(135deg,#EC4899,#8B5CF6)', features:['Montage dynamique','Sous-titres auto','Musique tendance','Transitions pro'] },
+  { icon:'📱', title:'Réseaux Sociaux', desc:'Gestion de comptes & stratégie', price:`À partir de ${getMinPrix('Réseaux')}€/mois`, color:'linear-gradient(135deg,#3B82F6,#8B5CF6)', features:['Planning éditorial','Création de contenu','Community management','Reporting mensuel'] },
+  { icon:'🎨', title:'Design Graphique', desc:'Logos, visuels, identité', price:`À partir de ${getMinPrix('Design')}€`, color:'linear-gradient(135deg,#10B981,#3B82F6)', features:['Logo & charte graphique','Visuels réseaux sociaux','Flyers & cartes de visite','Bannières web'] },
+  { icon:'📈', title:'Publicité en ligne', desc:'Meta Ads, Google Ads, TikTok Ads', price:`À partir de ${getMinPrix('Publicité')}€/mois`, color:'linear-gradient(135deg,#F59E0B,#EC4899)', features:['Création de campagnes','Ciblage audience','A/B testing','Reporting ROI'] },
 ];
 
-const TARIFS = [
-  { cat:'Montage vidéo', items:[{nom:'TikTok / Reel (15-60s)',prix:'49€'},{nom:'YouTube Short (60s-3min)',prix:'89€'},{nom:'Vidéo YouTube (5-15min)',prix:'199€'},{nom:'Clip promotionnel',prix:'349€'},{nom:'Pack 5 TikToks',prix:'199€'},{nom:'Pack 10 TikToks',prix:'349€'}] },
-  { cat:'Réseaux sociaux', items:[{nom:'Gestion 1 réseau / mois',prix:'299€'},{nom:'Gestion 3 réseaux / mois',prix:'699€'},{nom:'Stratégie + audit',prix:'149€'},{nom:'Shooting photo (10 visuels)',prix:'249€'}] },
-  { cat:'Design', items:[{nom:'Logo simple',prix:'99€'},{nom:'Logo + charte graphique',prix:'249€'},{nom:'Pack 10 visuels RS',prix:'149€'},{nom:'Flyer / Affiche',prix:'69€'}] },
-];
+// Tarifs lus depuis la source partagée (modifiables par le patron)
+const TARIFS_RAW = getTarifs();
 
 const TEMOIGNAGES = [
   { nom:'@emma.lifestyle', type:'Influenceuse', avatar:'EL', text:'Freample Com a transformé mon contenu TikTok. Les montages sont top et livrés en 48h !', note:5 },
@@ -102,7 +106,7 @@ export default function FreampleCom() {
         <div style={{ maxWidth:800, margin:'0 auto' }}>
           <h2 style={{ fontSize:26, fontWeight:800, textAlign:'center', marginBottom:8 }}>Grille tarifaire</h2>
           <p style={{ fontSize:15, color:C.textSec, textAlign:'center', marginBottom:32 }}>Tarifs transparents, sans surprise</p>
-          {TARIFS.map((t, i) => (
+          {TARIFS_RAW.map((t, i) => (
             <div key={t.cat} style={{ marginBottom:12 }}>
               <button onClick={() => setOpenTarif(openTarif === i ? -1 : i)}
                 style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:C.bg, border:`1px solid ${C.border}`, borderRadius: openTarif === i ? '12px 12px 0 0' : 12, cursor:'pointer', fontFamily:C.font }}>
@@ -114,7 +118,7 @@ export default function FreampleCom() {
                   {t.items.map((item, j) => (
                     <div key={j} style={{ display:'flex', justifyContent:'space-between', padding:'12px 20px', borderBottom: j < t.items.length-1 ? `1px solid ${C.border}` : 'none' }}>
                       <span style={{ fontSize:14, color:C.text }}>{item.nom}</span>
-                      <span style={{ fontSize:14, fontWeight:700, color:C.primary }}>{item.prix}</span>
+                      <span style={{ fontSize:14, fontWeight:700, color:C.primary }}>{item.prix}€</span>
                     </div>
                   ))}
                 </div>
