@@ -116,9 +116,9 @@ export default function RestaurantPage() {
       </div>
 
       {/* Layout deux colonnes */}
-      <div style={{ display:'flex', height:'calc(100vh - 200px)' }}>
+      <div className="resp-split" style={{ display:'flex', minHeight:'calc(100vh - 200px)', flexDirection:'row', flexWrap:'wrap' }}>
         {/* Liste */}
-        <div style={{ width:390, flexShrink:0, borderRight:`1px solid ${DS.border}`, overflowY:'auto', background:DS.bg }}>
+        <div className="resp-sidebar" style={{ width:390, maxWidth:'100%', flexShrink:0, borderRight:`1px solid ${DS.border}`, overflowY:'auto', background:DS.bg }}>
           <div style={{ padding:'13px 20px', borderBottom:`1px solid ${DS.border}` }}>
             <span style={{ fontSize:12, color:DS.muted }}>{filtered.length} restaurant{filtered.length>1?'s':''}</span>
           </div>
@@ -126,7 +126,7 @@ export default function RestaurantPage() {
         </div>
 
         {/* Détail */}
-        <div style={{ flex:1, overflowY:'auto', background:DS.bgSoft }}>
+        <div className="resp-main" style={{ flex:1, overflowY:'auto', background:DS.bgSoft }}>
           {/* Cover */}
           <div style={{ height:200, background:selected.grad, position:'relative', display:'flex', alignItems:'flex-end', padding:'0 28px 20px' }}>
             <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 30%, rgba(10,10,10,0.45))' }} />

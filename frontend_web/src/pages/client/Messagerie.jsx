@@ -140,7 +140,7 @@ export default function Messagerie() {
   const isOnline = online[conv?.missionId] ?? false;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 112px)', height: 'auto' }}>
       <style>{`
         .msg-conv-item {
           display: flex; gap: 12px; padding: 12px 14px; border-radius: 14px;
@@ -181,10 +181,10 @@ export default function Messagerie() {
         </p>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', gap: 16, overflow: 'hidden', minHeight: 0 }}>
+      <div className="resp-msg-split" style={{ flex: 1, display: 'flex', gap: 16, overflow: 'hidden', minHeight: 0, flexWrap: 'wrap' }}>
 
         {/* ── Conversations list ── */}
-        <div style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+        <div className="resp-msg-sidebar" style={{ width: 280, maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
             Conversations
           </p>

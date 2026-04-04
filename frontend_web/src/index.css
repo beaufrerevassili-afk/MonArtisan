@@ -31,7 +31,7 @@
   /* ── Text ──────────────────────────────────────────────── */
   --text:             #0E0E1A;
   --text-secondary:   #4A4A6A;
-  --text-tertiary:    #9898B8;
+  --text-tertiary:    #6E6E9A;
 
   /* ── Borders ───────────────────────────────────────────── */
   --border:           rgba(91,91,214,0.14);
@@ -104,7 +104,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  font-size: 14px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -338,7 +338,7 @@ p  { color: var(--text-secondary); line-height: 1.6; }
   .badge {
     display: inline-flex;
     align-items: center;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 20px;
@@ -781,7 +781,7 @@ p  { color: var(--text-secondary); line-height: 1.6; }
   .btn-primary, .btn-secondary, .btn-danger {
     padding: 10px 16px !important;
     font-size: 0.8125rem !important;
-    min-height: 40px;
+    min-height: 44px;
   }
 
   /* Buttons full width when stacked */
@@ -912,7 +912,7 @@ img { max-width: 100%; height: auto; }
 
   /* ── Min tap targets ── */
   button, [role="button"], a.nav-item {
-    min-height: 36px;
+    min-height: 44px;
   }
 
   /* ── Cards inside pages: full width, no overflow ── */
@@ -972,5 +972,56 @@ img { max-width: 100%; height: auto; }
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
+  }
+}
+
+/* ── Focus visible global (accessibilité clavier) ───────── */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Spinner page (chargement accessible) ───────────────── */
+.spinner-page {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Prefers reduced motion (WCAG 2.3.3) ───────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   INLINE-STYLE PAGES — Mobile responsive helpers
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Two-column layouts: stack vertically */
+  .resp-split { flex-wrap: wrap !important; height: auto !important; min-height: unset !important; }
+  .resp-split > .resp-sidebar {
+    width: 100% !important; max-width: 100% !important;
+    border-right: none !important; border-bottom: 1px solid var(--border, #E8E6E1);
+    max-height: 40vh; overflow-y: auto;
+  }
+  .resp-split > .resp-main { flex: 1 1 100% !important; }
+
+  /* Messagerie: conversations list full-width */
+  .resp-msg-split { flex-wrap: wrap !important; }
+  .resp-msg-sidebar {
+    width: 100% !important; max-width: 100% !important;
+    max-height: 35vh; border-bottom: 1px solid rgba(255,255,255,0.1);
   }
 }

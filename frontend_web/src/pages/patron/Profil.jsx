@@ -22,6 +22,9 @@ export default function ProfilPatron() {
   const [saved, setSaved] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
+  const [pwdForm, setPwdForm] = useState({ ancien: '', nouveau: '', confirmer: '' });
+  const [pwdMsg, setPwdMsg] = useState(null); // { type:'success'|'error', text }
+  const [pwdLoading, setPwdLoading] = useState(false);
   const logoRef = useRef(null);
 
   const initials = user?.nom?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'P';
@@ -47,6 +50,30 @@ export default function ProfilPatron() {
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error('Erreur sauvegarde profil:', err);
+    }
+  }
+
+  async function changerMotDePasse(e) {
+    e.preventDefault();
+    setPwdMsg(null);
+    if (!pwdForm.ancien || !pwdForm.nouveau || !pwdForm.confirmer) {
+      setPwdMsg({ type:'error', text:'Veuillez remplir tous les champs' }); return;
+    }
+    if (pwdForm.nouveau.length < 6) {
+      setPwdMsg({ type:'error', text:'Le mot de passe doit contenir au moins 6 caractères' }); return;
+    }
+    if (pwdForm.nouveau !== pwdForm.confirmer) {
+      setPwdMsg({ type:'error', text:'Les mots de passe ne correspondent pas' }); return;
+    }
+    setPwdLoading(true);
+    try {
+      await api.put('/users/mot-de-passe', { ancienMotDePasse: pwdForm.ancien, nouveauMotDePasse: pwdForm.nouveau });
+      setPwdMsg({ type:'success', text:'Mot de passe modifié avec succès' });
+      setPwdForm({ ancien:'', nouveau:'', confirmer:'' });
+    } catch (err) {
+      setPwdMsg({ type:'error', text: err.response?.data?.erreur || 'Erreur lors du changement de mot de passe' });
+    } finally {
+      setPwdLoading(false);
     }
   }
 
@@ -158,23 +185,31 @@ export default function ProfilPatron() {
       {/* Sécurité */}
       <div className="card" style={{ padding: 24 }}>
         <h2 style={{ marginBottom: 20 }}>Sécurité</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={changerMotDePasse} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label className="label">Mot de passe actuel</label>
-            <input className="input" type="password" placeholder="••••••••" style={{ maxWidth: 300 }} />
+            <input className="input" type="password" placeholder="••••••••" value={pwdForm.ancien} onChange={e => setPwdForm(p => ({ ...p, ancien: e.target.value }))} style={{ maxWidth: 300 }} />
           </div>
           <div className="grid-2">
             <div>
               <label className="label">Nouveau mot de passe</label>
-              <input className="input" type="password" placeholder="••••••••" />
+              <input className="input" type="password" placeholder="••••••••" value={pwdForm.nouveau} onChange={e => setPwdForm(p => ({ ...p, nouveau: e.target.value }))} />
             </div>
             <div>
               <label className="label">Confirmer</label>
-              <input className="input" type="password" placeholder="••••••••" />
+              <input className="input" type="password" placeholder="••••••••" value={pwdForm.confirmer} onChange={e => setPwdForm(p => ({ ...p, confirmer: e.target.value }))} />
             </div>
           </div>
-          <button className="btn-secondary" style={{ alignSelf: 'flex-start' }}>Changer le mot de passe</button>
-        </div>
+          {pwdMsg && (
+            <div style={{ padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, background: pwdMsg.type === 'success' ? '#D1FAE5' : '#FEE2E2', color: pwdMsg.type === 'success' ? '#065F46' : '#DC2626', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {pwdMsg.type === 'success' ? <IconCheck size={14} /> : <IconAlert size={14} />}
+              {pwdMsg.text}
+            </div>
+          )}
+          <button type="submit" className="btn-secondary" style={{ alignSelf: 'flex-start', opacity: pwdLoading ? 0.6 : 1 }} disabled={pwdLoading}>
+            {pwdLoading ? 'Modification…' : 'Changer le mot de passe'}
+          </button>
+        </form>
       </div>
 
       {/* Danger zone */}

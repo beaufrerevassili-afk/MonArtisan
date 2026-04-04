@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const R = '#F97316';
@@ -152,10 +153,20 @@ function FideliteBadge({ fidelite }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
+const RESTO_TAB_MAP = { tables:'tables', commandes:'commandes', reservations:'reservations', menu:'menu', paiements:'paiements', clients:'clients', rapports:'rapports' };
+
 export default function DashboardRestaurant() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('accueil');
+  const [searchParams] = useSearchParams();
+  const onglet = searchParams.get('onglet');
+  const [tab, setTab] = useState(RESTO_TAB_MAP[onglet] || 'accueil');
   const [tables, setTables] = useState(TABLES_INIT);
+
+  useEffect(() => {
+    const o = searchParams.get('onglet');
+    if (o && RESTO_TAB_MAP[o]) setTab(RESTO_TAB_MAP[o]);
+    else if (!o) setTab('accueil');
+  }, [searchParams]);
   const [menu, setMenu] = useState(MENU_INIT);
   const [reservations, setReservations] = useState(RESERVATIONS_INIT);
   const [transactions, setTransactions] = useState(TRANSACTIONS_INIT);

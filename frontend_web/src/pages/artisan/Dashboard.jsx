@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   IconDocument, IconCheck, IconX, IconPlus, IconDownload,
@@ -41,10 +42,26 @@ function simulerOCR(fichier) {
 
 const TABS = ['Tableau de bord', 'Mes missions', 'Notes de frais', 'Frais chantier', 'Planning', 'Mes fiches de paie', 'Congés', 'Messagerie', 'Mon profil'];
 
+const TAB_QUERY_MAP = {
+  missions: 'Mes missions', frais: 'Notes de frais', chantier: 'Frais chantier',
+  planning: 'Planning', paie: 'Mes fiches de paie', conges: 'Congés',
+  messagerie: 'Messagerie', profil: 'Mon profil',
+};
+
 export default function ArtisanDashboard() {
   const { user, token } = useAuth();
-  const [tab, setTab] = useState('Tableau de bord');
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const initialTab = TAB_QUERY_MAP[tabParam] || 'Tableau de bord';
+  const [tab, setTab] = useState(initialTab);
   const [preFraisChantierMission, setPreFraisChantierMission] = useState(null);
+
+  // Sync tab with query param changes (sidebar clicks)
+  useEffect(() => {
+    const mapped = TAB_QUERY_MAP[searchParams.get('tab')];
+    if (mapped && mapped !== tab) setTab(mapped);
+    else if (!searchParams.get('tab') && tab !== 'Tableau de bord') setTab('Tableau de bord');
+  }, [searchParams]);
   const [notesFrais, setNotesFrais] = useState([]);
   const [conges, setConges] = useState([]);
 
@@ -68,13 +85,20 @@ export default function ArtisanDashboard() {
   return (
     <div>
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, background: 'var(--card)', borderRadius: 14, padding: 4, marginBottom: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflowX: 'auto' }}>
+      <div role="tablist" aria-label="Navigation du tableau de bord" style={{ display: 'flex', gap: 4, background: 'var(--card)', borderRadius: 14, padding: 4, marginBottom: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflowX: 'auto' }}>
         {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            padding: '8px 16px', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s',
-            background: tab === t ? 'var(--primary)' : 'transparent',
-            color: tab === t ? '#fff' : 'var(--text-secondary)',
-          }}>{t}</button>
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            tabIndex={tab === t ? 0 : -1}
+            onClick={() => setTab(t)}
+            style={{
+              padding: '8px 16px', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s',
+              background: tab === t ? 'var(--primary)' : 'transparent',
+              color: tab === t ? '#fff' : 'var(--text-secondary)',
+            }}
+          >{t}</button>
         ))}
       </div>
 
@@ -110,7 +134,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Welcome card */}
-      <div style={{ background: 'linear-gradient(135deg, #007AFF 0%, #0055CC 100%)', borderRadius: 16, padding: '24px 28px', color: '#fff' }}>
+      <div style={{ background: 'linear-gradient(135deg, #5B5BD6 0%, #0055CC 100%)', borderRadius: 16, padding: '24px 28px', color: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 20 }}>{initials}</div>
           <div>
@@ -122,7 +146,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
 
       {/* Mission du jour */}
       {missionDuJour && (
-        <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: '2px solid #007AFF30' }}>
+        <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: '2px solid #5B5BD630' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34C759', animation: 'pulse 2s infinite' }} />
             <span style={{ fontSize: 12, fontWeight: 700, color: '#34C759', textTransform: 'uppercase', letterSpacing: 0.6 }}>Mission du jour</span>
@@ -134,8 +158,8 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
             {missionDuJour.dateDebut && <span>Date : {formatDate(missionDuJour.dateDebut)}</span>}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => onTabChange('Mes missions')} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Voir les détails</button>
-            <button onClick={() => onTabChange('Notes de frais')} style={{ padding: '8px 16px', border: '1px solid #007AFF', borderRadius: 10, background: '#fff', color: '#007AFF', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>+ Ajouter des frais</button>
+            <button onClick={() => onTabChange('Mes missions')} style={{ padding: '8px 16px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Voir les détails</button>
+            <button onClick={() => onTabChange('Notes de frais')} style={{ padding: '8px 16px', border: '1px solid #5B5BD6', borderRadius: 10, background: '#fff', color: '#5B5BD6', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>+ Ajouter des frais</button>
           </div>
         </div>
       )}
@@ -145,7 +169,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
         {[
           { label: 'Frais remboursés', value: totalFrais.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }), color: '#34C759', Icon: IconCheck },
           { label: 'Frais en attente', value: fraisEnAttente, color: '#FF9500', Icon: IconClock },
-          { label: 'Congés en attente', value: congesEnAttente, color: '#007AFF', Icon: IconCalendar },
+          { label: 'Congés en attente', value: congesEnAttente, color: '#5B5BD6', Icon: IconCalendar },
         ].map(k => (
           <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: `${k.color}18`, color: k.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
@@ -250,7 +274,7 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
               <div style={{ fontSize: 11, color: '#8E8E93', fontWeight: 600, marginBottom: 6 }}>👥 Équipe</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {(mission.equipe || []).map((e, i) => (
-                  <div key={i} style={{ fontSize: 12, color: i===0?'#007AFF':'#1C1C1E', fontWeight: i===0?700:500 }}>{e}</div>
+                  <div key={i} style={{ fontSize: 12, color: i===0?'#5B5BD6':'#1C1C1E', fontWeight: i===0?700:500 }}>{e}</div>
                 ))}
               </div>
             </div>
@@ -260,10 +284,10 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
           <div style={{ background: '#fff', borderRadius: 12, padding: '16px 16px', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <span style={{ fontSize: 13, fontWeight: 700 }}>État d'avancement</span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: progress >= 100 ? '#34C759' : '#007AFF' }}>{progress}%</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: progress >= 100 ? '#34C759' : '#5B5BD6' }}>{progress}%</span>
             </div>
             <div style={{ height: 10, borderRadius: 5, background: '#F2F2F7', overflow: 'hidden', marginBottom: 14 }}>
-              <div style={{ height: '100%', width: `${progress}%`, background: progress >= 100 ? '#34C759' : `linear-gradient(90deg, #007AFF, #34C759)`, borderRadius: 5, transition: 'width 0.6s' }} />
+              <div style={{ height: '100%', width: `${progress}%`, background: progress >= 100 ? '#34C759' : `linear-gradient(90deg, #5B5BD6, #34C759)`, borderRadius: 5, transition: 'width 0.6s' }} />
             </div>
             {/* Étapes cliquables */}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -273,10 +297,10 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
                 const isReception = e.label === 'Réception';
                 return (
                   <div key={e.label} style={{ textAlign: 'center', flex: 1, cursor: 'pointer' }} onClick={() => setEtape(e)}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: done ? (isReception ? '#34C759' : '#007AFF') : '#F2F2F7', color: done ? '#fff' : '#C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px', fontSize: 11, fontWeight: 700, border: current ? `2px solid ${isReception ? '#34C759' : '#007AFF'}` : 'none', transition: 'all 0.2s', boxShadow: current ? `0 0 0 3px ${isReception ? '#34C75920' : '#007AFF20'}` : 'none' }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: done ? (isReception ? '#34C759' : '#5B5BD6') : '#F2F2F7', color: done ? '#fff' : '#C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px', fontSize: 11, fontWeight: 700, border: current ? `2px solid ${isReception ? '#34C759' : '#5B5BD6'}` : 'none', transition: 'all 0.2s', boxShadow: current ? `0 0 0 3px ${isReception ? '#34C75920' : '#5B5BD620'}` : 'none' }}>
                       {done ? '✓' : i + 1}
                     </div>
-                    <div style={{ fontSize: 9, color: done ? (isReception ? '#34C759' : '#007AFF') : '#C7C7CC', fontWeight: current ? 700 : 400, lineHeight: 1.2 }}>{e.label}</div>
+                    <div style={{ fontSize: 9, color: done ? (isReception ? '#34C759' : '#5B5BD6') : '#C7C7CC', fontWeight: current ? 700 : 400, lineHeight: 1.2 }}>{e.label}</div>
                     {isReception && !done && <div style={{ fontSize: 8, color: '#FF9500', marginTop: 1 }}>→ Facture</div>}
                   </div>
                 );
@@ -301,7 +325,7 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 800, borderTop: '1px solid #E5E5EA', paddingTop: 6, marginTop: 4 }}>
                     <span>Total TTC</span>
-                    <span style={{ color: '#007AFF' }}>{formatCur(mission.budget || 0)}</span>
+                    <span style={{ color: '#5B5BD6' }}>{formatCur(mission.budget || 0)}</span>
                   </div>
                 </div>
                 <button onClick={() => setFactureAcceptee(true)}
@@ -323,7 +347,7 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
               <button onClick={() => { onFraisChantier(mission); onClose(); }} style={{ padding: '12px', background: '#FF9500', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
                 Frais chantier
               </button>
-              <button onClick={() => { onFraisPerso(); onClose(); }} style={{ padding: '12px', background: '#fff', color: '#007AFF', border: '2px solid #007AFF', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+              <button onClick={() => { onFraisPerso(); onClose(); }} style={{ padding: '12px', background: '#fff', color: '#5B5BD6', border: '2px solid #5B5BD6', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
                 Note de frais perso
               </button>
             </div>
@@ -366,11 +390,11 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
         return (
           <div key={m.id || i}
             onClick={() => setSelected(m)}
-            style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: isToday ? '2px solid #007AFF40' : '1px solid #F2F2F7', cursor: 'pointer', transition: 'all 0.15s' }}
+            style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: isToday ? '2px solid #5B5BD640' : '1px solid #F2F2F7', cursor: 'pointer', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; }}
             onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.07)'; }}
           >
-            {isToday && <div style={{ fontSize: 11, fontWeight: 700, color: '#007AFF', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34C759' }} /> Aujourd'hui</div>}
+            {isToday && <div style={{ fontSize: 11, fontWeight: 700, color: '#5B5BD6', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34C759' }} /> Aujourd'hui</div>}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{m.titre || m.description || 'Mission'}</div>
@@ -386,7 +410,7 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
                       <span>Avancement</span><span>{progress}%</span>
                     </div>
                     <div style={{ height: 5, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${progress}%`, background: progress>=100?'#34C759':'#007AFF', borderRadius: 3 }} />
+                      <div style={{ height: '100%', width: `${progress}%`, background: progress>=100?'#34C759':'#5B5BD6', borderRadius: 3 }} />
                     </div>
                   </div>
                 )}
@@ -457,7 +481,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {!showForm && (
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14, alignSelf: 'flex-start' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14, alignSelf: 'flex-start' }}>
           <IconPlus size={15} /> Soumettre une note de frais
         </button>
       )}
@@ -481,7 +505,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
             ) : scanning ? (
               <>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div>
-                <div style={{ fontWeight: 600, color: '#007AFF' }}>Analyse en cours…</div>
+                <div style={{ fontWeight: 600, color: '#5B5BD6' }}>Analyse en cours…</div>
                 <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 4 }}>Reconnaissance automatique des informations</div>
               </>
             ) : (
@@ -524,7 +548,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
 
           <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
             <button type="button" onClick={() => setShowForm(false)} style={{ padding: '9px 18px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>Annuler</button>
-            <button type="submit" disabled={saving || scanning} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: saving || scanning ? '#C7C7CC' : '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>
+            <button type="submit" disabled={saving || scanning} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: saving || scanning ? '#C7C7CC' : '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>
               {saving ? 'Envoi…' : 'Soumettre'}
             </button>
           </div>
@@ -548,7 +572,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
               {notes.map((n, i) => (
                 <tr key={n.id || i} style={{ borderBottom: '1px solid #F2F2F7' }}>
                   <td style={{ padding: '11px 14px', textTransform: 'capitalize', fontWeight: 600 }}>{n.categorie}</td>
-                  <td style={{ padding: '11px 14px', fontWeight: 700, color: '#007AFF' }}>{formatCur(n.montant)}</td>
+                  <td style={{ padding: '11px 14px', fontWeight: 700, color: '#5B5BD6' }}>{formatCur(n.montant)}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{formatDate(n.creeLe)}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{n.description || '—'}</td>
                   <td style={{ padding: '11px 14px' }}>
@@ -580,18 +604,18 @@ function PlanningMini({ onTabChange }) {
   const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
   const todayStr = today.toISOString().split('T')[0];
   const PLANNING = [
-    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', type: 'chantier', color: '#007AFF' },
-    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade', type: 'chantier', color: '#007AFF' },
+    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', type: 'chantier', color: '#5B5BD6' },
+    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade', type: 'chantier', color: '#5B5BD6' },
     { date: days[1].toISOString().split('T')[0], heure: '14:00 – 17:00', mission: 'Réunion hebdo', type: 'reunion', color: '#FF9500' },
-    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Dupont', type: 'chantier', color: '#007AFF' },
+    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Dupont', type: 'chantier', color: '#5B5BD6' },
     { date: days[3].toISOString().split('T')[0], heure: '09:00 – 12:00', mission: 'Visite médicale', type: 'admin', color: '#AF52DE' },
-    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Dupont', type: 'chantier', color: '#007AFF' },
+    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Dupont', type: 'chantier', color: '#5B5BD6' },
   ];
   return (
     <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Planning de la semaine</h3>
-        <button onClick={() => onTabChange('Planning')} style={{ fontSize: 12, color: '#007AFF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Voir tout →</button>
+        <button onClick={() => onTabChange('Planning')} style={{ fontSize: 12, color: '#5B5BD6', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Voir tout →</button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         {days.map((d, i) => {
@@ -602,7 +626,7 @@ function PlanningMini({ onTabChange }) {
             <div key={i} style={{ minHeight: 90 }}>
               <div style={{ textAlign: 'center', marginBottom: 6 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: isToday ? '#007AFF' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 13, margin: '3px auto 0' }}>{d.getDate()}</div>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: isToday ? '#5B5BD6' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 13, margin: '3px auto 0' }}>{d.getDate()}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {events.map((ev, j) => (
@@ -703,8 +727,8 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4, color: '#FF9500' }}>🏗️ Frais chantier (ici)</div>
           <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.6 }}>Matériaux achetés, location de matériel, sous-traitance, carburant du véhicule de chantier. <strong>Imputés au budget du chantier.</strong></div>
         </div>
-        <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', borderLeft: '4px solid #007AFF' }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4, color: '#007AFF' }}>🧾 Notes de frais (onglet dédié)</div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', borderLeft: '4px solid #5B5BD6' }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4, color: '#5B5BD6' }}>🧾 Notes de frais (onglet dédié)</div>
           <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.6 }}>Repas, hébergement, carburant personnel, péages. <strong>Remboursés sur votre fiche de paie.</strong></div>
         </div>
       </div>
@@ -763,7 +787,7 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                   <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} style={inp} required />
                 </div>
                 {form.articleDepotId && (
-                  <div style={{ gridColumn: '1 / -1', background: '#EBF5FF', border: '1px solid #007AFF30', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#007AFF' }}>
+                  <div style={{ gridColumn: '1 / -1', background: '#EBF5FF', border: '1px solid #5B5BD630', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#5B5BD6' }}>
                     {(() => { const art = STOCK_DEPOT.find(a => String(a.id) === String(form.articleDepotId)); const qty = parseFloat(form.quantiteDepot) || 1; return art ? `Valeur imputée : ${(art.valeurUnitaire * qty).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} — Stock restant après prélèvement : ${art.quantiteDisponible - qty} ${art.unite}` : ''; })()}
                   </div>
                 )}
@@ -843,7 +867,7 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                     <span style={{
                       padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                       background: f.statut === 'approuvé' ? '#D1F2E0' : f.statut === 'refusé' ? '#FFE5E5' : f.statut === 'dépôt' ? '#EBF5FF' : '#FFF3CD',
-                      color: f.statut === 'approuvé' ? '#1A7F43' : f.statut === 'refusé' ? '#C0392B' : f.statut === 'dépôt' ? '#007AFF' : '#856404',
+                      color: f.statut === 'approuvé' ? '#1A7F43' : f.statut === 'refusé' ? '#C0392B' : f.statut === 'dépôt' ? '#5B5BD6' : '#856404',
                     }}>
                       {f.statut === 'approuvé' ? '✓ Approuvé' : f.statut === 'refusé' ? '✗ Refusé' : f.statut === 'dépôt' ? '🏭 Dépôt entreprise' : '⏳ En attente'}
                     </span>
@@ -883,12 +907,12 @@ function TabPlanning({ headers }) {
 
   // Demo planning
   const PLANNING = [
-    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#007AFF' },
-    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#007AFF' },
+    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#5B5BD6' },
+    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#5B5BD6' },
     { date: days[1].toISOString().split('T')[0], heure: '14:00 – 17:00', mission: 'Réunion hebdomadaire', adresse: 'Agence Bernard Martin BTP', type: 'reunion', color: '#FF9500' },
-    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#007AFF' },
+    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#5B5BD6' },
     { date: days[3].toISOString().split('T')[0], heure: '09:00 – 12:00', mission: 'Visite médicale du travail', adresse: 'Service de santé au travail', type: 'admin', color: '#AF52DE' },
-    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#007AFF' },
+    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#5B5BD6' },
   ];
 
   const todayStr = today.toISOString().split('T')[0];
@@ -908,7 +932,7 @@ function TabPlanning({ headers }) {
               <div key={i} style={{ minHeight: 120 }}>
                 <div style={{ textAlign: 'center', marginBottom: 6 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: isToday ? '#007AFF' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 14, margin: '4px auto 0' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: isToday ? '#5B5BD6' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 14, margin: '4px auto 0' }}>
                     {d.getDate()}
                   </div>
                 </div>
@@ -978,7 +1002,7 @@ function TabFichesPaie({ user }) {
                 <span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: '#D1F2E0', color: '#1A7F43' }}>✓ Payé</span>
               </td>
               <td style={{ padding: '12px 16px' }}>
-                <a href={`/documents/bulletin/${f.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#007AFF', textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
+                <a href={`/documents/bulletin/${f.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#5B5BD6', textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
                   <IconDownload size={13} /> Ouvrir
                 </a>
               </td>
@@ -1031,7 +1055,7 @@ function TabConges({ conges, setConges, headers }) {
             <label style={lbl}>Motif (optionnel)</label>
             <input value={form.motif} onChange={e => setForm(p => ({ ...p, motif: e.target.value }))} placeholder="Vacances, raison familiale…" style={inp} />
           </div>
-          <button type="submit" disabled={saving} style={{ padding: '9px 22px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>
+          <button type="submit" disabled={saving} style={{ padding: '9px 22px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>
             {saving ? 'Envoi…' : 'Envoyer la demande'}
           </button>
         </form>

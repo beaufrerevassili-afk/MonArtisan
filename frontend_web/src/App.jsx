@@ -204,7 +204,7 @@ function AppRoutes() {
         user?.role === 'patron'      ? <Navigate to="/patron/dashboard"  replace /> :
         user?.role === 'super_admin' ? <Navigate to="/admin/dashboard"      replace /> :
         user?.role === 'fondateur'   ? <Navigate to="/fondateur/dashboard" replace /> :
-        user?.role === 'artisan'     ? <Navigate to="/artisan/missions"    replace /> :
+        user?.role === 'artisan'     ? <Navigate to="/artisan/dashboard"    replace /> :
         <Navigate to="/" replace />
       } />
 

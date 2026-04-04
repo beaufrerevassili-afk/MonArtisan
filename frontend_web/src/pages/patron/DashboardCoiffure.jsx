@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const C = '#E535AB';
@@ -119,10 +120,20 @@ function fideliteColor(f) {
   return map[f] || '#888';
 }
 
+const COIFFURE_TAB_MAP = { rdv:'rdv', services:'services', clients:'clients', equipe:'equipe', paiements:'paiements', parametres:'parametres', rapports:'rapports' };
+
 export default function DashboardCoiffure() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('accueil');
+  const [searchParams] = useSearchParams();
+  const onglet = searchParams.get('onglet');
+  const [tab, setTab] = useState(COIFFURE_TAB_MAP[onglet] || 'accueil');
   const [rdvList, setRdvList] = useState(RDV_DEMO);
+
+  useEffect(() => {
+    const o = searchParams.get('onglet');
+    if (o && COIFFURE_TAB_MAP[o]) setTab(COIFFURE_TAB_MAP[o]);
+    else if (!o) setTab('accueil');
+  }, [searchParams]);
   const [services, setServices] = useState(SERVICES_DEMO);
   const [clients, setClients] = useState(CLIENTS_DEMO);
   const [equipe, setEquipe] = useState(EQUIPE_DEMO);
