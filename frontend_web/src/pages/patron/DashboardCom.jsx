@@ -18,6 +18,7 @@ const BOX = { background:'#fff', borderRadius:18, padding:'28px 32px', width:'10
 const TABS = [
   { id:'accueil',   icon:'🏠', label:'Accueil' },
   { id:'projets',   icon:'🎬', label:'Projets' },
+  { id:'archives',  icon:'📦', label:'Archives' },
   { id:'devis',     icon:'📝', label:'Devis' },
   { id:'factures',  icon:'💳', label:'Facturation' },
   { id:'paiements', icon:'💳', label:'Paiements' },
@@ -82,7 +83,7 @@ function FidBadge({ f }) {
   return <span style={{ background:s.bg, color:s.c, borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{s.l}</span>;
 }
 
-const TAB_MAP = { projets:'projets', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
+const TAB_MAP = { projets:'projets', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
 
 export default function DashboardCom() {
   const { user } = useAuth();
@@ -169,7 +170,7 @@ export default function DashboardCom() {
   const revenuMois = projets.reduce((s,p) => s+p.montant, 0);
   const maxRev = Math.max(...REVENUS_7J.map(r => r.montant), 1);
 
-  let filteredProjets = projetFilter === 'tous' ? projets : projets.filter(p => p.statut === projetFilter);
+  let filteredProjets = (projetFilter === 'tous' ? projets : projets.filter(p => p.statut === projetFilter)).filter(p => p.statut !== 'archive');
   if (mesTaches) filteredProjets = filteredProjets.filter(p => p.responsable); // only assigned
   const filteredClients = clients.filter(c => c.nom.toLowerCase().includes(clientSearch.toLowerCase()));
 
@@ -469,7 +470,7 @@ export default function DashboardCom() {
       {/* TAB: Projets */}
       {tab === 'projets' && (<div>
         <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
-          {[['tous','Tous'],['demande','Demandes'],['devis_envoye','Devis envoyé'],['en_cours','En cours'],['revision','Révision'],['livre','Livrés'],['paye','Payés'],['archive','📦 Archivés']].map(([v,l]) => (
+          {[['tous','Tous'],['demande','Demandes'],['devis_envoye','Devis envoyé'],['en_cours','En cours'],['revision','Révision'],['livre','Livrés'],['paye','Payés']].map(([v,l]) => (
             <button key={v} onClick={() => setProjetFilter(v)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight: projetFilter===v ? 700 : 500, background: projetFilter===v ? V : '#F3F3F3', color: projetFilter===v ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.825rem' }}>{l}</button>
           ))}
         </div>
@@ -502,6 +503,27 @@ export default function DashboardCom() {
             </div>
           );
         })}
+      </div>)}
+
+      {/* TAB: Archives */}
+      {tab === 'archives' && (<div>
+        <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>Projets archivés</div>
+        {projets.filter(p => p.statut === 'archive').length === 0 && (
+          <div style={{ ...CARD, padding:32, textAlign:'center', color:'#8B8B8B' }}>Aucun projet archivé</div>
+        )}
+        {projets.filter(p => p.statut === 'archive').map(p => (
+          <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:10, cursor:'pointer', padding:'16px 20px', opacity:0.7 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
+              <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
+              <StatusBadge statut={p.statut} />
+            </div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:4 }}>{p.client} · {p.responsable || '—'}</div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontWeight:800, color:'#8B8B8B', fontSize:15 }}>{p.montant?p.montant+'€':'—'}</span>
+              <span style={{ fontSize:12, color:'#8B8B8B' }}>{p.dateDebut || '—'}</span>
+            </div>
+          </div>
+        ))}
       </div>)}
 
       {/* TAB: Devis */}
