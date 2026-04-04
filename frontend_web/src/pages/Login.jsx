@@ -35,10 +35,7 @@ const SECTEUR_COMPTES = {
     { role: 'Patron Eat',  email: 'patron.eat@demo.com',  motdepasse: 'patron123',  color: '#05944F', icon: '🛵' },
     { role: 'Livreur Eat', email: 'employe.eat@demo.com', motdepasse: 'employe123', color: '#22C55E', icon: '📦' },
   ],
-  com: [
-    { role: 'Patron Com',  email: 'patron.com@demo.com',  motdepasse: 'patron123',  color: '#8B5CF6', icon: '🎬' },
-    { role: 'Monteur Com', email: 'employe.com@demo.com', motdepasse: 'employe123', color: '#A78BFA', icon: '🎨' },
-  ],
+  com: [],
 };
 
 const GENERIC_DEMO = [
