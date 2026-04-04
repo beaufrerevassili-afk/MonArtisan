@@ -188,4 +188,32 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
   }
 });
 
+// ── AUTH: Refuser un brief → email poli au client ──
+router.post('/projets/:id/refuser', authenticateToken, async (req, res) => {
+  try {
+    const projet = await query('SELECT * FROM com_projets WHERE id = $1', [req.params.id]);
+    if (!projet.rows.length) return res.status(404).json({ erreur: 'Projet non trouvé' });
+    const p = projet.rows[0];
+
+    await query('UPDATE com_projets SET statut = $1 WHERE id = $2', ['refuse', req.params.id]);
+
+    await sendEmail(
+      p.client_email,
+      'Votre demande Freample Com',
+      `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#8B5CF6;">Merci pour votre demande, ${p.client_nom} 🙏</h2>
+        <p>Après analyse de votre brief, nous ne sommes malheureusement pas en mesure de répondre à cette demande pour le moment.</p>
+        <p>N'hésitez pas à nous recontacter pour un futur projet — nous serions ravis de travailler avec vous !</p>
+        <p style="color:#888;">— L'équipe Freample Com</p>
+      </div>
+      `
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ erreur: err.message });
+  }
+});
+
 module.exports = router;

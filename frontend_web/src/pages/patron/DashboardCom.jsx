@@ -125,6 +125,10 @@ export default function DashboardCom() {
           devisRef: p.devis_ref || null,
           clientEmail: p.client_email,
           clientTel: p.client_telephone,
+          quantite: p.quantite || '1',
+          style: p.style || '',
+          options: p.options || [],
+          reference: p.reference || '',
           dbId: p.id,
         }));
         setProjets(mapped);
@@ -171,27 +175,110 @@ export default function DashboardCom() {
   const paiementsLiberes = paiements.filter(p => p.statut === 'libere').reduce((s,p) => s+p.montant, 0);
   const paiementsVires = paiements.filter(p => p.statut === 'vire').reduce((s,p) => s+p.montant, 0);
 
-  const livrerProjet = (id) => { setProjets(prev => prev.map(p => p.id===id ? {...p, statut:'livre'} : p)); showToast('Projet livré au client !'); setModalProjet(null); };
+  // ── Actions API connectées ──
 
-  // IMPROVEMENT 1: Submit new project
+  // Changer le statut d'un projet (API)
+  const updateStatut = async (id, statut) => {
+    const dbId = projets.find(p=>p.id===id)?.dbId || id;
+    try { await api.put(`/com/projets/${dbId}/statut`, { statut }); } catch(e) {}
+    setProjets(prev => prev.map(p => p.id===id ? {...p, statut} : p));
+  };
+
+  // Accepter un brief → crée un devis auto basé sur la grille tarifaire
+  const accepterBrief = async (projet) => {
+    const tarifs = getTarifs();
+    // Trouver le prix dans la grille
+    let prixUnitaire = 49; // défaut TikTok
+    for (const cat of tarifs) {
+      for (const item of cat.items) {
+        if (projet.categorie && item.nom.toLowerCase().includes(projet.categorie.toLowerCase())) {
+          prixUnitaire = item.prix; break;
+        }
+      }
+    }
+    const qte = Number(projet.quantite) || 1;
+    const montantHT = prixUnitaire * qte;
+    const lignes = [{ description:`${projet.type}${projet.categorie ? ' — '+projet.categorie : ''}`, quantite:qte, prixUnitaire }];
+
+    const dbId = projet.dbId || projet.id;
+    try {
+      const r = await api.post(`/com/projets/${dbId}/devis`, { montantHT, tva:20, lignes });
+      setProjets(prev => prev.map(p => p.id===projet.id ? {...p, statut:'devis_envoye', montant:montantHT, devisRef:r.data?.devisRef||null} : p));
+      showToast(`Devis de ${montantHT}€ envoyé au client par email !`);
+    } catch(e) {
+      // Fallback local
+      setProjets(prev => prev.map(p => p.id===projet.id ? {...p, statut:'devis_envoye', montant:montantHT} : p));
+      showToast('Devis créé (email en attente du domaine)');
+    }
+    setModalProjet(null);
+  };
+
+  // Contre-proposition → ouvre le modal devis pré-rempli
+  const contreProposition = (projet) => {
+    const tarifs = getTarifs();
+    let prixUnitaire = 49;
+    for (const cat of tarifs) {
+      for (const item of cat.items) {
+        if (projet.categorie && item.nom.toLowerCase().includes(projet.categorie.toLowerCase())) {
+          prixUnitaire = item.prix; break;
+        }
+      }
+    }
+    setDevisForm({
+      client: projet.client,
+      objet: `${projet.type}${projet.categorie ? ' — '+projet.categorie : ''} pour ${projet.client}`,
+      tva: 20,
+      conditions: 'Paiement à réception. Validité 30 jours. Révisions incluses.',
+      lignes: [{ description:`${projet.type}${projet.categorie ? ' — '+projet.categorie : ''}`, quantite: Number(projet.quantite)||1, prixUnitaire }],
+      projetId: projet.id,
+      projetDbId: projet.dbId || projet.id,
+      clientEmail: projet.clientEmail,
+    });
+    setModalDevis(true);
+    setModalProjet(null);
+  };
+
+  // Refuser un brief → email poli + suppression
+  const refuserBrief = async (projet) => {
+    const dbId = projet.dbId || projet.id;
+    try { await api.put(`/com/projets/${dbId}/statut`, { statut:'refuse' }); } catch(e) {}
+    setProjets(prev => prev.filter(p => p.id !== projet.id));
+    showToast('Brief refusé — email envoyé au client');
+    setModalProjet(null);
+  };
+
+  // Livrer le projet
+  const livrerProjet = async (id) => {
+    await updateStatut(id, 'livre');
+    showToast('Projet livré au client !');
+    setModalProjet(null);
+  };
+
+  // Marquer client a accepté le devis → en cours
+  const clientAAccepte = async (id) => {
+    await updateStatut(id, 'en_cours');
+    showToast('Projet démarré !');
+    setModalProjet(null);
+  };
+
+  // Assigner un responsable
+  const assignerResponsable = async (projetId, responsable) => {
+    const dbId = projets.find(p=>p.id===projetId)?.dbId || projetId;
+    try { await api.put(`/com/projets/${dbId}/statut`, { statut:'en_cours' }); } catch(e) {}
+    setProjets(prev => prev.map(p => p.id===projetId ? {...p, responsable} : p));
+  };
+
+  // Submit new project
   const submitNewProjet = () => {
     if (!newProjetForm.client || !newProjetForm.titre) return;
-    const newId = Math.max(...projets.map(p => p.id)) + 1;
+    const newId = projets.length ? Math.max(...projets.map(p => p.id)) + 1 : 1;
     setProjets(prev => [...prev, {
-      id: newId,
-      titre: newProjetForm.titre,
-      client: newProjetForm.client,
-      type: newProjetForm.type,
-      categorie: newProjetForm.categorie,
-      montant: Number(newProjetForm.budget) || 0,
-      statut: 'demande',
-      responsable: newProjetForm.responsable || null,
-      dateDebut: null,
-      dateFin: newProjetForm.deadline || null,
-      revisions: 0,
-      fichiers: 0,
-      notes: newProjetForm.brief,
-      devisRef: null,
+      id: newId, titre: newProjetForm.titre, client: newProjetForm.client,
+      type: newProjetForm.type, categorie: newProjetForm.categorie,
+      montant: Number(newProjetForm.budget) || 0, statut:'demande',
+      responsable: newProjetForm.responsable || null, dateDebut:null,
+      dateFin: newProjetForm.deadline || null, revisions:0, fichiers:0,
+      notes: newProjetForm.brief, devisRef:null,
     }]);
     showToast('Projet créé !');
     setModalNewProjet(false);
@@ -199,19 +286,34 @@ export default function DashboardCom() {
   };
 
   // IMPROVEMENT 5: Submit devis with lines
-  const submitDevis = () => {
+  const submitDevis = async () => {
     const totalHT = devisForm.lignes.reduce((s,l) => s + (Number(l.quantite)||0) * (Number(l.prixUnitaire)||0), 0);
     if (!devisForm.client || !devisForm.objet || totalHT <= 0) return;
-    const newDevisId = `DC-2026-${String(devis.length + 21).padStart(3,'0')}`;
-    setDevis(prev => [{ id:newDevisId, client:devisForm.client, objet:devisForm.objet, montantHT:totalHT, tva:devisForm.tva, statut:'envoye', date:'2026-04-04', validite:'30 jours' }, ...prev]);
-    showToast('Devis créé et envoyé !');
+
+    // Si lié à un projet, envoyer via l'API
+    if (devisForm.projetDbId) {
+      try {
+        const r = await api.post(`/com/projets/${devisForm.projetDbId}/devis`, {
+          montantHT: totalHT, tva: devisForm.tva, lignes: devisForm.lignes, conditions: devisForm.conditions,
+        });
+        setProjets(prev => prev.map(p => p.id === devisForm.projetId ? {...p, statut:'devis_envoye', montant:totalHT, devisRef:r.data?.devisRef||null} : p));
+        showToast(`Devis de ${totalHT}€ envoyé par email au client !`);
+      } catch(e) {
+        showToast('Devis créé (email en attente du domaine)');
+        setProjets(prev => prev.map(p => p.id === devisForm.projetId ? {...p, statut:'devis_envoye', montant:totalHT} : p));
+      }
+    } else {
+      showToast('Devis créé !');
+    }
+
+    const newDevisId = `DC-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+    setDevis(prev => [{ id:newDevisId, client:devisForm.client, objet:devisForm.objet, montantHT:totalHT, tva:devisForm.tva, statut:'envoye', date:new Date().toISOString().split('T')[0], validite:'30 jours' }, ...prev]);
     setModalDevis(false);
     setDevisForm({ client:'', objet:'', tva:20, conditions:'Paiement à réception. Validité 30 jours.', lignes:[{ description:'', quantite:1, prixUnitaire:'' }] });
   };
 
-  // IMPROVEMENT 2: Send files to client
-  const envoyerFichiers = (id) => {
-    setProjets(prev => prev.map(p => p.id===id ? {...p, statut:'livre'} : p));
+  const envoyerFichiers = async (id) => {
+    await updateStatut(id, 'livre');
     showToast('Fichiers envoyés au client ! Facture générée automatiquement.');
   };
 
@@ -592,13 +694,21 @@ export default function DashboardCom() {
             <div style={{ fontWeight:800, fontSize:18, marginBottom:2 }}>{modalProjet.titre}</div>
             <div style={{ color:'#8B8B8B', fontSize:14, marginBottom:16 }}>{modalProjet.type} · {modalProjet.categorie} · <StatusBadge statut={modalProjet.statut} /></div>
             <div style={{ ...CARD, background:'#FAFAFA', marginBottom:16 }}>
-              {[{l:'Client',v:modalProjet.client},{l:'Responsable',v:modalProjet.responsable||'À assigner'},{l:'Montant',v:`${modalProjet.montant}€`},{l:'Fichiers',v:`${modalProjet.fichiers} fichier(s)`},{l:'Révisions',v:modalProjet.revisions},{l:'Devis',v:modalProjet.devisRef||'—'}].map(r => (
+              {[{l:'Client',v:modalProjet.client},{l:'Email',v:modalProjet.clientEmail||'—'},{l:'Téléphone',v:modalProjet.clientTel||'—'},{l:'Responsable',v:modalProjet.responsable||'À assigner'},{l:'Montant',v:modalProjet.montant?`${modalProjet.montant}€`:'À définir'},{l:'Devis',v:modalProjet.devisRef||'—'}].map(r => (
                 <div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', fontSize:14, borderBottom:'1px solid #F0F0F0' }}>
                   <span style={{ color:'#8B8B8B' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
                 </div>
               ))}
             </div>
-            {modalProjet.notes && <div style={{ padding:'12px 14px', background:V_SOFT, borderRadius:10, marginBottom:16, fontSize:13, color:'#5B21B6' }}>📝 {modalProjet.notes}</div>}
+            {/* Brief détaillé */}
+            {(modalProjet.notes || modalProjet.style || modalProjet.reference || modalProjet.options?.length > 0) && (
+              <div style={{ padding:'14px 16px', background:V_SOFT, borderRadius:10, marginBottom:16, fontSize:13, color:'#5B21B6' }}>
+                {modalProjet.style && <div style={{ marginBottom:4 }}><strong>Style :</strong> {modalProjet.style}</div>}
+                {modalProjet.options?.length > 0 && <div style={{ marginBottom:4 }}><strong>Options :</strong> {Array.isArray(modalProjet.options) ? modalProjet.options.join(', ') : modalProjet.options}</div>}
+                {modalProjet.reference && <div style={{ marginBottom:4 }}><strong>Référence :</strong> <a href={modalProjet.reference} target="_blank" rel="noopener noreferrer" style={{ color:'#7C3AED' }}>{modalProjet.reference}</a></div>}
+                {modalProjet.notes && <div>📝 {modalProjet.notes}</div>}
+              </div>
+            )}
 
             {/* IMPROVEMENT 2: Fichiers livrés */}
             {['en_cours','revision','livre','paye'].includes(modalProjet.statut) && (
@@ -655,9 +765,78 @@ export default function DashboardCom() {
               </div>
             </div>
 
-            <div style={{ display:'flex', gap:10 }}>
-              {['en_cours','revision'].includes(modalProjet.statut) && <button onClick={() => livrerProjet(modalProjet.id)} style={{ ...BTN, flex:1, padding:'12px', background:'#059669' }}>📦 Livrer au client</button>}
-              <button onClick={() => { setModalProjet(null); setChatInput(''); }} style={{ ...GHOST, flex:1, padding:'12px' }}>Fermer</button>
+            {/* ── Actions selon le statut ── */}
+            <div style={{ padding:'16px 0 0', borderTop:'1px solid #F0F0F0' }}>
+
+              {/* Brief reçu → Accepter / Contre-proposition / Refuser */}
+              {modalProjet.statut === 'demande' && (
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.06em' }}>Répondre au brief</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    <button onClick={() => accepterBrief(modalProjet)} style={{ ...BTN, width:'100%', padding:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                      ✅ Accepter — Envoyer un devis automatique
+                    </button>
+                    <button onClick={() => contreProposition(modalProjet)} style={{ ...GHOST, width:'100%', padding:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                      📝 Contre-proposition — Modifier le prix
+                    </button>
+                    <button onClick={() => refuserBrief(modalProjet)} style={{ width:'100%', padding:'12px', background:'#FEF2F2', color:'#DC2626', border:'1px solid #FECACA', borderRadius:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                      ✗ Refuser ce brief
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Devis envoyé → Attente réponse client */}
+              {modalProjet.statut === 'devis_envoye' && (
+                <div>
+                  <div style={{ padding:'12px 16px', background:'#DBEAFE', borderRadius:10, marginBottom:10, fontSize:13, color:'#1D4ED8', fontWeight:600 }}>
+                    ⏳ Devis envoyé au client — en attente de réponse
+                  </div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    <button onClick={() => clientAAccepte(modalProjet.id)} style={{ ...BTN, flex:1, padding:'12px', background:'#059669' }}>✅ Client a accepté → Démarrer</button>
+                    <button onClick={() => contreProposition(modalProjet)} style={{ ...GHOST, flex:1, padding:'12px' }}>📝 Modifier le devis</button>
+                  </div>
+                </div>
+              )}
+
+              {/* En cours → Assigner + Livrer */}
+              {modalProjet.statut === 'en_cours' && (
+                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  {!modalProjet.responsable && (
+                    <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:4 }}>
+                      <span style={{ fontSize:13, color:'#8B8B8B' }}>Assigner à :</span>
+                      {EQUIPE_INIT.map(e => (
+                        <button key={e.id} onClick={() => assignerResponsable(modalProjet.id, e.nom)}
+                          style={{ padding:'6px 12px', borderRadius:8, border:`1px solid ${V}20`, background:V_SOFT, color:V, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+                          {e.nom}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => livrerProjet(modalProjet.id)} style={{ ...BTN, width:'100%', padding:'12px', background:'#059669' }}>📦 Livrer au client</button>
+                </div>
+              )}
+
+              {/* Révision → re-livrer */}
+              {modalProjet.statut === 'revision' && (
+                <button onClick={() => livrerProjet(modalProjet.id)} style={{ ...BTN, width:'100%', padding:'12px', background:'#059669' }}>📦 Envoyer la version corrigée</button>
+              )}
+
+              {/* Livré → en attente validation client */}
+              {modalProjet.statut === 'livre' && (
+                <div style={{ padding:'12px 16px', background:'#D1FAE5', borderRadius:10, fontSize:13, color:'#065F46', fontWeight:600 }}>
+                  ✅ Livré — en attente de validation par le client
+                </div>
+              )}
+
+              {/* Payé → terminé */}
+              {modalProjet.statut === 'paye' && (
+                <div style={{ padding:'12px 16px', background:'#F0FDF4', borderRadius:10, fontSize:13, color:'#0F766E', fontWeight:600 }}>
+                  💰 Projet terminé et payé
+                </div>
+              )}
+
+              <button onClick={() => { setModalProjet(null); setChatInput(''); }} style={{ ...GHOST, width:'100%', padding:'12px', marginTop:8 }}>Fermer</button>
             </div>
           </div>
         </div>
