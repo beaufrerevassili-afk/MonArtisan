@@ -7,6 +7,8 @@ import RecrutementBanner from '../../components/public/RecrutementBanner';
 const CATEGORIES = [
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
   { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
+  { id: 'eat',        emoji: '🛵', label: 'Freample Eat',        sub: 'Livraison de repas à domicile' },
+  { id: 'course',     emoji: '🚗', label: 'Freample Course',     sub: 'VTC, courses, livraison colis' },
   { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements' },
   { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
 ];
@@ -44,6 +46,18 @@ const SUGGESTIONS = [
   { label: 'Carreleur',         secteur: 'btp' },
   { label: 'Isolation',         secteur: 'btp' },
   { label: 'Architecte',        secteur: 'btp' },
+  // Freample Eat
+  { label: 'Livraison repas',      secteur: 'eat' },
+  { label: 'Commander à manger',   secteur: 'eat' },
+  { label: 'Livraison pizza',      secteur: 'eat' },
+  { label: 'Livraison sushi',      secteur: 'eat' },
+  { label: 'Livraison burger',     secteur: 'eat' },
+  // Freample Course
+  { label: 'VTC',                  secteur: 'course' },
+  { label: 'Chauffeur privé',      secteur: 'course' },
+  { label: 'Course',               secteur: 'course' },
+  { label: 'Livraison colis',      secteur: 'course' },
+  { label: 'Transport',            secteur: 'course' },
   // Vacances
   { label: 'Hôtel',                secteur: 'vacances' },
   { label: 'Location de vacances', secteur: 'vacances' },
@@ -95,6 +109,10 @@ export default function SecteurSelect() {
         navigate(`/coiffure?q=${encodeURIComponent(query)}`);
       else if (q.includes('resto') || q.includes('pizza') || q.includes('sushi') || q.includes('burger') || q.includes('manger') || q.includes('gastro'))
         navigate(`/restaurant?q=${encodeURIComponent(query)}`);
+      else if (q.includes('livr') || q.includes('eat') || q.includes('command') || q.includes('repas'))
+        navigate(`/eat?q=${encodeURIComponent(query)}`);
+      else if (q.includes('vtc') || q.includes('chauffeur') || q.includes('course') || q.includes('taxi') || q.includes('colis') || q.includes('transport'))
+        navigate(`/course?q=${encodeURIComponent(query)}`);
       else if (q.includes('hotel') || q.includes('hôtel') || q.includes('vacanc') || q.includes('villa') || q.includes('appart') || q.includes('séjour') || q.includes('sejour'))
         navigate(`/vacances?q=${encodeURIComponent(query)}`);
       else

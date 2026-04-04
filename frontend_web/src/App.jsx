@@ -60,6 +60,8 @@ import SecteurLanding from './pages/public/SecteurLanding';
 import CoiffurePage from './pages/public/CoiffurePage';
 import RestaurantPage from './pages/public/RestaurantPage';
 import VacancesPage from './pages/public/VacancesPage';
+import FreampleEat from './pages/public/FreampleEat';
+import FreampleCourse from './pages/public/FreampleCourse';
 import SignatureDevis from './pages/public/SignatureDevis';
 import SalonDetailPage from './pages/public/SalonDetailPage';
 import DocumentView from './pages/public/DocumentView';
@@ -103,6 +105,8 @@ function AppRoutes() {
       <Route path="/coiffure/salon/:salonId" element={<SalonDetailPage />} />
       <Route path="/restaurant" element={<RestaurantPage />} />
       <Route path="/vacances" element={<VacancesPage />} />
+      <Route path="/eat" element={<FreampleEat />} />
+      <Route path="/course" element={<FreampleCourse />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />
