@@ -83,7 +83,10 @@ function FidBadge({ f }) {
   return <span style={{ background:s.bg, color:s.c, borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{s.l}</span>;
 }
 
-const TAB_MAP = { projets:'projets', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
+const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
+
+const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 
 export default function DashboardCom() {
   const { user } = useAuth();
@@ -99,7 +102,13 @@ export default function DashboardCom() {
   const [editPrix, setEditPrix] = useState('');
   const [editNom, setEditNom] = useState('');
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
-  const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur'); // 'monteur' | 'gestion'
+  const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
+  const [agendaEvents, setAgendaEvents] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('com_agenda') || '[]'); } catch { return []; }
+  });
+  const [agendaModal, setAgendaModal] = useState(null); // null | { jour, heure } | event object
+  const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'' });
+  const [semainOffset, setSemainOffset] = useState(0);
 
   useEffect(() => {
     const o = searchParams.get('onglet');
@@ -443,7 +452,7 @@ export default function DashboardCom() {
 
       {vue === 'monteur' && (
         <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24 }}>
-          {[{id:'accueil',icon:'🏠',label:'Ma journée'},{id:'projets',icon:'🎬',label:'Mes projets'},{id:'archives',icon:'📦',label:'Archives'},{id:'equipe',icon:'👥',label:'Équipe'}].map(t => (
+          {[{id:'accueil',icon:'🏠',label:'Ma journée'},{id:'projets',icon:'🎬',label:'Mes projets'},{id:'agenda',icon:'📅',label:'Agenda'},{id:'archives',icon:'📦',label:'Archives'},{id:'equipe',icon:'👥',label:'Équipe'}].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
           ))}
         </div>
@@ -656,6 +665,163 @@ export default function DashboardCom() {
           );
         })}
       </div>)}
+
+      {/* TAB: Agenda */}
+      {tab === 'agenda' && (() => {
+        const today = new Date();
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - today.getDay() + 1 + semainOffset * 7);
+        const joursDates = JOURS.map((j, i) => {
+          const d = new Date(monday); d.setDate(monday.getDate() + i);
+          return { label:j, date:d.toISOString().split('T')[0], num:d.getDate(), isToday: d.toDateString() === today.toDateString() };
+        });
+
+        const saveEvent = () => {
+          if (!agendaForm.titre) return;
+          const evt = { id: Date.now(), ...agendaForm, jour: typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour, date: joursDates[typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour]?.date };
+          const updated = agendaModal?.id ? agendaEvents.map(e => e.id === agendaModal.id ? { ...e, ...agendaForm } : e) : [...agendaEvents, evt];
+          setAgendaEvents(updated);
+          localStorage.setItem('com_agenda', JSON.stringify(updated));
+          setAgendaModal(null);
+          setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'' });
+          showToast(agendaModal?.id ? 'Événement modifié' : 'Événement ajouté');
+        };
+
+        const deleteEvent = (id) => {
+          const updated = agendaEvents.filter(e => e.id !== id);
+          setAgendaEvents(updated);
+          localStorage.setItem('com_agenda', JSON.stringify(updated));
+          setAgendaModal(null);
+          showToast('Événement supprimé');
+        };
+
+        const typeColors = { montage:{bg:'#F5F3FF',border:'#C4B5FD',color:'#5B21B6',label:'🎬 Montage'}, revision:{bg:'#FFF7ED',border:'#FED7AA',color:'#C2410C',label:'🔄 Révision'}, reunion:{bg:'#DBEAFE',border:'#93C5FD',color:'#1D4ED8',label:'📞 Réunion'}, livraison:{bg:'#D1FAE5',border:'#86EFAC',color:'#065F46',label:'📦 Livraison'}, prospection:{bg:'#FEF3C7',border:'#FDE047',color:'#713F12',label:'🔍 Prospection'}, perso:{bg:'#F3F3F3',border:'#E5E5E5',color:'#8B8B8B',label:'👤 Perso'} };
+
+        // Deadlines des projets en cours
+        const deadlines = projets.filter(p => p.dateFin && ['en_cours','revision'].includes(p.statut)).map(p => ({ ...p, isDeadline:true }));
+
+        return (<div>
+          {/* Header semaine */}
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+            <button onClick={() => setSemainOffset(s=>s-1)} style={{ ...GHOST, padding:'8px 14px' }}>← Semaine précédente</button>
+            <div style={{ fontSize:16, fontWeight:700 }}>
+              {semainOffset === 0 ? 'Cette semaine' : semainOffset === 1 ? 'Semaine prochaine' : semainOffset === -1 ? 'Semaine dernière' : `Semaine du ${joursDates[0].date}`}
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              {semainOffset !== 0 && <button onClick={() => setSemainOffset(0)} style={{ ...GHOST, padding:'8px 14px' }}>Aujourd'hui</button>}
+              <button onClick={() => setSemainOffset(s=>s+1)} style={{ ...GHOST, padding:'8px 14px' }}>Semaine suivante →</button>
+            </div>
+          </div>
+
+          {/* Grille semaine */}
+          <div style={{ display:'grid', gridTemplateColumns:'60px repeat(7, 1fr)', gap:0, background:'#fff', borderRadius:14, border:'1px solid #E9E5F5', overflow:'hidden' }}>
+            {/* Header jours */}
+            <div style={{ padding:'10px', borderBottom:'1px solid #E9E5F5', background:'#FAFAFA' }} />
+            {joursDates.map((j, i) => (
+              <div key={i} style={{ padding:'10px 8px', borderBottom:'1px solid #E9E5F5', borderLeft:'1px solid #E9E5F5', textAlign:'center', background: j.isToday ? V_SOFT : '#FAFAFA' }}>
+                <div style={{ fontSize:12, fontWeight:600, color: j.isToday ? V : '#8B8B8B' }}>{j.label}</div>
+                <div style={{ fontSize:18, fontWeight:800, color: j.isToday ? V : '#1C1C1E' }}>{j.num}</div>
+              </div>
+            ))}
+
+            {/* Lignes horaires */}
+            {HEURES.map(h => (<React.Fragment key={h}>
+              <div style={{ padding:'6px 8px', borderBottom:'1px solid #F0F0F0', fontSize:11, color:'#8B8B8B', textAlign:'right', minHeight:48, display:'flex', alignItems:'flex-start', justifyContent:'flex-end' }}>{h}</div>
+              {joursDates.map((j, ji) => {
+                const evts = agendaEvents.filter(e => (e.date === j.date || e.jour === ji) && e.heure === h);
+                const dls = deadlines.filter(p => p.dateFin === j.date && h === '09:00');
+                return (
+                  <div key={ji} onClick={() => { setAgendaForm({ titre:'', heure:h, heureFin:HEURES[HEURES.indexOf(h)+1]||'19:00', jour:ji, type:'montage', projet:'' }); setAgendaModal({ jour:ji, heure:h }); }}
+                    style={{ borderBottom:'1px solid #F0F0F0', borderLeft:'1px solid #F0F0F0', minHeight:48, padding:2, cursor:'pointer', position:'relative' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#FAFAFA'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                    {evts.map(evt => {
+                      const tc = typeColors[evt.type] || typeColors.montage;
+                      return (
+                        <div key={evt.id} onClick={(e) => { e.stopPropagation(); setAgendaForm(evt); setAgendaModal(evt); }}
+                          style={{ background:tc.bg, border:`1px solid ${tc.border}`, borderRadius:6, padding:'3px 6px', fontSize:11, fontWeight:600, color:tc.color, marginBottom:2, cursor:'pointer' }}>
+                          {evt.titre}
+                        </div>
+                      );
+                    })}
+                    {dls.map(dl => (
+                      <div key={dl.id} style={{ background:'#FEE2E2', border:'1px solid #FCA5A5', borderRadius:6, padding:'3px 6px', fontSize:10, fontWeight:700, color:'#DC2626', marginBottom:2 }}>
+                        📅 Deadline: {dl.titre?.slice(0,20)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </React.Fragment>))}
+          </div>
+
+          {/* Légende */}
+          <div style={{ display:'flex', gap:12, marginTop:16, flexWrap:'wrap' }}>
+            {Object.entries(typeColors).map(([k,v]) => (
+              <div key={k} style={{ display:'flex', alignItems:'center', gap:4 }}>
+                <div style={{ width:12, height:12, borderRadius:3, background:v.bg, border:`1px solid ${v.border}` }} />
+                <span style={{ fontSize:12, color:'#8B8B8B' }}>{v.label}</span>
+              </div>
+            ))}
+            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+              <div style={{ width:12, height:12, borderRadius:3, background:'#FEE2E2', border:'1px solid #FCA5A5' }} />
+              <span style={{ fontSize:12, color:'#8B8B8B' }}>📅 Deadline projet</span>
+            </div>
+          </div>
+
+          {/* Modal ajout/édition */}
+          {agendaModal && (
+            <div style={OVL} onClick={() => setAgendaModal(null)}>
+              <div style={{ ...BOX, maxWidth:420 }} onClick={e => e.stopPropagation()}>
+                <div style={{ fontWeight:800, fontSize:18, marginBottom:16 }}>{agendaModal?.id ? 'Modifier' : 'Nouvel événement'}</div>
+                <div style={{ marginBottom:14 }}>
+                  <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Titre *</label>
+                  <input value={agendaForm.titre} onChange={e => setAgendaForm(p=>({...p,titre:e.target.value}))} placeholder="Montage TikTok @emma..." style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:14 }}>
+                  <div>
+                    <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Début</label>
+                    <select value={agendaForm.heure} onChange={e => setAgendaForm(p=>({...p,heure:e.target.value}))} style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }}>
+                      {HEURES.map(h=><option key={h} value={h}>{h}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Fin</label>
+                    <select value={agendaForm.heureFin} onChange={e => setAgendaForm(p=>({...p,heureFin:e.target.value}))} style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }}>
+                      {HEURES.map(h=><option key={h} value={h}>{h}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Type</label>
+                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                    {Object.entries(typeColors).map(([k,v]) => (
+                      <button key={k} onClick={() => setAgendaForm(p=>({...p,type:k}))}
+                        style={{ padding:'6px 12px', borderRadius:8, border:`1.5px solid ${agendaForm.type===k?v.border:'#E9E5F5'}`, background:agendaForm.type===k?v.bg:'#fff', color:agendaForm.type===k?v.color:'#8B8B8B', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
+                        {v.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ marginBottom:20 }}>
+                  <label style={{ fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 }}>Projet lié</label>
+                  <select value={agendaForm.projet} onChange={e => setAgendaForm(p=>({...p,projet:e.target.value}))} style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }}>
+                    <option value="">Aucun</option>
+                    {projets.filter(p=>['en_cours','revision'].includes(p.statut)).map(p=>(
+                      <option key={p.id} value={p.titre}>{p.titre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={saveEvent} style={{ ...BTN, flex:1, padding:'12px' }}>{agendaModal?.id ? 'Modifier' : 'Ajouter'}</button>
+                  {agendaModal?.id && <button onClick={() => deleteEvent(agendaModal.id)} style={{ padding:'12px 16px', background:'#FEF2F2', color:'#DC2626', border:'1px solid #FECACA', borderRadius:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' }}>🗑️</button>}
+                  <button onClick={() => setAgendaModal(null)} style={{ ...GHOST, padding:'12px' }}>Annuler</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>);
+      })()}
 
       {/* TAB: Archives */}
       {tab === 'archives' && (<div>
