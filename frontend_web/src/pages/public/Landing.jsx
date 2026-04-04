@@ -415,18 +415,14 @@ export default function Landing() {
                 <p style={{ fontSize: 14, color: DS.muted, margin: '8px 0 0', lineHeight: 1.5 }}>Plombiers, électriciens, menuisiers — vérifiés et certifiés partout en France</p>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 4 }}>
-                <button onClick={() => navigate('/register?role=artisan')}
-                  style={{ padding: '9px 18px', background: DS.bgSoft, border: `1px solid ${DS.border}`, borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 600, color: DS.ink, cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = DS.bgMuted; e.currentTarget.style.borderColor = DS.ink; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = DS.bgSoft; e.currentTarget.style.borderColor = DS.border; }}>
-                  🔨 Je suis artisan
-                </button>
-                <button onClick={() => navigate('/register')}
-                  style={{ padding: '9px 18px', background: '#F97316', border: 'none', borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#EA580C'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#F97316'}>
-                  Créer un compte gratuit
-                </button>
+                <HideForClient>
+                  <button onClick={() => navigate('/register')}
+                    style={{ padding: '9px 18px', background: '#F97316', border: 'none', borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#EA580C'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#F97316'}>
+                    Créer un compte gratuit
+                  </button>
+                </HideForClient>
               </div>
             </div>
 
@@ -584,11 +580,13 @@ export default function Landing() {
                 <div style={{ fontSize: '3rem', marginBottom: 16 }}>🚀</div>
                 <p style={{ fontWeight: 700, color: '#0E0E1A', fontSize: '1.25rem', marginBottom: 12, letterSpacing: '-0.02em' }}>La plateforme est en cours de lancement</p>
                 <p style={{ color: '#9898B8', fontSize: '0.9375rem', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
-                  Les premiers artisans vérifiés arrivent bientôt.<br />Vous êtes artisan ? Rejoignez-nous dès maintenant.
+                  Les premiers professionnels vérifiés arrivent bientôt.
                 </p>
-                <button onClick={() => window.location.href = '/register'} className="btn-primary" style={{ padding: '12px 28px' }}>
-                  Rejoindre la plateforme →
-                </button>
+                <HideForClient>
+                  <button onClick={() => window.location.href = '/register'} className="btn-primary" style={{ padding: '12px 28px' }}>
+                    Rejoindre la plateforme →
+                  </button>
+                </HideForClient>
               </>
             )}
           </div>
