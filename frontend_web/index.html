@@ -13,6 +13,14 @@
 </head>
 <body>
   <div id="root"></div>
+  <script>
+    window.addEventListener('error', function(e) {
+      document.getElementById('root').innerHTML = '<pre style="padding:20px;color:red;font-size:14px;">ERREUR JS:\n' + e.message + '\n' + (e.filename||'') + ':' + (e.lineno||'') + '</pre>';
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      document.getElementById('root').innerHTML = '<pre style="padding:20px;color:red;font-size:14px;">ERREUR PROMISE:\n' + (e.reason?.message || e.reason || 'Unknown') + '\n' + (e.reason?.stack || '') + '</pre>';
+    });
+  </script>
   <script type="module" src="/src/main.jsx"></script>
   <script>
     if ('serviceWorker' in navigator) {
