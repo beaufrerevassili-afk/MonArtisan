@@ -280,7 +280,8 @@ export default function RecrutementPage() {
   const [quoi, setQuoi] = useState(searchParams.get('q')||'');
   const [ou, setOu] = useState(searchParams.get('ou')||'');
   const [contrat, setContrat] = useState('Tous');
-  const [secteur, setSecteur] = useState('tous');
+  const urlSecteur = searchParams.get('secteur');
+  const [secteur, setSecteur] = useState(urlSecteur && ['coiffure','btp','restaurant','vacances'].includes(urlSecteur) ? urlSecteur : 'tous');
   const [offres, setOffres] = useState(DEMO_OFFRES);
   const [selected, setSelected] = useState(null);
   const [postulating, setPostulating] = useState(false);
@@ -342,13 +343,13 @@ export default function RecrutementPage() {
             onFocusCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.lg}
             onBlurCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.md}>
             <div style={{ flex:1.3, display:'flex', flexDirection:'column', padding:'12px 20px' }}>
-              <label style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Quoi ?</label>
+              <label style={{ fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Quoi ?</label>
               <input value={quoi} onChange={e=>setQuoi(e.target.value)} placeholder="Métier, compétence…"
                 style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:DS.ink, fontFamily:DS.font, fontWeight:500 }} />
             </div>
             <div style={{ width:1, background:DS.border, margin:'10px 0' }} />
             <div style={{ display:'flex', flexDirection:'column', padding:'12px 20px', minWidth:140 }}>
-              <label style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Où ?</label>
+              <label style={{ fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Où ?</label>
               <input value={ou} onChange={e=>setOu(e.target.value)} placeholder="Ville…"
                 style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:DS.ink, fontFamily:DS.font, fontWeight:500, width:'100%' }} />
             </div>
