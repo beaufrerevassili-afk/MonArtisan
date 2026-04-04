@@ -39,12 +39,15 @@ router.post('/briefs', async (req, res) => {
       return res.status(400).json({ erreur: 'Type, nom et email requis' });
     }
 
+    // Générer un token unique de suivi
+    const suiviToken = Math.random().toString(36).slice(2, 8).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+
     // Sauvegarder en base
     const result = await query(
-      `INSERT INTO com_projets (type, format, quantite, style, options, reference, description, client_nom, client_email, client_telephone, deadline, statut)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'brief_recu')
+      `INSERT INTO com_projets (type, format, quantite, style, options, reference, description, client_nom, client_email, client_telephone, deadline, statut, suivi_token)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'brief_recu',$12)
        RETURNING id`,
-      [type, format || null, quantite || '1', style || null, JSON.stringify(options || []), reference || null, description || null, nom, email, telephone || null, deadline || null]
+      [type, format || null, quantite || '1', style || null, JSON.stringify(options || []), reference || null, description || null, nom, email, telephone || null, deadline || null, suiviToken]
     );
 
     const projetId = result.rows[0].id;
@@ -88,16 +91,62 @@ router.post('/briefs', async (req, res) => {
           ${style ? 'Style : ' + style + '<br/>' : ''}
           ${options?.length ? 'Options : ' + options.join(', ') + '<br/>' : ''}
         </div>
+        <div style="margin:20px 0;padding:20px;background:#0F0A1A;border-radius:12px;text-align:center;">
+          <p style="color:rgba(255,255,255,0.7);margin:0 0 12px;font-size:14px;">Suivez votre commande en temps réel :</p>
+          <a href="${process.env.FRONTEND_URL || 'https://frontendweb-ruby.vercel.app'}/suivi/${suiviToken}"
+             style="display:inline-block;padding:12px 28px;background:#8B5CF6;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">
+            📦 Suivre ma commande
+          </a>
+          <p style="color:rgba(255,255,255,0.4);margin:12px 0 0;font-size:12px;">Code de suivi : ${suiviToken}</p>
+        </div>
         <p>Si vous avez des questions, répondez directement à cet email ou contactez-nous sur WhatsApp.</p>
         <p style="color:#888;">— L'équipe Freample Com</p>
       </div>
       `
     );
 
-    res.json({ success: true, projetId, message: 'Brief reçu, email envoyé' });
+    res.json({ success: true, projetId, suiviToken, message: 'Brief reçu, email envoyé' });
   } catch (err) {
     console.error('Erreur brief:', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// ── PUBLIC: Suivi de commande par token (pas besoin de compte) ──
+router.get('/suivi/:token', async (req, res) => {
+  try {
+    const result = await query('SELECT id, type, format, quantite, style, client_nom, statut, fichiers_faits, montant_ht, devis_ref, deadline, created_at FROM com_projets WHERE suivi_token = $1', [req.params.token]);
+    if (!result.rows.length) return res.status(404).json({ erreur: 'Commande introuvable' });
+    const p = result.rows[0];
+    const qte = Number(p.quantite) || 1;
+    const fait = Number(p.fichiers_faits) || 0;
+    const avancement = (p.statut === 'livre' || p.statut === 'paye') ? 100 : (qte > 0 ? Math.round((fait/qte)*100) : 0);
+
+    const statusLabels = {
+      brief_recu: 'Demande reçue — analyse en cours',
+      devis_envoye: 'Devis envoyé — en attente de votre réponse',
+      en_cours: 'En cours de réalisation',
+      revision: 'En cours de révision',
+      livre: 'Livré — en attente de votre validation',
+      paye: 'Terminé et payé',
+      archive: 'Projet archivé',
+    };
+
+    res.json({
+      titre: `${p.type}${p.format ? ' · ' + p.format : ''}`,
+      client: p.client_nom,
+      statut: p.statut,
+      statutLabel: statusLabels[p.statut] || p.statut,
+      avancement,
+      fichiersFaits: fait,
+      quantite: qte,
+      montant: Number(p.montant_ht) || 0,
+      devis: p.devis_ref,
+      deadline: p.deadline,
+      dateCommande: p.created_at,
+    });
+  } catch (err) {
+    res.status(500).json({ erreur: err.message });
   }
 });
 

@@ -21,6 +21,7 @@ export default function FreampleCom() {
   const [step, setStep] = useState(0); // 0=landing, 1=brief step1, 2=brief step2, 3=sent
   const [brief, setBrief] = useState({ type:'', format:'', quantite:'1', style:'', reference:'', options:[], description:'', nom:'', email:'', deadline:'' });
   const [sending, setSending] = useState(false);
+  const [suiviToken, setSuiviToken] = useState(null);
 
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
   const toggleOpt = (v) => setBrief(p=>({...p, options: p.options.includes(v) ? p.options.filter(x=>x!==v) : [...p.options, v] }));
@@ -322,13 +323,14 @@ export default function FreampleCom() {
                   if(!brief.nom||!brief.email) return;
                   setSending(true);
                   try {
-                    await api.post('/com/briefs', {
+                    const r = await api.post('/com/briefs', {
                       type:brief.type, format:brief.format, quantite:brief.quantite,
                       style:brief.style, options:brief.options, reference:brief.reference,
                       description:brief.description, nom:brief.nom, email:brief.email,
                       telephone:brief.telephone||'', deadline:brief.deadline||null,
                     });
-                  } catch(e) { console.log('Brief envoyé (mode démo)'); }
+                    if (r.data?.suiviToken) setSuiviToken(r.data.suiviToken);
+                  } catch(e) { console.log('Demande envoyée (mode démo)'); }
                   setSending(false);
                   setStep(3);
                 }}
@@ -342,8 +344,17 @@ export default function FreampleCom() {
             {step === 3 && (<div style={{ textAlign:'center', padding:'16px 0' }}>
               <div style={{ width:56, height:56, borderRadius:'50%', background:'#D1FAE5', margin:'0 auto 14px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24 }}>✓</div>
               <div style={{ fontSize:18, fontWeight:800, marginBottom:4 }}>Demande envoyée !</div>
-              <div style={{ fontSize:14, color:C.textSec, marginBottom:20 }}>On vous répond sous 24h à <strong>{brief.email}</strong></div>
-              <button onClick={()=>setStep(0)} style={{ padding:'12px 28px', background:C.primary, color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>Fermer</button>
+              <div style={{ fontSize:14, color:C.textSec, marginBottom:16 }}>On vous répond sous 24h à <strong>{brief.email}</strong></div>
+              {suiviToken && (
+                <div style={{ padding:'16px', background:C.soft, borderRadius:12, marginBottom:16, border:`1px solid ${C.border}` }}>
+                  <div style={{ fontSize:13, color:C.textSec, marginBottom:8 }}>Suivez votre commande en temps réel :</div>
+                  <a href={`/suivi/${suiviToken}`} style={{ display:'inline-block', padding:'10px 24px', background:C.primary, color:'#fff', borderRadius:8, fontSize:14, fontWeight:700, textDecoration:'none' }}>
+                    📦 Suivre ma commande
+                  </a>
+                  <div style={{ fontSize:12, color:C.textLight, marginTop:8 }}>Code : {suiviToken}</div>
+                </div>
+              )}
+              <button onClick={()=>setStep(0)} style={{ padding:'12px 28px', background:C.bg, color:C.text, border:`1.5px solid ${C.border}`, borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>Fermer</button>
             </div>)}
 
           </div>
