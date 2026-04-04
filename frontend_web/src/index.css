@@ -47,17 +47,17 @@
   /* ── Layout ────────────────────────────────────────────── */
   --sidebar-width:    260px;
   --header-height:    60px;
-  --radius:           14px;
-  --radius-lg:        20px;
-  --radius-sm:        8px;
+  --radius:           16px;
+  --radius-lg:        24px;
+  --radius-sm:        10px;
 
   /* ── Shadows ───────────────────────────────────────────── */
-  --shadow:           0 1px 3px rgba(14,14,26,0.05), 0 4px 12px rgba(91,91,214,0.06);
-  --shadow-md:        0 8px 24px rgba(14,14,26,0.08), 0 2px 8px rgba(91,91,214,0.08);
-  --shadow-lg:        0 16px 48px rgba(14,14,26,0.12), 0 4px 16px rgba(91,91,214,0.10);
-  --shadow-xl:        0 32px 80px rgba(14,14,26,0.16), 0 8px 24px rgba(91,91,214,0.14);
+  --shadow:           0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:        0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:        0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-xl:        0 16px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
   --shadow-glow:      0 0 0 3px var(--primary-glow);
-  --shadow-card-hover:0 20px 60px rgba(91,91,214,0.15), 0 4px 16px rgba(14,14,26,0.08);
+  --shadow-card-hover:0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
 
   /* ── Transitions ───────────────────────────────────────── */
   --transition:       all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -142,10 +142,10 @@ p  { color: var(--text-secondary); line-height: 1.6; }
 
   /* ── Cards ──────────────────────────────────────────── */
   .card {
-    background: var(--gradient-card);
-    border-radius: var(--radius);
+    background: var(--card);
+    border-radius: 16px;
     border: 1px solid var(--border-light);
-    box-shadow: var(--shadow);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03);
     transition: var(--transition);
     position: relative;
     overflow: hidden;
@@ -161,7 +161,7 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     pointer-events: none;
   }
   .card:hover {
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
     transform: translateY(-1px);
     border-color: var(--border);
   }
@@ -191,14 +191,14 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 8px;
     background: var(--gradient-primary);
     color: #fff;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     letter-spacing: -0.01em;
-    padding: 9px 18px;
-    border-radius: 10px;
+    padding: 12px 22px;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
     transition: var(--transition-spring);
@@ -206,6 +206,7 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     box-shadow: 0 4px 14px var(--primary-glow);
     position: relative;
     overflow: hidden;
+    min-height: 46px;
   }
   .btn-primary::after {
     content: '';
@@ -225,17 +226,18 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 8px;
     background: var(--card);
     color: var(--text);
     font-weight: 500;
-    font-size: 0.875rem;
-    padding: 9px 18px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    font-size: 0.9375rem;
+    padding: 12px 22px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
+    min-height: 46px;
   }
   .btn-secondary:hover {
     background: var(--bg-secondary);
@@ -279,20 +281,21 @@ p  { color: var(--text-secondary); line-height: 1.6; }
   }
   .btn-ghost:hover { background: var(--primary-light); color: var(--primary); }
 
-  /* ── Inputs ──────────────────────────────────────────── */
+  /* ── Inputs — Airbnb-style generous sizing ──────────── */
   .input {
     width: 100%;
     background: var(--card);
     color: var(--text);
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-family: inherit;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
     outline: none;
     transition: var(--transition);
     -webkit-appearance: none;
     font-weight: 400;
+    min-height: 48px;
   }
   .input::placeholder { color: var(--text-tertiary); }
   .input:focus {
@@ -747,47 +750,66 @@ p  { color: var(--text-secondary); line-height: 1.6; }
   .grid-3     { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ══════════════════════════════════════════════════════════
+   MOBILE-FIRST — Airbnb-inspired responsive overhaul
+   ══════════════════════════════════════════════════════════ */
+
 /* ── Mobile (max 640px) ── */
 @media (max-width: 640px) {
-  html { font-size: 14px; }
+  html { font-size: 15px; }
 
-  h1 { font-size: 1.375rem !important; letter-spacing: -0.025em; }
-  h2 { font-size: 1.125rem !important; }
-  h3 { font-size: 1rem !important; }
+  /* ── Typography: generous, readable ── */
+  h1 { font-size: 1.5rem !important; letter-spacing: -0.025em; line-height: 1.25 !important; }
+  h2 { font-size: 1.25rem !important; line-height: 1.3 !important; }
+  h3 { font-size: 1.0625rem !important; }
+  p  { font-size: 0.9375rem; line-height: 1.6; }
 
   /* ── Grids → 1 column ── */
   .grid-2, .grid-3, .grid-4, .stats-grid {
     grid-template-columns: 1fr !important;
   }
 
-  /* ── Cards ── */
+  /* ── Cards: Airbnb-style breathing room ── */
   .card {
-    border-radius: 12px !important;
-    padding: 14px !important;
+    border-radius: 16px !important;
+    padding: 16px 18px !important;
   }
 
   /* ── All tables scrollable ── */
-  table {
-    min-width: 560px;
-  }
-  .table-wrap,
-  div:has(> table) {
+  table { min-width: 560px; }
+  .table-wrap, div:has(> table) {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 
-  /* ── Buttons ── */
+  /* ── Buttons: large touch targets ── */
   .btn-primary, .btn-secondary, .btn-danger {
-    padding: 10px 16px !important;
-    font-size: 0.8125rem !important;
-    min-height: 44px;
+    padding: 12px 20px !important;
+    font-size: 0.9375rem !important;
+    min-height: 48px;
+    border-radius: 12px !important;
   }
-
-  /* Buttons full width when stacked */
+  .btn-ghost {
+    min-height: 44px;
+    padding: 10px 14px !important;
+  }
   .btn-mobile-full { width: 100%; justify-content: center; }
 
-  /* ── Modals / drawers ── */
+  /* ── Inputs: generous sizing ── */
+  input, select, textarea {
+    font-size: 16px !important;
+    min-height: 48px;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+  }
+  .input {
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    min-height: 48px;
+  }
+
+  /* ── Modals: bottom-sheet pattern ── */
   .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
   .modal-content,
   [style*="position: fixed"][style*="right: 0"],
@@ -795,46 +817,45 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     width: 100% !important;
     max-width: 100% !important;
     border-radius: 20px 20px 0 0 !important;
-    max-height: 90vh !important;
+    max-height: 92vh !important;
     overflow-y: auto;
   }
 
-  /* ── Inline flex headers → wrap ── */
-  .page-header,
-  .section-header {
+  /* ── Headers: wrap gracefully ── */
+  .page-header, .section-header {
     flex-wrap: wrap !important;
-    gap: 10px !important;
+    gap: 12px !important;
   }
 
-  /* ── Toast full-width ── */
+  /* ── Toast: full-width above bottom nav ── */
   .toast-container { bottom: 84px; right: 12px; left: 12px; }
-  .toast { min-width: unset; max-width: 100%; width: 100%; }
+  .toast { min-width: unset; max-width: 100%; width: 100%; border-radius: 14px; }
 
-  /* ── Tabs scrollable ── */
+  /* ── Tabs: horizontal scroll, larger targets ── */
   .tabs {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
     scrollbar-width: none;
-    gap: 4px !important;
+    gap: 6px !important;
   }
   .tabs::-webkit-scrollbar { display: none; }
-  .tab-btn { flex-shrink: 0 !important; white-space: nowrap !important; }
+  .tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-height: 40px !important;
+    padding: 8px 16px !important;
+  }
 
   /* ── Stat numbers ── */
   .stat-number { font-size: 1.75rem; }
 
-  /* ── Inputs & selects ── */
-  input, select, textarea {
-    font-size: 16px !important; /* prevent iOS zoom */
-  }
-
-  /* ── Hide topbar breadcrumb on mobile ── */
+  /* ── Hide topbar breadcrumb ── */
   .topbar-back-text { display: none; }
   .topbar-breadcrumb { display: none; }
 
-  /* ── Notification dropdown mobile ── */
+  /* ── Notification dropdown ── */
   .notif-dropdown {
     position: fixed !important;
     top: 48px !important;
@@ -842,12 +863,28 @@ p  { color: var(--text-secondary); line-height: 1.6; }
     right: 8px !important;
     width: auto !important;
   }
+
+  /* ── Labels minimum readability ── */
+  label {
+    font-size: 0.8125rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* ── Badge: readable on mobile ── */
+  .badge {
+    font-size: 0.6875rem;
+    padding: 3px 9px;
+    border-radius: 8px;
+  }
+
+  /* ── Spacing between sections ── */
+  main > div > div { margin-bottom: 16px; }
 }
 
 /* ── Very small (max 400px) ── */
 @media (max-width: 400px) {
+  html { font-size: 14px; }
   .badge { font-size: 0.625rem; padding: 2px 7px; }
-  html { font-size: 13px; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1026,39 +1063,94 @@ a:focus-visible,
   }
 }
 
-/* ── Dashboard modals: full-width on mobile ── */
+/* ══════════════════════════════════════════════════════════
+   INLINE-STYLE DASHBOARDS — Airbnb mobile overrides
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  /* Target inline-style modals (position:fixed overlay → inner box) */
-  div[style*="position"][style*="fixed"][style*="inset"] > div[style*="borderRadius"] {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    max-height: 85vh !important;
-    margin: 0 auto;
-    border-radius: 16px 16px 0 0 !important;
-    padding: 20px 16px !important;
+
+  /* ── Dashboard page wrappers: breathing room ── */
+  div[style*="padding:'24px 28px'"],
+  div[style*="padding: '24px 28px'"] {
+    padding: 16px !important;
   }
 
-  /* Dashboard 2-col grids inside inline-style pages */
+  /* ── Inline modals → bottom sheet ── */
+  div[style*="position"][style*="fixed"][style*="inset"] > div[style*="borderRadius"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+  }
+
+  /* ── Inline 2-col grids → stack ── */
   div[style*="gridTemplateColumns"][style*="1fr 1fr"] {
     grid-template-columns: 1fr !important;
   }
 
-  /* Order modal 2-column → stack */
-  div[style*="gridTemplateColumns: '1fr 1fr'"],
-  div[style*="gridTemplateColumns:'1fr 1fr'"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Floor plan 5-column → 3-column */
+  /* ── Floor plan 5-col → 3-col ── */
   div[style*="repeat(5,1fr)"] {
     grid-template-columns: repeat(3, 1fr) !important;
   }
 
-  /* Tab bar: scroll horizontal */
-  div[style*="flexWrap:'wrap'"][style*="gap:4"] {
+  /* ── Tab bar: horizontal scroll, no wrap ── */
+  div[style*="flexWrap:'wrap'"][style*="gap:4"],
+  div[style*="flexWrap: 'wrap'"][style*="gap: 4"] {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding: 6px !important;
+  }
+  div[style*="flexWrap:'wrap'"][style*="gap:4"]::-webkit-scrollbar,
+  div[style*="flexWrap: 'wrap'"][style*="gap: 4"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── KPI cards row → stack ── */
+  div[style*="display:'flex'"][style*="gap:16"][style*="flexWrap:'wrap'"],
+  div[style*="display: 'flex'"][style*="gap: 16"][style*="flexWrap: 'wrap'"] {
+    flex-direction: column !important;
+  }
+
+  /* ── Inline buttons: wider on mobile ── */
+  button[style*="borderRadius:10"],
+  button[style*="borderRadius: 10"],
+  button[style*="border-radius:10px"] {
+    min-height: 44px;
+    font-size: 0.875rem !important;
+  }
+
+  /* ── Room/table grid: fewer columns ── */
+  div[style*="minmax(200px"] {
+    grid-template-columns: 1fr !important;
+  }
+  div[style*="minmax(280px"] {
+    grid-template-columns: 1fr !important;
+  }
+  div[style*="minmax(160px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Header flex: wrap on mobile ── */
+  div[style*="justifyContent:'space-between'"][style*="flexWrap:'wrap'"] {
+    gap: 12px !important;
+  }
+
+  /* ── Inline card style: mobile padding ── */
+  div[style*="padding:'20px 24px'"] {
+    padding: 16px !important;
+  }
+
+  /* ── Search inputs: full width ── */
+  input[style*="maxWidth:3"],
+  input[style*="maxWidth: 3"],
+  input[style*="max-width:3"] {
+    max-width: 100% !important;
+    width: 100% !important;
   }
 }

@@ -37,16 +37,16 @@ export const DS = {
   amber:      '#D97706',
   amberBg:    '#FFFBEB',
 
-  // Rayons
-  r:  { xs:4, sm:8, md:12, lg:16, xl:20, xxl:24, full:100 },
+  // Rayons — Airbnb-style generous rounding
+  r:  { xs:6, sm:10, md:14, lg:18, xl:22, xxl:28, full:100 },
 
-  // Ombres
+  // Ombres — Airbnb-clean (neutral, no blue tint)
   shadow: {
-    xs:  '0 1px 3px rgba(0,0,0,0.05)',
-    sm:  '0 2px 8px rgba(0,0,0,0.06)',
-    md:  '0 4px 20px rgba(0,0,0,0.08)',
-    lg:  '0 8px 36px rgba(0,0,0,0.11)',
-    xl:  '0 16px 64px rgba(0,0,0,0.14)',
+    xs:  '0 1px 2px rgba(0,0,0,0.04)',
+    sm:  '0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03)',
+    md:  '0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+    lg:  '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)',
+    xl:  '0 16px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06)',
   },
 
   // Typographie
