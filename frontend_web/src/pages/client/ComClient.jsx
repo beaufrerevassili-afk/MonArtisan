@@ -54,19 +54,55 @@ export default function ComClient() {
         // Filtrer par email du client connecté
         const miens = r.data.projets.filter(p => p.client_email === user.email);
         if (miens.length) {
-          setProjets(miens.map(p => ({
-            id: p.id, titre: `${p.type}${p.format ? ' · '+p.format : ''}`,
-            responsable: 'Équipe Freample', type: p.type,
-            statut: p.statut === 'brief_recu' ? 'demande' : p.statut === 'devis_envoye' ? 'devis_recu' : p.statut,
-            montant: Number(p.montant_ht) || 0,
-            dateCommande: p.created_at?.split('T')[0],
-            dateLivraison: p.deadline,
-            avancement: p.statut === 'livre' || p.statut === 'paye' ? 100 : p.statut === 'en_cours' ? 50 : 0,
-            devis: p.devis_ref, fichiers:[], messages:[],
-          })));
+          setProjets(miens.map(p => {
+            const qte = Number(p.quantite) || 1;
+            const fait = Number(p.fichiers_faits) || 0;
+            const avancement = (p.statut === 'livre' || p.statut === 'paye') ? 100
+              : (p.statut === 'en_cours' || p.statut === 'revision') ? (qte > 0 ? Math.round((fait/qte)*100) : 0)
+              : 0;
+            return {
+              id: p.id, titre: `${p.type}${p.format ? ' · '+p.format : ''}`,
+              responsable: 'Équipe Freample', type: p.type,
+              statut: p.statut === 'brief_recu' ? 'demande' : p.statut === 'devis_envoye' ? 'devis_recu' : p.statut,
+              montant: Number(p.montant_ht) || 0,
+              dateCommande: p.created_at?.split('T')[0],
+              dateLivraison: p.deadline,
+              avancement, quantite: qte, fichiersFaits: fait,
+              devis: p.devis_ref, fichiers:[], messages:[],
+            };
+          }));
         }
       }
     }).catch(() => {});
+  }, [user]);
+
+  // Auto-refresh toutes les 30s pour voir les mises à jour du monteur
+  useEffect(() => {
+    if (!user?.email) return;
+    const interval = setInterval(() => {
+      api.get('/com/projets').then(r => {
+        if (r.data?.projets) {
+          const miens = r.data.projets.filter(p => p.client_email === user.email);
+          if (miens.length) {
+            setProjets(prev => miens.map(p => {
+              const qte = Number(p.quantite) || 1;
+              const fait = Number(p.fichiers_faits) || 0;
+              const avancement = (p.statut === 'livre' || p.statut === 'paye') ? 100 : (qte > 0 ? Math.round((fait/qte)*100) : 0);
+              const existing = prev.find(x => x.id === p.id);
+              return {
+                id:p.id, titre:`${p.type}${p.format?' · '+p.format:''}`,
+                responsable:'Équipe Freample', type:p.type,
+                statut: p.statut==='brief_recu'?'demande':p.statut==='devis_envoye'?'devis_recu':p.statut,
+                montant:Number(p.montant_ht)||0, dateCommande:p.created_at?.split('T')[0],
+                dateLivraison:p.deadline, avancement, quantite:qte, fichiersFaits:fait,
+                devis:p.devis_ref, fichiers:existing?.fichiers||[], messages:existing?.messages||[],
+              };
+            }));
+          }
+        }
+      }).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const actifs = projets.filter(p=>!['valide'].includes(p.statut));
@@ -151,11 +187,27 @@ export default function ComClient() {
               {p.avancement > 0 && (
                 <div style={{ marginTop:8 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'#8B8B8B', marginBottom:4 }}>
-                    <span>Avancement</span><span style={{ fontWeight:700, color:V }}>{p.avancement}%</span>
+                    <span>{p.fichiersFaits||0}/{p.quantite||1} fichier{(p.quantite||1)>1?'s':''} terminé{(p.fichiersFaits||0)>1?'s':''}</span>
+                    <span style={{ fontWeight:700, color: p.avancement >= 100 ? '#059669' : V }}>{p.avancement}%</span>
                   </div>
-                  <div style={{ background:'#F3F3F3', borderRadius:4, height:6 }}>
-                    <div style={{ background:V, borderRadius:4, height:6, width:`${p.avancement}%`, transition:'width .3s' }} />
+                  <div style={{ background:'#F3F3F3', borderRadius:4, height:8 }}>
+                    <div style={{ background: p.avancement >= 100 ? '#059669' : V, borderRadius:4, height:8, width:`${p.avancement}%`, transition:'width .3s' }} />
                   </div>
+                </div>
+              )}
+              {p.statut === 'demande' && (
+                <div style={{ marginTop:8, padding:'8px 12px', background:'#FEF3C7', borderRadius:8, fontSize:13, color:'#713F12', fontWeight:600 }}>
+                  ⏳ Votre demande est en cours d'analyse — réponse sous 24h
+                </div>
+              )}
+              {p.statut === 'devis_recu' && (
+                <div style={{ marginTop:8, padding:'8px 12px', background:'#DBEAFE', borderRadius:8, fontSize:13, color:'#1D4ED8', fontWeight:600 }}>
+                  📝 Devis reçu — {p.montant}€ · Acceptez ou contactez-nous pour discuter
+                </div>
+              )}
+              {p.statut === 'en_cours' && p.avancement < 100 && (
+                <div style={{ marginTop:8, padding:'8px 12px', background:VBG, borderRadius:8, fontSize:13, color:'#5B21B6', fontWeight:600 }}>
+                  🎬 Notre équipe travaille sur votre projet
                 </div>
               )}
               {p.statut === 'livre' && (

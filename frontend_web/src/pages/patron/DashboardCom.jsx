@@ -112,13 +112,22 @@ export default function DashboardCom() {
     return () => window.removeEventListener('com-vue-change', handler);
   }, []);
   const [agendaEvents, setAgendaEvents] = useState([]);
+  const [chrono, setChrono] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('com_chrono') || '{}'); } catch { return {}; }
+  }); // { [projetId]: { total: secondes, running: bool, start: timestamp } }
   const [agendaModal, setAgendaModal] = useState(null); // null | { jour, heure } | event object
   const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
   const [semainOffset, setSemainOffset] = useState(0);
 
   useEffect(() => {
     const o = searchParams.get('onglet');
-    if (o && TAB_MAP[o]) setTab(TAB_MAP[o]);
+    if (o && TAB_MAP[o]) {
+      setTab(TAB_MAP[o]);
+      // Sync vue si l'onglet n'est pas dans la vue actuelle
+      const monteurTabs = ['accueil','projets','agenda','archives','equipe'];
+      if (vue === 'monteur' && !monteurTabs.includes(TAB_MAP[o])) setVue('gestion');
+      if (vue === 'gestion' && monteurTabs.includes(TAB_MAP[o]) && !['projets','archives','equipe'].includes(TAB_MAP[o])) {} // projets/archives/equipe sont dans les deux
+    }
     else if (!o) setTab('accueil');
   }, [searchParams]);
 
@@ -457,6 +466,52 @@ export default function DashboardCom() {
   };
 
   const inputStyle = { width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' };
+
+  // ── Chrono ──
+  const startChrono = (projetId) => {
+    setChrono(prev => {
+      const updated = { ...prev, [projetId]: { total: prev[projetId]?.total || 0, running: true, start: Date.now() } };
+      localStorage.setItem('com_chrono', JSON.stringify(updated));
+      return updated;
+    });
+  };
+  const stopChrono = (projetId) => {
+    setChrono(prev => {
+      const c = prev[projetId];
+      if (!c || !c.running) return prev;
+      const elapsed = Math.floor((Date.now() - c.start) / 1000);
+      const updated = { ...prev, [projetId]: { total: (c.total || 0) + elapsed, running: false, start: null } };
+      localStorage.setItem('com_chrono', JSON.stringify(updated));
+      return updated;
+    });
+  };
+  const getChronoDisplay = (projetId) => {
+    const c = chrono[projetId];
+    if (!c) return '0h00';
+    let total = c.total || 0;
+    if (c.running && c.start) total += Math.floor((Date.now() - c.start) / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    return `${h}h${String(m).padStart(2,'0')}`;
+  };
+  const getChronoRentabilite = (projetId, montant) => {
+    const c = chrono[projetId];
+    if (!c) return null;
+    let total = c.total || 0;
+    if (c.running && c.start) total += Math.floor((Date.now() - c.start) / 1000);
+    if (total < 60) return null;
+    const heures = total / 3600;
+    return Math.round(montant / heures);
+  };
+
+  // Refresh chrono display every 10s
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const hasRunning = Object.values(chrono).some(c => c.running);
+    if (!hasRunning) return;
+    const interval = setInterval(() => forceUpdate(n => n + 1), 10000);
+    return () => clearInterval(interval);
+  }, [chrono]);
   const labelStyle = { fontSize:13, fontWeight:600, color:'#555', display:'block', marginBottom:5 };
 
   return (
@@ -577,7 +632,7 @@ export default function DashboardCom() {
                   <div style={{ background:'#F0F0F0', borderRadius:6, height:10, marginBottom:8 }}>
                     <div style={{ background: pct >= 100 ? '#059669' : V, borderRadius:6, height:10, width:`${pct}%`, transition:'width .3s' }} />
                   </div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
                     <div style={{ fontSize:14, fontWeight:700, color: pct >= 100 ? '#059669' : V }}>{fait}/{qte} terminé{fait>1?'s':''} · {pct}%</div>
                     <div style={{ display:'flex', gap:8 }}>
                       {pct < 100 && (
@@ -591,6 +646,17 @@ export default function DashboardCom() {
                         </button>
                       )}
                     </div>
+                  </div>
+                  {/* Chrono */}
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'#FAFAFA', borderRadius:8 }}>
+                    <span style={{ fontSize:18, fontWeight:800, color: chrono[p.id]?.running ? V : '#1C1C1E', fontFamily:'monospace' }}>{getChronoDisplay(p.id)}</span>
+                    {chrono[p.id]?.running ? (
+                      <button onClick={() => stopChrono(p.id)} style={{ padding:'5px 12px', background:'#FEE2E2', color:'#DC2626', border:'1px solid #FECACA', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>⏸ Pause</button>
+                    ) : (
+                      <button onClick={() => startChrono(p.id)} style={{ padding:'5px 12px', background:V_SOFT, color:V, border:`1px solid ${V}40`, borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>▶ Chrono</button>
+                    )}
+                    {(() => { const r = getChronoRentabilite(p.id, p.montant); return r ? <span style={{ fontSize:12, color: r >= 30 ? '#059669' : r >= 15 ? '#D97706' : '#DC2626', fontWeight:600 }}>{r}€/h</span> : null; })()}
+                    {p.montant > 0 && <span style={{ fontSize:11, color:'#8B8B8B' }}>({p.montant}€ le projet)</span>}
                   </div>
                 </div>
               );
