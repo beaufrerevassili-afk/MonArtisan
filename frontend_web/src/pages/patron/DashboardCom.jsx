@@ -99,6 +99,7 @@ export default function DashboardCom() {
   const [editPrix, setEditPrix] = useState('');
   const [editNom, setEditNom] = useState('');
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
+  const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur'); // 'monteur' | 'gestion'
 
   useEffect(() => {
     const o = searchParams.get('onglet');
@@ -395,27 +396,169 @@ export default function DashboardCom() {
 
   return (
     <div style={{ padding:'24px 28px', background:V_BG, minHeight:'100vh', fontFamily:'system-ui,sans-serif' }}>
-      {/* Header */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:12 }}>
+      {/* Header + Vue toggle */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:12 }}>
         <div>
           <div style={{ fontSize:22, fontWeight:800, color:'#1C1C1E' }}>🎬 Freample Com</div>
-          <div style={{ fontSize:14, color:'#8B8B8B', marginTop:2 }}>Communication · Marketing · Montage</div>
+          <div style={{ fontSize:14, color:'#8B8B8B', marginTop:2 }}>{vue === 'monteur' ? 'Espace monteur' : 'Gestion & Administration'}</div>
         </div>
-        <div style={{ display:'flex', gap:8 }}>
-          <button onClick={() => setModalNewProjet(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, background:'#059669' }}>+ Nouveau projet</button>
-          <button onClick={() => setModalDevis(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6 }}>+ Nouveau devis</button>
+        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+          {/* Vue toggle */}
+          <div style={{ display:'flex', background:'#F3F3F3', borderRadius:10, padding:3 }}>
+            <button onClick={() => { setVue('monteur'); localStorage.setItem('com_vue','monteur'); setTab('accueil'); }}
+              style={{ padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer', fontWeight:vue==='monteur'?700:500, background:vue==='monteur'?V:'transparent', color:vue==='monteur'?'#fff':'#666', fontFamily:'inherit', fontSize:13 }}>
+              🎬 Monteur
+            </button>
+            <button onClick={() => { setVue('gestion'); localStorage.setItem('com_vue','gestion'); setTab('accueil'); }}
+              style={{ padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer', fontWeight:vue==='gestion'?700:500, background:vue==='gestion'?V:'transparent', color:vue==='gestion'?'#fff':'#666', fontFamily:'inherit', fontSize:13 }}>
+              ⚙️ Gestion
+            </button>
+          </div>
+          {vue === 'gestion' && (
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={() => setModalNewProjet(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, background:'#059669', fontSize:13, padding:'8px 14px' }}>+ Projet</button>
+              <button onClick={() => setModalDevis(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, fontSize:13, padding:'8px 14px' }}>+ Devis</button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24, flexWrap:'wrap' }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
-        ))}
-      </div>
+      {/* Tabs — différents selon la vue */}
+      {vue === 'gestion' && (
+        <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24, flexWrap:'wrap' }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
+          ))}
+        </div>
+      )}
 
-      {/* TAB: Accueil */}
-      {tab === 'accueil' && (<div>
+      {vue === 'monteur' && (
+        <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24 }}>
+          {[{id:'accueil',icon:'🏠',label:'Ma journée'},{id:'projets',icon:'🎬',label:'Mes projets'},{id:'archives',icon:'📦',label:'Archives'},{id:'equipe',icon:'👥',label:'Équipe'}].map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
+          ))}
+        </div>
+      )}
+
+      {/* ═══ VUE MONTEUR : ACCUEIL = TO-DO LIST ═══ */}
+      {vue === 'monteur' && tab === 'accueil' && (<div>
+        {/* Briefs à traiter */}
+        {projets.filter(p => p.statut === 'demande').length > 0 && (
+          <div style={{ marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <span style={{ width:10, height:10, borderRadius:'50%', background:'#D97706', animation:'pulse 2s infinite' }} />
+              <span style={{ fontSize:15, fontWeight:800, color:'#D97706' }}>Briefs à traiter ({projets.filter(p=>p.statut==='demande').length})</span>
+            </div>
+            {projets.filter(p => p.statut === 'demande').map(p => (
+              <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:8, cursor:'pointer', padding:'16px 20px', border:'2px solid #FDE68A', background:'#FFFBEB' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                  <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
+                  <span style={{ fontSize:12, fontWeight:700, color:'#D97706', background:'#FEF3C7', padding:'3px 10px', borderRadius:10 }}>Nouveau</span>
+                </div>
+                <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:8 }}>{p.client} · {p.clientEmail || ''}</div>
+                {p.notes && <div style={{ fontSize:13, color:'#5B21B6', background:V_SOFT, padding:'8px 12px', borderRadius:8, marginBottom:8 }}>📝 {p.notes.slice(0,100)}{p.notes.length>100?'...':''}</div>}
+                <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={(e) => { e.stopPropagation(); accepterBrief(p); }} style={{ ...BTN, padding:'8px 16px', fontSize:13 }}>✅ Accepter</button>
+                  <button onClick={(e) => { e.stopPropagation(); contreProposition(p); }} style={{ ...GHOST, padding:'8px 16px', fontSize:13 }}>📝 Contre-prop</button>
+                  <button onClick={(e) => { e.stopPropagation(); refuserBrief(p); }} style={{ ...GHOST, padding:'8px 14px', fontSize:13, color:'#DC2626', borderColor:'#FECACA' }}>✗</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mes projets en cours */}
+        {projets.filter(p => ['en_cours','revision'].includes(p.statut)).length > 0 && (
+          <div style={{ marginBottom:24 }}>
+            <div style={{ fontSize:15, fontWeight:800, color:V, marginBottom:12 }}>🎬 En cours ({projets.filter(p=>['en_cours','revision'].includes(p.statut)).length})</div>
+            {projets.filter(p => ['en_cours','revision'].includes(p.statut)).map(p => {
+              const qte = Number(p.quantite)||1;
+              const fait = Number(p.fichiersFaits)||0;
+              const pct = qte > 0 ? Math.round((fait/qte)*100) : 0;
+              const urgence = getUrgence(p);
+              return (
+                <div key={p.id} style={{ ...CARD, marginBottom:10, padding:'18px 20px', border: urgence==='retard'?'2px solid #FECACA':urgence==='urgent'?'2px solid #FDE68A':undefined }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                    <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
+                    {urgence && <span style={{ fontSize:12, fontWeight:700, color:urgence==='retard'?'#DC2626':'#D97706' }}>{urgence==='retard'?'⚠️ Retard':'🔥 Urgent'}</span>}
+                  </div>
+                  <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:10 }}>{p.client} · {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
+
+                  {/* Grande barre d'avancement */}
+                  <div style={{ background:'#F0F0F0', borderRadius:6, height:10, marginBottom:8 }}>
+                    <div style={{ background: pct >= 100 ? '#059669' : V, borderRadius:6, height:10, width:`${pct}%`, transition:'width .3s' }} />
+                  </div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div style={{ fontSize:14, fontWeight:700, color: pct >= 100 ? '#059669' : V }}>{fait}/{qte} terminé{fait>1?'s':''} · {pct}%</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {pct < 100 && (
+                        <button onClick={() => { incrementFichier(p.id); showToast(`${fait+1}/${qte} ✅`); }} style={{ ...BTN, padding:'8px 16px', fontSize:13 }}>
+                          ✅ +1 terminé
+                        </button>
+                      )}
+                      {pct >= 100 && (
+                        <button onClick={() => livrerProjet(p.id)} style={{ ...BTN, padding:'8px 16px', fontSize:13, background:'#059669' }}>
+                          📦 Livrer
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Devis en attente de réponse */}
+        {projets.filter(p => p.statut === 'devis_envoye').length > 0 && (
+          <div style={{ marginBottom:24 }}>
+            <div style={{ fontSize:15, fontWeight:800, color:'#1D4ED8', marginBottom:12 }}>⏳ En attente de réponse client ({projets.filter(p=>p.statut==='devis_envoye').length})</div>
+            {projets.filter(p => p.statut === 'devis_envoye').map(p => (
+              <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:8, cursor:'pointer', padding:'14px 18px', border:'1px solid #93C5FD', background:'#EFF6FF' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
+                    <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); clientAAccepte(p.id); }} style={{ ...BTN, padding:'7px 14px', fontSize:12, background:'#059669' }}>Client OK → Démarrer</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Livrés en attente de validation */}
+        {projets.filter(p => p.statut === 'livre').length > 0 && (
+          <div style={{ marginBottom:24 }}>
+            <div style={{ fontSize:15, fontWeight:800, color:'#059669', marginBottom:12 }}>📦 Livrés — attente validation ({projets.filter(p=>p.statut==='livre').length})</div>
+            {projets.filter(p => p.statut === 'livre').map(p => (
+              <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:8, cursor:'pointer', padding:'14px 18px', background:'#F0FDF4', border:'1px solid #86EFAC' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
+                    <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); archiverProjet(p.id); }} style={{ ...GHOST, padding:'7px 14px', fontSize:12 }}>📦 Archiver</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Rien à faire */}
+        {projets.filter(p => !['archive','refuse','paye'].includes(p.statut)).length === 0 && (
+          <div style={{ ...CARD, padding:40, textAlign:'center' }}>
+            <div style={{ fontSize:48, marginBottom:12 }}>☕</div>
+            <div style={{ fontSize:18, fontWeight:700, color:'#1C1C1E', marginBottom:6 }}>Rien à faire pour le moment</div>
+            <div style={{ fontSize:14, color:'#8B8B8B' }}>Les nouveaux briefs apparaîtront ici automatiquement</div>
+          </div>
+        )}
+
+        <style>{`@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+      </div>)}
+
+      {/* ═══ VUE GESTION : ACCUEIL = KPIs (ancien) ═══ */}
+      {vue === 'gestion' && tab === 'accueil' && (<div>
         <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
           <KpiCard label="Projets en cours" value={projetsEnCours} accent={V} />
           <KpiCard label="Briefs à traiter" value={projets.filter(p=>p.statut==='demande').length} accent="#D97706" sub={projets.filter(p=>p.statut==='demande').length>0?'⚡ À répondre':'Aucun'} />
