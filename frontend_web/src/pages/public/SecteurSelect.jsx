@@ -8,10 +8,10 @@ import HideForClient from '../../components/public/HideForClient';
 const CATEGORIES = [
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
   { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
-  { id: 'eat',        emoji: '🛵', label: 'Freample Eat',        sub: 'Livraison de repas à domicile', locked: true },
-  { id: 'course',     emoji: '🚗', label: 'Freample Course',     sub: 'VTC, courses, livraison colis', locked: true },
+  { id: 'eat',        emoji: 'FRe', label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
+  { id: 'course',     emoji: 'FRc', label: 'Bientôt disponible',  sub: 'Nouveau service en préparation', locked: true },
   { id: 'com',        emoji: '🎬', label: 'Freample Com',        sub: 'Marketing, montage vidéo, design' },
-  { id: 'vacances',   emoji: '🏖️', label: 'Vacances & Séjours',  sub: 'Hôtels, villas, appartements', locked: true },
+  { id: 'vacances',   emoji: 'V',  label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
   { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
 ];
 
@@ -265,7 +265,7 @@ export default function SecteurSelect() {
                 style={{ padding:'20px 16px', background: isLocked ? '#F9FAFB' : DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font, position:'relative', overflow:'hidden' }}
                 onMouseEnter={e=>{ e.currentTarget.style.background = isLocked ? '#F3F4F6' : DS.bgSoft; if(!isLocked) { e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; } }}
                 onMouseLeave={e=>{ e.currentTarget.style.background = isLocked ? '#F9FAFB' : DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
-                <div style={{ fontSize:26, marginBottom:10, filter: isLocked ? 'grayscale(1) opacity(0.4)' : 'none' }}>{cat.emoji}</div>
+                <div style={{ fontSize: cat.emoji.length > 2 ? 16 : 26, marginBottom:10, filter: isLocked ? 'grayscale(1) opacity(0.4)' : 'none', fontWeight: cat.emoji.length > 2 ? 800 : 400, color: isLocked ? '#9CA3AF' : DS.ink, letterSpacing: cat.emoji.length > 2 ? '-0.03em' : 0 }}>{cat.emoji}</div>
                 <div style={{ fontSize:14, fontWeight:700, color: isLocked ? '#9CA3AF' : DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
                 <div style={{ fontSize:11.5, color:DS.muted, lineHeight:1.4 }}>{isLocked ? 'En cours de développement' : cat.sub}</div>
                 {isLocked && (
