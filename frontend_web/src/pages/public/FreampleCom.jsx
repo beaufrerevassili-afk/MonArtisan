@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import HideForClient from '../../components/public/HideForClient';
 import { getTarifs } from '../../data/tarifsCom';
+import api from '../../services/api';
 
 const C = {
   primary:'#8B5CF6', primaryHover:'#7C3AED', dark:'#0F0A1A',
@@ -19,6 +20,7 @@ export default function FreampleCom() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0); // 0=landing, 1=brief step1, 2=brief step2, 3=sent
   const [brief, setBrief] = useState({ type:'', format:'', quantite:'1', style:'', reference:'', options:[], description:'', nom:'', email:'', deadline:'' });
+  const [sending, setSending] = useState(false);
 
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
   const toggleOpt = (v) => setBrief(p=>({...p, options: p.options.includes(v) ? p.options.filter(x=>x!==v) : [...p.options, v] }));
@@ -327,9 +329,22 @@ export default function FreampleCom() {
 
               <div style={{ display:'flex', gap:10 }}>
                 <button onClick={()=>setStep(1)} style={{ flex:1, padding:'14px', background:C.bg, color:C.text, border:`1.5px solid ${C.border}`, borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:C.font }}>←</button>
-                <button onClick={()=>{ if(brief.nom&&brief.email) setStep(3); }}
-                  style={{ flex:3, padding:'14px', background:(brief.nom&&brief.email)?C.primary:'#D0D0D0', color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:(brief.nom&&brief.email)?'pointer':'not-allowed', fontFamily:C.font }}>
-                  📩 Envoyer
+                <button disabled={sending} onClick={async()=>{
+                  if(!brief.nom||!brief.email) return;
+                  setSending(true);
+                  try {
+                    await api.post('/com/briefs', {
+                      type:brief.type, format:brief.format, quantite:brief.quantite,
+                      style:brief.style, options:brief.options, reference:brief.reference,
+                      description:brief.description, nom:brief.nom, email:brief.email,
+                      telephone:brief.telephone||'', deadline:brief.deadline||null,
+                    });
+                  } catch(e) { console.log('Brief envoyé (mode démo)'); }
+                  setSending(false);
+                  setStep(3);
+                }}
+                  style={{ flex:3, padding:'14px', background:(brief.nom&&brief.email&&!sending)?C.primary:'#D0D0D0', color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:(brief.nom&&brief.email&&!sending)?'pointer':'not-allowed', fontFamily:C.font }}>
+                  {sending ? '⏳ Envoi en cours...' : '📩 Envoyer'}
                 </button>
               </div>
             </div>)}

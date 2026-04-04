@@ -34,6 +34,7 @@ const artisanRoutes       = require('./routes/artisanRoutes');
 const notificationsRoutes  = require('./routes/notificationsRoutes');
 const recrutementRoutes    = require('./routes/recrutementRoutes');
 const reservationsRoutes   = require('./routes/reservationsRoutes');
+const comRoutes            = require('./routes/comRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -84,6 +85,7 @@ app.use('/',             require('./routes/publicRoutes'));
 app.use('/',             authRoutes);
 app.use('/recrutement',  recrutementRoutes); // routes publiques + patron intégrées
 app.use('/reservations', reservationsRoutes); // réservations publiques sans compte
+app.use('/com',          comRoutes);          // Freample Com (briefs publics + projets auth)
 
 // Authentifiées
 app.use('/dashboard',   dashboardRoutes);
