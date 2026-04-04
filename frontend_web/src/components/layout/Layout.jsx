@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
@@ -354,7 +355,7 @@ function NotifBell({ isMobile }) {
   // Charger les vraies notifications pour Freample Com
   useEffect(() => {
     if (user?.secteur === 'com') {
-      const api = require('../../services/api').default;
+      // api already imported at top
       api.get('/com/projets').then(r => {
         if (r.data?.projets?.length) {
           const realNotifs = r.data.projets
@@ -391,7 +392,7 @@ function NotifBell({ isMobile }) {
   useEffect(() => {
     if (user?.secteur !== 'com') return;
     const interval = setInterval(() => {
-      const api = require('../../services/api').default;
+      // api already imported at top
       api.get('/com/projets').then(r => {
         if (r.data?.projets) {
           const briefs = r.data.projets.filter(p => p.statut === 'brief_recu');
