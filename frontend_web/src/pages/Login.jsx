@@ -59,7 +59,7 @@ const SECTOR_CONFIG = {
 };
 
 const REDIRECTIONS = {
-  client:      '/client/dashboard',
+  client:      '/',
   patron:      '/patron/dashboard',
   artisan:     '/artisan/dashboard',
   super_admin: '/admin/dashboard',
