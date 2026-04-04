@@ -46,7 +46,15 @@ app.set('trust proxy', 1);
 
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
 app.use(cors({
-  origin: allowedOrigins.length ? allowedOrigins : false,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    // Allow all Vercel preview URLs + configured origins
+    if (origin.endsWith('.vercel.app') || origin.includes('localhost') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
   credentials: true,
 }));
 
