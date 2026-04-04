@@ -34,6 +34,166 @@ const TEMOIGNAGES = [
   { nom:'@alex.fitness', type:'Influenceur', avatar:'AF', text:'Pack 10 TikToks par mois, qualité constante, je recommande à 100%.', note:5 },
 ];
 
+// ── Portfolio data ──────────────────────────────────────────────────────────
+const PORTFOLIO = [
+  {
+    id:1, type:'TikTok', client:'@emma.lifestyle', titre:'Routine capillaire — Transitions dynamiques',
+    result:'18.4K vues en 72h', color:'linear-gradient(135deg,#EC4899,#8B5CF6)',
+    tags:['Sous-titres','Transitions','Musique tendance'],
+    desc:'Montage TikTok dynamique avec transitions créatives, sous-titres animés et musique tendance pour une influenceuse beauté.',
+  },
+  {
+    id:2, type:'YouTube', client:'Salon Léa', titre:'Présentation salon — Vidéo promotionnelle',
+    result:'2.3K vues · +45% réservations', color:'linear-gradient(135deg,#3B82F6,#6366F1)',
+    tags:['Storytelling','Drone intérieur','Voix-off'],
+    desc:'Vidéo de présentation de 3 minutes avec storytelling, plans aériens intérieurs et témoignages clients.',
+  },
+  {
+    id:3, type:'Reels', client:'@alex.fitness', titre:'Transformation physique — 5 Reels série',
+    result:'42K vues cumulées', color:'linear-gradient(135deg,#10B981,#059669)',
+    tags:['Avant/Après','Slow-motion','Text overlay'],
+    desc:'Série de 5 Reels Instagram avec effets slow-motion, texte motivationnel et musique épique.',
+  },
+  {
+    id:4, type:'Design', client:'Taco Loco', titre:'Logo + Identité visuelle complète',
+    result:'Ouverture du restaurant', color:'linear-gradient(135deg,#F59E0B,#EF4444)',
+    tags:['Logo','Charte graphique','Menu design'],
+    desc:'Création du logo, charte graphique complète (typographie, couleurs, patterns) et design du menu physique.',
+  },
+  {
+    id:5, type:'TikTok', client:'Big Smoke Burgers', titre:'Food content — Pack 10 TikToks',
+    result:'85K vues · +30% commandes', color:'linear-gradient(135deg,#F97316,#DC2626)',
+    tags:['Food-porn','ASMR','Close-up'],
+    desc:'Pack mensuel de 10 TikToks food content avec plans rapprochés appétissants, son ASMR et CTA commande.',
+  },
+  {
+    id:6, type:'Ads', client:'La Trattoria', titre:'Campagne Meta Ads — Livraison',
+    result:'ROAS 4.2× · CPA 3.20€', color:'linear-gradient(135deg,#8B5CF6,#3B82F6)',
+    tags:['Meta Ads','A/B test','Retargeting'],
+    desc:'Campagne publicitaire Meta avec 3 variantes créatives, ciblage géolocalisé et retargeting panier abandonné.',
+  },
+  {
+    id:7, type:'Reels', client:'Freample', titre:'Lancement Freample — Teaser',
+    result:'Projet interne', color:'linear-gradient(135deg,#1a1128,#8B5CF6)',
+    tags:['Motion design','Branding','Teaser'],
+    desc:'Vidéo teaser de lancement Freample avec animations logo, motion design et storytelling de marque.',
+  },
+  {
+    id:8, type:'Design', client:'@nina.travel', titre:'Kit réseaux sociaux — Templates Instagram',
+    result:'Feed cohérent · +800 followers/mois', color:'linear-gradient(135deg,#EC4899,#F59E0B)',
+    tags:['Templates','Stories','Highlights'],
+    desc:'Pack de 20 templates Instagram (posts + stories + highlights) personnalisés avec charte de la créatrice.',
+  },
+];
+
+const PORTFOLIO_FILTERS = ['Tout','TikTok','Reels','YouTube','Design','Ads'];
+
+function PortfolioSection() {
+  const [filter, setFilter] = useState('Tout');
+  const [selected, setSelected] = useState(null);
+  const filtered = filter === 'Tout' ? PORTFOLIO : PORTFOLIO.filter(p => p.type === filter);
+
+  return (
+    <div className="portfolio-section" style={{ padding:'64px 24px', borderTop:`1px solid ${C.border}` }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:32 }}>
+          <h2 style={{ fontSize:28, fontWeight:800, letterSpacing:'-0.02em', marginBottom:8 }}>Nos réalisations</h2>
+          <p style={{ fontSize:15, color:C.textSec }}>Découvrez ce que notre équipe a produit pour nos clients</p>
+        </div>
+
+        {/* Filters */}
+        <div style={{ display:'flex', justifyContent:'center', gap:8, marginBottom:32, flexWrap:'wrap' }}>
+          {PORTFOLIO_FILTERS.map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              style={{
+                padding:'8px 18px', borderRadius:999, border:'none', cursor:'pointer',
+                fontWeight: filter === f ? 700 : 500, fontSize:14,
+                background: filter === f ? C.primary : '#F3F3F3',
+                color: filter === f ? '#fff' : C.textSec,
+                fontFamily:C.font, transition:'all .15s',
+              }}>
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Grid */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:20 }}>
+          {filtered.map(p => (
+            <div key={p.id} onClick={() => setSelected(selected?.id === p.id ? null : p)}
+              style={{ borderRadius:16, overflow:'hidden', cursor:'pointer', border:`1px solid ${C.border}`, transition:'all .2s', background:C.bg }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(139,92,246,0.12)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+              {/* Thumbnail */}
+              <div style={{ height:180, background:p.color, position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ fontSize:48, opacity:0.3 }}>
+                  {p.type === 'TikTok' ? '📱' : p.type === 'YouTube' ? '▶️' : p.type === 'Reels' ? '📸' : p.type === 'Design' ? '🎨' : '📈'}
+                </div>
+                {/* Type badge */}
+                <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.6)', color:'#fff', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:700, backdropFilter:'blur(4px)' }}>
+                  {p.type}
+                </div>
+                {/* Result badge */}
+                <div style={{ position:'absolute', bottom:12, right:12, background:'rgba(255,255,255,0.95)', color:C.text, padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:700 }}>
+                  {p.result}
+                </div>
+              </div>
+              {/* Info */}
+              <div style={{ padding:16 }}>
+                <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:4, lineHeight:1.3 }}>{p.titre}</div>
+                <div style={{ fontSize:13, color:C.textSec, marginBottom:10 }}>{p.client}</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                  {p.tags.map(t => (
+                    <span key={t} style={{ padding:'3px 8px', background:C.soft, borderRadius:6, fontSize:11, color:C.primary, fontWeight:600 }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Detail modal */}
+        {selected && (
+          <div onClick={() => setSelected(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:C.bg, borderRadius:20, maxWidth:560, width:'100%', overflow:'hidden', boxShadow:'0 24px 64px rgba(0,0,0,.2)' }}>
+              {/* Header image */}
+              <div style={{ height:200, background:selected.color, position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ fontSize:64, opacity:0.3 }}>
+                  {selected.type === 'TikTok' ? '📱' : selected.type === 'YouTube' ? '▶️' : selected.type === 'Reels' ? '📸' : selected.type === 'Design' ? '🎨' : '📈'}
+                </div>
+                <div style={{ position:'absolute', top:16, right:16 }}>
+                  <button onClick={() => setSelected(null)} style={{ width:36, height:36, borderRadius:'50%', background:'rgba(0,0,0,0.4)', border:'none', color:'#fff', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}>✕</button>
+                </div>
+                <div style={{ position:'absolute', bottom:16, left:16, display:'flex', gap:8 }}>
+                  <span style={{ background:'rgba(0,0,0,0.6)', color:'#fff', padding:'5px 12px', borderRadius:8, fontSize:13, fontWeight:700 }}>{selected.type}</span>
+                  <span style={{ background:'rgba(255,255,255,0.95)', color:C.text, padding:'5px 12px', borderRadius:8, fontSize:13, fontWeight:700 }}>{selected.result}</span>
+                </div>
+              </div>
+              {/* Content */}
+              <div style={{ padding:24 }}>
+                <div style={{ fontSize:20, fontWeight:800, color:C.text, marginBottom:4, lineHeight:1.3 }}>{selected.titre}</div>
+                <div style={{ fontSize:14, color:C.primary, fontWeight:600, marginBottom:16 }}>{selected.client}</div>
+                <p style={{ fontSize:14, color:C.textSec, lineHeight:1.6, marginBottom:16 }}>{selected.desc}</p>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:20 }}>
+                  {selected.tags.map(t => (
+                    <span key={t} style={{ padding:'5px 12px', background:C.soft, borderRadius:8, fontSize:13, color:C.primary, fontWeight:600 }}>{t}</span>
+                  ))}
+                </div>
+                <button onClick={() => { setSelected(null); document.getElementById('demande')?.scrollIntoView({behavior:'smooth'}); }}
+                  style={{ width:'100%', padding:'14px', background:C.primary, color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'background .15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.primaryHover}
+                  onMouseLeave={e => e.currentTarget.style.background = C.primary}>
+                  Je veux la même chose →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function FreampleCom() {
   const navigate = useNavigate();
   const [openTarif, setOpenTarif] = useState(0);
@@ -67,8 +227,9 @@ export default function FreampleCom() {
               onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
               Demander un devis gratuit →
             </button>
-            <button style={{ padding:'14px 32px', background:'transparent', color:'#fff', border:'1.5px solid rgba(255,255,255,0.25)', borderRadius:999, fontSize:16, fontWeight:500, cursor:'pointer', fontFamily:C.font }}>
-              Voir nos réalisations
+            <button onClick={() => document.querySelector('.portfolio-section')?.scrollIntoView({behavior:'smooth'})}
+              style={{ padding:'14px 32px', background:'transparent', color:'#fff', border:'1.5px solid rgba(255,255,255,0.25)', borderRadius:999, fontSize:16, fontWeight:500, cursor:'pointer', fontFamily:C.font }}>
+              Voir nos réalisations ↓
             </button>
           </div>
         </div>
@@ -100,6 +261,9 @@ export default function FreampleCom() {
           ))}
         </div>
       </div>
+
+      {/* ── Portfolio / Réalisations ── */}
+      <PortfolioSection />
 
       {/* ── Grille tarifaire ── */}
       <div style={{ background:C.soft, padding:'56px 24px', borderTop:`1px solid ${C.border}` }}>
