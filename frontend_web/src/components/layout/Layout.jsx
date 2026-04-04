@@ -749,18 +749,26 @@ export default function Layout({ children }) {
                     </div>
                   )}
                   {/* Toggle Monteur/Gestion pour Com */}
-                  {user?.secteur === 'com' && !collapsed && (
-                    <div style={{ margin:'0 4px 12px', display:'flex', background:'var(--bg-secondary)', borderRadius:8, padding:3 }}>
-                      <button onClick={() => { localStorage.setItem('com_vue','monteur'); window.location.reload(); }}
-                        style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight: (localStorage.getItem('com_vue')||'monteur')==='monteur'?700:500, background: (localStorage.getItem('com_vue')||'monteur')==='monteur'?'var(--primary)':'transparent', color: (localStorage.getItem('com_vue')||'monteur')==='monteur'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
-                        🎬 Monteur
-                      </button>
-                      <button onClick={() => { localStorage.setItem('com_vue','gestion'); window.location.reload(); }}
-                        style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight: localStorage.getItem('com_vue')==='gestion'?700:500, background: localStorage.getItem('com_vue')==='gestion'?'var(--primary)':'transparent', color: localStorage.getItem('com_vue')==='gestion'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
-                        ⚙️ Gestion
-                      </button>
-                    </div>
-                  )}
+                  {user?.secteur === 'com' && !collapsed && (() => {
+                    const [cv, setCv] = React.useState(localStorage.getItem('com_vue') || 'monteur');
+                    const switchVue = (v) => {
+                      localStorage.setItem('com_vue', v);
+                      setCv(v);
+                      window.dispatchEvent(new CustomEvent('com-vue-change', { detail: v }));
+                    };
+                    return (
+                      <div style={{ margin:'0 4px 12px', display:'flex', background:'var(--bg-secondary)', borderRadius:8, padding:3 }}>
+                        <button onClick={() => switchVue('monteur')}
+                          style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight:cv==='monteur'?700:500, background:cv==='monteur'?'var(--primary)':'transparent', color:cv==='monteur'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
+                          🎬 Monteur
+                        </button>
+                        <button onClick={() => switchVue('gestion')}
+                          style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight:cv==='gestion'?700:500, background:cv==='gestion'?'var(--primary)':'transparent', color:cv==='gestion'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
+                          ⚙️ Gestion
+                        </button>
+                      </div>
+                    );
+                  })()}
                   {sectorMenu.map(({ label, path, Icon }) => {
                     const active = location.pathname === path && path !== '/patron/dashboard' ? false : location.pathname === path;
                     const isDash = path === '/patron/dashboard';

@@ -104,6 +104,13 @@ export default function DashboardCom() {
   const [editNom, setEditNom] = useState('');
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
   const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
+
+  // Écouter le changement de vue depuis la sidebar
+  useEffect(() => {
+    const handler = (e) => { setVue(e.detail); setTab('accueil'); };
+    window.addEventListener('com-vue-change', handler);
+    return () => window.removeEventListener('com-vue-change', handler);
+  }, []);
   const [agendaEvents, setAgendaEvents] = useState([]);
   const [agendaModal, setAgendaModal] = useState(null); // null | { jour, heure } | event object
   const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
