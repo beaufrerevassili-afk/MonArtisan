@@ -30,6 +30,7 @@ export default function Messagerie() {
   const [sending, setSending]     = useState(false);
   const [typing, setTyping]       = useState(false);
   const [online, setOnline]       = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const bottomRef   = useRef(null);
   const channelRef  = useRef(null);
   const typingTimer = useRef(null);
@@ -185,10 +186,22 @@ export default function Messagerie() {
 
         {/* ── Conversations list ── */}
         <div className="resp-msg-sidebar" style={{ width: 280, maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+          {/* Search */}
+          <div style={{ marginBottom: 12, position: 'relative' }}>
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Rechercher..."
+              style={{ width: '100%', padding: '9px 14px 9px 36px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text, #fff)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
           <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
-            Conversations
+            Conversations{searchQuery ? ` (${conversations.filter(c => c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).length})` : ''}
           </p>
-          {conversations.map(c => {
+          {conversations.filter(c => !searchQuery || c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).map(c => {
             const active = conv?.missionId === c.missionId;
             const isOnlineConv = online[c.missionId] ?? false;
             return (
