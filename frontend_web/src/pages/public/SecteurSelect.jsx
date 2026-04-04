@@ -7,7 +7,7 @@ import HideForClient from '../../components/public/HideForClient';
 
 const CATEGORIES = [
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
-  { id: 'restaurant', emoji: '🍽️', label: 'Restaurants',         sub: 'Sur place, livraison, traiteur' },
+  { id: 'restaurant', emoji: 'FR', label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
   { id: 'eat',        emoji: 'FRe', label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
   { id: 'course',     emoji: 'FRc', label: 'Bientôt disponible',  sub: 'Nouveau service en préparation', locked: true },
   { id: 'com',        emoji: '🎬', label: 'Freample Com',        sub: 'Marketing, montage vidéo, design' },
