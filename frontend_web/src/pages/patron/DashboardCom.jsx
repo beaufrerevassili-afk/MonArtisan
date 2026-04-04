@@ -346,6 +346,37 @@ export default function DashboardCom() {
     setModalProjet(null);
   };
 
+  // Agenda: sauvegarder un événement
+  const saveAgendaEvent = async (joursDates) => {
+    if (!agendaForm.titre) return;
+    const jourIdx = typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour;
+    const dateStr = joursDates?.[jourIdx]?.date || new Date().toISOString().split('T')[0];
+    const payload = { titre:agendaForm.titre, heure:agendaForm.heure, heure_fin:agendaForm.heureFin, jour:jourIdx, date:dateStr, type:agendaForm.type, personne:agendaForm.personne, projet:agendaForm.projet };
+
+    if (agendaModal?.id && typeof agendaModal.id === 'number' && agendaModal.id < 1e12) {
+      try { await api.put(`/com/agenda/${agendaModal.id}`, payload); } catch(e) {}
+      setAgendaEvents(prev => prev.map(e => e.id === agendaModal.id ? { ...e, ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin } : e));
+    } else {
+      try {
+        const r = await api.post('/com/agenda', payload);
+        setAgendaEvents(prev => [...prev, { id:r.data?.id||Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
+      } catch(e) {
+        setAgendaEvents(prev => [...prev, { id:Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
+      }
+    }
+    setAgendaModal(null);
+    setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
+    showToast(agendaModal?.id ? 'Événement modifié' : 'Événement ajouté');
+  };
+
+  // Agenda: supprimer un événement
+  const deleteAgendaEvent = async (id) => {
+    try { await api.delete(`/com/agenda/${id}`); } catch(e) {}
+    setAgendaEvents(prev => prev.filter(e => e.id !== id));
+    setAgendaModal(null);
+    showToast('Événement supprimé');
+  };
+
   // Submit new project
   const submitNewProjet = () => {
     if (!newProjetForm.client || !newProjetForm.titre) return;
@@ -745,36 +776,8 @@ export default function DashboardCom() {
           return { label:j, date:d.toISOString().split('T')[0], num:d.getDate(), isToday: d.toDateString() === today.toDateString() };
         });
 
-        const saveEvent = async () => {
-          if (!agendaForm.titre) return;
-          const jourIdx = typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour;
-          const dateStr = joursDates[jourIdx]?.date;
-          const payload = { titre:agendaForm.titre, heure:agendaForm.heure, heure_fin:agendaForm.heureFin, jour:jourIdx, date:dateStr, type:agendaForm.type, personne:agendaForm.personne, projet:agendaForm.projet };
-
-          if (agendaModal?.id && typeof agendaModal.id === 'number' && agendaModal.id < 1e12) {
-            // Update existing
-            try { await api.put(`/com/agenda/${agendaModal.id}`, payload); } catch(e) {}
-            setAgendaEvents(prev => prev.map(e => e.id === agendaModal.id ? { ...e, ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin } : e));
-          } else {
-            // Create new
-            try {
-              const r = await api.post('/com/agenda', payload);
-              setAgendaEvents(prev => [...prev, { id:r.data?.id||Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
-            } catch(e) {
-              setAgendaEvents(prev => [...prev, { id:Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
-            }
-          }
-          setAgendaModal(null);
-          setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
-          showToast(agendaModal?.id ? 'Événement modifié' : 'Événement ajouté');
-        };
-
-        const deleteEvent = async (id) => {
-          try { await api.delete(`/com/agenda/${id}`); } catch(e) {}
-          setAgendaEvents(prev => prev.filter(e => e.id !== id));
-          setAgendaModal(null);
-          showToast('Événement supprimé');
-        };
+        const saveEvent = () => saveAgendaEvent(joursDates);
+        const deleteEvent = (id) => deleteAgendaEvent(id);
 
         const typeColors = { montage:{bg:'#F5F3FF',border:'#C4B5FD',color:'#5B21B6',label:'🎬 Montage'}, revision:{bg:'#FFF7ED',border:'#FED7AA',color:'#C2410C',label:'🔄 Révision'}, reunion:{bg:'#DBEAFE',border:'#93C5FD',color:'#1D4ED8',label:'📞 Réunion'}, livraison:{bg:'#D1FAE5',border:'#86EFAC',color:'#065F46',label:'📦 Livraison'}, prospection:{bg:'#FEF3C7',border:'#FDE047',color:'#713F12',label:'🔍 Prospection'}, perso:{bg:'#F3F3F3',border:'#E5E5E5',color:'#8B8B8B',label:'👤 Perso'} };
 
