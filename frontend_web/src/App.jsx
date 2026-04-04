@@ -57,6 +57,9 @@ import RappelJuridique from './pages/patron/RappelJuridique';
 import Reputation from './pages/patron/Reputation';
 import ProfilPatron from './pages/patron/Profil';
 import DashboardArtisan from './pages/artisan/Dashboard';
+import DashboardDriver from './pages/artisan/DashboardDriver';
+import DashboardCoursier from './pages/artisan/DashboardCoursier';
+import DashboardMonteur from './pages/artisan/DashboardMonteur';
 import CGU from './pages/public/CGU';
 import RecrutementPage from './pages/public/RecrutementPage';
 import SecteurSelect from './pages/public/SecteurSelect';
@@ -86,6 +89,15 @@ function PatronDashboard() {
   if (secteur === 'eat')        return <DashboardEat />;
   if (secteur === 'com')        return <DashboardCom />;
   return <DashboardPatron />;
+}
+
+function ArtisanDashboardSwitch() {
+  const { user } = useAuth();
+  const secteur = user?.secteur;
+  if (secteur === 'course') return <DashboardDriver />;
+  if (secteur === 'eat')    return <DashboardCoursier />;
+  if (secteur === 'com')    return <DashboardMonteur />;
+  return <DashboardArtisan />;
 }
 
 function ProtectedRoute({ children, roles }) {
@@ -179,7 +191,7 @@ function AppRoutes() {
         <ProtectedRoute roles={['artisan']}>
           <Layout>
             <Routes>
-              <Route path="dashboard" element={<DashboardArtisan />} />
+              <Route path="dashboard" element={<ArtisanDashboardSwitch />} />
               <Route path="*"         element={<Navigate to="dashboard" replace />} />
             </Routes>
           </Layout>
