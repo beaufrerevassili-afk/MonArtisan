@@ -22,10 +22,10 @@ function getMinPrix(catName) {
 }
 
 const SERVICES = [
-  { icon:'🎬', title:'Montage Vidéo', desc:'TikTok, Reels, YouTube Shorts', price:`À partir de ${getMinPrix('Montage')}€`, color:'linear-gradient(135deg,#EC4899,#8B5CF6)', features:['Montage dynamique','Sous-titres auto','Musique tendance','Transitions pro'] },
-  { icon:'📱', title:'Réseaux Sociaux', desc:'Gestion de comptes & stratégie', price:`À partir de ${getMinPrix('Réseaux')}€/mois`, color:'linear-gradient(135deg,#3B82F6,#8B5CF6)', features:['Planning éditorial','Création de contenu','Community management','Reporting mensuel'] },
-  { icon:'🎨', title:'Design Graphique', desc:'Logos, visuels, identité', price:`À partir de ${getMinPrix('Design')}€`, color:'linear-gradient(135deg,#10B981,#3B82F6)', features:['Logo & charte graphique','Visuels réseaux sociaux','Flyers & cartes de visite','Bannières web'] },
-  { icon:'📈', title:'Publicité en ligne', desc:'Meta Ads, Google Ads, TikTok Ads', price:`À partir de ${getMinPrix('Publicité')}€/mois`, color:'linear-gradient(135deg,#F59E0B,#EC4899)', features:['Création de campagnes','Ciblage audience','A/B testing','Reporting ROI'] },
+  { icon:'🎬', title:'Montage Vidéo', desc:'TikTok, Reels, YouTube Shorts', price:`À partir de ${getMinPrix('Montage')}€`, delai:'48h — 5 jours', color:'linear-gradient(135deg,#EC4899,#8B5CF6)', features:['Montage dynamique','Sous-titres auto','Musique tendance','Transitions pro'] },
+  { icon:'📱', title:'Réseaux Sociaux', desc:'Gestion de comptes & stratégie', price:`À partir de ${getMinPrix('Réseaux')}€/mois`, delai:'Livraison continue', color:'linear-gradient(135deg,#3B82F6,#8B5CF6)', features:['Planning éditorial','Création de contenu','Community management','Reporting mensuel'] },
+  { icon:'🎨', title:'Design Graphique', desc:'Logos, visuels, identité', price:`À partir de ${getMinPrix('Design')}€`, delai:'3 — 7 jours', color:'linear-gradient(135deg,#10B981,#3B82F6)', features:['Logo & charte graphique','Visuels réseaux sociaux','Flyers & cartes de visite','Bannières web'] },
+  { icon:'📈', title:'Publicité en ligne', desc:'Meta Ads, Google Ads, TikTok Ads', price:`À partir de ${getMinPrix('Publicité')}€/mois`, delai:'Setup en 48h', color:'linear-gradient(135deg,#F59E0B,#EC4899)', features:['Création de campagnes','Ciblage audience','A/B testing','Reporting ROI'] },
 ];
 
 const TEMOIGNAGES = [
@@ -250,7 +250,12 @@ export default function FreampleCom() {
                 <div style={{ fontSize:14, opacity:0.8 }}>{s.desc}</div>
               </div>
               <div style={{ padding:'20px 24px', background:C.bg }}>
-                <div style={{ fontSize:16, fontWeight:800, color:C.primary, marginBottom:14 }}>{s.price}</div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                  <div style={{ fontSize:16, fontWeight:800, color:C.primary }}>{s.price}</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:5, padding:'4px 10px', background:'#F0FDF4', borderRadius:8, fontSize:12, fontWeight:600, color:'#059669' }}>
+                    <span>⚡</span> {s.delai}
+                  </div>
+                </div>
                 {s.features.map(f => (
                   <div key={f} style={{ fontSize:13, color:C.textSec, padding:'4px 0', display:'flex', gap:8, alignItems:'center' }}>
                     <span style={{ color:C.primary, fontSize:14 }}>✓</span> {f}
@@ -259,6 +264,40 @@ export default function FreampleCom() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ── Délais de livraison ── */}
+      <div style={{ background:C.soft, padding:'48px 24px', borderTop:`1px solid ${C.border}` }}>
+        <div style={{ maxWidth:900, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:32 }}>
+            <h2 style={{ fontSize:24, fontWeight:800, marginBottom:8 }}>Nos engagements de délais</h2>
+            <p style={{ fontSize:15, color:C.textSec }}>Des délais clairs, respectés, garantis</p>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:16 }}>
+            {[
+              { icon:'📱', type:'TikTok / Reel', delai:'48h', detail:'Après réception des rushes', color:C.primary },
+              { icon:'🎬', type:'YouTube Short', delai:'72h', detail:'60s à 3 minutes', color:'#EC4899' },
+              { icon:'▶️', type:'Vidéo YouTube', delai:'5 jours', detail:'5 à 15 minutes', color:'#3B82F6' },
+              { icon:'🎨', type:'Logo simple', delai:'3 jours', detail:'2 propositions incluses', color:'#10B981' },
+              { icon:'📐', type:'Charte graphique', delai:'7 jours', detail:'Logo + typo + couleurs', color:'#F59E0B' },
+              { icon:'📈', type:'Campagne Ads', delai:'48h setup', detail:'Premiers résultats J+3', color:'#DC2626' },
+              { icon:'📅', type:'Gestion RS', delai:'J+1 lancement', detail:'Planning dès le lendemain', color:'#7C3AED' },
+              { icon:'🔄', type:'Révisions', delai:'24h', detail:'Chaque révision en 24h max', color:'#0891B2' },
+            ].map(d => (
+              <div key={d.type} style={{ background:C.bg, borderRadius:14, padding:'18px 16px', border:`1px solid ${C.border}`, textAlign:'center' }}>
+                <div style={{ fontSize:24, marginBottom:8 }}>{d.icon}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:4 }}>{d.type}</div>
+                <div style={{ fontSize:22, fontWeight:800, color:d.color, marginBottom:4 }}>{d.delai}</div>
+                <div style={{ fontSize:12, color:C.textSec }}>{d.detail}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign:'center', marginTop:24 }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'10px 20px', background:'#D1FAE5', borderRadius:999, fontSize:14, fontWeight:600, color:'#065F46' }}>
+              ✅ Satisfait ou refait — si le délai n'est pas respecté, la révision est offerte
+            </div>
+          </div>
         </div>
       </div>
 
