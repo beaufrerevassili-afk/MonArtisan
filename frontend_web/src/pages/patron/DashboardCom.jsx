@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
 
 const V = '#8B5CF6';
 const V_BG = '#F5F3FF';
@@ -75,8 +76,6 @@ const EQUIPE_INIT = [
   { id:3, nom:'Membre 3', poste:'Design & Réseaux sociaux', specialite:'Logo, Branding, Instagram, Meta Ads', projetsActifs:2, projetsTotal:12, charge:60, dispo:true, color:'#3B82F6' },
   { id:4, nom:'Membre 4', poste:'Commercial & Relations clients', specialite:'Prospection, Devis, Suivi client', projetsActifs:0, projetsTotal:0, charge:20, dispo:true, color:'#10B981' },
 ];
-
-import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
 
 const REVENUS_7J = [
   { jour:'Lun', montant:280 },{ jour:'Mar', montant:420 },{ jour:'Mer', montant:180 },
