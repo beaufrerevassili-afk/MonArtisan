@@ -1,6 +1,14 @@
 // ─── Design System — tokens partagés ─────────────────────────────────────────
 // Inspiré de Planity (rigueur, whitespace) + touche premium (or, noir)
 
+// Dark mode detection helper
+export function isDark() {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches &&
+     document.documentElement.getAttribute('data-theme') !== 'light');
+}
+
 export const DS = {
   // Fonds
   bg:         '#FFFFFF',
