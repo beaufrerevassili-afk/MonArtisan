@@ -34,6 +34,7 @@ const PROJET_STATUS = {
   revision:   { label:'Révision',   bg:'#FFF7ED', border:'#FED7AA', color:'#C2410C' },
   livre:      { label:'Livré',      bg:'#D1FAE5', border:'#86EFAC', color:'#065F46' },
   paye:       { label:'Payé',       bg:'#F0FDF4', border:'#5EEAD4', color:'#0F766E' },
+  archive:    { label:'Archivé',    bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B' },
 };
 
 // ── Données vides — les vrais projets viennent de la base via /com/projets ──
@@ -309,6 +310,13 @@ export default function DashboardCom() {
     setProjets(prev => prev.map(p => p.id===projetId ? {...p, responsable} : p));
   };
 
+  // Archiver un projet terminé
+  const archiverProjet = async (id) => {
+    await updateStatut(id, 'archive');
+    showToast('Projet archivé');
+    setModalProjet(null);
+  };
+
   // Submit new project
   const submitNewProjet = () => {
     if (!newProjetForm.client || !newProjetForm.titre) return;
@@ -422,10 +430,10 @@ export default function DashboardCom() {
 
         <div style={CARD}>
           <div style={HDR}>Projets actifs</div>
-          {projets.filter(p => !['livre','paye','refuse'].includes(p.statut)).filter(p => !mesTaches || p.responsable).length === 0 && (
+          {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).length === 0 && (
             <div style={{ padding:24, textAlign:'center', color:'#8B8B8B', fontSize:14 }}>Aucun projet en cours — les briefs apparaîtront ici</div>
           )}
-          {projets.filter(p => !['livre','paye','refuse'].includes(p.statut)).filter(p => !mesTaches || p.responsable).map(p => {
+          {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).map(p => {
             const avancement = getAvancement(p);
             const urgence = getUrgence(p);
             return (
@@ -461,7 +469,7 @@ export default function DashboardCom() {
       {/* TAB: Projets */}
       {tab === 'projets' && (<div>
         <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
-          {[['tous','Tous'],['demande','Demandes'],['devis_envoye','Devis envoyé'],['en_cours','En cours'],['revision','Révision'],['livre','Livrés'],['paye','Payés']].map(([v,l]) => (
+          {[['tous','Tous'],['demande','Demandes'],['devis_envoye','Devis envoyé'],['en_cours','En cours'],['revision','Révision'],['livre','Livrés'],['paye','Payés'],['archive','📦 Archivés']].map(([v,l]) => (
             <button key={v} onClick={() => setProjetFilter(v)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight: projetFilter===v ? 700 : 500, background: projetFilter===v ? V : '#F3F3F3', color: projetFilter===v ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.825rem' }}>{l}</button>
           ))}
         </div>
@@ -934,17 +942,30 @@ export default function DashboardCom() {
                 <button onClick={() => livrerProjet(modalProjet.id)} style={{ ...BTN, width:'100%', padding:'12px', background:'#059669' }}>📦 Envoyer la version corrigée</button>
               )}
 
-              {/* Livré → en attente validation client */}
+              {/* Livré → en attente validation client + archiver */}
               {modalProjet.statut === 'livre' && (
-                <div style={{ padding:'12px 16px', background:'#D1FAE5', borderRadius:10, fontSize:13, color:'#065F46', fontWeight:600 }}>
-                  ✅ Livré — en attente de validation par le client
+                <div>
+                  <div style={{ padding:'12px 16px', background:'#D1FAE5', borderRadius:10, fontSize:13, color:'#065F46', fontWeight:600, marginBottom:8 }}>
+                    ✅ Livré — en attente de validation par le client
+                  </div>
+                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#8B8B8B' }}>📦 Archiver ce projet</button>
                 </div>
               )}
 
-              {/* Payé → terminé */}
+              {/* Payé → terminé + archiver */}
               {modalProjet.statut === 'paye' && (
-                <div style={{ padding:'12px 16px', background:'#F0FDF4', borderRadius:10, fontSize:13, color:'#0F766E', fontWeight:600 }}>
-                  💰 Projet terminé et payé
+                <div>
+                  <div style={{ padding:'12px 16px', background:'#F0FDF4', borderRadius:10, fontSize:13, color:'#0F766E', fontWeight:600, marginBottom:8 }}>
+                    💰 Projet terminé et payé
+                  </div>
+                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#8B8B8B' }}>📦 Archiver ce projet</button>
+                </div>
+              )}
+
+              {/* Archivé */}
+              {modalProjet.statut === 'archive' && (
+                <div style={{ padding:'12px 16px', background:'#F3F3F3', borderRadius:10, fontSize:13, color:'#8B8B8B', fontWeight:600 }}>
+                  📦 Projet archivé
                 </div>
               )}
 
