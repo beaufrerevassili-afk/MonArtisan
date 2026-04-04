@@ -1,5 +1,5 @@
 /* Service Worker — Artisans ERP */
-const CACHE_NAME = 'artisans-v3';
+const CACHE_NAME = 'freample-v4';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
