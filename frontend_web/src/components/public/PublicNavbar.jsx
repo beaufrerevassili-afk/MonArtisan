@@ -51,13 +51,6 @@ export default function PublicNavbar({ subNav = null, transparent = false }) {
 
         {/* Actions droite */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <button onClick={() => navigate('/recrutement')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: DS.muted, padding: '6px 10px', borderRadius: DS.r.sm, transition: 'color .15s', fontFamily: DS.font }}
-            onMouseEnter={e => e.currentTarget.style.color = DS.ink}
-            onMouseLeave={e => e.currentTarget.style.color = DS.muted}>
-            Emploi
-          </button>
-
           {user && user.role === 'client' ? (
             /* ── Connecté : icône compte avec dropdown ── */
             <div ref={menuRef} style={{ position: 'relative' }}>
