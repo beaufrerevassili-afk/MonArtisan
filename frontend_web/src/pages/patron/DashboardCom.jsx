@@ -454,47 +454,11 @@ export default function DashboardCom() {
 
   return (
     <div style={{ padding:'24px 28px', background:V_BG, minHeight:'100vh', fontFamily:'system-ui,sans-serif' }}>
-      {/* Header + Vue toggle */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:12 }}>
-        <div>
-          <div style={{ fontSize:22, fontWeight:800, color:'#1C1C1E' }}>🎬 Freample Com</div>
-          <div style={{ fontSize:14, color:'#8B8B8B', marginTop:2 }}>{vue === 'monteur' ? 'Espace monteur' : 'Gestion & Administration'}</div>
-        </div>
-        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-          {/* Vue toggle */}
-          <div style={{ display:'flex', background:'#F3F3F3', borderRadius:10, padding:3 }}>
-            <button onClick={() => { setVue('monteur'); localStorage.setItem('com_vue','monteur'); setTab('accueil'); }}
-              style={{ padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer', fontWeight:vue==='monteur'?700:500, background:vue==='monteur'?V:'transparent', color:vue==='monteur'?'#fff':'#666', fontFamily:'inherit', fontSize:13 }}>
-              🎬 Monteur
-            </button>
-            <button onClick={() => { setVue('gestion'); localStorage.setItem('com_vue','gestion'); setTab('accueil'); }}
-              style={{ padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer', fontWeight:vue==='gestion'?700:500, background:vue==='gestion'?V:'transparent', color:vue==='gestion'?'#fff':'#666', fontFamily:'inherit', fontSize:13 }}>
-              ⚙️ Gestion
-            </button>
-          </div>
-          {vue === 'gestion' && (
-            <div style={{ display:'flex', gap:8 }}>
-              <button onClick={() => setModalNewProjet(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, background:'#059669', fontSize:13, padding:'8px 14px' }}>+ Projet</button>
-              <button onClick={() => setModalDevis(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, fontSize:13, padding:'8px 14px' }}>+ Devis</button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Tabs — différents selon la vue */}
+      {/* Actions rapides (gestion uniquement) */}
       {vue === 'gestion' && (
-        <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24, flexWrap:'wrap' }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
-          ))}
-        </div>
-      )}
-
-      {vue === 'monteur' && (
-        <div style={{ display:'flex', gap:4, background:'#fff', borderRadius:14, padding:6, border:'1px solid #E9E5F5', marginBottom:24 }}>
-          {[{id:'accueil',icon:'🏠',label:'Ma journée'},{id:'projets',icon:'🎬',label:'Mes projets'},{id:'agenda',icon:'📅',label:'Agenda'},{id:'archives',icon:'📦',label:'Archives'},{id:'equipe',icon:'👥',label:'Équipe'}].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:'8px 16px', borderRadius:10, border:'none', cursor:'pointer', fontWeight: tab===t.id ? 700 : 500, background: tab===t.id ? V : 'transparent', color: tab===t.id ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.875rem', transition:'all .15s' }}>{t.icon} {t.label}</button>
-          ))}
+        <div style={{ display:'flex', justifyContent:'flex-end', gap:8, marginBottom:16 }}>
+          <button onClick={() => setModalNewProjet(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, background:'#059669', fontSize:13, padding:'8px 14px' }}>+ Projet</button>
+          <button onClick={() => setModalDevis(true)} style={{ ...BTN, display:'flex', alignItems:'center', gap:6, fontSize:13, padding:'8px 14px' }}>+ Devis</button>
         </div>
       )}
 

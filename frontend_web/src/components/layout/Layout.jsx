@@ -748,6 +748,19 @@ export default function Layout({ children }) {
                       {sectorHdr.label}
                     </div>
                   )}
+                  {/* Toggle Monteur/Gestion pour Com */}
+                  {user?.secteur === 'com' && !collapsed && (
+                    <div style={{ margin:'0 4px 12px', display:'flex', background:'var(--bg-secondary)', borderRadius:8, padding:3 }}>
+                      <button onClick={() => { localStorage.setItem('com_vue','monteur'); window.location.reload(); }}
+                        style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight: (localStorage.getItem('com_vue')||'monteur')==='monteur'?700:500, background: (localStorage.getItem('com_vue')||'monteur')==='monteur'?'var(--primary)':'transparent', color: (localStorage.getItem('com_vue')||'monteur')==='monteur'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
+                        🎬 Monteur
+                      </button>
+                      <button onClick={() => { localStorage.setItem('com_vue','gestion'); window.location.reload(); }}
+                        style={{ flex:1, padding:'6px 0', borderRadius:6, border:'none', cursor:'pointer', fontWeight: localStorage.getItem('com_vue')==='gestion'?700:500, background: localStorage.getItem('com_vue')==='gestion'?'var(--primary)':'transparent', color: localStorage.getItem('com_vue')==='gestion'?'#fff':'var(--text-secondary)', fontFamily:'inherit', fontSize:12 }}>
+                        ⚙️ Gestion
+                      </button>
+                    </div>
+                  )}
                   {sectorMenu.map(({ label, path, Icon }) => {
                     const active = location.pathname === path && path !== '/patron/dashboard' ? false : location.pathname === path;
                     const isDash = path === '/patron/dashboard';
