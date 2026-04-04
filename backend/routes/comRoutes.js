@@ -188,6 +188,16 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
   }
 });
 
+// ── AUTH: Supprimer un projet ──
+router.delete('/projets/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM com_projets WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ erreur: err.message });
+  }
+});
+
 // ── AUTH: Refuser un brief → email poli au client ──
 router.post('/projets/:id/refuser', authenticateToken, async (req, res) => {
   try {

@@ -312,6 +312,15 @@ export default function DashboardCom() {
     setProjets(prev => prev.map(p => p.id===projetId ? {...p, responsable} : p));
   };
 
+  // Supprimer un projet
+  const supprimerProjet = async (id) => {
+    const dbId = projets.find(p=>p.id===id)?.dbId || id;
+    try { await api.delete(`/com/projets/${dbId}`); } catch(e) {}
+    setProjets(prev => prev.filter(p => p.id !== id));
+    showToast('Projet supprimé');
+    setModalProjet(null);
+  };
+
   // Archiver un projet terminé
   const archiverProjet = async (id) => {
     await updateStatut(id, 'archive');
@@ -1134,7 +1143,10 @@ export default function DashboardCom() {
                 </div>
               )}
 
-              <button onClick={() => { setModalProjet(null); setChatInput(''); }} style={{ ...GHOST, width:'100%', padding:'12px', marginTop:8 }}>Fermer</button>
+              <div style={{ display:'flex', gap:8, marginTop:8 }}>
+                <button onClick={() => { setModalProjet(null); setChatInput(''); }} style={{ ...GHOST, flex:1, padding:'12px' }}>Fermer</button>
+                <button onClick={() => { if(window.confirm('Supprimer ce projet définitivement ?')) supprimerProjet(modalProjet.id); }} style={{ padding:'12px 16px', background:'#FEF2F2', color:'#DC2626', border:'1px solid #FECACA', borderRadius:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' }}>🗑️ Supprimer</button>
+              </div>
             </div>
           </div>
         </div>
