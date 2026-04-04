@@ -265,6 +265,128 @@ export default function FreampleCom() {
       {/* ── Portfolio / Réalisations ── */}
       <PortfolioSection />
 
+      {/* ── Packs mensuels ── */}
+      <div id="packs" style={{ padding:'64px 24px', background:C.bg }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:40 }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', background:C.soft, borderRadius:999, marginBottom:16 }}>
+              <span style={{ fontSize:13, fontWeight:700, color:C.primary }}>🔥 Le plus populaire</span>
+            </div>
+            <h2 style={{ fontSize:28, fontWeight:800, letterSpacing:'-0.02em', marginBottom:8 }}>Nos packs mensuels</h2>
+            <p style={{ fontSize:15, color:C.textSec, maxWidth:500, margin:'0 auto' }}>Du contenu régulier pour votre marque. Résiliable à tout moment.</p>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:20, alignItems:'stretch' }}>
+            {/* Starter */}
+            <div style={{ background:C.bg, borderRadius:20, border:`1px solid ${C.border}`, padding:'32px 24px', display:'flex', flexDirection:'column' }}>
+              <div style={{ fontSize:14, fontWeight:700, color:C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>Starter</div>
+              <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:6 }}>
+                <span style={{ fontSize:36, fontWeight:800, color:C.text }}>149€</span>
+                <span style={{ fontSize:14, color:C.textSec }}>/mois</span>
+              </div>
+              <p style={{ fontSize:14, color:C.textSec, lineHeight:1.5, marginBottom:20 }}>Idéal pour démarrer sur TikTok</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24, flex:1 }}>
+                {['4 TikToks / mois','Sous-titres animés','Musique tendance','1 révision par vidéo','Livraison en 72h'].map(f => (
+                  <div key={f} style={{ display:'flex', gap:8, fontSize:14, color:C.text }}>
+                    <span style={{ color:C.primary, fontWeight:700, flexShrink:0 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => document.getElementById('demande')?.scrollIntoView({behavior:'smooth'})}
+                style={{ width:'100%', padding:'13px', background:C.bg, color:C.text, border:`2px solid ${C.border}`, borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text; }}>
+                Choisir Starter
+              </button>
+            </div>
+
+            {/* Growth — highlighted */}
+            <div style={{ background:C.text, borderRadius:20, padding:'32px 24px', display:'flex', flexDirection:'column', position:'relative', overflow:'hidden' }}>
+              <div style={{ position:'absolute', top:16, right:16, background:C.primary, color:'#fff', padding:'4px 12px', borderRadius:999, fontSize:12, fontWeight:700 }}>Populaire</div>
+              <div style={{ fontSize:14, fontWeight:700, color:'rgba(255,255,255,0.6)', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>Growth</div>
+              <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:6 }}>
+                <span style={{ fontSize:36, fontWeight:800, color:'#fff' }}>349€</span>
+                <span style={{ fontSize:14, color:'rgba(255,255,255,0.5)' }}>/mois</span>
+              </div>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.5, marginBottom:20 }}>Pour les créateurs qui veulent scaler</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24, flex:1 }}>
+                {['10 TikToks / mois','5 Reels Instagram','Miniatures YouTube','Sous-titres + effets','2 révisions par vidéo','Livraison en 48h','Stratégie contenu mensuelle'].map(f => (
+                  <div key={f} style={{ display:'flex', gap:8, fontSize:14, color:'rgba(255,255,255,0.9)' }}>
+                    <span style={{ color:C.primary, fontWeight:700, flexShrink:0 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => document.getElementById('demande')?.scrollIntoView({behavior:'smooth'})}
+                style={{ width:'100%', padding:'13px', background:C.primary, color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'background .15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = C.primaryHover}
+                onMouseLeave={e => e.currentTarget.style.background = C.primary}>
+                Choisir Growth →
+              </button>
+            </div>
+
+            {/* Pro */}
+            <div style={{ background:C.bg, borderRadius:20, border:`1px solid ${C.border}`, padding:'32px 24px', display:'flex', flexDirection:'column' }}>
+              <div style={{ fontSize:14, fontWeight:700, color:C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>Pro</div>
+              <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:6 }}>
+                <span style={{ fontSize:36, fontWeight:800, color:C.text }}>699€</span>
+                <span style={{ fontSize:14, color:C.textSec }}>/mois</span>
+              </div>
+              <p style={{ fontSize:14, color:C.textSec, lineHeight:1.5, marginBottom:20 }}>Gestion complète de votre présence</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24, flex:1 }}>
+                {['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Planning éditorial','Révisions illimitées','Livraison en 48h','Appel stratégie mensuel','Reporting performance'].map(f => (
+                  <div key={f} style={{ display:'flex', gap:8, fontSize:14, color:C.text }}>
+                    <span style={{ color:C.primary, fontWeight:700, flexShrink:0 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => document.getElementById('demande')?.scrollIntoView({behavior:'smooth'})}
+                style={{ width:'100%', padding:'13px', background:C.bg, color:C.text, border:`2px solid ${C.border}`, borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text; }}>
+                Choisir Pro
+              </button>
+            </div>
+
+            {/* Agency */}
+            <div style={{ background:`linear-gradient(135deg, ${C.dark}, #2D1B69)`, borderRadius:20, padding:'32px 24px', display:'flex', flexDirection:'column' }}>
+              <div style={{ fontSize:14, fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>Agency</div>
+              <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:6 }}>
+                <span style={{ fontSize:28, fontWeight:800, color:'#fff' }}>Sur mesure</span>
+              </div>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.5)', lineHeight:1.5, marginBottom:20 }}>Pour les marques et agences</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:24, flex:1 }}>
+                {['Volume illimité','Multi-plateformes','Shooting vidéo inclus','Direction artistique','Account manager dédié','Reporting avancé','Publicité en ligne','Stratégie 360°'].map(f => (
+                  <div key={f} style={{ display:'flex', gap:8, fontSize:14, color:'rgba(255,255,255,0.8)' }}>
+                    <span style={{ color:'#F59E0B', fontWeight:700, flexShrink:0 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => document.getElementById('demande')?.scrollIntoView({behavior:'smooth'})}
+                style={{ width:'100%', padding:'13px', background:'rgba(255,255,255,0.1)', color:'#fff', border:'1.5px solid rgba(255,255,255,0.2)', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font, transition:'all .15s', backdropFilter:'blur(4px)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}>
+                Nous contacter
+              </button>
+            </div>
+          </div>
+
+          {/* Reassurance */}
+          <div style={{ display:'flex', justifyContent:'center', gap:24, marginTop:32, flexWrap:'wrap' }}>
+            {[
+              { icon:'🔄', text:'Résiliable à tout moment' },
+              { icon:'⚡', text:'Livraison en 48-72h' },
+              { icon:'✅', text:'Satisfait ou refait' },
+              { icon:'💳', text:'Paiement sécurisé' },
+            ].map(r => (
+              <div key={r.text} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:16 }}>{r.icon}</span>
+                <span style={{ fontSize:13, color:C.textSec, fontWeight:500 }}>{r.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── Grille tarifaire ── */}
       <div style={{ background:C.soft, padding:'56px 24px', borderTop:`1px solid ${C.border}` }}>
         <div style={{ maxWidth:800, margin:'0 auto' }}>
