@@ -226,4 +226,80 @@ router.post('/projets/:id/refuser', authenticateToken, async (req, res) => {
   }
 });
 
+// ══════════════════════════════════════════════════════════
+// AGENDA
+// ══════════════════════════════════════════════════════════
+
+router.get('/agenda', authenticateToken, async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM com_agenda ORDER BY date, heure');
+    res.json({ events: result.rows });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+router.post('/agenda', authenticateToken, async (req, res) => {
+  try {
+    const { titre, heure, heure_fin, jour, date, type, personne, projet } = req.body;
+    const result = await query(
+      'INSERT INTO com_agenda (titre, heure, heure_fin, jour, date, type, personne, projet) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+      [titre, heure, heure_fin, jour, date, type || 'montage', personne, projet]
+    );
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+router.put('/agenda/:id', authenticateToken, async (req, res) => {
+  try {
+    const { titre, heure, heure_fin, jour, date, type, personne, projet } = req.body;
+    await query(
+      'UPDATE com_agenda SET titre=$1, heure=$2, heure_fin=$3, jour=$4, date=$5, type=$6, personne=$7, projet=$8 WHERE id=$9',
+      [titre, heure, heure_fin, jour, date, type, personne, projet, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+router.delete('/agenda/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM com_agenda WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════
+// TARIFS
+// ══════════════════════════════════════════════════════════
+
+router.get('/tarifs', async (req, res) => {
+  try {
+    const result = await query('SELECT data FROM com_tarifs ORDER BY id DESC LIMIT 1');
+    res.json({ tarifs: result.rows[0]?.data || null });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+router.put('/tarifs', authenticateToken, async (req, res) => {
+  try {
+    const { tarifs } = req.body;
+    const existing = await query('SELECT id FROM com_tarifs LIMIT 1');
+    if (existing.rows.length) {
+      await query('UPDATE com_tarifs SET data = $1, updated_at = NOW() WHERE id = $2', [JSON.stringify(tarifs), existing.rows[0].id]);
+    } else {
+      await query('INSERT INTO com_tarifs (data) VALUES ($1)', [JSON.stringify(tarifs)]);
+    }
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════
+// AVANCEMENT (fichiers faits)
+// ══════════════════════════════════════════════════════════
+
+router.put('/projets/:id/avancement', authenticateToken, async (req, res) => {
+  try {
+    const { fichiers_faits } = req.body;
+    await query('UPDATE com_projets SET fichiers_faits = $1 WHERE id = $2', [fichiers_faits, req.params.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
 module.exports = router;

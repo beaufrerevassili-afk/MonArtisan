@@ -104,9 +104,7 @@ export default function DashboardCom() {
   const [editNom, setEditNom] = useState('');
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
   const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
-  const [agendaEvents, setAgendaEvents] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('com_agenda') || '[]'); } catch { return []; }
-  });
+  const [agendaEvents, setAgendaEvents] = useState([]);
   const [agendaModal, setAgendaModal] = useState(null); // null | { jour, heure } | event object
   const [agendaForm, setAgendaForm] = useState({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
   const [semainOffset, setSemainOffset] = useState(0);
@@ -142,10 +140,21 @@ export default function DashboardCom() {
           style: p.style || '',
           options: p.options || [],
           reference: p.reference || '',
+          fichiersFaits: p.fichiers_faits || 0,
           dbId: p.id,
         }));
         setProjets(mapped);
       }
+    }).catch(() => {});
+
+    // Charger agenda depuis l'API
+    api.get('/com/agenda').then(r => {
+      if (r.data?.events) setAgendaEvents(r.data.events.map(e => ({ ...e, id:e.id, heureFin:e.heure_fin })));
+    }).catch(() => {});
+
+    // Charger tarifs depuis l'API (override localStorage)
+    api.get('/com/tarifs').then(r => {
+      if (r.data?.tarifs) { setTarifs(r.data.tarifs); saveTarifs(r.data.tarifs); }
     }).catch(() => {});
   }, []);
 
@@ -207,17 +216,16 @@ export default function DashboardCom() {
 
   // Incrémenter fichiers faits
   const incrementFichier = async (projetId) => {
-    setProjets(prev => prev.map(p => {
-      if (p.id !== projetId) return p;
-      const fait = (Number(p.fichiersFaits) || 0) + 1;
-      const qte = Number(p.quantite) || 1;
-      return { ...p, fichiersFaits: fait, statut: fait >= qte ? 'livre' : p.statut };
-    }));
-    // Sync avec l'API
     const p = projets.find(pr => pr.id === projetId);
+    const fait = (Number(p?.fichiersFaits) || 0) + 1;
+    const qte = Number(p?.quantite) || 1;
+    const newStatut = fait >= qte ? 'livre' : p?.statut;
+
+    setProjets(prev => prev.map(pr => pr.id !== projetId ? pr : { ...pr, fichiersFaits: fait, statut: newStatut }));
+
+    // Sync avancement + statut avec l'API
     if (p?.dbId) {
-      const fait = (Number(p.fichiersFaits) || 0) + 1;
-      const qte = Number(p.quantite) || 1;
+      try { await api.put(`/com/projets/${p.dbId}/avancement`, { fichiers_faits: fait }); } catch(e) {}
       if (fait >= qte) {
         try { await api.put(`/com/projets/${p.dbId}/statut`, { statut:'livre' }); } catch(e) {}
       }
@@ -737,21 +745,33 @@ export default function DashboardCom() {
           return { label:j, date:d.toISOString().split('T')[0], num:d.getDate(), isToday: d.toDateString() === today.toDateString() };
         });
 
-        const saveEvent = () => {
+        const saveEvent = async () => {
           if (!agendaForm.titre) return;
-          const evt = { id: Date.now(), ...agendaForm, jour: typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour, date: joursDates[typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour]?.date };
-          const updated = agendaModal?.id ? agendaEvents.map(e => e.id === agendaModal.id ? { ...e, ...agendaForm } : e) : [...agendaEvents, evt];
-          setAgendaEvents(updated);
-          localStorage.setItem('com_agenda', JSON.stringify(updated));
+          const jourIdx = typeof agendaModal?.jour === 'number' ? agendaModal.jour : agendaForm.jour;
+          const dateStr = joursDates[jourIdx]?.date;
+          const payload = { titre:agendaForm.titre, heure:agendaForm.heure, heure_fin:agendaForm.heureFin, jour:jourIdx, date:dateStr, type:agendaForm.type, personne:agendaForm.personne, projet:agendaForm.projet };
+
+          if (agendaModal?.id && typeof agendaModal.id === 'number' && agendaModal.id < 1e12) {
+            // Update existing
+            try { await api.put(`/com/agenda/${agendaModal.id}`, payload); } catch(e) {}
+            setAgendaEvents(prev => prev.map(e => e.id === agendaModal.id ? { ...e, ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin } : e));
+          } else {
+            // Create new
+            try {
+              const r = await api.post('/com/agenda', payload);
+              setAgendaEvents(prev => [...prev, { id:r.data?.id||Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
+            } catch(e) {
+              setAgendaEvents(prev => [...prev, { id:Date.now(), ...agendaForm, date:dateStr, heureFin:agendaForm.heureFin }]);
+            }
+          }
           setAgendaModal(null);
           setAgendaForm({ titre:'', heure:'09:00', heureFin:'10:00', jour:0, type:'montage', projet:'', personne:'Marius' });
           showToast(agendaModal?.id ? 'Événement modifié' : 'Événement ajouté');
         };
 
-        const deleteEvent = (id) => {
-          const updated = agendaEvents.filter(e => e.id !== id);
-          setAgendaEvents(updated);
-          localStorage.setItem('com_agenda', JSON.stringify(updated));
+        const deleteEvent = async (id) => {
+          try { await api.delete(`/com/agenda/${id}`); } catch(e) {}
+          setAgendaEvents(prev => prev.filter(e => e.id !== id));
           setAgendaModal(null);
           showToast('Événement supprimé');
         };
@@ -1028,7 +1048,7 @@ export default function DashboardCom() {
             <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Modifiez les prix — les changements sont visibles immédiatement sur le site</div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={() => { const r = resetTarifs(); setTarifs(r); showToast('Tarifs réinitialisés aux valeurs par défaut'); }} style={GHOST}>↺ Réinitialiser</button>
+            <button onClick={() => { const r = resetTarifs(); setTarifs(r); api.put('/com/tarifs', { tarifs: r }).catch(()=>{}); showToast('Tarifs réinitialisés'); }} style={GHOST}>↺ Réinitialiser</button>
           </div>
         </div>
         {tarifs.map((t, ci) => (
@@ -1050,6 +1070,7 @@ export default function DashboardCom() {
                           const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: cat.items.map((it, j) => j !== ji ? it : { ...it, nom: editNom, prix: Number(editPrix) }) });
                           setTarifs(updated);
                           saveTarifs(updated);
+                          api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
                           setEditingTarif(null);
                           showToast('Prix mis à jour — visible sur le site');
                         }} style={{ ...BTN, padding:'7px 14px', fontSize:13 }}>✓</button>
