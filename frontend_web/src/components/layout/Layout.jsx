@@ -211,17 +211,7 @@ const PATRON_SECTOR_MENUS = {
     { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
     { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
   ],
-  com: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
-    { label: 'Projets',           path: '/patron/dashboard?onglet=projets',     Icon: IconMissions   },
-    { label: 'Devis',             path: '/patron/dashboard?onglet=devis',       Icon: IconDocument   },
-    { label: 'Facturation',       path: '/patron/dashboard?onglet=factures',    Icon: IconCreditCard },
-    { label: 'Clients',           path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
-    { label: 'Grille tarifaire',  path: '/patron/dashboard?onglet=tarifs',      Icon: IconFinance    },
-    { label: 'Équipe',            path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam       },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
-    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
-  ],
+  com: 'dynamic', // handled dynamically based on vue toggle
 };
 
 const PATRON_SECTOR_HEADERS = {
@@ -724,8 +714,32 @@ export default function Layout({ children }) {
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
           {(isPatron || (isFondateur && location.pathname.startsWith('/patron'))) ? (() => {
-            const sectorMenu = isPatron && user?.secteur ? PATRON_SECTOR_MENUS[user.secteur] : null;
+            let sectorMenu = isPatron && user?.secteur ? PATRON_SECTOR_MENUS[user.secteur] : null;
             const sectorHdr  = isPatron && user?.secteur ? PATRON_SECTOR_HEADERS[user.secteur] : null;
+
+            // Freample Com: menu dynamique selon la vue monteur/gestion
+            if (sectorMenu === 'dynamic') {
+              const comVue = localStorage.getItem('com_vue') || 'monteur';
+              sectorMenu = comVue === 'monteur' ? [
+                { label: 'Ma journée',    path: '/patron/dashboard',                    Icon: IconHome     },
+                { label: 'Mes projets',   path: '/patron/dashboard?onglet=projets',     Icon: IconMissions },
+                { label: 'Agenda',        path: '/patron/dashboard?onglet=agenda',      Icon: IconCalendar },
+                { label: 'Archives',      path: '/patron/dashboard?onglet=archives',    Icon: IconBox      },
+                { label: 'Équipe',        path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam     },
+              ] : [
+                { label: 'Accueil',        path: '/patron/dashboard',                    Icon: IconHome       },
+                { label: 'Projets',        path: '/patron/dashboard?onglet=projets',     Icon: IconMissions   },
+                { label: 'Archives',       path: '/patron/dashboard?onglet=archives',    Icon: IconBox        },
+                { label: 'Devis',          path: '/patron/dashboard?onglet=devis',       Icon: IconDocument   },
+                { label: 'Facturation',    path: '/patron/dashboard?onglet=factures',    Icon: IconCreditCard },
+                { label: 'Paiements',      path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
+                { label: 'Clients',        path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
+                { label: 'Tarifs',         path: '/patron/dashboard?onglet=tarifs',       Icon: IconFinance    },
+                { label: 'Équipe',         path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam       },
+                { label: 'Rapports',       path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
+              ];
+            }
+
             if (sectorMenu) {
               return (
                 <>
