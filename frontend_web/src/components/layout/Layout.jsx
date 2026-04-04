@@ -510,7 +510,8 @@ export default function Layout({ children }) {
           flexShrink: 0,
         }}>
           {!collapsed && (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, overflow: 'hidden' }}>
+            <div onClick={() => navigate(user?.role === 'client' ? '/' : `/${user?.role || ''}/dashboard`)}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, overflow: 'hidden', cursor: 'pointer' }}>
               <div style={{
                 width: 30, height: 30, borderRadius: 9,
                 background: 'var(--gradient-primary)',
