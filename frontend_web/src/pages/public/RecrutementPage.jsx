@@ -172,7 +172,7 @@ function ModalCandidature({ offre, onClose }) {
 function OffreCard({ offre, selected, onClick }) {
   const daysAgo = Math.floor((Date.now() - new Date(offre.created_at||Date.now()).getTime()) / 86400000);
   const sc = SECTEUR_COLOR[offre.secteur] || { bg:DS.bgSoft, border:DS.border, text:DS.muted };
-  const initials = offre.entreprise.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const initials = (offre.entreprise||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
   return (
     <div onClick={onClick}
@@ -252,7 +252,7 @@ function OffreDetail({ offre, onPostuler }) {
         <div style={{ marginBottom:22 }}>
           <div style={{ fontSize:'0.7rem', fontWeight:700, color:DS.subtle, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>Compétences</div>
           <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-            {offre.competences.split(',').map(c => (
+            {(offre.competences||'').split(',').filter(Boolean).map(c => (
               <span key={c} style={{ fontSize:'0.8rem', color:DS.ink2, background:DS.surface, border:`1px solid ${DS.border}`, borderRadius:DS.r.sm, padding:'5px 12px' }}>{c.trim()}</span>
             ))}
           </div>
