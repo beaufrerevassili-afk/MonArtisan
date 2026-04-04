@@ -272,7 +272,7 @@ export default function Register() {
   const [showPwd, setShowPwd] = useState(false);
 
   // Données compte
-  const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '' });
+  const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '', confirmMotdepasse: '' });
   // Données profil artisan
   const [profil, setProfil] = useState({ metier: '', siret: '', adresse: '', ville: '', experience: '', description: '' });
   // Données logement (vacances / hôtel)
@@ -382,6 +382,7 @@ export default function Register() {
     if (!compte.email.trim()) return 'L\'email est requis';
     if (!/\S+@\S+\.\S+/.test(compte.email)) return 'Email invalide';
     if (compte.motdepasse.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères';
+    if (compte.motdepasse !== compte.confirmMotdepasse) return 'Les mots de passe ne correspondent pas';
     if (role === 'artisan' && !compte.telephone.trim()) return 'Le numéro de téléphone est requis';
     return null;
   }
@@ -741,6 +742,29 @@ export default function Register() {
                     <span style={{ fontSize: '0.6875rem', color: DS.subtle, marginLeft: 6, whiteSpace: 'nowrap' }}>
                       {compte.motdepasse.length < 6 ? 'Faible' : compte.motdepasse.length < 10 ? 'Moyen' : 'Fort'}
                     </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="reg-confirm-password" className="reg-label">Confirmer le mot de passe</label>
+                <input
+                  id="reg-confirm-password"
+                  className="reg-input"
+                  type={showPwd ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={compte.confirmMotdepasse}
+                  onChange={e => setCompte({ ...compte, confirmMotdepasse: e.target.value })}
+                  autoComplete="new-password"
+                />
+                {compte.confirmMotdepasse && compte.motdepasse !== compte.confirmMotdepasse && (
+                  <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#DC2626', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    ✗ Les mots de passe ne correspondent pas
+                  </div>
+                )}
+                {compte.confirmMotdepasse && compte.motdepasse === compte.confirmMotdepasse && compte.motdepasse.length >= 8 && (
+                  <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#16A34A', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    ✓ Les mots de passe correspondent
                   </div>
                 )}
               </div>

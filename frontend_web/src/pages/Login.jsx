@@ -42,9 +42,9 @@ const SECTEUR_COMPTES = {
 };
 
 const GENERIC_DEMO = [
-  { role: 'Client',  email: 'client@demo.com',  motdepasse: 'client123',  color: DS.accent,   icon: '👤', universal: true },
-  { role: 'Patron',  email: 'patron@demo.com',  motdepasse: 'patron123',  color: '#7C3AED',   icon: '🏗️' },
-  { role: 'Artisan', email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669',   icon: '🔨' },
+  { role: 'Client',            email: 'client@demo.com',  motdepasse: 'client123',  color: DS.accent,   icon: '👤', universal: true },
+  { role: "Chef d'entreprise", email: 'patron@demo.com',  motdepasse: 'patron123',  color: '#7C3AED',   icon: '💼' },
+  { role: 'Employé',           email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669',   icon: '👷' },
 ];
 
 // ─── Config secteur ───────────────────────────────────────────────────────────
@@ -118,11 +118,11 @@ export default function Login() {
   }
 
   async function remplirDemo(compte) {
-    // Si c'est un compte générique Patron/Artisan sans secteur choisi → forcer le choix
+    // Si c'est un compte générique Chef/Employé sans secteur choisi → forcer le choix
     const isGenericPatronArtisan = !compte.universal && !activeSector
-      && ['Patron', 'Artisan'].includes(compte.role);
+      && ["Chef d'entreprise", 'Employé'].includes(compte.role);
     if (isGenericPatronArtisan) {
-      setPendingRole(compte.role === 'Patron' ? 'patron' : 'artisan');
+      setPendingRole(compte.role === "Chef d'entreprise" ? 'patron' : 'artisan');
       return;
     }
     setError('');
@@ -325,7 +325,7 @@ export default function Login() {
               {pendingRole ? (
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#B45309', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 18 }}>👆</span>
-                  Choisissez votre secteur pour accéder au compte {pendingRole === 'patron' ? 'Patron' : 'Artisan'}
+                  Choisissez votre secteur pour accéder au compte {pendingRole === 'patron' ? "Chef d'entreprise" : 'Employé'}
                 </div>
               ) : (
                 <div style={{ fontSize: 11, color: DS.subtle, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>

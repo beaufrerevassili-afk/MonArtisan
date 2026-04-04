@@ -857,7 +857,7 @@ function EmployesView({ employes: initEmployes }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
-              {['Employé', 'Poste', 'Contrat', 'Salaire brut', 'Entrée', 'Carte Pro BTP', 'Contact', ''].map(h => (
+              {['Employé', 'Poste', 'Contrat', 'Salaire brut', 'Entrée', 'Statut', 'Contact', ''].map(h => (
                 <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
               ))}
             </tr>
@@ -890,20 +890,11 @@ function EmployesView({ employes: initEmployes }) {
                 <td style={{ padding: '12px 16px', fontWeight: 700 }}>{Number(e.salaireBase || 0).toLocaleString('fr-FR')} €</td>
                 <td style={{ padding: '12px 16px', color: '#6E6E73', fontSize: 13 }}>{e.dateEntree || '—'}</td>
                 <td style={{ padding: '12px 16px' }}>
-                  {e.carteProBTPNumero ? (() => {
-                    const exp = e.carteProBTPExpiration ? new Date(e.carteProBTPExpiration) : null;
-                    const valide = exp && exp > new Date();
-                    const bientotExp = exp && valide && (exp - new Date()) < 90 * 24 * 3600 * 1000;
-                    return (
-                      <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: valide ? (bientotExp ? '#856404' : '#1A7F43') : '#C0392B', background: valide ? (bientotExp ? '#FFF3CD' : '#D1F2E0') : '#FFE5E5', padding: '2px 8px', borderRadius: 10, display: 'inline-block' }}>
-                          {valide ? (bientotExp ? 'Expire bientôt' : 'Valide') : 'Expirée'}
-                        </div>
-                        <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>{e.carteProBTPNumero}</div>
-                        {exp && <div style={{ fontSize: 10, color: '#8E8E93' }}>Exp. {exp.toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}</div>}
-                      </div>
-                    );
-                  })() : <span style={{ color: '#C7C7CC', fontSize: 12 }}>—</span>}
+                  {e.statut === 'inactif' ? (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '3px 10px', borderRadius: 10, display: 'inline-block' }}>Inactif</span>
+                  ) : (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', background: '#D1FAE5', padding: '3px 10px', borderRadius: 10, display: 'inline-block' }}>Actif</span>
+                  )}
                 </td>
                 <td style={{ padding: '12px 16px', fontSize: 12, color: '#6E6E73' }}>{e.telephone || '—'}</td>
                 <td style={{ padding: '12px 16px' }}>
@@ -925,6 +916,20 @@ function EmployesView({ employes: initEmployes }) {
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{modal === 'add' ? 'Nouvel employé' : `Modifier — ${form.prenom} ${form.nom}`}</h2>
               <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#8E8E93' }}>✕</button>
             </div>
+
+            {/* Option recruter un compte existant */}
+            {modal === 'add' && (
+              <div style={{ marginBottom: 20, padding: '14px 18px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#3730A3', marginBottom: 8 }}>🔍 Recruter un utilisateur Freample existant</div>
+                <div style={{ fontSize: 13, color: '#5B5BD6', marginBottom: 12 }}>Si l'employé a déjà un compte Freample (ex: ancien employé d'une autre entreprise), entrez son email pour le rattacher à votre entreprise.</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input placeholder="Email du compte Freample existant" style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid #C7D2FE', fontSize: 14, outline: 'none', fontFamily: 'inherit' }} />
+                  <button type="button" onClick={() => alert('Fonctionnalité bientôt disponible — le compte sera rattaché à votre entreprise')} style={{ padding: '10px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>Rechercher</button>
+                </div>
+                <div style={{ fontSize: 12, color: '#6B7280', marginTop: 8 }}>L'employé recevra une invitation à rejoindre votre entreprise. Son historique et ses compétences seront conservés.</div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
@@ -977,6 +982,28 @@ function EmployesView({ employes: initEmployes }) {
                 <div><label style={lbl}>Numéro de carte</label><input {...f('carteProBTPNumero')} placeholder="BTP-XXXX-XXXXX" style={inp}/></div>
                 <div><label style={lbl}>Date d'expiration</label><input type="date" {...f('carteProBTPExpiration')} style={inp}/></div>
               </div>
+
+              {/* Bouton désactiver / réactiver (seulement en édition) */}
+              {modal !== 'add' && (
+                <div style={{ marginTop: 18, padding: '14px 16px', background: form.statut === 'inactif' ? '#EFF6FF' : '#FEF2F2', border: `1px solid ${form.statut === 'inactif' ? '#BFDBFE' : '#FECACA'}`, borderRadius: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: form.statut === 'inactif' ? '#1E40AF' : '#DC2626', marginBottom: 6 }}>
+                    {form.statut === 'inactif' ? '🔄 Réactiver cet employé' : '⚠️ Désactiver cet employé'}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 10 }}>
+                    {form.statut === 'inactif'
+                      ? 'L\'employé retrouvera accès à son compte et sera rattaché à votre entreprise.'
+                      : 'L\'employé passe en statut inactif. Son compte Freample reste actif et il pourra être recruté par une autre entreprise via "Ils recrutent" ou directement.'}
+                  </div>
+                  <button type="button" onClick={() => {
+                    const newStatut = form.statut === 'inactif' ? 'actif' : 'inactif';
+                    setForm(p => ({ ...p, statut: newStatut }));
+                    setEmployes(prev => prev.map(e => e.id === modal.id ? { ...e, statut: newStatut } : e));
+                    setModal(null);
+                  }} style={{ padding: '8px 18px', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: form.statut === 'inactif' ? '#3B82F6' : '#DC2626', color: '#fff' }}>
+                    {form.statut === 'inactif' ? 'Réactiver' : 'Désactiver l\'employé'}
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F2F7' }}>
                 <button type="button" onClick={() => setModal(null)} style={{ padding: '10px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
