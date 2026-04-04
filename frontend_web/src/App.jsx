@@ -69,7 +69,8 @@ class ErrorBoundary extends Component {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 24, textAlign: 'center', background: '#F9FAFB' }}>
           <div style={{ fontSize: '3rem', marginBottom: 16 }}>⚠️</div>
           <h1 style={{ color: '#1C1C1E', fontSize: '1.5rem', fontWeight: 700, marginBottom: 8 }}>Une erreur est survenue</h1>
-          <p style={{ color: '#6E6E73', marginBottom: 24 }}>Rechargez la page pour continuer.</p>
+          <p style={{ color: '#6E6E73', marginBottom: 12 }}>Rechargez la page pour continuer.</p>
+          <pre style={{ color: '#DC2626', fontSize: 12, textAlign: 'left', background: '#FEF2F2', padding: 16, borderRadius: 8, maxWidth: 500, overflow: 'auto', marginBottom: 24 }}>{this.state.error?.message}{'\n'}{this.state.error?.stack?.split('\n').slice(0,5).join('\n')}</pre>
           <button onClick={() => window.location.reload()} style={{ padding: '10px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>
             Recharger
           </button>

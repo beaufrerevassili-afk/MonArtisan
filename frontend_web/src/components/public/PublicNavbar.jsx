@@ -6,7 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 export default function PublicNavbar({ subNav = null, transparent = false }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const auth = useAuth() || {};
+  const user = auth.user || null;
+  const logout = auth.logout || (() => {});
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
