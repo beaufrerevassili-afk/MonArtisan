@@ -63,10 +63,12 @@ export default function Login() {
   const sector     = fromSector && PUBLIC_SECTORS.includes(fromSector) ? fromSector : null;
   const sectorCfg  = sector ? SECTOR_CONFIG[sector] : null;
 
-  const [form, setForm]       = useState({ email: '', motdepasse: '' });
-  const [error, setError]     = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showPwd, setShowPwd] = useState(false);
+  const [form, setForm]           = useState({ email: '', motdepasse: '' });
+  const [error, setError]         = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [showPwd, setShowPwd]     = useState(false);
+  const [demoSector, setDemoSector] = useState(null); // secteur choisi manuellement dans les démos
+  const [pendingRole, setPendingRole] = useState(null); // rôle en attente de choix secteur ('patron'|'artisan')
 
   const getDestination = (role) => {
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
@@ -75,9 +77,13 @@ export default function Login() {
 
   if (user) return <Navigate to={getDestination(user.role)} replace />;
 
+  // Secteur effectif : depuis l'URL ou choisi manuellement
+  const activeSector = sector || demoSector;
+  const activeSectorCfg = activeSector ? SECTOR_CONFIG[activeSector] : null;
+
   // Comptes démo filtrés : client universel + comptes du secteur actif
-  const demoAccounts = sector
-    ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[sector] || [])]
+  const demoAccounts = activeSector
+    ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector] || [])]
     : GENERIC_DEMO;
 
   const accentColor = sectorCfg?.color || DS.ink;
@@ -97,6 +103,13 @@ export default function Login() {
   }
 
   async function remplirDemo(compte) {
+    // Si c'est un compte générique Patron/Artisan sans secteur choisi → forcer le choix
+    const isGenericPatronArtisan = !compte.universal && !activeSector
+      && ['Patron', 'Artisan'].includes(compte.role);
+    if (isGenericPatronArtisan) {
+      setPendingRole(compte.role === 'Patron' ? 'patron' : 'artisan');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -106,6 +119,25 @@ export default function Login() {
       setError(err.response?.data?.erreur || 'Identifiants incorrects');
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Quand un secteur est choisi après clic sur Patron/Artisan générique → connexion auto
+  function handleSectorSelect(id) {
+    if (demoSector === id && !pendingRole) {
+      setDemoSector(null);
+      return;
+    }
+    setDemoSector(id);
+    if (pendingRole) {
+      const comptesSecteur = SECTEUR_COMPTES[id] || [];
+      // Patron → premier compte du secteur, Artisan → deuxième (employé)
+      const compte = pendingRole === 'patron' ? comptesSecteur[0] : comptesSecteur[1];
+      if (compte) {
+        setPendingRole(null);
+        // Petit délai pour voir la sélection avant connexion
+        setTimeout(() => remplirDemo(compte), 300);
+      }
     }
   }
 
@@ -119,7 +151,10 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: '100vh', background: DS.bgSoft, fontFamily: DS.font }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-border { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); } }
+      `}</style>
       <PublicNavbar />
 
       <div style={{ display: 'flex', justifyContent: 'center', padding: 'clamp(28px,5vh,56px) 20px 48px' }}>
@@ -258,10 +293,55 @@ export default function Login() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0 16px' }}>
             <div style={{ flex: 1, height: 1, background: DS.border }} />
             <span style={{ fontSize: 12, color: DS.subtle, fontWeight: 500, whiteSpace: 'nowrap' }}>
-              {sector ? `Comptes ${sectorCfg.label}` : 'Comptes de démonstration'}
+              {activeSector ? `Comptes ${activeSectorCfg?.label || activeSector}` : 'Comptes de démonstration'}
             </span>
             <div style={{ flex: 1, height: 1, background: DS.border }} />
           </div>
+
+          {/* ── Sélecteur de secteur (quand pas de secteur dans l'URL) ── */}
+          {!sector && (
+            <div style={{
+              marginBottom: 12,
+              ...(pendingRole ? {
+                background: '#FFFBEB', border: '2px solid #F59E0B', borderRadius: DS.r.md,
+                padding: '14px 16px', animation: 'pulse-border .6s ease-in-out',
+              } : {}),
+            }}>
+              {pendingRole ? (
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#B45309', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>👆</span>
+                  Choisissez votre secteur pour accéder au compte {pendingRole === 'patron' ? 'Patron' : 'Artisan'}
+                </div>
+              ) : (
+                <div style={{ fontSize: 11, color: DS.subtle, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                  Choisir un espace
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {Object.entries(SECTOR_CONFIG).map(([id, cfg]) => (
+                  <button
+                    key={id}
+                    onClick={() => handleSectorSelect(id)}
+                    style={{
+                      padding: pendingRole ? '8px 16px' : '5px 12px',
+                      borderRadius: DS.r.full, fontSize: pendingRole ? 13 : 12, fontWeight: 600,
+                      border: `1.5px solid ${demoSector === id ? cfg.color : pendingRole ? cfg.color + '60' : DS.border}`,
+                      background: demoSector === id ? cfg.bg : DS.bg,
+                      color: demoSector === id ? cfg.color : pendingRole ? cfg.color : DS.muted,
+                      cursor: 'pointer', transition: 'all .15s',
+                    }}
+                  >
+                    {cfg.icon} {cfg.label}
+                  </button>
+                ))}
+              </div>
+              {pendingRole && (
+                <button onClick={() => setPendingRole(null)} style={{ marginTop: 10, fontSize: 12, color: DS.muted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: DS.font, textDecoration: 'underline' }}>
+                  Annuler
+                </button>
+              )}
+            </div>
+          )}
 
           {/* ── Comptes démo (filtrés par secteur) ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
