@@ -87,13 +87,13 @@ const TABS = [
 ];
 
 const SERVICES_GRID = [
-  { id:'btp',        icon:'🏗️', label:'BTP & Travaux',   desc:'Artisans, devis, chantiers', color:'#5B5BD6', bg:'#EEF2FF', path:null },
-  { id:'coiffure',   icon:'✂️', label:'Coiffure',         desc:'RDV, salons, beauté',       color:'#E535AB', bg:'#FFF0F8', path:null },
-  { id:'restaurant', icon:'🍽️', label:'Restaurant',       desc:'Réservations, commandes',   color:'#FF6000', bg:'#FFF3E8', path:null },
-  { id:'course',     icon:'🚗', label:'Freample Course',  desc:'VTC, courses en ville',     color:'#000000', bg:'#F3F3F3', path:'/course' },
-  { id:'eat',        icon:'🛵', label:'Freample Eat',     desc:'Livraison de repas',        color:'#05944F', bg:'#F0FDF4', path:'/eat' },
-  { id:'com',        icon:'🎬', label:'Freample Com',     desc:'Montage vidéo, marketing',  color:'#8B5CF6', bg:'#F5F3FF', path:'/client/com' },
-  { id:'vacances',   icon:'🏖️', label:'Vacances',         desc:'Hôtels, locations',         color:'#0080FF', bg:'#E8F4FF', path:null },
+  { id:'btp',        icon:'🏗️', label:'BTP & Travaux',   desc:'Artisans, devis, chantiers', color:'#5B5BD6', bg:'#EEF2FF' },
+  { id:'coiffure',   icon:'✂️', label:'Coiffure',         desc:'RDV, salons, beauté',       color:'#E535AB', bg:'#FFF0F8' },
+  { id:'restaurant', icon:'🍽️', label:'Restaurant',       desc:'Réservations, commandes',   color:'#FF6000', bg:'#FFF3E8' },
+  { id:'course',     icon:'🚗', label:'Freample Course',  desc:'VTC, courses en ville',     color:'#000000', bg:'#F3F3F3' },
+  { id:'eat',        icon:'🛵', label:'Freample Eat',     desc:'Livraison de repas',        color:'#05944F', bg:'#F0FDF4' },
+  { id:'com',        icon:'🎬', label:'Freample Com',     desc:'Montage vidéo, marketing',  color:'#8B5CF6', bg:'#F5F3FF', route:'/client/com' },
+  { id:'vacances',   icon:'🏖️', label:'Vacances',         desc:'Hôtels, locations',         color:'#0080FF', bg:'#E8F4FF' },
 ];
 
 export default function DashboardClient() {
@@ -208,39 +208,45 @@ export default function DashboardClient() {
     </div>
   );
 
+  const activeSvc = SERVICES_GRID.find(s => s.id === activeTab);
+  const isInService = activeTab !== 'accueil';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-      {/* ── Tab navigation ── */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${DS.border}`, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 0, background: DS.bg, position: 'sticky', top: 0, zIndex: 10 }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
-            style={{
-              padding: '14px 20px', border: 'none', background: 'none', cursor: 'pointer',
-              borderBottom: `2.5px solid ${activeTab === t.id ? DS.accent : 'transparent'}`,
-              color: activeTab === t.id ? DS.accent : DS.muted,
-              fontWeight: activeTab === t.id ? 700 : 400,
-              fontSize: 13.5, fontFamily: DS.font, whiteSpace: 'nowrap', marginBottom: -1,
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'color .15s',
-            }}>
-            <span>{t.label}</span>
-            <span>{t.title}</span>
+      {/* ── Back button + service header (when inside a service) ── */}
+      {isInService && activeSvc && (
+        <div style={{ padding: '14px 20px', borderBottom: `1px solid ${DS.border}`, background: activeSvc.bg, display: 'flex', alignItems: 'center', gap: 14, position: 'sticky', top: 0, zIndex: 10 }}>
+          <button onClick={() => setActiveTab('accueil')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontFamily: DS.font, fontSize: 13, fontWeight: 600, color: DS.ink, transition: 'all .15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = DS.bgSoft}
+            onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+            ← Freample
           </button>
-        ))}
-      </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>{activeSvc.icon}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: activeSvc.color }}>{activeSvc.label}</span>
+          </div>
+        </div>
+      )}
 
-      {/* ══ ACCUEIL TAB ══════════════════════════════════════════════════════════ */}
+      {/* ══ ACCUEIL ═════════════════════════════════════════════════════════════ */}
       {activeTab === 'accueil' && <AccueilTab user={user} navigate={navigate} setActiveTab={setActiveTab} />}
 
-      {/* ══ COIFFURE TAB ═════════════════════════════════════════════════════════ */}
+      {/* ══ COIFFURE ════════════════════════════════════════════════════════════ */}
       {activeTab === 'coiffure' && <CoiffureTab navigate={navigate} />}
 
-      {/* ══ RESTAURANT TAB ═══════════════════════════════════════════════════════ */}
+      {/* ══ RESTAURANT ══════════════════════════════════════════════════════════ */}
       {activeTab === 'restaurant' && <RestaurantTab navigate={navigate} />}
 
-      {/* ══ VACANCES TAB ═════════════════════════════════════════════════════════ */}
+      {/* ══ VACANCES ════════════════════════════════════════════════════════════ */}
       {activeTab === 'vacances' && <VacancesTab navigate={navigate} />}
+
+      {/* ══ COURSE ══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'course' && <CourseTab navigate={navigate} />}
+
+      {/* ══ EAT ═════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'eat' && <EatTab navigate={navigate} />}
 
       {/* ══ BTP TAB ══════════════════════════════════════════════════════════════ */}
       {activeTab === 'btp' && (
@@ -1074,7 +1080,7 @@ function AccueilTab({ user, navigate, setActiveTab }) {
         <p style={{ fontSize: 13, fontWeight: 700, color: DS.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Tous vos services</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 12 }}>
           {SERVICES_GRID.map(s => (
-            <button key={s.id} onClick={() => s.path ? navigate(s.path) : setActiveTab(s.id)}
+            <button key={s.id} onClick={() => s.route ? navigate(s.route) : setActiveTab(s.id)}
               style={{ background: '#fff', borderRadius: 16, border: `1px solid ${DS.border}`, padding: '18px 16px', textAlign: 'left', cursor: 'pointer', transition: 'all .18s', fontFamily: DS.font }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = s.color; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = DS.border; }}>
@@ -1398,6 +1404,116 @@ function VacancesTab({ navigate }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Course Tab (Uber-style ride booking) ─────────────────────────────────────
+
+function CourseTab({ navigate }) {
+  const [depart, setDepart] = useState('');
+  const [destination, setDestination] = useState('');
+
+  const MES_COURSES = [
+    { id:1, depart:'Gare du Nord', destination:'Aéroport CDG', date:'04/04', heure:'12:30', prix:38, statut:'en_cours', chauffeur:'Amine D.' },
+    { id:2, depart:'Opéra', destination:'La Défense', date:'02/04', heure:'09:15', prix:18, statut:'terminee', chauffeur:'Karim H.' },
+    { id:3, depart:'Bastille', destination:'Montmartre', date:'28/03', heure:'20:00', prix:14, statut:'terminee', chauffeur:'Amine D.' },
+  ];
+
+  return (
+    <div style={{ padding:'24px 0', display:'flex', flexDirection:'column', gap:20 }}>
+      <div style={{ background:'#000', borderRadius:16, padding:'28px 24px', color:'#fff' }}>
+        <h2 style={{ fontSize:'1.375rem', fontWeight:800, marginBottom:18 }}>Où allez-vous ?</h2>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, background:'#fff', borderRadius:8, padding:'0 14px', height:52 }}>
+            <span style={{ color:'#16A34A', fontSize:14 }}>●</span>
+            <input value={depart} onChange={e=>setDepart(e.target.value)} placeholder="Adresse de départ" style={{ flex:1, border:'none', outline:'none', fontSize:16, color:'#000', background:'none', fontFamily:'inherit' }} />
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:10, background:'#fff', borderRadius:8, padding:'0 14px', height:52 }}>
+            <span style={{ color:'#DC2626', fontSize:14 }}>●</span>
+            <input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Destination" style={{ flex:1, border:'none', outline:'none', fontSize:16, color:'#000', background:'none', fontFamily:'inherit' }} />
+          </div>
+          <button style={{ height:48, background:'#fff', color:'#000', border:'none', borderRadius:8, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>Voir les prix →</button>
+        </div>
+      </div>
+      <div style={{ display:'flex', gap:10 }}>
+        {[{icon:'🚗',label:'Course',price:'~8-15€'},{icon:'📅',label:'Réserver',price:'Prix fixé'},{icon:'📦',label:'Colis',price:'~5-20€'}].map(o=>(
+          <div key={o.label} style={{ flex:1, background:'#fff', borderRadius:14, border:'1px solid #E8E6E1', padding:16, textAlign:'center', cursor:'pointer' }}>
+            <div style={{ fontSize:24, marginBottom:6 }}>{o.icon}</div>
+            <div style={{ fontSize:13, fontWeight:700 }}>{o.label}</div>
+            <div style={{ fontSize:12, color:'#6B6B6B' }}>{o.price}</div>
+          </div>
+        ))}
+      </div>
+      <div>
+        <p style={{ fontSize:13, fontWeight:700, color:'#6B6B6B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Mes courses</p>
+        {MES_COURSES.map(c=>(
+          <div key={c.id} style={{ background:'#fff', borderRadius:14, border:'1px solid #E8E6E1', padding:'14px 18px', marginBottom:8, display:'flex', gap:14, alignItems:'center' }}>
+            <div style={{ width:44, height:44, borderRadius:10, background:c.statut==='en_cours'?'#DBEAFE':'#F3F3F3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🚗</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:700 }}>{c.depart} → {c.destination}</div>
+              <div style={{ fontSize:12, color:'#6B6B6B' }}>{c.chauffeur} · {c.date} à {c.heure}</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:15, fontWeight:800 }}>{c.prix}€</div>
+              <span style={{ fontSize:11, fontWeight:600, color:c.statut==='en_cours'?'#1D4ED8':'#059669', background:c.statut==='en_cours'?'#DBEAFE':'#D1FAE5', padding:'2px 8px', borderRadius:10 }}>{c.statut==='en_cours'?'En cours':'Terminée'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Eat Tab (UberEats-style food ordering) ───────────────────────────────────
+
+function EatTab({ navigate }) {
+  const [adresse, setAdresse] = useState('');
+  const CATS = [{icon:'🍕',l:'Pizza'},{icon:'🍣',l:'Sushi'},{icon:'🍔',l:'Burger'},{icon:'🥗',l:'Healthy'},{icon:'🌮',l:'Mexicain'},{icon:'🥐',l:'Brunch'}];
+  const MES_CMD = [
+    { id:1, restaurant:'La Trattoria', articles:'2× Pizza, 1× Tiramisu', date:'04/04', prix:34.99, statut:'en_livraison', livreur:'Karim B.' },
+    { id:2, restaurant:'Sakura House', articles:'1× Sushi Mix, 1× Miso', date:'02/04', prix:28.50, statut:'livree', livreur:'Amine D.' },
+    { id:3, restaurant:'Big Smoke', articles:'1× Double Burger, 1× Frites', date:'30/03', prix:18.90, statut:'livree', livreur:'Youssef K.' },
+  ];
+
+  return (
+    <div style={{ padding:'24px 0', display:'flex', flexDirection:'column', gap:20 }}>
+      <div style={{ background:'linear-gradient(135deg, #1a0a00, #3d1f00, #8B4513)', borderRadius:16, padding:'28px 24px', color:'#fff' }}>
+        <h2 style={{ fontSize:'1.375rem', fontWeight:800, marginBottom:18 }}>Qu'est-ce qui vous ferait plaisir ?</h2>
+        <div style={{ display:'flex', background:'#fff', borderRadius:8, overflow:'hidden', height:52 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, flex:1, padding:'0 14px' }}>
+            <span>📍</span>
+            <input value={adresse} onChange={e=>setAdresse(e.target.value)} placeholder="Votre adresse de livraison" style={{ flex:1, border:'none', outline:'none', fontSize:16, color:'#000', background:'none', fontFamily:'inherit' }} />
+          </div>
+          <button onClick={()=>navigate('/eat')} style={{ padding:'0 20px', background:'#000', border:'none', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Trouver</button>
+        </div>
+      </div>
+      <div style={{ display:'flex', gap:10, overflowX:'auto', scrollbarWidth:'none', paddingBottom:4 }}>
+        {CATS.map(c=>(
+          <button key={c.l} onClick={()=>navigate('/eat')} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, padding:'10px 16px', borderRadius:12, border:'1px solid #E8E6E1', background:'#fff', cursor:'pointer', fontFamily:'inherit', flexShrink:0, minWidth:70 }}>
+            <span style={{ fontSize:24 }}>{c.icon}</span>
+            <span style={{ fontSize:12, fontWeight:600 }}>{c.l}</span>
+          </button>
+        ))}
+      </div>
+      <div>
+        <p style={{ fontSize:13, fontWeight:700, color:'#6B6B6B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Mes commandes</p>
+        {MES_CMD.map(c=>(
+          <div key={c.id} style={{ background:'#fff', borderRadius:14, border:'1px solid #E8E6E1', padding:'14px 18px', marginBottom:8, display:'flex', gap:14, alignItems:'center' }}>
+            <div style={{ width:44, height:44, borderRadius:10, background:c.statut==='en_livraison'?'#FEF3C7':'#F0FDF4', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🛵</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:700 }}>{c.restaurant}</div>
+              <div style={{ fontSize:12, color:'#6B6B6B' }}>{c.articles}</div>
+              <div style={{ fontSize:11, color:'#6B6B6B' }}>{c.livreur} · {c.date}</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:15, fontWeight:800 }}>{c.prix}€</div>
+              <span style={{ fontSize:11, fontWeight:600, color:c.statut==='en_livraison'?'#D97706':'#059669', background:c.statut==='en_livraison'?'#FEF3C7':'#D1FAE5', padding:'2px 8px', borderRadius:10 }}>{c.statut==='en_livraison'?'🛵 En livraison':'✓ Livrée'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={()=>navigate('/eat')} style={{ padding:'14px', background:'#05944F', color:'#fff', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>🛵 Commander à nouveau →</button>
     </div>
   );
 }
