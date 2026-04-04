@@ -145,39 +145,39 @@ export default function Messagerie() {
       <style>{`
         .msg-conv-item {
           display: flex; gap: 12px; padding: 12px 14px; border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);
+          border: 1px solid var(--border, #E8E6E1); background: var(--card, #fff);
           cursor: pointer; text-align: left; width: 100%;
           transition: all 0.18s ease; margin-bottom: 4px;
         }
-        .msg-conv-item:hover { background: rgba(255,255,255,0.05); }
+        .msg-conv-item:hover { background: var(--bg-secondary, #F4F4F8); }
         .msg-conv-item.active {
-          background: rgba(91,91,214,0.12);
+          background: rgba(91,91,214,0.10);
           border-color: rgba(91,91,214,0.3);
           box-shadow: 0 0 0 1px rgba(91,91,214,0.15);
         }
         .msg-input {
-          flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          flex: 1; background: var(--card, #fff); border: 1.5px solid var(--border, #E8E6E1);
           border-radius: 24px; padding: 10px 18px; font-size: 0.875rem;
-          color: var(--text, #fff); outline: none; resize: none; transition: border-color 0.2s;
+          color: var(--text, #0E0E1A); outline: none; resize: none; transition: border-color 0.2s;
           font-family: inherit;
         }
-        .msg-input::placeholder { color: rgba(255,255,255,0.3); }
-        .msg-input:focus { border-color: rgba(91,91,214,0.5); }
+        .msg-input::placeholder { color: var(--text-tertiary, #9CA3AF); }
+        .msg-input:focus { border-color: var(--primary, #5B5BD6); box-shadow: 0 0 0 3px rgba(91,91,214,0.1); }
         .msg-send-btn {
           width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
           background: linear-gradient(135deg, #5B5BD6, #7C3AED);
           color: white; display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s; box-shadow: 0 4px 12px rgba(91,91,214,0.35);
+          transition: all 0.2s; box-shadow: 0 4px 12px rgba(91,91,214,0.25);
         }
-        .msg-send-btn:hover:not(:disabled) { transform: scale(1.08); box-shadow: 0 6px 16px rgba(91,91,214,0.5); }
+        .msg-send-btn:hover:not(:disabled) { transform: scale(1.08); box-shadow: 0 6px 16px rgba(91,91,214,0.4); }
         .msg-send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
         @keyframes typingDot { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
       `}</style>
 
       {/* Header */}
       <div style={{ marginBottom: 20, flexShrink: 0 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text, #fff)' }}>Messagerie</h1>
-        <p style={{ marginTop: 4, color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text, #0E0E1A)' }}>Messagerie</h1>
+        <p style={{ marginTop: 4, color: 'var(--text-secondary, #6B6B6B)', fontSize: '0.875rem' }}>
           Échangez en temps réel avec vos artisans
         </p>
       </div>
@@ -192,13 +192,13 @@ export default function Messagerie() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Rechercher..."
-              style={{ width: '100%', padding: '9px 14px 9px 36px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text, #fff)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 14px 9px 36px', borderRadius: 10, border: '1.5px solid var(--border, #E8E6E1)', background: 'var(--card, #fff)', color: 'var(--text, #0E0E1A)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
             />
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary, #9CA3AF)" strokeWidth="2" strokeLinecap="round" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </div>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
+          <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary, #8E8E93)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
             Conversations{searchQuery ? ` (${conversations.filter(c => c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).length})` : ''}
           </p>
           {conversations.filter(c => !searchQuery || c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).map(c => {
@@ -223,7 +223,7 @@ export default function Messagerie() {
                   <span style={{
                     position: 'absolute', bottom: 1, right: 1,
                     width: 10, height: 10, borderRadius: '50%',
-                    background: isOnlineConv ? '#34D399' : 'rgba(255,255,255,0.2)',
+                    background: isOnlineConv ? '#34D399' : 'var(--border, #E0E0E0)',
                     border: '2px solid #0D0D1A',
                     transition: 'background 0.3s',
                   }} />
@@ -232,10 +232,10 @@ export default function Messagerie() {
                   <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.artisan}
                   </p>
-                  <p style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.4)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #6B6B6B)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.titre}
                   </p>
-                  <p style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.25)', marginTop: 1 }}>
+                  <p style={{ fontSize: '0.625rem', color: 'var(--text-tertiary, #9CA3AF)', marginTop: 1 }}>
                     {c.specialite}
                   </p>
                 </div>
@@ -249,7 +249,7 @@ export default function Messagerie() {
             background: 'rgba(91,91,214,0.08)', border: '1px solid rgba(91,91,214,0.2)',
             borderRadius: 12,
           }}>
-            <p style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #6B6B6B)', lineHeight: 1.5 }}>
               💡 Ouvrez un onglet artisan en parallèle pour tester la messagerie en temps réel.
             </p>
           </div>
@@ -258,14 +258,14 @@ export default function Messagerie() {
         {/* ── Chat panel ── */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--card, #fff)', border: '1px solid var(--border, #E8E6E1)',
           borderRadius: 18, minWidth: 0,
         }}>
           {/* Chat header */}
           <div style={{
-            padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: '14px 20px', borderBottom: '1px solid var(--border, #E8E6E1)',
             display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
-            background: 'rgba(255,255,255,0.02)',
+            background: 'var(--card, #fff)',
           }}>
             <div style={{ position: 'relative' }}>
               <div style={{
@@ -279,13 +279,13 @@ export default function Messagerie() {
               <span style={{
                 position: 'absolute', bottom: 1, right: 1,
                 width: 10, height: 10, borderRadius: '50%',
-                background: isOnline ? '#34D399' : 'rgba(255,255,255,0.2)',
-                border: '2px solid #0D0D1A',
+                background: isOnline ? '#34D399' : 'var(--border, #D0D0D0)',
+                border: '2px solid var(--card, #fff)',
               }} />
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 600, color: 'var(--text, #fff)', fontSize: '0.9375rem' }}>{conv?.artisan}</p>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary, #6B6B6B)' }}>
                 {isOnline ? (
                   <span style={{ color: '#34D399' }}>En ligne</span>
                 ) : (
@@ -307,7 +307,7 @@ export default function Messagerie() {
                 }}>
                   <IconMessage size={24} color="#818CF8" />
                 </div>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>Démarrez la conversation</p>
+                <p style={{ color: 'var(--text-secondary, #6B6B6B)', fontSize: '0.875rem' }}>Démarrez la conversation</p>
               </div>
             ) : (
               messages.map((msg, idx) => {
@@ -317,7 +317,7 @@ export default function Messagerie() {
                   <React.Fragment key={msg.id}>
                     {showDate && (
                       <div style={{ textAlign: 'center', margin: '8px 0' }}>
-                        <span style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.05)', padding: '3px 10px', borderRadius: 20 }}>
+                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary, #9CA3AF)', background: 'var(--bg-secondary, #F4F4F8)', padding: '3px 10px', borderRadius: 20 }}>
                           {new Date(msg.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </span>
                       </div>
@@ -337,8 +337,8 @@ export default function Messagerie() {
                         maxWidth: '68%',
                         background: isMe
                           ? 'linear-gradient(135deg, #5B5BD6, #7C3AED)'
-                          : 'rgba(255,255,255,0.07)',
-                        color: 'white',
+                          : 'var(--bg-secondary, #F4F4F8)',
+                        color: isMe ? 'white' : 'var(--text, #0E0E1A)',
                         borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                         padding: '10px 14px',
                         fontSize: '0.875rem',
@@ -372,12 +372,12 @@ export default function Messagerie() {
                   {conv?.artisan?.charAt(0)}
                 </div>
                 <div style={{
-                  background: 'rgba(255,255,255,0.07)', borderRadius: '18px 18px 18px 4px',
+                  background: 'var(--bg-secondary, #F4F4F8)', borderRadius: '18px 18px 18px 4px',
                   padding: '12px 16px', display: 'flex', gap: 4, alignItems: 'center',
                 }}>
                   {[0, 150, 300].map(delay => (
                     <span key={delay} style={{
-                      width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.5)',
+                      width: 6, height: 6, borderRadius: '50%', background: 'var(--text-tertiary, #9CA3AF)',
                       display: 'inline-block',
                       animation: `typingDot 1s ${delay}ms infinite`,
                     }} />
@@ -392,7 +392,7 @@ export default function Messagerie() {
           {/* Input */}
           <form
             onSubmit={envoyer}
-            style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 10, flexShrink: 0, alignItems: 'center' }}
+            style={{ padding: '12px 16px', borderTop: '1px solid var(--border, #E8E6E1)', display: 'flex', gap: 10, flexShrink: 0, alignItems: 'center' }}
           >
             <input
               ref={inputRef}
