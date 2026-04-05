@@ -620,21 +620,60 @@ export default function ImmoDemo() {
               })}
             </div>
 
-            {/* — Paiements — */}
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'20px 0 16px' }}>Loyers — {MOIS[new Date().getMonth()]} {new Date().getFullYear()}</h2>
+            {/* — Appels de loyer & Paiements — */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', margin:'20px 0 12px' }}>
+              <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Loyers — {MOIS[new Date().getMonth()]} {new Date().getFullYear()}</h2>
+              <div style={{ display:'flex', gap:6 }}>
+                <button onClick={()=>{
+                  biens.filter(b=>b.locataireId).forEach(b=>{
+                    const loc=getLocataire(b.locataireId);
+                    if(loc?.email) window.open(`mailto:${loc.email}?subject=${encodeURIComponent(`Appel de loyer — ${MOIS[new Date().getMonth()]} ${new Date().getFullYear()}`)}&body=${encodeURIComponent(`Bonjour ${loc.prenom},\n\nNous vous rappelons que le loyer de ${b.loyer}€ pour le bien situé au ${b.adresse} est dû au 1er du mois.\n\nMerci de procéder au règlement.\n\nCordialement`)}`, '_blank');
+                  });
+                  showToast(`${biens.filter(b=>b.locataireId).length} appels de loyer préparés`);
+                }} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:L.blue }}>📨 Envoyer les appels</button>
+                <button onClick={()=>{
+                  const impayesList=impayes;
+                  if(impayesList.length===0){showToast('Aucun impayé');return;}
+                  impayesList.forEach(b=>{
+                    const loc=getLocataire(b.locataireId);
+                    if(loc?.email) window.open(`mailto:${loc.email}?subject=${encodeURIComponent('Relance — Loyer impayé')}&body=${encodeURIComponent(`Bonjour ${loc.prenom},\n\nSauf erreur de notre part, nous n'avons pas reçu le règlement de votre loyer de ${b.loyer}€ pour le mois de ${MOIS[new Date().getMonth()]}.\n\nMerci de régulariser dans les meilleurs délais.\n\nCordialement`)}`, '_blank');
+                  });
+                  showToast(`${impayesList.length} relance${impayesList.length>1?'s':''} préparée${impayesList.length>1?'s':''}`);
+                }} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:impayes.length>0?L.orange:L.textLight }}>⚠️ Relancer ({impayes.length})</button>
+                <button onClick={()=>{
+                  const rows=[['Locataire','Bien','Loyer','Statut','Date']];
+                  biens.filter(b=>b.locataireId).forEach(b=>{
+                    const loc=getLocataire(b.locataireId);
+                    const paid=data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye');
+                    rows.push([`${loc?.prenom} ${loc?.nom}`,b.adresse,`${b.loyer}€`,paid?'Payé':'Impayé',paid?.date||'']);
+                  });
+                  const csv=rows.map(r=>r.join(';')).join('\n');
+                  const blob=new Blob([csv],{type:'text/csv'});
+                  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`loyers_${currentMonth}.csv`;a.click();
+                  showToast('Export CSV téléchargé');
+                }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>📥 Export</button>
+              </div>
+            </div>
             <div style={{ ...CARD, padding:0 }}>
               {biens.filter(b=>b.locataireId).map((b,i,arr)=>{
                 const loc = getLocataire(b.locataireId);
                 const paid = data.paiements.find(p=>p.bienId===b.id && p.mois===currentMonth && p.statut==='paye');
                 return <div key={b.id} style={{ padding:'14px 18px', borderBottom:i<arr.length-1?`1px solid ${L.border}`:'none', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:700 }}>{loc?.nom}</div>
-                    <div style={{ fontSize:11, color:L.textSec }}>{b.adresse}</div>
+                    <div style={{ fontSize:13, fontWeight:700 }}>{loc?.prenom} {loc?.nom}</div>
+                    <div style={{ fontSize:11, color:L.textSec }}>{b.adresse} · {b.nom}</div>
                   </div>
-                  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <span style={{ fontSize:14, fontWeight:700 }}>{b.loyer}€</span>
-                    {paid ? <span style={{ fontSize:11, fontWeight:700, color:L.green, background:L.greenBg, padding:'3px 10px' }}>Payé le {paid.date}</span>
-                      : <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:11, padding:'5px 14px', background:L.green }}>Encaisser</button>}
+                    {paid ? <span style={{ fontSize:10, fontWeight:700, color:L.green, background:L.greenBg, padding:'3px 10px' }}>✓ {paid.date}</span>
+                      : <>
+                        <button onClick={()=>{
+                          const email=loc?.email;
+                          if(email) window.open(`mailto:${email}?subject=${encodeURIComponent('Relance loyer')}&body=${encodeURIComponent(`Bonjour ${loc.prenom},\n\nVotre loyer de ${b.loyer}€ est en attente de règlement.\n\nCordialement`)}`, '_blank');
+                          showToast('Relance préparée');
+                        }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'4px 8px', color:L.orange, borderColor:L.orange+'40' }}>Relancer</button>
+                        <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'4px 10px', background:L.green }}>Encaisser</button>
+                      </>}
                   </div>
                 </div>;
               })}
@@ -799,7 +838,63 @@ export default function ImmoDemo() {
 
           {/* ═══ FINANCES ═══ */}
           {subFin==='resume' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Analyse financière</h2>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+              <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Analyse financière</h2>
+              <button onClick={()=>{
+                const rows=[['Type','Catégorie','Montant annuel']];
+                rows.push(['Recette','Loyers bruts',`${totalLoyers*12}€`]);
+                rows.push(['Dépense','Charges',`${totalCharges*12}€`]);
+                rows.push(['Dépense','Crédits',`${totalMensualites*12}€`]);
+                rows.push(['Dépense','Travaux/Divers',`${totalDepenses}€`]);
+                rows.push(['','Résultat net',`${((totalLoyers-totalCharges)*12-totalMensualites*12-totalDepenses)}€`]);
+                const csv=rows.map(r=>r.join(';')).join('\n');
+                const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comptabilite_tresorerie.csv';a.click();
+                showToast('Comptabilité exportée en CSV');
+              }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>📥 Export comptabilité</button>
+            </div>
+
+            {/* Comptabilité de trésorerie */}
+            <div style={{ ...CARD, marginBottom:16 }}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Comptabilité de trésorerie — {new Date().getFullYear()}</div>
+              <div style={{ borderBottom:`2px solid ${L.border}`, paddingBottom:8, marginBottom:8, display:'grid', gridTemplateColumns:'2fr 1fr 1fr', fontSize:11, fontWeight:700, color:L.textSec }}>
+                <span>Libellé</span><span style={{textAlign:'right'}}>Débit</span><span style={{textAlign:'right'}}>Crédit</span>
+              </div>
+              {[
+                { lib:'Loyers encaissés', debit:0, credit:totalLoyers*12 },
+                { lib:'Autres revenus', debit:0, credit:biens.reduce((s,b)=>s+(b.autresRevenus||0),0)*12 },
+                { lib:'Charges de copropriété', debit:totalCharges*12, credit:0 },
+                { lib:'Mensualités de crédit', debit:totalMensualites*12, credit:0 },
+                { lib:'Assurance crédit', debit:credits.reduce((s,c)=>s+(c.assuranceCredit||0),0)*12, credit:0 },
+                { lib:'Taxe foncière', debit:biens.reduce((s,b)=>s+(b.taxeFonciere||0),0), credit:0 },
+                { lib:'Assurances (PNO+GLI)', debit:biens.reduce((s,b)=>s+(b.assurance?.pno||0)+(b.assurance?.gli||0),0), credit:0 },
+                { lib:'Travaux & dépenses', debit:totalDepenses, credit:0 },
+              ].map(r=>(
+                <div key={r.lib} style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr', fontSize:12, padding:'6px 0', borderBottom:`1px solid ${L.border}` }}>
+                  <span style={{ color:L.textSec }}>{r.lib}</span>
+                  <span style={{ textAlign:'right', color:r.debit>0?L.red:L.textLight }}>{r.debit>0?`${r.debit.toLocaleString()}€`:'—'}</span>
+                  <span style={{ textAlign:'right', color:r.credit>0?L.green:L.textLight }}>{r.credit>0?`${r.credit.toLocaleString()}€`:'—'}</span>
+                </div>
+              ))}
+              {(()=>{
+                const totalDebit=totalCharges*12+totalMensualites*12+credits.reduce((s,c)=>s+(c.assuranceCredit||0),0)*12+biens.reduce((s,b)=>s+(b.taxeFonciere||0),0)+biens.reduce((s,b)=>s+(b.assurance?.pno||0)+(b.assurance?.gli||0),0)+totalDepenses;
+                const totalCredit=totalLoyers*12+biens.reduce((s,b)=>s+(b.autresRevenus||0),0)*12;
+                const solde=totalCredit-totalDebit;
+                return <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr', fontSize:13, padding:'10px 0', fontWeight:800, borderTop:`2px solid ${L.border}`, marginTop:4 }}>
+                  <span>SOLDE</span>
+                  <span style={{ textAlign:'right', color:L.red }}>{totalDebit.toLocaleString()}€</span>
+                  <span style={{ textAlign:'right', color:L.green }}>{totalCredit.toLocaleString()}€</span>
+                </div>;
+              })()}
+              <div style={{ background:L.noir, color:'#fff', padding:'12px 16px', marginTop:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:13, fontWeight:600 }}>Résultat net de trésorerie</span>
+                {(()=>{
+                  const totalDebit=totalCharges*12+totalMensualites*12+credits.reduce((s,c)=>s+(c.assuranceCredit||0),0)*12+biens.reduce((s,b)=>s+(b.taxeFonciere||0),0)+biens.reduce((s,b)=>s+(b.assurance?.pno||0)+(b.assurance?.gli||0),0)+totalDepenses;
+                  const totalCredit=totalLoyers*12+biens.reduce((s,b)=>s+(b.autresRevenus||0),0)*12;
+                  const solde=totalCredit-totalDebit;
+                  return <span style={{ fontSize:18, fontWeight:200, fontFamily:L.serif, color:solde>=0?L.green:L.red }}>{solde>=0?'+':''}{solde.toLocaleString()}€</span>;
+                })()}
+              </div>
+            </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:20 }}>
               <div style={CARD}>
                 <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Revenus annuels estimés</div>
