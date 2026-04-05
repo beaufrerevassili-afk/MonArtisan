@@ -177,6 +177,12 @@ export default function ImmoDemo() {
     setModal(null); setForm({}); showToast('Bien ajouté');
   };
   const deleteBien = (id) => { setData(d=>({...d, biens:d.biens.filter(b=>b.id!==id), paiements:d.paiements.filter(p=>p.bienId!==id)})); showToast('Bien supprimé'); };
+  const editBien = (b) => { setForm({...b, prixAchat:b.prixAchat||'', fraisNotaire:b.fraisNotaire||'', travaux:b.travaux||'', valeur:b.valeur||'', surface:b.surface||'', pieces:b.pieces||'', loyer:b.loyer||'', charges:b.charges||'', autresRevenus:b.autresRevenus||'', chargesNonRecup:b.chargesNonRecup||'', taxeFonciere:b.taxeFonciere||'', dpe:b.dpe||''}); setAddStep(2); setModal({type:'editBien', data:b}); };
+  const saveBien = () => { setData(d=>({...d, biens:d.biens.map(b=>b.id===modal.data.id?{...b, nom:form.nom||b.nom, type:form.type||b.type, adresse:form.adresse||b.adresse, surface:Number(form.surface)||b.surface, pieces:Number(form.pieces)||b.pieces, prixAchat:Number(form.prixAchat)||b.prixAchat, fraisNotaire:Number(form.fraisNotaire)||b.fraisNotaire, travaux:Number(form.travaux)||b.travaux, valeur:Number(form.valeur)||b.valeur, loyer:Number(form.loyer), charges:Number(form.charges)||0, autresRevenus:Number(form.autresRevenus)||0, chargesNonRecup:Number(form.chargesNonRecup)||0, taxeFonciere:Number(form.taxeFonciere)||0, dpe:form.dpe||null, dateAcquisition:form.dateAcquisition||b.dateAcquisition}:b)})); setModal(null); setForm({}); showToast('Bien mis à jour'); };
+  const editLocataire = (l) => { setForm({...l}); setModal({type:'editLocataire', data:l}); };
+  const saveLocataire = () => { setData(d=>({...d, locataires:d.locataires.map(l=>l.id===modal.data.id?{...l, nom:form.nom||l.nom, prenom:form.prenom||l.prenom, email:form.email||l.email, tel:form.tel||l.tel, debut:form.debut||l.debut, fin:form.fin||l.fin, depot:Number(form.depot)||l.depot}:l)})); setModal(null); setForm({}); showToast('Locataire mis à jour'); };
+  const assignLocataire = (bienId, locId) => { setData(d=>({...d, biens:d.biens.map(b=>b.id===bienId?{...b, locataireId:locId||null}:b)})); showToast(locId?'Locataire assigné':'Locataire retiré'); };
+  const deleteLocataire = (id) => { setData(d=>({...d, locataires:d.locataires.filter(l=>l.id!==id), biens:d.biens.map(b=>b.locataireId===id?{...b,locataireId:null}:b)})); showToast('Locataire supprimé'); };
   const addLocataire = () => {
     const l = { id:genId(), nom:form.nom||'', prenom:form.prenom||'', email:form.email||'', tel:form.tel||'', debut:form.debut||'', fin:form.fin||'', depot:Number(form.depot)||0 };
     setData(d=>({...d, locataires:[...d.locataires, l]}));
@@ -513,6 +519,7 @@ export default function ImmoDemo() {
                     {loc && !paidThisMonth && <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser {b.loyer}€</button>}
                     <button onClick={()=>navigate(`/btp?q=${encodeURIComponent(b.adresse)}`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.blue }}>🔧 Artisan</button>
                     {!loc && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:'#8B5CF6' }}>🎬 Annonce</button>}
+                    <button onClick={()=>editBien(b)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>✎ Modifier</button>
                     <button onClick={()=>setModal({type:'edl',data:b})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>📋 EDL</button>
                     <button onClick={()=>deleteBien(b.id)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>✕</button>
                   </div>
@@ -547,6 +554,10 @@ export default function ImmoDemo() {
                       <div style={{ fontSize:14, fontWeight:700, color:L.green }}>{bien.loyer}€/mois</div>
                       <div style={{ fontSize:11, color:L.textSec }}>{bien.adresse.split(',')[0]}</div>
                     </> : <span style={{ fontSize:11, color:L.textLight }}>Sans bien</span>}
+                  </div>
+                  <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                    <button onClick={()=>editLocataire(l)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'4px 8px' }}>✎</button>
+                    <button onClick={()=>deleteLocataire(l.id)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'4px 8px', color:L.red, borderColor:L.red+'40' }}>✕</button>
                   </div>
                 </div>;
               })}
@@ -1322,6 +1333,64 @@ export default function ImmoDemo() {
                 <button onClick={addBien} style={{ ...BTN, flex:2 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Ajouter le bien</button>
               </div>
             </>}
+          </>}
+
+          {modal.type==='editBien' && modal.data && <>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Modifier le bien</h3>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Nom</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Type</label><select value={form.type||''} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={INP}>{[...TYPES_BIEN,'Immeuble','Colocation'].map(t=><option key={t}>{t}</option>)}</select></div>
+            </div>
+            <div style={{ marginBottom:10 }}><label style={LBL}>Adresse</label><input value={form.adresse||''} onChange={e=>setForm(f=>({...f,adresse:e.target.value}))} style={INP} /></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Surface (m²)</label><input type="number" value={form.surface||''} onChange={e=>setForm(f=>({...f,surface:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Pièces</label><input type="number" value={form.pieces||''} onChange={e=>setForm(f=>({...f,pieces:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Date acquisition</label><input type="date" value={form.dateAcquisition||''} onChange={e=>setForm(f=>({...f,dateAcquisition:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.prixAchat||''} onChange={e=>setForm(f=>({...f,prixAchat:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Frais notaire (€)</label><input type="number" value={form.fraisNotaire||''} onChange={e=>setForm(f=>({...f,fraisNotaire:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Travaux (€)</label><input type="number" value={form.travaux||''} onChange={e=>setForm(f=>({...f,travaux:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Loyer (€/mois)</label><input type="number" value={form.loyer} onChange={e=>setForm(f=>({...f,loyer:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={form.charges||''} onChange={e=>setForm(f=>({...f,charges:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Valeur actuelle (€)</label><input type="number" value={form.valeur||''} onChange={e=>setForm(f=>({...f,valeur:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Autres revenus</label><input type="number" value={form.autresRevenus||''} onChange={e=>setForm(f=>({...f,autresRevenus:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Taxe foncière (€/an)</label><input type="number" value={form.taxeFonciere||''} onChange={e=>setForm(f=>({...f,taxeFonciere:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>DPE</label><select value={form.dpe||''} onChange={e=>setForm(f=>({...f,dpe:e.target.value}))} style={INP}><option value="">—</option>{['A','B','C','D','E','F','G'].map(d=><option key={d}>{d}</option>)}</select></div>
+            </div>
+            <div style={{ marginBottom:14 }}>
+              <label style={LBL}>Locataire assigné</label>
+              <select value={form.locataireId||''} onChange={e=>setForm(f=>({...f,locataireId:e.target.value?Number(e.target.value):null}))} style={INP}>
+                <option value="">Aucun (vacant)</option>
+                {data.locataires.map(l=><option key={l.id} value={l.id}>{l.prenom} {l.nom}</option>)}
+              </select>
+            </div>
+            <button onClick={()=>{
+              if(form.locataireId!==modal.data.locataireId) assignLocataire(modal.data.id, form.locataireId);
+              saveBien();
+            }} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Enregistrer</button>
+          </>}
+
+          {modal.type==='editLocataire' && modal.data && <>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Modifier le locataire</h3>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Nom</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Prénom</label><input value={form.prenom||''} onChange={e=>setForm(f=>({...f,prenom:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Email</label><input value={form.email||''} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Téléphone</label><input value={form.tel||''} onChange={e=>setForm(f=>({...f,tel:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:14 }}>
+              <div><label style={LBL}>Début bail</label><input type="date" value={form.debut||''} onChange={e=>setForm(f=>({...f,debut:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Fin bail</label><input type="date" value={form.fin||''} onChange={e=>setForm(f=>({...f,fin:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Dépôt (€)</label><input type="number" value={form.depot||''} onChange={e=>setForm(f=>({...f,depot:e.target.value}))} style={INP} /></div>
+            </div>
+            <button onClick={saveLocataire} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Enregistrer</button>
           </>}
 
           {modal.type==='addLocataire' && <>
