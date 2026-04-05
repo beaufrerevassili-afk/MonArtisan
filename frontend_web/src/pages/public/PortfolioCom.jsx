@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 const L = {
-  bg: '#0A0A0A',
+  bg: '#F8F6F2',
+  bgSoft: '#EFECE6',
   white: '#FFFFFF',
-  text: '#FAFAF8',
-  textSec: 'rgba(255,255,255,0.5)',
-  textLight: 'rgba(255,255,255,0.3)',
-  gold: '#C9A96E',
-  goldLight: 'rgba(201,169,110,0.15)',
-  border: 'rgba(255,255,255,0.08)',
+  noir: '#1A1A1A',
+  text: '#1A1A1A',
+  textSec: '#7A7570',
+  textLight: '#A8A29E',
+  gold: '#B8975A',
+  goldLight: '#F5EFE0',
+  goldDark: '#8B7240',
+  border: '#E2DDD5',
+  borderLight: '#EDE9E3',
   font: "'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif",
 };
 
@@ -39,7 +43,7 @@ export default function PortfolioCom() {
       <nav style={{
         position:'sticky', top:0, zIndex:200, display:'flex', alignItems:'center',
         justifyContent:'space-between', padding:'0 clamp(24px,4vw,56px)', height:64,
-        background:'rgba(10,10,10,0.9)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
+        background:'rgba(248,246,242,0.92)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
         borderBottom:`1px solid ${L.border}`,
       }}>
         <button onClick={()=>navigate('/com')} style={{
@@ -47,7 +51,7 @@ export default function PortfolioCom() {
           fontSize:13, fontFamily:L.font, display:'flex', alignItems:'center', gap:8,
           letterSpacing:'0.04em', textTransform:'uppercase', transition:'color .2s',
         }}
-          onMouseEnter={e=>e.currentTarget.style.color='#fff'}
+          onMouseEnter={e=>e.currentTarget.style.color=L.noir}
           onMouseLeave={e=>e.currentTarget.style.color=L.textSec}>
           ← Retour
         </button>
@@ -56,21 +60,21 @@ export default function PortfolioCom() {
         </div>
         <button onClick={()=>navigate('/com')} style={{
           padding:'8px 20px', background:'transparent', border:`1px solid ${L.border}`,
-          color:'#fff', fontSize:12, fontWeight:500, cursor:'pointer', fontFamily:L.font,
+          color:L.noir, fontSize:12, fontWeight:500, cursor:'pointer', fontFamily:L.font,
           letterSpacing:'0.04em', textTransform:'uppercase', transition:'all .2s',
         }}
           onMouseEnter={e=>{ e.currentTarget.style.borderColor=L.gold; e.currentTarget.style.color=L.gold; }}
-          onMouseLeave={e=>{ e.currentTarget.style.borderColor=L.border; e.currentTarget.style.color='#fff'; }}>
+          onMouseLeave={e=>{ e.currentTarget.style.borderColor=L.border; e.currentTarget.style.color=L.noir; }}>
           Devis gratuit
         </button>
       </nav>
 
       {/* ══ HERO ══ */}
-      <section style={{ padding:'clamp(80px,14vh,140px) 32px clamp(48px,8vh,80px)', textAlign:'center', position:'relative' }}>
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:400, height:400, borderRadius:'50%', background:`radial-gradient(circle, ${L.goldLight} 0%, transparent 70%)`, pointerEvents:'none' }} />
+      <section style={{ padding:'clamp(80px,14vh,140px) 32px clamp(48px,8vh,80px)', textAlign:'center', position:'relative', background:L.white }}>
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:500, height:500, borderRadius:'50%', background:`radial-gradient(circle, ${L.goldLight} 0%, transparent 60%)`, pointerEvents:'none' }} />
         <div style={{ position:'relative', zIndex:1 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:20 }}>Portfolio</div>
-          <h1 style={{ fontSize:'clamp(32px,6vw,60px)', fontWeight:200, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 16px' }}>
+          <h1 style={{ fontSize:'clamp(32px,6vw,60px)', fontWeight:200, color:L.noir, letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 16px' }}>
             Chaque projet,<br/>une <span style={{ fontWeight:700, fontStyle:'italic' }}>vision</span>.
           </h1>
           <p style={{ fontSize:16, color:L.textSec, maxWidth:440, margin:'0 auto', lineHeight:1.6, fontWeight:300 }}>
@@ -80,17 +84,17 @@ export default function PortfolioCom() {
       </section>
 
       {/* ══ FILTRES ══ */}
-      <div style={{ display:'flex', justifyContent:'center', gap:4, padding:'0 24px 48px', flexWrap:'wrap' }}>
+      <div style={{ display:'flex', justifyContent:'center', gap:4, padding:'0 24px 48px', flexWrap:'wrap', background:L.white }}>
         {CATEGORIES.map(cat => (
           <button key={cat} onClick={()=>setFilter(cat)}
             style={{
-              padding:'10px 24px', background: filter===cat ? L.gold : 'transparent',
-              border:`1px solid ${filter===cat ? L.gold : L.border}`,
+              padding:'10px 24px', background: filter===cat ? L.noir : 'transparent',
+              border:`1px solid ${filter===cat ? L.noir : L.border}`,
               color: filter===cat ? '#fff' : L.textSec,
               fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:L.font,
               letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .25s',
             }}
-            onMouseEnter={e=>{ if(filter!==cat) { e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; e.currentTarget.style.color='#fff'; } }}
+            onMouseEnter={e=>{ if(filter!==cat) { e.currentTarget.style.borderColor=L.noir; e.currentTarget.style.color=L.noir; } }}
             onMouseLeave={e=>{ if(filter!==cat) { e.currentTarget.style.borderColor=L.border; e.currentTarget.style.color=L.textSec; } }}>
             {cat}
           </button>
@@ -101,13 +105,13 @@ export default function PortfolioCom() {
       <section style={{ padding:'0 clamp(24px,4vw,56px) 80px', maxWidth:1200, margin:'0 auto' }}>
         {loading ? (
           <div style={{ textAlign:'center', padding:'80px 0', color:L.textSec }}>
-            <div style={{ width:32, height:32, border:'2px solid rgba(255,255,255,0.1)', borderTopColor:L.gold, borderRadius:'50%', margin:'0 auto 16px', animation:'spin .7s linear infinite' }} />
+            <div style={{ width:32, height:32, border:`2px solid ${L.border}`, borderTopColor:L.gold, borderRadius:'50%', margin:'0 auto 16px', animation:'spin .7s linear infinite' }} />
             Chargement...
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign:'center', padding:'80px 0' }}>
-            <div style={{ fontSize:56, marginBottom:20, opacity:0.15 }}>🎬</div>
-            <div style={{ fontSize:20, fontWeight:300, color:'#fff', marginBottom:8 }}>
+            <div style={{ fontSize:56, marginBottom:20, opacity:0.2 }}>🎬</div>
+            <div style={{ fontSize:20, fontWeight:300, color:L.noir, marginBottom:8 }}>
               {portfolio.length === 0 ? 'Le portfolio arrive bientôt' : 'Aucun projet dans cette catégorie'}
             </div>
             <div style={{ fontSize:14, color:L.textSec, maxWidth:400, margin:'0 auto', lineHeight:1.6 }}>
@@ -117,17 +121,18 @@ export default function PortfolioCom() {
             </div>
           </div>
         ) : (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:2 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:16 }}>
             {filtered.map((item, i) => (
               <div key={item.id}
                 onClick={()=>setSelected(item)}
                 style={{
                   position:'relative', cursor:'pointer', overflow:'hidden',
-                  aspectRatio:'16/10',
-                  opacity:1, transition:'all .4s',
+                  aspectRatio:'16/10', borderRadius:4,
+                  boxShadow:'0 2px 12px rgba(0,0,0,0.06)',
+                  transition:'all .4s',
                 }}>
                 {/* Image / placeholder */}
-                <div style={{ position:'absolute', inset:0, background:'#111' }}>
+                <div style={{ position:'absolute', inset:0, background:L.bgSoft }}>
                   {item.thumbnail_url ? (
                     <img src={item.thumbnail_url} alt={item.titre}
                       style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .6s cubic-bezier(0.25,0.46,0.45,0.94)' }}
@@ -162,10 +167,10 @@ export default function PortfolioCom() {
       </section>
 
       {/* ══ CTA BAS DE PAGE ══ */}
-      <section style={{ borderTop:`1px solid ${L.border}`, padding:'clamp(56px,8vh,88px) 32px', textAlign:'center' }}>
+      <section style={{ background:L.white, borderTop:`1px solid ${L.border}`, padding:'clamp(56px,8vh,88px) 32px', textAlign:'center' }}>
         <div style={{ maxWidth:480, margin:'0 auto' }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:16 }}>Votre projet</div>
-          <h2 style={{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:200, color:'#fff', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.2 }}>
+          <h2 style={{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:200, color:L.noir, letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.2 }}>
             Envie d'un résultat <span style={{ fontWeight:700 }}>similaire</span> ?
           </h2>
           <p style={{ fontSize:14, color:L.textSec, lineHeight:1.6, marginBottom:32 }}>
@@ -174,23 +179,23 @@ export default function PortfolioCom() {
           <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
             <button onClick={()=>navigate('/com')}
               style={{
-                padding:'14px 40px', background:L.gold, color:'#fff', border:'none',
+                padding:'14px 40px', background:L.noir, color:'#fff', border:'none',
                 fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font,
                 letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .2s',
               }}
-              onMouseEnter={e=>e.currentTarget.style.background='#8B7240'}
-              onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
+              onMouseEnter={e=>e.currentTarget.style.background='#333'}
+              onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
               Demander un devis
             </button>
             <a href="https://wa.me/33769387193?text=Bonjour, j'ai vu votre portfolio et j'aimerais discuter d'un projet" target="_blank" rel="noopener noreferrer"
               style={{
-                padding:'14px 32px', background:'transparent', color:'#fff',
+                padding:'14px 32px', background:'transparent', color:L.noir,
                 border:`1px solid ${L.border}`, fontSize:13, fontWeight:500,
                 cursor:'pointer', fontFamily:L.font, textDecoration:'none',
                 letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .2s',
                 display:'inline-flex', alignItems:'center',
               }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.3)'; }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor=L.noir; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor=L.border; }}>
               WhatsApp
             </a>
@@ -199,7 +204,7 @@ export default function PortfolioCom() {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ padding:'24px 32px', borderTop:`1px solid ${L.border}`, textAlign:'center' }}>
+      <footer style={{ padding:'24px 32px', borderTop:`1px solid ${L.border}`, textAlign:'center', background:L.white }}>
         <span style={{ fontSize:11, color:L.textLight, letterSpacing:'0.1em', textTransform:'uppercase' }}>
           © 2026 Freample Com
         </span>
