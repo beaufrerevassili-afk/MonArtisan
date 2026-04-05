@@ -19,6 +19,7 @@ const NAV_DEV = [
   { label:'Freample Course', icon:'🚗', href:'/course' },
   { label:'Vacances & Séjours', icon:'🏖️', href:'/vacances' },
   { label:'Freample Immo', icon:'🏠', href:'/immo' },
+  { label:'Immo — Démo investisseur', icon:'📊', href:'/immo/demo' },
   { label:'Freample Droit', icon:'⚖️', href:'/droit' },
   { label:'Recrutement', icon:'💼', href:'/recrutement' },
   { label:'Espace pro', icon:'🏢', href:'/pro' },
