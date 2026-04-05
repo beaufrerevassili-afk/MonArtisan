@@ -37,9 +37,13 @@ export default function FreampleCom(){
   const f=(k)=>({value:brief[k],onChange:e=>setBrief(p=>({...p,[k]:e.target.value}))});
   const scrollTo=(id)=>{setMenuOpen(false);setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),400);};
   const MENU=[
-    {label:'Expertises',id:'expertises'},{label:'Portfolio',action:()=>{setMenuOpen(false);navigate('/com/portfolio');}},
+    {label:'Accueil Freample',action:()=>{setMenuOpen(false);navigate('/');}},
+    {label:'Freample Artisans',action:()=>{setMenuOpen(false);navigate('/btp');}},
+    {label:'Expertises',id:'expertises'},
+    {label:'Portfolio',action:()=>{setMenuOpen(false);navigate('/com/portfolio');}},
     {label:'Formules',id:'tarifs'},{label:'Tarifs',id:'grille'},{label:'Contact',id:'contact'},
     {label:'Demander un devis',action:()=>{setMenuOpen(false);setTimeout(()=>setStep(1),400);}},
+    {label:'Recrutement',action:()=>{setMenuOpen(false);navigate('/recrutement');}},
   ];
   const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal(),r5=useReveal(),r6=useReveal();
 
