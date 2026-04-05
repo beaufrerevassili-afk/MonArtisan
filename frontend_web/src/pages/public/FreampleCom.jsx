@@ -393,9 +393,15 @@ export default function FreampleCom() {
               </summary>
               <div style={{ background:L.white, border:`1px solid ${L.border}`, borderTop:'none' }}>
                 {t.items.map((item,j) => (
-                  <div key={j} style={{ display:'flex', justifyContent:'space-between', padding:'12px 20px', borderBottom:j<t.items.length-1?`1px solid ${L.borderLight}`:'none', fontSize:14 }}>
-                    <span style={{ color:L.textSec }}>{item.nom}</span>
-                    <span style={{ fontWeight:600, color:L.text }}>{item.prix}€</span>
+                  <div key={j} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px', borderBottom:j<t.items.length-1?`1px solid ${L.borderLight}`:'none', fontSize:14, gap:12 }}>
+                    <span style={{ color:L.textSec, flex:1 }}>{item.nom}</span>
+                    <span style={{ fontWeight:600, color:L.text, flexShrink:0 }}>{item.prix}€</span>
+                    <button onClick={()=>{ setBrief(p=>({...p, type:t.cat, format:item.nom, quantite:'1' })); setStep(1); }}
+                      style={{ padding:'6px 16px', background:'transparent', border:`1px solid ${L.border}`, color:L.text, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.03em', textTransform:'uppercase', transition:'all .2s', flexShrink:0 }}
+                      onMouseEnter={e=>{ e.currentTarget.style.background=L.noir; e.currentTarget.style.color='#fff'; e.currentTarget.style.borderColor=L.noir; }}
+                      onMouseLeave={e=>{ e.currentTarget.style.background='transparent'; e.currentTarget.style.color=L.text; e.currentTarget.style.borderColor=L.border; }}>
+                      Commander
+                    </button>
                   </div>
                 ))}
               </div>
