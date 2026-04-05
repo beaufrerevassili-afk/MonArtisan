@@ -82,7 +82,7 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
                   </div>
                   {[
                     { label:'📊 Dashboard', action:()=>navigate('/patron/dashboard') },
-                    { label:'📈 Statistiques', action:()=>navigate('/patron/dashboard?onglet=stats') },
+                    { label:'📈 Statistiques', action:()=>navigate('/admin/stats') },
                     { label:'🏠 Accueil', action:()=>navigate('/') },
                   ].map(item=>(
                     <button key={item.label} onClick={()=>{item.action();setMenuOpen(false);}}

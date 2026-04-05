@@ -23,6 +23,7 @@ import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
 import PortfolioCom from './pages/public/PortfolioCom';
 import ProLanding from './pages/public/ProLanding';
+import StatsAdmin from './pages/public/StatsAdmin';
 import SuiviCommande from './pages/public/SuiviCommande';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
@@ -144,6 +145,7 @@ function AppRoutes() {
       <Route path="/com" element={<FreampleCom />} />
       <Route path="/com/portfolio" element={<PortfolioCom />} />
       <Route path="/pro" element={<ProLanding />} />
+      <Route path="/admin/stats" element={<StatsAdmin />} />
       <Route path="/suivi/:token" element={<SuiviCommande />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
