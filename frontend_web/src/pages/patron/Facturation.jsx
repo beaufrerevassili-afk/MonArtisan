@@ -88,13 +88,13 @@ function isOverdue(f) {
 function MentionsLegalesBanner() {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ background: '#EBF5FF', border: '1px solid #007AFF', borderRadius: 10, padding: '10px 16px', marginBottom: 16 }}>
+    <div style={{ background: '#EBF5FF', border: '1px solid #5B5BD6', borderRadius: 10, padding: '10px 16px', marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span>⚖️</span>
         <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0055B3', flex: 1 }}>
           Mentions légales obligatoires sur chaque facture (Art. L441-3 Code de commerce)
         </span>
-        <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#007AFF', fontSize: '0.8125rem', fontWeight: 600 }}>
+        <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B5BD6', fontSize: '0.8125rem', fontWeight: 600 }}>
           {open ? 'Masquer ▲' : 'Voir ▼'}
         </button>
       </div>

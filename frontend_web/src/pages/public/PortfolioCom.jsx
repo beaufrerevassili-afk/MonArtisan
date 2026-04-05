@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 
 const L = {
   bg: '#F8F6F2',
@@ -26,6 +27,8 @@ export default function PortfolioCom() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Tout');
   const [selected, setSelected] = useState(null);
+  const sHero = useScaleIn();
+  const rDesc = useFadeUp(0.1);
 
   useEffect(() => {
     api.get('/com/portfolio').then(r => {
@@ -74,10 +77,10 @@ export default function PortfolioCom() {
         <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:500, height:500, borderRadius:'50%', background:`radial-gradient(circle, ${L.goldLight} 0%, transparent 60%)`, pointerEvents:'none' }} />
         <div style={{ position:'relative', zIndex:1 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:20 }}>Portfolio</div>
-          <h1 style={{ fontSize:'clamp(32px,6vw,60px)', fontWeight:200, color:L.noir, letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 16px' }}>
+          <h1 ref={sHero} style={{ fontSize:'clamp(32px,6vw,60px)', fontWeight:200, color:L.noir, letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 16px' }}>
             Chaque projet,<br/>sa <span style={{ fontWeight:700, fontStyle:'italic' }}>vision</span>.
           </h1>
-          <p style={{ fontSize:16, color:L.textSec, maxWidth:440, margin:'0 auto', lineHeight:1.6, fontWeight:300 }}>
+          <p ref={rDesc} style={{ fontSize:16, color:L.textSec, maxWidth:440, margin:'0 auto', lineHeight:1.6, fontWeight:300 }}>
             Explorez nos réalisations et imaginez ce que nous pouvons créer ensemble.
           </p>
         </div>

@@ -52,13 +52,19 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="toast-container">
+      <div className="toast-container" aria-live="polite" aria-atomic="false">
         {toasts.map(t => (
-          <div key={t.id} className={`toast toast-${t.type}`}>
+          <div
+            key={t.id}
+            className={`toast toast-${t.type}`}
+            role={t.type === 'error' ? 'alert' : 'status'}
+            aria-live={t.type === 'error' ? 'assertive' : 'polite'}
+          >
             {ICONS[t.type]}
             <span style={{ flex: 1 }}>{t.message}</span>
             <button
               onClick={() => removeToast(t.id)}
+              aria-label="Fermer la notification"
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 0, display: 'flex', flexShrink: 0 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

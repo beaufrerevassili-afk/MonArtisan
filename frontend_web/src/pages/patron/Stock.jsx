@@ -97,7 +97,7 @@ export default function Stock() {
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 22 }}>
         {[
-          { label: 'Articles en stock', val: articles.length, color: '#007AFF', Icon: IconBox },
+          { label: 'Articles en stock', val: articles.length, color: '#5B5BD6', Icon: IconBox },
           { label: 'Alertes stock bas', val: alertes.length, color: alertes.length > 0 ? '#FF3B30' : '#34C759', Icon: IconAlert },
           { label: 'Valeur totale stock', val: formatCur(valeurTotale), color: '#34C759', Icon: IconCheck },
           { label: 'Catégories', val: CATS.length, color: '#AF52DE', Icon: IconBox },
@@ -193,7 +193,7 @@ export default function Stock() {
                   );
                 })}
               </div>
-              <div style={{ background: '#EBF5FF', border: '1px solid #007AFF30', borderRadius: 12, padding: '12px 16px', fontSize: 13, color: '#007AFF' }}>
+              <div style={{ background: '#EBF5FF', border: '1px solid #5B5BD630', borderRadius: 12, padding: '12px 16px', fontSize: 13, color: '#5B5BD6' }}>
                 Cliquez sur un article pour modifier son seuil d'alerte ou mettre à jour la quantité en stock.
               </div>
             </>
@@ -214,7 +214,7 @@ export default function Stock() {
           <option value="Tous">Toutes catégories</option>
           {CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <button onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, marginLeft: 'auto' }}>
+        <button onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, marginLeft: 'auto' }}>
           <IconPlus size={14} /> Ajouter un article
         </button>
       </div>
@@ -257,7 +257,7 @@ export default function Stock() {
                     )}
                   </td>
                   <td style={{ padding: '11px 14px' }}>
-                    <button onClick={e => { e.stopPropagation(); openEdit(a); }} style={{ padding: '4px 10px', border: '1px solid #E5E5EA', borderRadius: 7, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#007AFF' }}>Modifier</button>
+                    <button onClick={e => { e.stopPropagation(); openEdit(a); }} style={{ padding: '4px 10px', border: '1px solid #E5E5EA', borderRadius: 7, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#5B5BD6' }}>Modifier</button>
                   </td>
                 </tr>
               );
@@ -310,7 +310,7 @@ export default function Stock() {
                 )}
                 <div style={{ display: 'flex', gap: 10, marginLeft: 'auto' }}>
                   <button type="button" onClick={() => setModal(null)} style={{ padding: '10px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Annuler</button>
-                  <button type="submit" style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+                  <button type="submit" style={{ padding: '10px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
                     {modal === 'add' ? 'Créer l\'article' : 'Enregistrer'}
                   </button>
                 </div>

@@ -134,7 +134,7 @@ export default function DevisFormulaire({ clientNom = '', missionTitre = '', onS
           <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>Prestations</div>
           <div style={{ position: 'relative' }}>
             <button type="button" onClick={() => setShowTemplates(v => !v)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1px solid #E5E5EA', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#007AFF' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1px solid #E5E5EA', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#5B5BD6' }}>
               ⚡ Templates BTP
             </button>
             {showTemplates && (
@@ -221,7 +221,7 @@ export default function DevisFormulaire({ clientNom = '', missionTitre = '', onS
         ].filter(Boolean).map(([label, val, bold]) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: bold ? '2px solid #E5E5EA' : 'none', marginTop: bold ? 6 : 0, paddingTop: bold ? 10 : 4 }}>
             <span style={{ fontSize: bold ? 15 : 13, fontWeight: bold ? 800 : 500, color: bold ? '#1C1C1E' : '#6E6E73' }}>{label}</span>
-            <span style={{ fontSize: bold ? 16 : 13, fontWeight: bold ? 800 : 600, color: bold ? '#007AFF' : '#1C1C1E' }}>
+            <span style={{ fontSize: bold ? 16 : 13, fontWeight: bold ? 800 : 600, color: bold ? '#5B5BD6' : '#1C1C1E' }}>
               {Math.abs(val).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
               {val < 0 && ' (réduction)'}
             </span>
@@ -269,7 +269,7 @@ export default function DevisFormulaire({ clientNom = '', missionTitre = '', onS
           </button>
         )}
         <button type="button" onClick={handleSubmit} disabled={totals.totalTTC === 0}
-          style={{ padding: '10px 28px', border: 'none', borderRadius: 10, background: totals.totalTTC > 0 ? '#007AFF' : '#C7C7CC', color: '#fff', cursor: totals.totalTTC > 0 ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 14 }}>
+          style={{ padding: '10px 28px', border: 'none', borderRadius: 10, background: totals.totalTTC > 0 ? '#5B5BD6' : '#C7C7CC', color: '#fff', cursor: totals.totalTTC > 0 ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 14 }}>
           📤 Soumettre le devis
         </button>
       </div>

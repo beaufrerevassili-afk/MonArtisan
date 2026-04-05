@@ -37,21 +37,21 @@ export default function PatronDashboard({ navigation }) {
     navigation.replace('Login');
   }
 
-  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#007AFF" /></View>;
+  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#5B5BD6" /></View>;
 
   const resume = data?.resume_missions || {};
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#007AFF" />}
+      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#5B5BD6" />}
     >
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Bonjour, {user?.nom?.split(' ')[0]} 🏢</Text>
           <Text style={styles.subGreeting}>Tableau de bord patron</Text>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+        <TouchableOpacity onPress={logout} style={styles.logoutBtn} accessibilityRole="button" accessibilityLabel="Se déconnecter">
           <Text style={styles.logoutText}>Sortir</Text>
         </TouchableOpacity>
       </View>
@@ -113,6 +113,8 @@ export default function PatronDashboard({ navigation }) {
             key={m.label}
             style={styles.moduleCard}
             onPress={() => m.route ? navigation.navigate(m.route) : null}
+            accessibilityRole="button"
+            accessibilityLabel={m.label}
           >
             <Text style={styles.moduleIcon}>{m.icone}</Text>
             <Text style={styles.moduleLabel}>{m.label}</Text>
@@ -143,7 +145,7 @@ const styles = StyleSheet.create({
   subGreeting:     { fontSize: 13, color: '#6B7280', marginTop: 2 },
   logoutBtn:       { backgroundColor: '#FEE2E2', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   logoutText:      { fontSize: 12, color: '#DC2626', fontWeight: '600' },
-  financeCard:     { backgroundColor: '#007AFF', borderRadius: 20, margin: 16, padding: 20 },
+  financeCard:     { backgroundColor: '#5B5BD6', borderRadius: 20, margin: 16, padding: 20 },
   financeCA:       { fontSize: 32, fontWeight: '700', color: '#FFFFFF' },
   financeLabel:    { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4, marginBottom: 16 },
   financeRow:      { flexDirection: 'row', gap: 24 },

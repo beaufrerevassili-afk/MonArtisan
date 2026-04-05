@@ -37,14 +37,14 @@ export default function ClientDashboard({ navigation }) {
     navigation.replace('Login');
   }
 
-  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#007AFF" /></View>;
+  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#5B5BD6" /></View>;
 
   const resume = data?.resume || {};
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#007AFF" />}
+      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#5B5BD6" />}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -52,7 +52,7 @@ export default function ClientDashboard({ navigation }) {
           <Text style={styles.greeting}>Bonjour, {user?.nom?.split(' ')[0]} 👋</Text>
           <Text style={styles.subGreeting}>Que cherchez-vous aujourd'hui ?</Text>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+        <TouchableOpacity onPress={logout} style={styles.logoutBtn} accessibilityRole="button" accessibilityLabel="Se déconnecter">
           <Text style={styles.logoutText}>Sortir</Text>
         </TouchableOpacity>
       </View>
@@ -79,7 +79,7 @@ export default function ClientDashboard({ navigation }) {
         <StatCard label="Missions" valeur={resume.missions_total || 0} icone="📋" />
         <StatCard label="En cours" valeur={resume.missions_en_cours || 0} icone="🔧" couleur="#34C759" />
         <StatCard label="Terminées" valeur={resume.missions_terminees || 0} icone="✅" />
-        <StatCard label="Budget total" valeur={`${(resume.budget_total || 0).toLocaleString('fr-FR')}€`} icone="💰" couleur="#007AFF" />
+        <StatCard label="Budget total" valeur={`${(resume.budget_total || 0).toLocaleString('fr-FR')}€`} icone="💰" couleur="#5B5BD6" />
       </View>
 
       {/* Missions récentes */}
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   logoutBtn:       { backgroundColor: '#FEE2E2', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   logoutText:      { fontSize: 12, color: '#DC2626', fontWeight: '600' },
   searchBtn:       { backgroundColor: '#FFFFFF', margin: 16, marginBottom: 8, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  searchBtnText:   { fontSize: 15, fontWeight: '500', color: '#007AFF', textAlign: 'center' },
+  searchBtnText:   { fontSize: 15, fontWeight: '500', color: '#5B5BD6', textAlign: 'center' },
   newMissionBtn:   { backgroundColor: '#34C759', margin: 16, marginTop: 0, borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
   newMissionText:  { color: '#FFFFFF', fontWeight: '600', fontSize: 15 },
   sectionTitle:    { fontSize: 16, fontWeight: '700', color: '#1A1A2E', marginHorizontal: 16, marginTop: 8, marginBottom: 12 },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   missionCard:     { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   missionHeader:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
   missionTitre:    { fontSize: 15, fontWeight: '600', color: '#1A1A2E', flex: 1 },
-  missionBudget:   { fontSize: 15, fontWeight: '700', color: '#007AFF', marginLeft: 8 },
+  missionBudget:   { fontSize: 15, fontWeight: '700', color: '#5B5BD6', marginLeft: 8 },
   missionDesc:     { fontSize: 12, color: '#6B7280', marginBottom: 10 },
   missionFooter:   { flexDirection: 'row', alignItems: 'center' },
   emptyCard:       { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 30, marginHorizontal: 16, alignItems: 'center' },

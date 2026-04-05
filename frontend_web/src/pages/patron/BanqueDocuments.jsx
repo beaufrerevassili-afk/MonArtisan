@@ -118,7 +118,7 @@ export default function BanqueDocuments() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Total documents', value: stats.total, color: '#007AFF' },
+          { label: 'Total documents', value: stats.total, color: '#5B5BD6' },
           { label: 'Devis',           value: stats.devis, color: '#1565C0' },
           { label: 'Bulletins paie',  value: stats.bulletins, color: '#1A7F43' },
           { label: 'Contrats',        value: stats.contrats, color: '#856404' },
@@ -146,7 +146,7 @@ export default function BanqueDocuments() {
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setCatFilter(cat)} style={{
               padding: '8px 16px', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600,
-              background: catFilter === cat ? '#007AFF' : '#F2F2F7',
+              background: catFilter === cat ? '#5B5BD6' : '#F2F2F7',
               color: catFilter === cat ? '#fff' : '#3C3C43',
               transition: 'all 0.15s',
             }}>{cat}</button>
@@ -222,7 +222,7 @@ export default function BanqueDocuments() {
                 <button
                   onClick={() => openDoc(doc)}
                   title="Ouvrir le document"
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}
                 >
                   ↗ Ouvrir
                 </button>
@@ -240,7 +240,7 @@ export default function BanqueDocuments() {
       </div>
 
       {/* Info banner */}
-      <div style={{ marginTop: 20, background: '#F0F7FF', border: '1px solid #007AFF30', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#1565C0' }}>
+      <div style={{ marginTop: 20, background: '#F0F7FF', border: '1px solid #5B5BD630', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#1565C0' }}>
         <span style={{ fontSize: 18 }}>💡</span>
         <span>
           Cliquez sur n'importe quel document pour l'ouvrir directement dans le navigateur.

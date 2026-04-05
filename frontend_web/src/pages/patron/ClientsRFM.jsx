@@ -211,7 +211,7 @@ export default function ClientsRFM() {
         <div style={{ fontSize: 12, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Légende des scores RFM</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           {[
-            { label: 'R — Récence', desc: '5 = < 30 j · 4 = < 60 j · 3 = < 4 mois · 2 = < 1 an · 1 = > 1 an', color: '#007AFF' },
+            { label: 'R — Récence', desc: '5 = < 30 j · 4 = < 60 j · 3 = < 4 mois · 2 = < 1 an · 1 = > 1 an', color: '#5B5BD6' },
             { label: 'F — Fréquence', desc: '5 = ≥ 8 cmds · 4 = 5-7 · 3 = 3-4 · 2 = 2 · 1 = 1 commande', color: '#FF9500' },
             { label: 'M — Montant', desc: '5 = ≥ 20 000 € · 4 = ≥ 10 000 € · 3 = ≥ 5 000 € · 2 = ≥ 1 000 € · 1 = < 1 000 €', color: '#34C759' },
           ].map(d => (
@@ -274,8 +274,8 @@ export default function ClientsRFM() {
 
                 {/* R score */}
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#007AFF' }}>{c.r}</div>
-                  <ScoreDots score={c.r} color="#007AFF" />
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#5B5BD6' }}>{c.r}</div>
+                  <ScoreDots score={c.r} color="#5B5BD6" />
                 </div>
 
                 {/* F score */}
@@ -346,7 +346,7 @@ function ClientDetail({ client: c, onClose }) {
         {/* Contact */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {c.telephone && <div style={{ fontSize: 13, color: '#1C1C1E' }}>📞 {c.telephone}</div>}
-          {c.email && <div style={{ fontSize: 13, color: '#007AFF' }}>✉ {c.email}</div>}
+          {c.email && <div style={{ fontSize: 13, color: '#5B5BD6' }}>✉ {c.email}</div>}
         </div>
 
         {/* RFM scores */}
@@ -354,7 +354,7 @@ function ClientDetail({ client: c, onClose }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Score RFM</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
             {[
-              { label: 'Récence', score: c.r, color: '#007AFF', detail: `${c.daysSince} jours` },
+              { label: 'Récence', score: c.r, color: '#5B5BD6', detail: `${c.daysSince} jours` },
               { label: 'Fréquence', score: c.f, color: '#FF9500', detail: `${c.nbCommandes} cmds` },
               { label: 'Montant', score: c.m, color: '#34C759', detail: formatCur(c.totalCA) },
             ].map(d => (

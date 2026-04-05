@@ -42,14 +42,14 @@ export default function AdminDashboard({ navigation }) {
     navigation.replace('Login');
   }
 
-  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#007AFF" /></View>;
+  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#5B5BD6" /></View>;
 
   const stats = data?.statistiques_globales || {};
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#007AFF" />}
+      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#5B5BD6" />}
     >
       <View style={styles.header}>
         <Text style={styles.title}>Administration</Text>

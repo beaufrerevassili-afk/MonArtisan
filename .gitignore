@@ -25,3 +25,4 @@ logs/
 # Divers
 *.pem
 coverage/
+.vercel

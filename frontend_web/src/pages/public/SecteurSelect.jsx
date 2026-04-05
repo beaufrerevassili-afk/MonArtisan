@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useAuth } from '../../context/AuthContext';
+import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -37,7 +38,6 @@ const SECTORS_DEV = [
   { id:'stats', label:'Statistiques', icon:'📈', href:'/admin/stats' },
 ];
 
-function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity .8s cubic-bezier(0.25,0.46,0.45,0.94), transform .8s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
 
 export default function SecteurSelect() {
   const navigate = useNavigate();
@@ -49,7 +49,8 @@ export default function SecteurSelect() {
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => { setMounted(true); document.title = 'Freample — Artisans certifiés & montage vidéo professionnel en France'; }, []);
 
-  const r1=useReveal(), r2=useReveal(), r3=useReveal();
+  const s1=useScaleIn();
+  const r1=useFadeUp(), r2=useFadeUp(0.1), r3=useFadeUp();
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
@@ -107,7 +108,7 @@ export default function SecteurSelect() {
         opacity:mounted?1:0, transform:mounted?'none':'translateY(12px)',
         transition:'opacity .6s, transform .6s',
       }}>
-        <h1 style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,50px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.08, color:L.text }}>
+        <h1 ref={s1} style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,50px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.08, color:L.text }}>
           Trouvez un artisan de <span style={{ fontWeight:700, fontStyle:'normal' }}>confiance</span>
         </h1>
         <p style={{ fontSize:16, color:L.textSec, lineHeight:1.6, margin:'0 0 32px', maxWidth:480, marginLeft:'auto', marginRight:'auto' }}>
@@ -166,7 +167,7 @@ export default function SecteurSelect() {
           <h2 style={{ fontFamily:L.serif, fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, fontStyle:'italic', margin:'0 0 40px', letterSpacing:'-0.02em' }}>
             Simple, rapide, <span style={{ fontWeight:700, fontStyle:'normal' }}>efficace</span>
           </h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
             {[
               { step:'1', icon:'📝', title:'Décrivez votre besoin', desc:'Quel métier, quelle ville, quel type de travaux. En 2 minutes.' },
               { step:'2', icon:'📩', title:'Recevez des devis', desc:'Des artisans vérifiés vous répondent sous 24h avec un devis gratuit.' },
@@ -179,7 +180,7 @@ export default function SecteurSelect() {
                 <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 

@@ -19,7 +19,7 @@ function formatCur(n) {
 function progressColor(pct) {
   if (pct >= 80) return '#34C759';
   if (pct < 30) return '#FF9500';
-  return '#007AFF';
+  return '#5B5BD6';
 }
 function jours(a, b) {
   if (!a || !b) return null;
@@ -86,7 +86,7 @@ const DEMO_EMPLOYES = [
 ];
 
 const DEMO_VEHICULES = [
-  { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic', type: 'Fourgon', capacite: '900 kg', kilometrage: 87400, couleur: '#007AFF', statut: 'en_mission', chantier: 'Rénovation façade — Immeuble Leblanc', vidange: { date: '2024-11-10', km: 85000, prochainKm: 95000, intervalleKm: 10000 }, controleTechnique: { date: '2023-09-15', prochaineDate: '2025-09-15' }, assurance: { expiration: '2025-12-31' } },
+  { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic', type: 'Fourgon', capacite: '900 kg', kilometrage: 87400, couleur: '#5B5BD6', statut: 'en_mission', chantier: 'Rénovation façade — Immeuble Leblanc', vidange: { date: '2024-11-10', km: 85000, prochainKm: 95000, intervalleKm: 10000 }, controleTechnique: { date: '2023-09-15', prochaineDate: '2025-09-15' }, assurance: { expiration: '2025-12-31' } },
   { id: 2, immatriculation: 'EF-456-GH', modele: 'Citroën Berlingo', type: 'Fourgonnette', capacite: '700 kg', kilometrage: 52100, couleur: '#34C759', statut: 'en_mission', chantier: 'Pose carrelage — Appartement T3 Dupont', vidange: { date: '2025-01-20', km: 50000, prochainKm: 60000, intervalleKm: 10000 }, controleTechnique: { date: '2024-04-08', prochaineDate: '2026-04-08' }, assurance: { expiration: '2025-08-31' } },
   { id: 3, immatriculation: 'IJ-789-KL', modele: 'Peugeot Expert', type: 'Fourgon', capacite: '850 kg', kilometrage: 134200, couleur: '#FF9500', statut: 'disponible', chantier: null, vidange: { date: '2024-09-05', km: 130000, prochainKm: 140000, intervalleKm: 10000 }, controleTechnique: { date: '2022-11-22', prochaineDate: '2024-11-22' }, assurance: { expiration: '2025-11-30' } },
   { id: 4, immatriculation: 'MN-012-OP', modele: 'Ford Transit', type: 'Fourgon grand volume', capacite: '1200 kg', kilometrage: 61800, couleur: '#AF52DE', statut: 'maintenance', chantier: null, vidange: { date: '2025-02-14', km: 60000, prochainKm: 70000, intervalleKm: 10000 }, controleTechnique: { date: '2024-06-30', prochaineDate: '2026-06-30' }, assurance: { expiration: '2026-01-15' } },
@@ -159,7 +159,7 @@ export default function ChantiersEtMissions() {
         {/* KPI row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
           {[
-            { label: 'Total', value: items.length, color: '#007AFF', icon: '📋' },
+            { label: 'Total', value: items.length, color: '#5B5BD6', icon: '📋' },
             { label: 'En attente', value: en_attente.length, color: '#856404', icon: '⏳' },
             { label: 'En cours', value: en_cours.length, color: '#0C5460', icon: '⚙️' },
             { label: 'Terminés', value: termines.length, color: '#1A7F43', icon: '✅' },
@@ -356,7 +356,7 @@ export default function ChantiersEtMissions() {
             const leftPct = (startOff / totalDays) * 100;
             const widthPct = Math.max(((endOff - startOff) / totalDays) * 100, 1.5);
             const x = STATUT_MAP[item.statut] || {};
-            const barColor = x.color || '#007AFF';
+            const barColor = x.color || '#5B5BD6';
             return (
               <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '220px 1fr', borderBottom: '1px solid var(--border-light)', background: i % 2 === 0 ? 'var(--card)' : 'var(--bg)', alignItems: 'center' }}>
                 <div style={{ padding: '10px 16px', borderRight: '1px solid var(--border-light)' }}>
@@ -418,7 +418,7 @@ export default function ChantiersEtMissions() {
 
     const item = items.find(c => String(c.id) === String(itemId));
     const CATS = ['matériaux', 'main-d\'oeuvre', 'équipement', 'sous-traitance', 'carburant', 'divers'];
-    const CAT_COLORS = { 'matériaux': '#007AFF', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#8E8E93' };
+    const CAT_COLORS = { 'matériaux': '#5B5BD6', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#8E8E93' };
 
     useEffect(() => {
       if (!itemId) return;
@@ -454,7 +454,7 @@ export default function ChantiersEtMissions() {
           <select value={itemId} onChange={e => setItemId(e.target.value)} style={{ flex: 1, maxWidth: 340, padding: '8px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, outline: 'none' }}>
             {items.map(c => <option key={c.id} value={c.id}>{c.titre}</option>)}
           </select>
-          <button onClick={() => setShowForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+          <button onClick={() => setShowForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
             <IconPlus size={13} /> Ajouter une dépense
           </button>
         </div>
@@ -513,7 +513,7 @@ export default function ChantiersEtMissions() {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => setShowForm(false)} style={{ padding: '8px 18px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Annuler</button>
-              <button type="submit" disabled={saving} style={{ padding: '8px 18px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Ajouter'}</button>
+              <button type="submit" disabled={saving} style={{ padding: '8px 18px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Ajouter'}</button>
             </div>
           </form>
         )}
@@ -563,7 +563,7 @@ export default function ChantiersEtMissions() {
               {depenses.length > 0 && (
                 <tr style={{ background: '#F8F9FA', borderTop: '2px solid #E5E5EA' }}>
                   <td colSpan={4} style={{ padding: '10px 14px', fontWeight: 700, fontSize: 13 }}>Total</td>
-                  <td style={{ padding: '10px 14px', fontWeight: 800, fontSize: 14, color: '#007AFF', textAlign: 'right' }}>{formatCur(totalDepenses)}</td>
+                  <td style={{ padding: '10px 14px', fontWeight: 800, fontSize: 14, color: '#5B5BD6', textAlign: 'right' }}>{formatCur(totalDepenses)}</td>
                 </tr>
               )}
             </tbody>
@@ -688,7 +688,7 @@ export default function ChantiersEtMissions() {
       <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
         <p style={{ fontWeight: 700, fontSize: 16 }}>Mission / Chantier ajouté !</p>
-        <button onClick={() => { setDone(false); setTab('Missions & Chantiers'); }} style={{ marginTop: 14, padding: '10px 24px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>Voir la liste</button>
+        <button onClick={() => { setDone(false); setTab('Missions & Chantiers'); }} style={{ marginTop: 14, padding: '10px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>Voir la liste</button>
       </div>
     );
 
@@ -714,7 +714,7 @@ export default function ChantiersEtMissions() {
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button type="button" onClick={() => setTab('Missions & Chantiers')} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Annuler</button>
-          <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Créer'}</button>
+          <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Créer'}</button>
         </div>
       </form>
     );
@@ -783,8 +783,8 @@ function ItemCard({ item, onClick, isSelected }) {
 
   return (
     <div onClick={onClick} style={{
-      background: '#fff', borderRadius: 14, padding: 18, boxShadow: isSelected ? '0 0 0 2px #007AFF, 0 4px 16px rgba(0,122,255,0.15)' : '0 1px 4px rgba(0,0,0,0.08)',
-      cursor: 'pointer', transition: 'all 0.15s', border: isSelected ? '1px solid #007AFF' : '1px solid transparent',
+      background: '#fff', borderRadius: 14, padding: 18, boxShadow: isSelected ? '0 0 0 2px #5B5BD6, 0 4px 16px rgba(0,122,255,0.15)' : '0 1px 4px rgba(0,0,0,0.08)',
+      cursor: 'pointer', transition: 'all 0.15s', border: isSelected ? '1px solid #5B5BD6' : '1px solid transparent',
     }}
       onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
       onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'none'; } }}>
@@ -901,7 +901,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
       {/* Panel tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid #F2F2F7', background: '#FAFAFA' }}>
         {[{ key: 'infos', label: 'Détails' }, { key: 'equipe', label: 'Équipe' }, { key: 'vehicule', label: 'Véhicule' }, { key: 'notes', label: 'Notes' }, { key: 'messages', label: '💬' }].map(t => (
-          <button key={t.key} onClick={() => setPanelTab(t.key)} style={{ flex: 1, padding: '10px 0', border: 'none', borderBottom: panelTab === t.key ? '2px solid #007AFF' : '2px solid transparent', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: panelTab === t.key ? '#007AFF' : '#8E8E93', transition: 'all 0.15s' }}>
+          <button key={t.key} onClick={() => setPanelTab(t.key)} style={{ flex: 1, padding: '10px 0', border: 'none', borderBottom: panelTab === t.key ? '2px solid #5B5BD6' : '2px solid transparent', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: panelTab === t.key ? '#5B5BD6' : '#8E8E93', transition: 'all 0.15s' }}>
             {t.label}
           </button>
         ))}
@@ -955,7 +955,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                   <button onClick={onAccept} style={{ padding: '11px 0', border: 'none', borderRadius: 10, background: '#34C759', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
                     Accepter la mission
                   </button>
-                  <button onClick={() => setDevisMode(true)} style={{ padding: '11px 0', border: '2px solid #007AFF', borderRadius: 10, background: '#fff', color: '#007AFF', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+                  <button onClick={() => setDevisMode(true)} style={{ padding: '11px 0', border: '2px solid #5B5BD6', borderRadius: 10, background: '#fff', color: '#5B5BD6', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
                     Proposer un devis
                   </button>
                 </>
@@ -991,9 +991,9 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
         {panelTab === 'equipe' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button onClick={() => setFiltreMetier('')} style={{ padding: '4px 12px', border: `1.5px solid ${!filtreMetier ? '#007AFF' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: !filtreMetier ? '#EBF5FF' : '#fff', color: !filtreMetier ? '#007AFF' : '#6E6E73', cursor: 'pointer' }}>Tous</button>
+              <button onClick={() => setFiltreMetier('')} style={{ padding: '4px 12px', border: `1.5px solid ${!filtreMetier ? '#5B5BD6' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: !filtreMetier ? '#EBF5FF' : '#fff', color: !filtreMetier ? '#5B5BD6' : '#6E6E73', cursor: 'pointer' }}>Tous</button>
               {metiers.map(m => (
-                <button key={m} onClick={() => setFiltreMetier(m)} style={{ padding: '4px 12px', border: `1.5px solid ${filtreMetier === m ? '#007AFF' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: filtreMetier === m ? '#EBF5FF' : '#fff', color: filtreMetier === m ? '#007AFF' : '#6E6E73', cursor: 'pointer' }}>{m}</button>
+                <button key={m} onClick={() => setFiltreMetier(m)} style={{ padding: '4px 12px', border: `1.5px solid ${filtreMetier === m ? '#5B5BD6' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: filtreMetier === m ? '#EBF5FF' : '#fff', color: filtreMetier === m ? '#5B5BD6' : '#6E6E73', cursor: 'pointer' }}>{m}</button>
               ))}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1001,14 +1001,14 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 const selected = equipeIds.includes(emp.id);
                 const isMatch = !filtreMetier || emp.metier === filtreMetier;
                 return (
-                  <div key={emp.id} onClick={() => toggleEmploye(emp.id)} style={{ border: `2px solid ${selected ? '#007AFF' : isMatch && filtreMetier ? '#34C75940' : '#F2F2F7'}`, borderRadius: 12, padding: '10px 14px', cursor: 'pointer', background: selected ? '#EBF5FF' : '#fff', transition: 'all 0.15s', opacity: emp.disponible ? 1 : 0.55 }}>
+                  <div key={emp.id} onClick={() => toggleEmploye(emp.id)} style={{ border: `2px solid ${selected ? '#5B5BD6' : isMatch && filtreMetier ? '#34C75940' : '#F2F2F7'}`, borderRadius: 12, padding: '10px 14px', cursor: 'pointer', background: selected ? '#EBF5FF' : '#fff', transition: 'all 0.15s', opacity: emp.disponible ? 1 : 0.55 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700 }}>{emp.prenom} {emp.nom}</div>
-                        <div style={{ fontSize: 11, color: '#007AFF', fontWeight: 600 }}>{emp.metier}</div>
+                        <div style={{ fontSize: 11, color: '#5B5BD6', fontWeight: 600 }}>{emp.metier}</div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end' }}>
-                        {selected && <span style={{ fontSize: 10, background: '#007AFF', color: '#fff', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>Assigné</span>}
+                        {selected && <span style={{ fontSize: 10, background: '#5B5BD6', color: '#fff', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>Assigné</span>}
                         {!emp.disponible && <span style={{ fontSize: 10, background: '#FF9500', color: '#fff', padding: '1px 7px', borderRadius: 20 }}>Indispo.</span>}
                       </div>
                     </div>
@@ -1024,7 +1024,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 Équipe sélectionnée : {getEquipeNoms().join(', ')}
               </div>
             )}
-            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? 'Enregistrement…' : 'Sauvegarder l\'équipe'}</button>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? 'Enregistrement…' : 'Sauvegarder l\'équipe'}</button>
           </div>
         )}
 
@@ -1062,7 +1062,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 </div>
               );
             })()}
-            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Sauvegarder le véhicule'}</button>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Sauvegarder le véhicule'}</button>
           </div>
         )}
 
@@ -1070,7 +1070,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
         {panelTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes internes, instructions chantier…" rows={8} style={{ ...inp, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6, fontSize: 13 }} />
-            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Sauvegarder les notes'}</button>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '10px 0', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{saving ? '…' : 'Sauvegarder les notes'}</button>
           </div>
         )}
 
@@ -1082,7 +1082,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 <div key={m.id} style={{ display: 'flex', flexDirection: m.from === 'patron' ? 'row-reverse' : 'row', gap: 8 }}>
                   <div style={{
                     maxWidth: '78%', padding: '9px 13px',
-                    background: m.from === 'patron' ? '#007AFF' : '#F2F2F7',
+                    background: m.from === 'patron' ? '#5B5BD6' : '#F2F2F7',
                     color: m.from === 'patron' ? '#fff' : '#1C1C1E',
                     borderRadius: m.from === 'patron' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                     fontSize: 13, lineHeight: 1.5,
@@ -1113,7 +1113,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 placeholder={`Message à ${item.client}…`}
                 style={{ ...inp, flex: 1, fontSize: 13, padding: '8px 12px' }}
               />
-              <button type="submit" style={{ padding: '8px 16px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>
+              <button type="submit" style={{ padding: '8px 16px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>
                 ➤
               </button>
             </form>
@@ -1174,7 +1174,7 @@ function EditModal({ item, onClose, onSave, headers }) {
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" onClick={onClose} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>Fermer</button>
-            <button type="submit" disabled={saving} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? '…' : 'Sauvegarder'}</button>
+            <button type="submit" disabled={saving} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? '…' : 'Sauvegarder'}</button>
           </div>
         </form>
       </div>
@@ -1205,7 +1205,7 @@ function FlotteView() {
     vidangeAlert(v.vidange, v.kilometrage)
   );
 
-  const COULEURS_AUTO = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#00C7BE', '#FF6B35', '#5856D6'];
+  const COULEURS_AUTO = ['#5B5BD6', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#00C7BE', '#FF6B35', '#5856D6'];
 
   function handleAddVehicule(e) {
     e.preventDefault();
@@ -1248,7 +1248,7 @@ function FlotteView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => setShowAddForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: showAddForm ? '#F2F2F7' : '#007AFF', color: showAddForm ? '#1C1C1E' : '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={() => setShowAddForm(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: showAddForm ? '#F2F2F7' : '#5B5BD6', color: showAddForm ? '#1C1C1E' : '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
           {showAddForm ? '✕ Annuler' : '+ Ajouter un véhicule'}
         </button>
       </div>
@@ -1315,7 +1315,7 @@ function FlotteView() {
       {/* Header KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
         {[
-          { label: 'Total véhicules', value: vehicules.length, color: '#007AFF' },
+          { label: 'Total véhicules', value: vehicules.length, color: '#5B5BD6' },
           { label: 'En mission', value: vehicules.filter(v => v.statut === 'en_mission').length, color: '#1565C0' },
           { label: 'Disponibles', value: vehicules.filter(v => v.statut === 'disponible').length, color: '#1A7F43' },
           { label: 'Alertes maintenance', value: alertes.length, color: alertes.length > 0 ? '#C0392B' : '#8E8E93' },
@@ -1417,7 +1417,7 @@ function FlotteView() {
                     <span style={{ color: '#856404', fontWeight: 700 }}> ⚠</span>
                   )}
                 </div>
-                <button onClick={() => setSelected(isOpen ? null : v.id)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#007AFF' }}>
+                <button onClick={() => setSelected(isOpen ? null : v.id)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#5B5BD6' }}>
                   {isOpen ? 'Fermer' : 'Mettre à jour'}
                 </button>
               </div>
@@ -1431,7 +1431,7 @@ function FlotteView() {
                       <label style={{ ...lbl, fontSize: 11 }}>Kilométrage actuel</label>
                       <input type="number" value={kmEdit[v.id] || ''} onChange={e => setKmEdit(p => ({ ...p, [v.id]: e.target.value }))} placeholder={String(v.kilometrage)} style={{ ...inp, fontSize: 13, padding: '7px 10px' }} />
                     </div>
-                    <button onClick={() => updateKm(v.id)} style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, flexShrink: 0, marginBottom: 1 }}>Enregistrer</button>
+                    <button onClick={() => updateKm(v.id)} style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, flexShrink: 0, marginBottom: 1 }}>Enregistrer</button>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>

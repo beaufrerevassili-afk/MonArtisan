@@ -112,7 +112,7 @@ export default function SignatureDevis() {
 
         {/* Top bar */}
         <div className="no-print" style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#007AFF' }}>Bernard Martin BTP</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
           <div style={{ fontSize: 14, color: '#6E6E73', marginTop: 4 }}>Devis en ligne · Signature électronique sécurisée</div>
         </div>
 
@@ -140,7 +140,7 @@ export default function SignatureDevis() {
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 36 }}>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#007AFF', marginBottom: 4 }}>Bernard Martin BTP</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#5B5BD6', marginBottom: 4 }}>Bernard Martin BTP</div>
               <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.7 }}>
                 12 rue des Artisans, 69002 Lyon<br />
                 Tél : 04 78 00 00 00 — contact@bernardmartin-btp.fr<br />
@@ -149,7 +149,7 @@ export default function SignatureDevis() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 26, fontWeight: 800, color: '#1C1C1E' }}>DEVIS</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#007AFF', marginTop: 4 }}>{d.numero}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#5B5BD6', marginTop: 4 }}>{d.numero}</div>
               <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 8 }}>Émis le : {formatDate(d.creeLe)}</div>
               <div style={{ fontSize: 12, color: '#6E6E73' }}>
                 Valable jusqu'au : {formatDate(new Date(new Date(d.creeLe).getTime() + (d.validiteDays || 30) * 86400000).toISOString())}
@@ -209,7 +209,7 @@ export default function SignatureDevis() {
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', fontSize: 13, color: '#6E6E73' }}>
                 <span>TVA</span><span>{formatCurrency(totalTVA)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#007AFF', color: '#fff', fontSize: 16, fontWeight: 700 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#5B5BD6', color: '#fff', fontSize: 16, fontWeight: 700 }}>
                 <span>Total TTC</span><span>{formatCurrency(totalTTC)}</span>
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function SignatureDevis() {
                 type="checkbox"
                 checked={accepted}
                 onChange={e => setAccepted(e.target.checked)}
-                style={{ marginTop: 2, width: 18, height: 18, accentColor: '#007AFF', cursor: 'pointer', flexShrink: 0 }}
+                style={{ marginTop: 2, width: 18, height: 18, accentColor: '#5B5BD6', cursor: 'pointer', flexShrink: 0 }}
               />
               <span style={{ fontSize: 14, color: '#3C3C43', lineHeight: 1.5 }}>
                 J'ai lu et j'accepte les termes et conditions générales figurant dans ce devis. Je reconnais que cette

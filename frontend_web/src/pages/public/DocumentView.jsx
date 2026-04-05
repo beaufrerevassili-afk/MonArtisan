@@ -58,7 +58,7 @@ function DevisView({ id }) {
       {/* Company + Doc header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#007AFF' }}>Bernard Martin BTP</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
           <div style={{ fontSize: 13, color: '#6E6E73', lineHeight: 1.8, marginTop: 4 }}>
             12 rue des Artisans, 69002 Lyon<br />
             Tél : 04 78 00 00 00 · contact@bernardmartin-btp.fr<br />
@@ -67,7 +67,7 @@ function DevisView({ id }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 30, fontWeight: 800, color: '#1C1C1E', letterSpacing: -1 }}>DEVIS</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#007AFF', marginTop: 4 }}>{devis.numero}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#5B5BD6', marginTop: 4 }}>{devis.numero}</div>
           <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 8 }}>Émis le : {formatDate(devis.creeLe)}</div>
           <div style={{ fontSize: 13, color: '#6E6E73' }}>
             Valable jusqu'au : {formatDate(new Date(new Date(devis.creeLe).getTime() + (devis.validiteDays || 30) * 86400000).toISOString())}
@@ -120,7 +120,7 @@ function DevisView({ id }) {
         <div style={{ minWidth: 270, borderRadius: 10, overflow: 'hidden', border: '1px solid #E5E5EA' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', fontSize: 14 }}><span>Total HT</span><span>{formatCur(totalHT)}</span></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', fontSize: 14, color: '#6E6E73' }}><span>TVA</span><span>{formatCur(totalTVA)}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '13px 16px', background: '#007AFF', color: '#fff', fontSize: 17, fontWeight: 700 }}><span>Total TTC</span><span>{formatCur(totalHT + totalTVA)}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '13px 16px', background: '#5B5BD6', color: '#fff', fontSize: 17, fontWeight: 700 }}><span>Total TTC</span><span>{formatCur(totalHT + totalTVA)}</span></div>
         </div>
       </div>
 
@@ -164,7 +164,7 @@ function BulletinView({ id }) {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 28, paddingBottom: 20, borderBottom: '2px solid #1C1C1E' }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#007AFF' }}>Bernard Martin BTP</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
           <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.8, marginTop: 4 }}>
             12 rue des Artisans, 69002 Lyon<br />
             SIRET : 123 456 789 00012 · NAF : 4329A<br />
@@ -173,7 +173,7 @@ function BulletinView({ id }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#1C1C1E' }}>BULLETIN DE PAIE</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#007AFF', marginTop: 4 }}>Période : {periode}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#5B5BD6', marginTop: 4 }}>Période : {periode}</div>
           <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 4 }}>Réf. : {bulletin.id}</div>
         </div>
       </div>
@@ -226,7 +226,7 @@ function BulletinView({ id }) {
       </table>
 
       {/* Net banner */}
-      <div style={{ background: '#007AFF', color: '#fff', borderRadius: 12, padding: '16px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ background: '#5B5BD6', color: '#fff', borderRadius: 12, padding: '16px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 13, opacity: 0.85 }}>Net à payer avant impôt sur le revenu</div>
           <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>Net imposable : {formatCur(brut * 0.98)}</div>
@@ -253,7 +253,7 @@ function ContratView({ id }) {
     <DocWrapper title={`Contrat de travail ${type} — ${employe.prenom} ${employe.nom}`} badge={type} badgeColors={{ CDI: '#1A7F43', CDD: '#1565C0' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32, paddingBottom: 24, borderBottom: '2px solid #1C1C1E' }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: '#007AFF', marginBottom: 4 }}>Bernard Martin BTP</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: '#5B5BD6', marginBottom: 4 }}>Bernard Martin BTP</div>
         <div style={{ fontSize: 12, color: '#6E6E73' }}>12 rue des Artisans, 69002 Lyon · SIRET 123 456 789 00012</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: '#1C1C1E', marginTop: 16 }}>CONTRAT DE TRAVAIL À {type}</div>
         <div style={{ fontSize: 14, color: '#6E6E73', marginTop: 4 }}>{type === 'CDD' ? `Durée déterminée — ${periode}` : 'Durée indéterminée'}</div>
@@ -333,7 +333,7 @@ function QSEDocView({ id }) {
   return (
     <DocWrapper title={doc.titre} badge="QSE" badgeColors={{ QSE: '#1565C0' }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: '#007AFF' }}>Bernard Martin BTP</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
         <div style={{ fontSize: 12, color: '#6E6E73' }}>SIRET 123 456 789 00012 · 12 rue des Artisans, 69002 Lyon</div>
         <div style={{ fontSize: 18, fontWeight: 700, marginTop: 16, color: '#1C1C1E' }}>{doc.titre}</div>
         <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 4 }}>Réf. : {doc.ref} · Mis à jour le {new Date().toLocaleDateString('fr-FR')}</div>
@@ -383,13 +383,13 @@ function DocWrapper({ title, children, badge, badgeColors = {} }) {
           <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Bernard Martin BTP</div>
           <div style={{ width: 1, height: 16, background: '#3C3C43' }} />
           <div style={{ fontSize: 13, color: '#8E8E93', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
-          {badge && <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: (badgeColors[badge] || '#007AFF') + '30', color: badgeColors[badge] || '#007AFF' }}>{badge}</span>}
+          {badge && <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: (badgeColors[badge] || '#5B5BD6') + '30', color: badgeColors[badge] || '#5B5BD6' }}>{badge}</span>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={copyLink} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: copied ? '#34C759' : '#3C3C43', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'background 0.2s' }}>
             {copied ? '✓ Lien copié !' : '🔗 Copier le lien'}
           </button>
-          <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#007AFF', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+          <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#5B5BD6', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
             ⬇ Télécharger PDF
           </button>
         </div>
@@ -408,7 +408,7 @@ function DocWrapper({ title, children, badge, badgeColors = {} }) {
 function ClauseSection({ title, children }) {
   return (
     <div style={{ marginBottom: 24 }}>
-      <div style={{ fontSize: 12, fontWeight: 800, color: '#1C1C1E', textTransform: 'uppercase', letterSpacing: 1, borderLeft: '3px solid #007AFF', paddingLeft: 10, marginBottom: 10 }}>{title}</div>
+      <div style={{ fontSize: 12, fontWeight: 800, color: '#1C1C1E', textTransform: 'uppercase', letterSpacing: 1, borderLeft: '3px solid #5B5BD6', paddingLeft: 10, marginBottom: 10 }}>{title}</div>
       <div style={{ fontSize: 14, color: '#3C3C43', lineHeight: 1.7 }}>{children}</div>
     </div>
   );

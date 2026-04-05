@@ -22,7 +22,7 @@ const ARTISANS_DEMO = [
   { id: 8, nom: 'Lucie Petit',     specialite: 'Isolation',   ville: 'Boulogne',   note: 4.9, nbAvis: 19, disponible: true,  verifie: true,  tarif: '50–75 €/h', description: 'Spécialiste isolation thermique et phonique. Aide aux aides MaPrimeRénov\' et CEE.' },
 ];
 
-const COULEURS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#5AC8FA', '#FF2D55', '#30B0C7'];
+const COULEURS = ['#5B5BD6', '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#5AC8FA', '#FF2D55', '#30B0C7'];
 
 function Stars({ note, size = 12 }) {
   return (
@@ -107,6 +107,7 @@ function ArtisanCard({ artisan, onDevis }) {
             <button
               className="btn-primary"
               style={{ fontSize: '0.8125rem', padding: '7px 16px' }}
+              aria-label={`Demander un devis à ${artisan.nom}`}
               onClick={() => onDevis(artisan)}
             >
               Demander un devis

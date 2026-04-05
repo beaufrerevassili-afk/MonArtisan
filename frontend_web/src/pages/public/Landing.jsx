@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconMapPin, IconStar, IconShield, IconCheck, IconChevronDown, IconX, IconUser } from '../../components/ui/Icons';
+import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -282,6 +283,8 @@ export default function Landing() {
   const [offresModal, setOffresModal] = useState(false);
   const [annonceModal, setAnnonceModal] = useState(null);
   const [candidatureForm, setCandidatureForm] = useState({ nom:'', prenom:'', email:'', telephone:'', lettre:'', cvTexte:'' });
+  const sTitle = useScaleIn();
+  const rSub = useFadeUp(0.1);
   const [candidatureStatus, setCandidatureStatus] = useState(''); // 'sending' | 'ok' | 'error' | ''
   const [dispoOpen, setDispoOpen]     = useState(false);
   const [noteOpen, setNoteOpen]       = useState(false);
@@ -403,10 +406,10 @@ export default function Landing() {
 
           {/* Titre + sous-titre */}
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
+            <h1 ref={sTitle} style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
               Freample Artisans
             </h1>
-            <p style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Trouvez un artisan de confiance en quelques clics</p>
+            <p ref={rSub} style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Trouvez un artisan de confiance en quelques clics</p>
           </div>
 
           {/* ── Grille métiers cliquables ── */}

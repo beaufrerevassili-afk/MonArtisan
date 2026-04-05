@@ -37,6 +37,9 @@ export default function RechercheArtisans({ navigation }) {
             key={c}
             style={[styles.catChip, categorie === c && styles.catChipActive]}
             onPress={() => setCategorie(c)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: categorie === c }}
+            accessibilityLabel={c}
           >
             <Text style={[styles.catChipText, categorie === c && styles.catChipTextActive]}>{c}</Text>
           </TouchableOpacity>
@@ -47,6 +50,9 @@ export default function RechercheArtisans({ navigation }) {
       <TouchableOpacity
         style={styles.dispoToggle}
         onPress={() => setSeulementDispo(!seulement_dispo)}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: seulement_dispo }}
+        accessibilityLabel="Afficher uniquement les artisans disponibles"
       >
         <View style={[styles.toggle, seulement_dispo && styles.toggleActive]}>
           <View style={[styles.toggleThumb, seulement_dispo && styles.toggleThumbActive]} />
@@ -55,7 +61,7 @@ export default function RechercheArtisans({ navigation }) {
       </TouchableOpacity>
 
       {loading ? (
-        <View style={styles.loader}><ActivityIndicator color="#007AFF" /></View>
+        <View style={styles.loader}><ActivityIndicator color="#5B5BD6" /></View>
       ) : (
         <ScrollView style={styles.list}>
           {artisans.length === 0 ? (
@@ -100,6 +106,9 @@ export default function RechercheArtisans({ navigation }) {
                 style={[styles.contactBtn, !a.disponible && styles.contactBtnDisabled]}
                 disabled={!a.disponible}
                 onPress={() => navigation.navigate('NouvelleMission')}
+                accessibilityRole="button"
+                accessibilityLabel={a.disponible ? `Contacter ${a.nom}` : `${a.nom} est indisponible`}
+                accessibilityState={{ disabled: !a.disponible }}
               >
                 <Text style={[styles.contactBtnText, !a.disponible && styles.contactBtnTextDisabled]}>
                   {a.disponible ? 'Contacter' : 'Indisponible'}
@@ -118,12 +127,12 @@ const styles = StyleSheet.create({
   container:            { flex: 1, backgroundColor: '#F5F5F5' },
   catBar:               { backgroundColor: '#FFFFFF', paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', maxHeight: 60 },
   catChip:              { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8, backgroundColor: '#F9FAFB' },
-  catChipActive:        { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  catChipActive:        { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
   catChipText:          { fontSize: 13, color: '#374151' },
   catChipTextActive:    { color: '#FFFFFF', fontWeight: '600' },
   dispoToggle:          { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   toggle:               { width: 44, height: 24, borderRadius: 12, backgroundColor: '#E5E7EB', padding: 2, marginRight: 10 },
-  toggleActive:         { backgroundColor: '#007AFF' },
+  toggleActive:         { backgroundColor: '#5B5BD6' },
   toggleThumb:          { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF' },
   toggleThumbActive:    { marginLeft: 20 },
   dispoText:            { fontSize: 14, color: '#374151' },
@@ -150,7 +159,7 @@ const styles = StyleSheet.create({
   certifs:              { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   certifBadge:          { backgroundColor: '#F0FDF4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   certifText:           { fontSize: 11, color: '#16A34A', fontWeight: '500' },
-  contactBtn:           { backgroundColor: '#007AFF', borderRadius: 12, paddingVertical: 10, alignItems: 'center', marginTop: 12 },
+  contactBtn:           { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 10, alignItems: 'center', marginTop: 12 },
   contactBtnDisabled:   { backgroundColor: '#F3F4F6' },
   contactBtnText:       { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
   contactBtnTextDisabled: { color: '#9CA3AF' },

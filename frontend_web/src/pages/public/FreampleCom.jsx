@@ -4,6 +4,7 @@ import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { getTarifs } from '../../data/tarifsCom';
 import api from '../../services/api';
+import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -16,7 +17,6 @@ const L = {
 const inp={width:'100%',padding:'14px 16px',borderRadius:4,border:`1px solid ${L.border}`,fontSize:15,fontFamily:L.font,outline:'none',boxSizing:'border-box',background:L.white};
 const lbl={fontSize:12,fontWeight:600,color:L.textSec,display:'block',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.08em'};
 
-function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(28px)';el.style.transition='opacity .9s cubic-bezier(0.25,0.46,0.45,0.94), transform .9s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.12});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
 
 export default function FreampleCom(){
   const navigate=useNavigate();
@@ -66,7 +66,8 @@ export default function FreampleCom(){
     {label:'Demander un devis',action:()=>{setMenuOpen(false);setTimeout(()=>setStep(1),400);}},
     {label:'Recrutement',action:()=>{setMenuOpen(false);navigate('/recrutement');}},
   ];
-  const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal(),r5=useReveal(),r6=useReveal();
+  const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15),s4=useScaleIn(0.15);
+  const r1=useFadeUp(),r2=useFadeUp(0.1),r3=useFadeUp(0.1),r4=useFadeUp(),r5=useFadeUp(),r6=useFadeUp();
 
   // Gold separator component
   const Sep=({dark})=><div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'0',background:dark?L.noir:L.white}}>
@@ -136,11 +137,13 @@ export default function FreampleCom(){
          ═══════════════════════════════════════════════ */}
       <section id="expertises" ref={r1} style={{background:L.white,padding:'clamp(72px,10vh,110px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:900,margin:'0 auto',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:16}}>Nos expertises</div>
-          <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,4vw,48px)',fontWeight:300,fontStyle:'italic',letterSpacing:'-0.02em',margin:'0 0 48px',lineHeight:1.12}}>
-            Tout ce dont vos <span style={{fontWeight:700,fontStyle:'normal'}}>réseaux</span> ont besoin
-          </h2>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:0,border:`1px solid ${L.border}`}}>
+          <div ref={s1}>
+            <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:16}}>Nos expertises</div>
+            <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,4vw,48px)',fontWeight:300,fontStyle:'italic',letterSpacing:'-0.02em',margin:'0 0 48px',lineHeight:1.12}}>
+              Tout ce dont vos <span style={{fontWeight:700,fontStyle:'normal'}}>réseaux</span> ont besoin
+            </h2>
+          </div>
+          <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:0,border:`1px solid ${L.border}`}}>
             {[
               {icon:'🎬',title:'Montage vidéo',sub:'TikTok, Reels, YouTube'},
               {icon:'🎨',title:'Direction artistique',sub:'Identité visuelle, branding'},
@@ -156,7 +159,7 @@ export default function FreampleCom(){
                 <div style={{fontSize:12.5,color:L.textSec}}>{s.sub}</div>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
@@ -184,7 +187,7 @@ export default function FreampleCom(){
          ═══════════════════════════════════════════════ */}
       <section ref={r3} id="portfolio" style={{background:L.noir,padding:'clamp(80px,13vh,120px) 32px',textAlign:'center',position:'relative',overflow:'hidden',scrollMarginTop:20}}>
         <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:500,height:500,borderRadius:'50%',background:'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)',pointerEvents:'none'}}/>
-        <div style={{position:'relative',zIndex:1,maxWidth:600,margin:'0 auto'}}>
+        <div ref={s2} style={{position:'relative',zIndex:1,maxWidth:600,margin:'0 auto'}}>
           <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.3em',marginBottom:20}}>Portfolio</div>
           <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,5vw,54px)',fontWeight:300,fontStyle:'italic',color:'#fff',letterSpacing:'-0.02em',lineHeight:1.08,margin:'0 0 16px'}}>
             Découvrez nos <span style={{fontWeight:700,fontStyle:'normal'}}>réalisations</span>
@@ -237,14 +240,14 @@ export default function FreampleCom(){
          ═══════════════════════════════════════════════ */}
       <section ref={r5} id="tarifs" style={{background:L.cream,padding:'clamp(64px,10vh,100px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:960,margin:'0 auto'}}>
-          <div style={{textAlign:'center',marginBottom:56}}>
+          <div ref={s3} style={{textAlign:'center',marginBottom:56}}>
             <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:14}}>Tarification</div>
             <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,4.5vw,48px)',fontWeight:300,fontStyle:'italic',letterSpacing:'-0.02em',margin:'0 0 8px',lineHeight:1.12}}>
               Nos <span style={{fontWeight:700,fontStyle:'normal'}}>formules</span>
             </h2>
             <p style={{fontSize:14,color:L.textSec}}>Des formules adaptées à chaque ambition.</p>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:0}}>
+          <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:0}}>
             {packs.map((pack,i)=>{const isPop=pack.populaire;return(
               <div key={i} style={{background:isPop?L.noir:L.white,padding:'44px 32px',display:'flex',flexDirection:'column',border:isPop?'none':`1px solid ${L.border}`,borderRight:(!isPop&&i<packs.length-1)?'none':'',position:'relative'}}>
                 {isPop&&<div style={{position:'absolute',top:0,left:0,right:0,height:2,background:L.gold}}/>}
@@ -262,7 +265,7 @@ export default function FreampleCom(){
                 </button>
               </div>
             );})}
-          </div>
+          </StaggerChildren>
           <div style={{display:'flex',justifyContent:'center',gap:'clamp(16px,3vw,40px)',marginTop:36,flexWrap:'wrap'}}>
             {['Résiliable à tout moment','Livraison 72h','Satisfait ou refait','Paiement sécurisé'].map(r=>(
               <span key={r} style={{fontSize:12,color:L.textLight,fontWeight:500,letterSpacing:'0.02em'}}>{r}</span>
@@ -279,7 +282,7 @@ export default function FreampleCom(){
          ═══════════════════════════════════════════════ */}
       <section ref={r6} id="grille" style={{background:L.white,padding:'clamp(56px,8vh,88px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:640,margin:'0 auto'}}>
-          <div style={{textAlign:'center',marginBottom:40}}>
+          <div ref={s4} style={{textAlign:'center',marginBottom:40}}>
             <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:12}}>Détail</div>
             <h3 style={{fontFamily:L.serif,fontSize:30,fontWeight:300,fontStyle:'italic',margin:0,letterSpacing:'-0.02em'}}>Tous nos <span style={{fontWeight:700,fontStyle:'normal'}}>tarifs</span></h3>
           </div>

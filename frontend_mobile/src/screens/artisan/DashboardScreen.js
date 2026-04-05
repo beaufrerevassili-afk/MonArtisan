@@ -49,14 +49,14 @@ export default function ArtisanDashboard({ navigation }) {
     navigation.replace('Login');
   }
 
-  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#007AFF" /></View>;
+  if (loading) return <View style={styles.loader}><ActivityIndicator size="large" color="#5B5BD6" /></View>;
 
   const resume = data?.resume || {};
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#007AFF" />}
+      refreshControl={<RefreshControl refreshing={refresh} onRefresh={() => charger(true)} tintColor="#5B5BD6" />}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -64,7 +64,7 @@ export default function ArtisanDashboard({ navigation }) {
           <Text style={styles.greeting}>Bonjour, {user?.nom?.split(' ')[0]} 👷</Text>
           <Text style={styles.subGreeting}>Vos missions d'aujourd'hui</Text>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+        <TouchableOpacity onPress={logout} style={styles.logoutBtn} accessibilityRole="button" accessibilityLabel="Se déconnecter">
           <Text style={styles.logoutText}>Sortir</Text>
         </TouchableOpacity>
       </View>
@@ -100,6 +100,8 @@ export default function ArtisanDashboard({ navigation }) {
               <TouchableOpacity
                 style={styles.arriverBtn}
                 onPress={() => pointer(m.id, 'arriver')}
+                accessibilityRole="button"
+                accessibilityLabel="Arriver sur le chantier"
               >
                 <Text style={styles.arriverBtnText}>📍 Arriver sur chantier</Text>
               </TouchableOpacity>
@@ -108,6 +110,8 @@ export default function ArtisanDashboard({ navigation }) {
               <TouchableOpacity
                 style={styles.quitterBtn}
                 onPress={() => pointer(m.id, 'quitter')}
+                accessibilityRole="button"
+                accessibilityLabel="Quitter le chantier"
               >
                 <Text style={styles.quitterBtnText}>🏁 Quitter le chantier</Text>
               </TouchableOpacity>
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
   missionTitre: { fontSize: 15, fontWeight: '600', color: '#1A1A2E', flex: 1, marginRight: 8 },
   missionDesc:  { fontSize: 12, color: '#6B7280', lineHeight: 18, marginBottom: 8 },
   missionDate:  { fontSize: 12, color: '#6B7280', marginBottom: 4 },
-  missionBudget:{ fontSize: 16, fontWeight: '700', color: '#007AFF', marginBottom: 12 },
+  missionBudget:{ fontSize: 16, fontWeight: '700', color: '#5B5BD6', marginBottom: 12 },
   actionsRow:   { gap: 8 },
   arriverBtn:   { backgroundColor: '#34C759', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   arriverBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },

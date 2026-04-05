@@ -143,11 +143,11 @@ const styles = StyleSheet.create({
   textarea:       { height: 100, textAlignVertical: 'top' },
   chipsRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip:           { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: '#F9FAFB' },
-  chipActive:     { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  chipActive:     { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
   chipText:       { fontSize: 13, color: '#374151' },
   chipTextActive: { color: '#FFFFFF', fontWeight: '600' },
   hint:           { fontSize: 11, color: '#9CA3AF', marginTop: 6 },
-  submitBtn:      { backgroundColor: '#007AFF', margin: 16, borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  submitBtn:      { backgroundColor: '#5B5BD6', margin: 16, borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
   submitBtnDisabled: { opacity: 0.6 },
   submitBtnText:  { color: '#FFFFFF', fontWeight: '700', fontSize: 16 },
 });

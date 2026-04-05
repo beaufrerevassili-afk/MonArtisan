@@ -30,7 +30,7 @@ function statutBadge(s) {
 function progressColor(pct) {
   if (pct >= 80) return '#34C759';
   if (pct < 30) return '#FF9500';
-  return '#007AFF';
+  return '#5B5BD6';
 }
 
 const TABS = ['Vue d\'ensemble', 'Liste', 'Gantt', 'Dépenses', 'Ajouter'];
@@ -69,8 +69,8 @@ export default function Chantiers() {
         {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
           {[
-            { label: 'Total chantiers', value: chantiers.length, color: '#007AFF', Icon: IconBuilding },
-            { label: 'En cours', value: stats.enCours || 0, color: '#007AFF', Icon: IconTrendUp },
+            { label: 'Total chantiers', value: chantiers.length, color: '#5B5BD6', Icon: IconBuilding },
+            { label: 'En cours', value: stats.enCours || 0, color: '#5B5BD6', Icon: IconTrendUp },
             { label: 'Planifiés', value: stats.planifies || 0, color: '#FF9500', Icon: IconCalendar },
             { label: 'Terminés', value: stats.termines || 0, color: '#34C759', Icon: IconCheck },
             { label: 'Alertes budget', value: alertesBudget.length, color: '#FF3B30', Icon: IconAlert },
@@ -179,7 +179,7 @@ export default function Chantiers() {
                     </div>
                   </td>
                   <td style={{ padding: '12px 14px' }}>
-                    <button onClick={() => setEditModal(c)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#007AFF' }}>Modifier</button>
+                    <button onClick={() => setEditModal(c)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#5B5BD6' }}>Modifier</button>
                   </td>
                 </tr>
               );
@@ -348,7 +348,7 @@ export default function Chantiers() {
                     </tbody>
                   </table>
 
-                  <button type="button" onClick={addLigne} style={{ fontSize: 13, color: '#007AFF', background: 'none', border: '1px dashed #007AFF', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontWeight: 600, marginBottom: 16 }}>
+                  <button type="button" onClick={addLigne} style={{ fontSize: 13, color: '#5B5BD6', background: 'none', border: '1px dashed #5B5BD6', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontWeight: 600, marginBottom: 16 }}>
                     + Ajouter une ligne
                   </button>
 
@@ -365,7 +365,7 @@ export default function Chantiers() {
                     ))}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800, borderTop: '1px solid #E5E5EA', paddingTop: 8, marginTop: 4 }}>
                       <span>Total TTC</span>
-                      <span style={{ color: '#007AFF' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
+                      <span style={{ color: '#5B5BD6' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
                     </div>
                   </div>
 
@@ -405,7 +405,7 @@ export default function Chantiers() {
                   <div style={{ display: 'flex', gap: 6 }}>
                     {['', ...metiers].map(m => (
                       <button key={m} type="button" onClick={() => setFiltreMetier(m)}
-                        style={{ padding: '3px 10px', border: `1.5px solid ${filtreMetier === m ? '#007AFF' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: filtreMetier === m ? '#EBF5FF' : '#fff', color: filtreMetier === m ? '#007AFF' : '#6E6E73', cursor: 'pointer' }}>
+                        style={{ padding: '3px 10px', border: `1.5px solid ${filtreMetier === m ? '#5B5BD6' : '#E5E5EA'}`, borderRadius: 20, fontSize: 11, fontWeight: 600, background: filtreMetier === m ? '#EBF5FF' : '#fff', color: filtreMetier === m ? '#5B5BD6' : '#6E6E73', cursor: 'pointer' }}>
                         {m || 'Tous'}
                       </button>
                     ))}
@@ -417,14 +417,14 @@ export default function Chantiers() {
                     const isMatch = !filtreMetier || emp.metier === filtreMetier;
                     return (
                       <div key={emp.id} onClick={() => toggleEmploye(emp.id)}
-                        style={{ border: `2px solid ${selected ? '#007AFF' : isMatch && filtreMetier ? '#34C75940' : '#E5E5EA'}`, borderRadius: 12, padding: '10px 12px', cursor: 'pointer', background: selected ? '#EBF5FF' : isMatch && filtreMetier ? '#F0FDF4' : '#fff', transition: 'all 0.15s', opacity: emp.disponible ? 1 : 0.55 }}>
+                        style={{ border: `2px solid ${selected ? '#5B5BD6' : isMatch && filtreMetier ? '#34C75940' : '#E5E5EA'}`, borderRadius: 12, padding: '10px 12px', cursor: 'pointer', background: selected ? '#EBF5FF' : isMatch && filtreMetier ? '#F0FDF4' : '#fff', transition: 'all 0.15s', opacity: emp.disponible ? 1 : 0.55 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>{emp.prenom} {emp.nom}</div>
-                            <div style={{ fontSize: 11, color: '#007AFF', fontWeight: 600, marginTop: 1 }}>{emp.metier}</div>
+                            <div style={{ fontSize: 11, color: '#5B5BD6', fontWeight: 600, marginTop: 1 }}>{emp.metier}</div>
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                            {selected && <span style={{ fontSize: 10, background: '#007AFF', color: '#fff', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>Assigné</span>}
+                            {selected && <span style={{ fontSize: 10, background: '#5B5BD6', color: '#fff', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>Assigné</span>}
                             {!emp.disponible && <span style={{ fontSize: 10, background: '#FF9500', color: '#fff', padding: '1px 7px', borderRadius: 20 }}>Indisponible</span>}
                           </div>
                         </div>
@@ -452,7 +452,7 @@ export default function Chantiers() {
               </button>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button type="button" onClick={() => setEditModal(null)} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>Fermer</button>
-                <button type="submit" disabled={saving} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Sauvegarder'}</button>
+                <button type="submit" disabled={saving} style={{ padding: '9px 22px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Sauvegarder'}</button>
               </div>
             </div>
           </form>
@@ -497,7 +497,7 @@ export default function Chantiers() {
     const parCategorie = depenses.reduce((acc, d) => { acc[d.categorie] = (acc[d.categorie] || 0) + Number(d.montant); return acc; }, {});
 
     const CATS = ['matériaux', 'main-d\'oeuvre', 'équipement', 'sous-traitance', 'carburant', 'divers'];
-    const CAT_COLORS = { 'matériaux': '#007AFF', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#8E8E93' };
+    const CAT_COLORS = { 'matériaux': '#5B5BD6', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#8E8E93' };
 
     useEffect(() => {
       if (!chantierId) return;
@@ -535,7 +535,7 @@ export default function Chantiers() {
           <select value={chantierId} onChange={e => setChantierId(e.target.value)} style={{ flex: 1, maxWidth: 320, padding: '8px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, outline: 'none' }}>
             {chantiers.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
           </select>
-          <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>
+          <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>
             <IconPlus size={13} /> Ajouter une dépense
           </button>
         </div>
@@ -555,14 +555,14 @@ export default function Chantiers() {
                     <div style={{ fontSize: 12, opacity: 0.7 }}>Marge brute</div>
                   </div>
                 ) : (
-                  <button onClick={() => setShowCaEdit(true)} style={{ background: '#007AFF', border: 'none', color: '#fff', borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>+ Saisir le CA</button>
+                  <button onClick={() => setShowCaEdit(true)} style={{ background: '#5B5BD6', border: 'none', color: '#fff', borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>+ Saisir le CA</button>
                 )}
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
               {[
                 { label: 'CA (devis/facture)', val: caVal, color: '#34C759', click: () => setShowCaEdit(true) },
-                { label: 'Budget prévu', val: chantier.budgetPrevu, color: '#007AFF' },
+                { label: 'Budget prévu', val: chantier.budgetPrevu, color: '#5B5BD6' },
                 { label: 'Dépenses réelles', val: totalDepenses, color: totalDepenses > (chantier.budgetPrevu || 0) ? '#FF3B30' : '#FF9500' },
                 { label: 'Reste budget', val: (chantier.budgetPrevu || 0) - totalDepenses, color: (chantier.budgetPrevu || 0) - totalDepenses < 0 ? '#FF3B30' : '#34C759' },
                 { label: 'Marge brute', val: margeEuros, color: margeColor },
@@ -570,7 +570,7 @@ export default function Chantiers() {
                 <div key={k.label} onClick={k.click} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: '12px 14px', cursor: k.click ? 'pointer' : 'default' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 }}>{k.label}</div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: k.color }}>{formatCur(k.val)}</div>
-                  {k.click && !caVal && <div style={{ fontSize: 10, color: '#007AFF', marginTop: 3 }}>Cliquer pour saisir</div>}
+                  {k.click && !caVal && <div style={{ fontSize: 10, color: '#5B5BD6', marginTop: 3 }}>Cliquer pour saisir</div>}
                 </div>
               ))}
             </div>
@@ -598,7 +598,7 @@ export default function Chantiers() {
                 <label style={lbl}>Montant TTC (€)</label>
                 <input type="number" step="0.01" value={caDevis} onChange={e => setCaDevis(e.target.value)} placeholder="Ex : 25000" style={inp} autoFocus />
               </div>
-              <button onClick={() => setShowCaEdit(false)} style={{ padding: '9px 20px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, marginBottom: 0 }}>Valider</button>
+              <button onClick={() => setShowCaEdit(false)} style={{ padding: '9px 20px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, marginBottom: 0 }}>Valider</button>
               <button onClick={() => setShowCaEdit(false)} style={{ padding: '9px 16px', background: 'none', border: '1px solid #E5E5EA', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>Annuler</button>
             </div>
           </div>
@@ -639,7 +639,7 @@ export default function Chantiers() {
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
                 <button type="button" onClick={() => setShowForm(false)} style={{ padding: '8px 18px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>Annuler</button>
-                <button type="submit" disabled={saving} style={{ padding: '8px 20px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? 'Ajout…' : 'Ajouter'}</button>
+                <button type="submit" disabled={saving} style={{ padding: '8px 20px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>{saving ? 'Ajout…' : 'Ajouter'}</button>
               </div>
             </form>
           </div>
@@ -742,7 +742,7 @@ export default function Chantiers() {
               const left = dayOffset(c.dateDebut) * SCALE;
               const width = dayWidth(c.dateDebut, c.dateFin) * SCALE;
               const avPct = c.avancement || 0;
-              const color = c.statut === 'termine' ? '#34C759' : c.statut === 'en_cours' ? '#007AFF' : '#FF9500';
+              const color = c.statut === 'termine' ? '#34C759' : c.statut === 'en_cours' ? '#5B5BD6' : '#FF9500';
 
               return (
                 <div key={c.id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #F8F8F8', height: 40 }}>
@@ -840,7 +840,7 @@ export default function Chantiers() {
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button type="button" onClick={() => setTab('Vue d\'ensemble')} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Annuler</button>
-          <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#007AFF', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+          <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
             {saving ? 'Enregistrement…' : 'Créer le chantier'}
           </button>
         </div>
@@ -973,7 +973,7 @@ function ChantiersCard({ c, onUpdate, headers, onEdit }) {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }} onClick={e => e.stopPropagation()}>
             <input type="range" min="0" max="100" step="5" value={newPct} onChange={e => setNewPct(Number(e.target.value))} style={{ flex: 1 }} />
             <span style={{ fontSize: 13, fontWeight: 600, minWidth: 36 }}>{newPct}%</span>
-            <button onClick={updateAvancement} disabled={updating} style={{ padding: '5px 12px', background: '#007AFF', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+            <button onClick={updateAvancement} disabled={updating} style={{ padding: '5px 12px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
               {updating ? '…' : 'OK'}
             </button>
             <button onClick={() => setShowEdit(false)} style={{ padding: '5px 8px', background: 'none', border: '1px solid #E5E5EA', borderRadius: 6, cursor: 'pointer' }}><IconX size={12} /></button>

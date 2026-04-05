@@ -431,7 +431,7 @@ function MissionDetailPanel({ mission, onClose, onUpdate, onStatut, onCancel }) 
             ) : (
               m.employes.map(emp => (
                 <div key={emp.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg)', borderRadius: 12, padding: '12px 16px' }}>
-                  <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#007AFF20', color: '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#5B5BD620', color: '#5B5BD6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
                     {emp.nom.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </div>
                   <div style={{ flex: 1 }}>
@@ -455,7 +455,7 @@ function MissionDetailPanel({ mission, onClose, onUpdate, onStatut, onCancel }) 
                 {employes.filter(e => !m.employes.find(me => me.id === e.id)).map(emp => (
                   <button key={emp.id} onClick={() => addEmploye(emp)} style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: 'none', border: 'none', borderBottom: '1px solid var(--border-light)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#007AFF20', color: '#007AFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#5B5BD620', color: '#5B5BD6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>
                       {emp.nom.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                     <div>

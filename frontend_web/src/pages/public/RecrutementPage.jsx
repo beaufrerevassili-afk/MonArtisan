@@ -4,6 +4,7 @@ import axios from 'axios';
 import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const CONTRATS = ['Tous', 'CDI', 'CDD', 'Alternance', 'Stage', 'Freelance', 'Intérim'];
@@ -282,6 +283,8 @@ export default function RecrutementPage() {
   const [selected, setSelected] = useState(null);
   const [postulating, setPostulating] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const sTitle = useScaleIn();
+  const rSearch = useFadeUp(0.1);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -311,12 +314,12 @@ export default function RecrutementPage() {
           <div style={{ fontSize:11, fontWeight:600, color:'#C9A96E', textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>
             {filtered.length} offre{filtered.length>1?'s':''} disponible{filtered.length>1?'s':''}
           </div>
-          <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(28px,5vw,48px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', margin:'0 0 24px', lineHeight:1.08 }}>
+          <h1 ref={sTitle} style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(28px,5vw,48px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', margin:'0 0 24px', lineHeight:1.08 }}>
             Trouvez votre <span style={{ fontWeight:700, fontStyle:'normal' }}>prochain emploi</span>
           </h1>
 
           {/* Barre de recherche — HelloWork style */}
-          <div style={{ display:'flex', background:'#fff', overflow:'hidden', maxWidth:600, margin:'0 auto' }}>
+          <div ref={rSearch} style={{ display:'flex', background:'#fff', overflow:'hidden', maxWidth:600, margin:'0 auto' }}>
             <div style={{ flex:1, padding:'14px 20px', display:'flex', alignItems:'center', gap:10 }}>
               <span style={{ color:'#A0A0A0', fontSize:16 }}>🔍</span>
               <input value={quoi} onChange={e=>setQuoi(e.target.value)} placeholder="Plombier, électricien, peintre…"

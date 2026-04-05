@@ -63,7 +63,7 @@ export default function PatronMissions({ navigation }) {
       </ScrollView>
 
       {loading ? (
-        <View style={styles.loader}><ActivityIndicator color="#007AFF" /></View>
+        <View style={styles.loader}><ActivityIndicator color="#5B5BD6" /></View>
       ) : (
         <ScrollView style={styles.list}>
           {missions.length === 0 ? (
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   container:          { flex: 1, backgroundColor: '#F5F5F5' },
   filtreBar:          { backgroundColor: '#FFFFFF', paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', maxHeight: 60 },
   filtreChip:         { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, marginRight: 8, backgroundColor: '#F9FAFB' },
-  filtreChipActive:   { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  filtreChipActive:   { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
   filtreText:         { fontSize: 13, color: '#374151' },
   filtreTextActive:   { color: '#FFFFFF', fontWeight: '600' },
   loader:             { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 60 },
@@ -168,9 +168,9 @@ const styles = StyleSheet.create({
   cardTitre:          { fontSize: 15, fontWeight: '600', color: '#1A1A2E', flex: 1, marginRight: 8 },
   cardDesc:           { fontSize: 12, color: '#6B7280', marginBottom: 10, lineHeight: 18 },
   cardMeta:           { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardBudget:         { fontSize: 16, fontWeight: '700', color: '#007AFF' },
+  cardBudget:         { fontSize: 16, fontWeight: '700', color: '#5B5BD6' },
   actionsRow:         { gap: 8 },
-  assignerBtn:        { backgroundColor: '#007AFF', borderRadius: 12, paddingVertical: 10, alignItems: 'center' },
+  assignerBtn:        { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 10, alignItems: 'center' },
   assignerBtnText:    { color: '#FFFFFF', fontWeight: '600', fontSize: 13 },
   demarrerBtn:        { backgroundColor: '#34C759', borderRadius: 12, paddingVertical: 10, alignItems: 'center' },
   demarrerBtnText:    { color: '#FFFFFF', fontWeight: '600', fontSize: 13 },
@@ -184,6 +184,6 @@ const styles = StyleSheet.create({
   modalActions:       { flexDirection: 'row', gap: 12 },
   modalCancelBtn:     { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   modalCancelText:    { color: '#6B7280', fontWeight: '600' },
-  modalConfirmBtn:    { flex: 1, backgroundColor: '#007AFF', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  modalConfirmBtn:    { flex: 1, backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   modalConfirmText:   { color: '#FFFFFF', fontWeight: '600' },
 });

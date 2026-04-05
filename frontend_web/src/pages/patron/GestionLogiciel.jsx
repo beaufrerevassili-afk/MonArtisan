@@ -18,7 +18,7 @@ const MODULES = [
 
 /* ── Default role profiles ── */
 const ROLES_DEFAUT = {
-  patron: { label: 'Patron', color: '#007AFF', icon: '👑', description: 'Accès complet à toutes les fonctionnalités', modules: Object.fromEntries(MODULES.map(m => [m.id, true])) },
+  patron: { label: 'Patron', color: '#5B5BD6', icon: '👑', description: 'Accès complet à toutes les fonctionnalités', modules: Object.fromEntries(MODULES.map(m => [m.id, true])) },
   rh:     { label: 'Responsable RH', color: '#34C759', icon: '👥', description: 'Gestion des ressources humaines uniquement', modules: { dashboard: true, rh: true, paie: true, qse: true, missions: false, 'devis-pro': false, chantiers: false, finance: false, urssaf: false, stock: false, documents: true } },
   comptable: { label: 'Comptable', color: '#FF9500', icon: '📊', description: 'Accès aux données financières', modules: { dashboard: true, finance: true, urssaf: true, 'devis-pro': true, rh: false, paie: true, missions: false, chantiers: false, qse: false, stock: false, documents: true } },
   chef_chantier: { label: 'Chef de chantier', color: '#AF52DE', icon: '🏗️', description: 'Gestion opérationnelle des chantiers', modules: { dashboard: true, missions: true, chantiers: true, stock: true, qse: true, rh: false, paie: false, 'devis-pro': false, finance: false, urssaf: false, documents: true } },

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -14,12 +15,11 @@ const L = {
   serif:"'Cormorant Garamond','Georgia',serif",
 };
 
-function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity .8s cubic-bezier(0.25,0.46,0.45,0.94), transform .8s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
-
 export default function FreampleImmoERP() {
   const navigate = useNavigate();
   const [adresse, setAdresse] = useState('');
-  const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal();
+  const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15);
+  const r1=useFadeUp(),r2=useFadeUp(0.1),r3=useFadeUp(0.1),r4=useFadeUp();
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
@@ -76,9 +76,9 @@ export default function FreampleImmoERP() {
       </section>
 
       {/* ══ DOCUMENTS RÉGLEMENTAIRES ══ */}
-      <section ref={r1} style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px' }}>
+      <section style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px' }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:52 }}>
+          <div ref={s1} style={{ textAlign:'center', marginBottom:52 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Documents</div>
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,40px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 8px', lineHeight:1.12 }}>
               Rapports <span style={{ fontWeight:700, fontStyle:'normal' }}>réglementaires</span>
@@ -86,7 +86,7 @@ export default function FreampleImmoERP() {
             <p style={{ fontSize:15, color:L.textSec, maxWidth:500, margin:'0 auto' }}>Tous les documents obligatoires pour sécuriser vos transactions immobilières.</p>
           </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:16 }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:16 }}>
             {[
               { code:'ERP', title:'État des Risques et Pollutions', desc:'Document obligatoire pour toute vente ou location. Recense les risques naturels, miniers, technologiques, sismiques, radon et pollution des sols.', color:L.red, bg:L.redBg, required:true },
               { code:'ENSA', title:'État des Nuisances Sonores Aériennes', desc:'Exposition au bruit des aérodromes. Obligatoire si le bien est situé dans une zone de bruit d\'un plan d\'exposition.', color:L.orange, bg:L.orangeBg, required:true },
@@ -106,21 +106,21 @@ export default function FreampleImmoERP() {
                 <p style={{ fontSize:13, color:L.textSec, lineHeight:1.6, margin:0 }}>{doc.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
       {/* ══ ZONAGE & PPR ══ */}
-      <section ref={r2} style={{ background:L.cream, padding:'clamp(64px,9vh,100px) 32px' }}>
+      <section style={{ background:L.cream, padding:'clamp(64px,9vh,100px) 32px' }}>
         <div style={{ maxWidth:900, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:48 }}>
+          <div ref={s2} style={{ textAlign:'center', marginBottom:48 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Zonage</div>
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
               Données <span style={{ fontWeight:700, fontStyle:'normal' }}>réglementaires</span>
             </h2>
           </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:1, background:L.border }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:1, background:L.border }}>
             {[
               { icon:'🗺️', title:'Plans de Prévention des Risques (PPR)', desc:'PPR Naturels (inondation, mouvement de terrain, séisme), PPR Technologiques (SEVESO), PPR Miniers. Zonage et prescriptions.' },
               { icon:'📜', title:'Arrêtés préfectoraux', desc:'Arrêtés de catastrophe naturelle, arrêtés d\'information acquéreur-locataire (IAL), arrêtés de reconnaissance.' },
@@ -139,18 +139,20 @@ export default function FreampleImmoERP() {
                 <p style={{ fontSize:12.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
       {/* ══ COMMENT ÇA MARCHE ══ */}
       <section ref={r3} style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}` }}>
         <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Processus</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 40px' }}>
-            Simple et <span style={{ fontWeight:700, fontStyle:'normal' }}>instantané</span>
-          </h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
+          <div ref={s3} style={{ marginBottom:40 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Processus</div>
+            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0 }}>
+              Simple et <span style={{ fontWeight:700, fontStyle:'normal' }}>instantané</span>
+            </h2>
+          </div>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
             {[
               { step:'1', icon:'📍', title:'Entrez l\'adresse', desc:'Saisissez l\'adresse du bien ou la référence cadastrale.' },
               { step:'2', icon:'🔍', title:'Analyse automatique', desc:'Croisement avec les bases officielles : Géorisques, BRGM, IGN, préfectures.' },
@@ -164,7 +166,7 @@ export default function FreampleImmoERP() {
                 <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 

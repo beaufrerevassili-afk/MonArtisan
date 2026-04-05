@@ -5,6 +5,7 @@ import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import HideForClient from '../../components/public/HideForClient';
 import { IconSearch, IconMapPin, IconX } from '../../components/ui/Icons';
+import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 const TYPES = [
@@ -102,6 +103,8 @@ export default function CoiffurePage() {
   const [villeInput, setVilleInput] = useState('');
   const [ville, setVille] = useState('');
   const [villeSuggestions, setVilleSuggestions] = useState([]);
+  const sTitle = useScaleIn();
+  const rSub = useFadeUp(0.1);
 
   useEffect(() => {
     if (villeInput.length < 2) { setVilleSuggestions([]); return; }
@@ -130,10 +133,10 @@ export default function CoiffurePage() {
 
           {/* Titre */}
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
+            <h1 ref={sTitle} style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
               Coiffure & Beauté
             </h1>
-            <p style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Réservez votre prochain rendez-vous en quelques clics</p>
+            <p ref={rSub} style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Réservez votre prochain rendez-vous en quelques clics</p>
           </div>
 
           {/* Grille types cliquables */}

@@ -3,5 +3,16 @@
   "outputDirectory": "frontend_web/dist",
   "framework": "vite",
   "installCommand": "cd frontend_web && npm install",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "experimentalServices": {
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/"
+    }
+  }
 }

@@ -59,6 +59,8 @@ export default function LoginScreen({ navigation }) {
             placeholder="votre@email.com"
             keyboardType="email-address"
             autoCapitalize="none"
+            accessibilityLabel="Adresse email"
+            accessibilityHint="Entrez votre adresse email"
           />
 
           <Text style={[styles.label, { marginTop: 16 }]}>Mot de passe</Text>
@@ -68,12 +70,16 @@ export default function LoginScreen({ navigation }) {
             onChangeText={setMdp}
             placeholder="••••••••"
             secureTextEntry
+            accessibilityLabel="Mot de passe"
+            accessibilityHint="Entrez votre mot de passe"
           />
 
           <TouchableOpacity
             style={[styles.btn, loading && styles.btnDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Se connecter"
           >
             {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.btnText}>Se connecter</Text>}
           </TouchableOpacity>
@@ -88,6 +94,8 @@ export default function LoginScreen({ navigation }) {
                 key={c.email}
                 style={styles.demoBtn}
                 onPress={() => { setEmail(c.email); setMdp(c.mdp); }}
+                accessibilityRole="button"
+                accessibilityLabel={`Se connecter en tant que ${c.label}`}
               >
                 <Text style={styles.demoBtnLabel}>{c.label}</Text>
                 <Text style={styles.demoBtnEmail}>{c.email}</Text>
@@ -104,18 +112,18 @@ const styles = StyleSheet.create({
   container:       { flex: 1, backgroundColor: '#F5F5F5' },
   scroll:          { flexGrow: 1, justifyContent: 'center', padding: 20 },
   logoContainer:   { alignItems: 'center', marginBottom: 40 },
-  logo:            { fontSize: 36, fontWeight: '700', color: '#007AFF' },
+  logo:            { fontSize: 36, fontWeight: '700', color: '#5B5BD6' },
   subtitle:        { fontSize: 14, color: '#6B7280', marginTop: 6 },
   form:            { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   label:           { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
   input:           { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, backgroundColor: '#FFFFFF' },
-  btn:             { backgroundColor: '#007AFF', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 20 },
+  btn:             { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 20 },
   btnDisabled:     { opacity: 0.6 },
   btnText:         { color: '#FFFFFF', fontWeight: '600', fontSize: 15 },
   demoContainer:   { marginTop: 24, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  demoTitle:       { fontSize: 11, fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  demoTitle:       { fontSize: 12, fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
   demoGrid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   demoBtn:         { backgroundColor: '#F9FAFB', borderRadius: 10, padding: 10, width: '47%' },
   demoBtnLabel:    { fontSize: 12, fontWeight: '600', color: '#374151' },
-  demoBtnEmail:    { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
+  demoBtnEmail:    { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
 });

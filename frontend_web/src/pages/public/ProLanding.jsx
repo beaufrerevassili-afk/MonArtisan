@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -12,7 +13,6 @@ const L = {
   serif:"'Cormorant Garamond','Georgia',serif",
 };
 
-function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(28px)';el.style.transition='opacity .9s cubic-bezier(0.25,0.46,0.45,0.94), transform .9s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
 
 export default function ProLanding() {
   const navigate = useNavigate();
@@ -30,7 +30,8 @@ export default function ProLanding() {
     {label:'S\'inscrire',action:()=>{setMenuOpen(false);navigate('/register?role=patron&secteur=btp');}},
   ];
 
-  const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal(),r5=useReveal(),r6=useReveal();
+  const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15),s4=useScaleIn(0.15);
+  const r1=useFadeUp(),r2=useFadeUp(0.1),r3=useFadeUp(0.1),r4=useFadeUp(),r5=useFadeUp(),r6=useFadeUp();
 
   return (
     <div style={{ minHeight:'100vh', background:L.white, fontFamily:L.font, color:L.text }}>
@@ -91,10 +92,12 @@ export default function ProLanding() {
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.9) 100%)' }} />
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
         <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:24 }}>Espace professionnel</div>
-          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(34px,6.5vw,64px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 18px' }}>
-            Votre activité,<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>simplifiée</span>
-          </h1>
+          <div ref={s1}>
+            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:24 }}>Espace professionnel</div>
+            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(34px,6.5vw,64px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 18px' }}>
+              Votre activité,<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>simplifiée</span>
+            </h1>
+          </div>
           <p style={{ fontSize:'clamp(15px,1.8vw,17px)', color:'rgba(255,255,255,0.4)', lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300 }}>
             Agenda, devis, factures, clients, équipe — tout votre business dans une seule plateforme.
           </p>
@@ -127,13 +130,13 @@ export default function ProLanding() {
       {/* ══ FONCTIONNALITÉS ══ */}
       <section ref={r1} id="fonctionnalites" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:52 }}>
+          <div ref={s2} style={{ textAlign:'center', marginBottom:52 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Tout-en-un</div>
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
               Tout ce dont vous avez <span style={{ fontWeight:700, fontStyle:'normal' }}>besoin</span>
             </h2>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
             {[
               { icon:'📅', title:'Agenda intelligent', desc:'Gérez vos rendez-vous, planifiez vos interventions et recevez des rappels automatiques.' },
               { icon:'📝', title:'Devis & Factures', desc:'Créez des devis professionnels en 2 clics. Transformez-les en factures et suivez les paiements.' },
@@ -152,7 +155,7 @@ export default function ProLanding() {
                 <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{f.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
@@ -162,13 +165,13 @@ export default function ProLanding() {
       {/* ══ SECTEURS ══ */}
       <section ref={r2} id="secteurs" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
         <div style={{ maxWidth:900, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:48 }}>
+          <div ref={s3} style={{ textAlign:'center', marginBottom:48 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Multi-secteurs</div>
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
               Adapté à votre <span style={{ fontWeight:700, fontStyle:'normal' }}>métier</span>
             </h2>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
             {[
               { icon:'🏗️', title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers, devis et suivi client.' },
               { icon:'🎬', title:'Communication & Création', desc:'Gestion des projets vidéo, montage, suivi client et facturation.' },
@@ -181,14 +184,14 @@ export default function ProLanding() {
                 <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
       {/* ══ COMMISSIONS ══ */}
       <section ref={r4} id="tarifs-pro" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
         <div style={{ maxWidth:700, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:44 }}>
+          <div ref={s4} style={{ textAlign:'center', marginBottom:44 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Commissions</div>
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.12 }}>
               Pas d'abonnement, <span style={{ fontWeight:700, fontStyle:'normal' }}>pas de surprise</span>

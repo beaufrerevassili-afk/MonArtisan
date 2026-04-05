@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 const NIVEAUX = {
   obligatoire: { label: 'Obligatoire', color: '#FF3B30', bg: '#FFF1F0', border: '#FF3B30' },
   attention:   { label: 'Attention',   color: '#FF9500', bg: '#FFF3E0', border: '#FF9500' },
-  conseil:     { label: 'Conseil',     color: '#007AFF', bg: '#EBF5FF', border: '#007AFF' },
+  conseil:     { label: 'Conseil',     color: '#5B5BD6', bg: '#EBF5FF', border: '#5B5BD6' },
   info:        { label: 'Info',        color: '#34C759', bg: '#ECFDF5', border: '#34C759' },
 };
 
@@ -123,7 +123,7 @@ export default function RappelJuridique() {
       </div>
 
       {/* ── 1. Facturation ── */}
-      <Section icon="🧾" title="Facturation" subtitle="Mentions obligatoires sur les factures" color="#007AFF" defaultOpen>
+      <Section icon="🧾" title="Facturation" subtitle="Mentions obligatoires sur les factures" color="#5B5BD6" defaultOpen>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           <Item niveau="obligatoire">Numéro de facture unique et séquentiel, non réutilisable <Ref>Art. L441-3 Code de commerce</Ref></Item>
           <Item niveau="obligatoire">Date d'émission de la facture</Item>
@@ -245,7 +245,7 @@ export default function RappelJuridique() {
       </Section>
 
       {/* ── 6. URSSAF & cotisations ── */}
-      <Section icon="🏦" title="URSSAF & Cotisations sociales" subtitle="Taux, délais de déclaration et pénalités" color="#007AFF">
+      <Section icon="🏦" title="URSSAF & Cotisations sociales" subtitle="Taux, délais de déclaration et pénalités" color="#5B5BD6">
         <Table
           headers={['Cotisation', 'Part salariale', 'Part patronale', 'Base']}
           rows={[

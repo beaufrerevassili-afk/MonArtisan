@@ -33,7 +33,7 @@ export default function App() {
 
   if (loading) return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }}>
-      <ActivityIndicator size="large" color="#007AFF" />
+      <ActivityIndicator size="large" color="#5B5BD6" />
     </View>
   );
 
@@ -49,7 +49,7 @@ export default function App() {
         initialRouteName={getInitialRoute()}
         screenOptions={{
           headerStyle: { backgroundColor: '#FFFFFF', elevation: 0, shadowOpacity: 0 },
-          headerTintColor: '#007AFF',
+          headerTintColor: '#5B5BD6',
           headerTitleStyle: { fontWeight: '600', color: '#1A1A2E' },
           cardStyle: { backgroundColor: '#F5F5F5' },
         }}
