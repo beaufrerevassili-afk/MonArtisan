@@ -322,18 +322,27 @@ router.delete('/agenda/:id', authenticateToken, async (req, res) => {
 router.get('/tarifs', async (req, res) => {
   try {
     const result = await query('SELECT data FROM com_tarifs ORDER BY id DESC LIMIT 1');
-    res.json({ tarifs: result.rows[0]?.data || null });
+    const row = result.rows[0]?.data;
+    // Support both old format (array) and new format ({tarifs, packs})
+    if (Array.isArray(row)) {
+      res.json({ tarifs: row, packs: null });
+    } else if (row && typeof row === 'object') {
+      res.json({ tarifs: row.tarifs || null, packs: row.packs || null });
+    } else {
+      res.json({ tarifs: null, packs: null });
+    }
   } catch (err) { res.status(500).json({ erreur: err.message }); }
 });
 
 router.put('/tarifs', authenticateToken, async (req, res) => {
   try {
-    const { tarifs } = req.body;
+    const { tarifs, packs } = req.body;
+    const payload = JSON.stringify({ tarifs, packs });
     const existing = await query('SELECT id FROM com_tarifs LIMIT 1');
     if (existing.rows.length) {
-      await query('UPDATE com_tarifs SET data = $1, updated_at = NOW() WHERE id = $2', [JSON.stringify(tarifs), existing.rows[0].id]);
+      await query('UPDATE com_tarifs SET data = $1, updated_at = NOW() WHERE id = $2', [payload, existing.rows[0].id]);
     } else {
-      await query('INSERT INTO com_tarifs (data) VALUES ($1)', [JSON.stringify(tarifs)]);
+      await query('INSERT INTO com_tarifs (data) VALUES ($1)', [payload]);
     }
     res.json({ success: true });
   } catch (err) { res.status(500).json({ erreur: err.message }); }

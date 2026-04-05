@@ -102,6 +102,13 @@ export default function DashboardCom() {
   const [editingTarif, setEditingTarif] = useState(null); // {catIdx, itemIdx}
   const [editPrix, setEditPrix] = useState('');
   const [editNom, setEditNom] = useState('');
+  const PACKS_DEFAULT = [
+    { nom:'Starter', prix:149, desc:'4 TikToks par mois', populaire:false, features:['4 TikToks / mois','Sous-titres animés','Musique tendance','1 révision / vidéo','Livraison 72h'] },
+    { nom:'Growth',  prix:349, desc:'10 TikToks + 5 Reels', populaire:true, features:['10 TikToks / mois','5 Reels Instagram','Sous-titres + effets','2 révisions / vidéo','Livraison 72h','Stratégie contenu'] },
+    { nom:'Pro',     prix:699, desc:'20 TikToks + gestion RS', populaire:false, features:['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 72h','Appel stratégie mensuel'] },
+  ];
+  const [packs, setPacks] = useState(PACKS_DEFAULT);
+  const [editingPack, setEditingPack] = useState(null); // index
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
   const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
 
@@ -168,9 +175,10 @@ export default function DashboardCom() {
       if (r.data?.events) setAgendaEvents(r.data.events.map(e => ({ ...e, id:e.id, heureFin:e.heure_fin })));
     }).catch(() => {});
 
-    // Charger tarifs depuis l'API (override localStorage)
+    // Charger tarifs + packs depuis l'API
     api.get('/com/tarifs').then(r => {
       if (r.data?.tarifs) { setTarifs(r.data.tarifs); saveTarifs(r.data.tarifs); }
+      if (r.data?.packs) setPacks(r.data.packs);
     }).catch(() => {});
   }, []);
 
@@ -1088,7 +1096,7 @@ export default function DashboardCom() {
             <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Ajoutez, modifiez ou supprimez des lignes — visible en temps réel sur le site</div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={() => { const r = resetTarifs(); setTarifs(r); api.put('/com/tarifs', { tarifs: r }).catch(()=>{}); showToast('Tarifs réinitialisés'); }} style={GHOST}>↺ Réinitialiser</button>
+            <button onClick={() => { const r = resetTarifs(); setTarifs(r); api.put('/com/tarifs', { tarifs: r, packs }).catch(()=>{}); showToast('Tarifs réinitialisés'); }} style={GHOST}>↺ Réinitialiser</button>
           </div>
         </div>
         {tarifs.map((t, ci) => (
@@ -1100,7 +1108,7 @@ export default function DashboardCom() {
                 const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: [...cat.items, { id: newId, nom: 'Nouveau service', prix: 0 }] });
                 setTarifs(updated);
                 saveTarifs(updated);
-                api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
+                api.put('/com/tarifs', { tarifs: updated, packs }).catch(() => {});
                 setEditingTarif({ catIdx: ci, itemIdx: updated[ci].items.length - 1 });
                 setEditNom('Nouveau service');
                 setEditPrix('0');
@@ -1124,7 +1132,7 @@ export default function DashboardCom() {
                           const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: cat.items.map((it, j) => j !== ji ? it : { ...it, nom: editNom, prix: Number(editPrix) }) });
                           setTarifs(updated);
                           saveTarifs(updated);
-                          api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
+                          api.put('/com/tarifs', { tarifs: updated, packs }).catch(() => {});
                           setEditingTarif(null);
                           showToast('Prix mis à jour — visible sur le site');
                         }} style={{ ...BTN, padding:'7px 14px', fontSize:13 }}>✓</button>
@@ -1144,7 +1152,7 @@ export default function DashboardCom() {
                           const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: cat.items.filter((_, j) => j !== ji) });
                           setTarifs(updated);
                           saveTarifs(updated);
-                          api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
+                          api.put('/com/tarifs', { tarifs: updated, packs }).catch(() => {});
                           showToast('Ligne supprimée');
                         }}
                           style={{ background:'none', border:'1px solid #FECACA', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#DC2626', fontFamily:'inherit', transition:'all .15s' }}
@@ -1163,6 +1171,78 @@ export default function DashboardCom() {
             </div>
           </div>
         ))}
+        {/* ── Packs / Formules ── */}
+        <div style={{ marginTop:32 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+            <div>
+              <div style={{ fontSize:16, fontWeight:700 }}>Formules (packs mensuels)</div>
+              <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Visibles sur la page publique /com</div>
+            </div>
+          </div>
+          {packs.map((pack, pi) => {
+            const isEditing = editingPack === pi;
+            return (
+              <div key={pi} style={{ ...CARD, marginBottom:12, padding:'18px 20px' }}>
+                {isEditing ? (
+                  <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                    <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                      <div style={{ flex:'1 1 140px' }}>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Nom</label>
+                        <input value={pack.nom} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], nom: e.target.value }; setPacks(u); }}
+                          style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+                      </div>
+                      <div style={{ flex:'0 0 100px' }}>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Prix €/mois</label>
+                        <input type="number" value={pack.prix} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], prix: Number(e.target.value) }; setPacks(u); }}
+                          style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', textAlign:'right', boxSizing:'border-box' }} />
+                      </div>
+                      <div style={{ flex:'1 1 200px' }}>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Description courte</label>
+                        <input value={pack.desc} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], desc: e.target.value }; setPacks(u); }}
+                          style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Avantages (un par ligne)</label>
+                      <textarea value={pack.features.join('\n')} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], features: e.target.value.split('\n') }; setPacks(u); }}
+                        rows={4} style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:13, fontFamily:'inherit', outline:'none', resize:'vertical', boxSizing:'border-box' }} />
+                    </div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, cursor:'pointer' }}>
+                        <input type="checkbox" checked={pack.populaire} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], populaire: e.target.checked }; setPacks(u); }} />
+                        Badge "Populaire"
+                      </label>
+                    </div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button onClick={() => {
+                        api.put('/com/tarifs', { tarifs, packs }).catch(() => {});
+                        setEditingPack(null);
+                        showToast('Pack mis à jour — visible sur le site');
+                      }} style={{ ...BTN, padding:'8px 18px', fontSize:13 }}>Enregistrer</button>
+                      <button onClick={() => setEditingPack(null)} style={{ ...GHOST, padding:'8px 14px', fontSize:13 }}>Annuler</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        <span style={{ fontSize:15, fontWeight:700 }}>{pack.nom}</span>
+                        {pack.populaire && <span style={{ fontSize:10, fontWeight:700, background:V, color:'#fff', padding:'2px 8px', borderRadius:10 }}>Populaire</span>}
+                      </div>
+                      <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>{pack.desc} — {pack.features.length} avantages</div>
+                    </div>
+                    <span style={{ fontSize:20, fontWeight:800, color:V }}>{pack.prix}€<span style={{ fontSize:12, fontWeight:400, color:'#8B8B8B' }}>/mois</span></span>
+                    <button onClick={() => setEditingPack(pi)}
+                      style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#8B8B8B', fontFamily:'inherit' }}>
+                      ✎ Modifier
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         <div style={{ padding:'14px 18px', background:V_SOFT, borderRadius:12, marginTop:8, display:'flex', alignItems:'center', gap:10 }}>
           <span style={{ fontSize:18 }}>💡</span>
           <span style={{ fontSize:13, color:'#5B21B6' }}>Les modifications sont sauvegardées automatiquement et visibles immédiatement sur la page publique <strong>/com</strong></span>

@@ -21,9 +21,17 @@ export default function FreampleCom() {
   const [sending, setSending] = useState(false);
   const [suiviToken, setSuiviToken] = useState(null);
   const [tarifs, setTarifs] = useState(getTarifs());
+  const [packs, setPacks] = useState([
+    { nom:'Starter', prix:149, desc:'4 TikToks par mois', populaire:false, features:['4 TikToks / mois','Sous-titres animés','Musique tendance','1 révision / vidéo','Livraison 72h'] },
+    { nom:'Growth',  prix:349, desc:'10 TikToks + 5 Reels', populaire:true, features:['10 TikToks / mois','5 Reels Instagram','Sous-titres + effets','2 révisions / vidéo','Livraison 72h','Stratégie contenu'] },
+    { nom:'Pro',     prix:699, desc:'20 TikToks + gestion RS', populaire:false, features:['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 72h','Appel stratégie mensuel'] },
+  ]);
 
   useEffect(() => {
-    api.get('/com/tarifs').then(r => { if (r.data.tarifs) setTarifs(r.data.tarifs); }).catch(() => {});
+    api.get('/com/tarifs').then(r => {
+      if (r.data.tarifs) setTarifs(r.data.tarifs);
+      if (r.data.packs) setPacks(r.data.packs);
+    }).catch(() => {});
   }, []);
 
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
@@ -108,51 +116,25 @@ export default function FreampleCom() {
           <p style={{ fontSize:14, color:C.textSec, textAlign:'center', marginBottom:32 }}>Ou <button onClick={()=>setStep(1)} style={{ background:'none', border:'none', color:C.primary, fontWeight:700, cursor:'pointer', fontFamily:C.font, fontSize:14, textDecoration:'underline' }}>demandez un devis sur mesure</button></p>
 
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16 }}>
-          {/* Starter */}
-          <div style={{ borderRadius:16, border:`1px solid ${C.border}`, padding:'28px 22px', display:'flex', flexDirection:'column' }}>
-            <div style={{ fontSize:13, fontWeight:700, color:C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>Starter</div>
-            <div style={{ fontSize:32, fontWeight:800, marginBottom:4 }}>149€<span style={{ fontSize:14, fontWeight:400, color:C.textSec }}>/mois</span></div>
-            <div style={{ fontSize:14, color:C.textSec, marginBottom:16 }}>4 TikToks par mois</div>
-            {['4 TikToks / mois','Sous-titres animés','Musique tendance','1 révision / vidéo','Livraison 72h'].map(f=>(
-              <div key={f} style={{ fontSize:13, color:C.text, padding:'4px 0', display:'flex', gap:8 }}><span style={{ color:C.green }}>✓</span>{f}</div>
-            ))}
-            <div style={{ flex:1 }} />
-            <button onClick={()=>{ setBrief(p=>({...p,type:'Montage vidéo',quantite:'4'})); setStep(1); }}
-              style={{ marginTop:16, width:'100%', padding:'12px', background:C.bg, color:C.text, border:`2px solid ${C.border}`, borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
-              Choisir
-            </button>
-          </div>
-
-          {/* Growth — highlighted */}
-          <div style={{ borderRadius:16, background:C.dark, padding:'28px 22px', display:'flex', flexDirection:'column', position:'relative' }}>
-            <div style={{ position:'absolute', top:14, right:14, background:C.primary, color:'#fff', padding:'3px 10px', borderRadius:999, fontSize:11, fontWeight:700 }}>Populaire</div>
-            <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>Growth</div>
-            <div style={{ fontSize:32, fontWeight:800, color:'#fff', marginBottom:4 }}>349€<span style={{ fontSize:14, fontWeight:400, color:'rgba(255,255,255,0.5)' }}>/mois</span></div>
-            <div style={{ fontSize:14, color:'rgba(255,255,255,0.5)', marginBottom:16 }}>10 TikToks + 5 Reels</div>
-            {['10 TikToks / mois','5 Reels Instagram','Sous-titres + effets','2 révisions / vidéo','Livraison 72h','Stratégie contenu'].map(f=>(
-              <div key={f} style={{ fontSize:13, color:'rgba(255,255,255,0.85)', padding:'4px 0', display:'flex', gap:8 }}><span style={{ color:C.primary }}>✓</span>{f}</div>
-            ))}
-            <div style={{ flex:1 }} />
-            <button onClick={()=>{ setBrief(p=>({...p,type:'Montage vidéo',quantite:'10'})); setStep(1); }}
-              style={{ marginTop:16, width:'100%', padding:'12px', background:C.primary, color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
-              Choisir Growth →
-            </button>
-          </div>
-
-          {/* Pro */}
-          <div style={{ borderRadius:16, border:`1px solid ${C.border}`, padding:'28px 22px', display:'flex', flexDirection:'column' }}>
-            <div style={{ fontSize:13, fontWeight:700, color:C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>Pro</div>
-            <div style={{ fontSize:32, fontWeight:800, marginBottom:4 }}>699€<span style={{ fontSize:14, fontWeight:400, color:C.textSec }}>/mois</span></div>
-            <div style={{ fontSize:14, color:C.textSec, marginBottom:16 }}>20 TikToks + gestion RS</div>
-            {['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 72h','Appel stratégie mensuel'].map(f=>(
-              <div key={f} style={{ fontSize:13, color:C.text, padding:'4px 0', display:'flex', gap:8 }}><span style={{ color:C.green }}>✓</span>{f}</div>
-            ))}
-            <div style={{ flex:1 }} />
-            <button onClick={()=>{ setBrief(p=>({...p,type:'Montage vidéo',quantite:'20'})); setStep(1); }}
-              style={{ marginTop:16, width:'100%', padding:'12px', background:C.bg, color:C.text, border:`2px solid ${C.border}`, borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
-              Choisir
-            </button>
-          </div>
+          {packs.map((pack, i) => {
+            const isPop = pack.populaire;
+            return (
+              <div key={i} style={{ borderRadius:16, background: isPop ? C.dark : C.bg, border: isPop ? 'none' : `1px solid ${C.border}`, padding:'28px 22px', display:'flex', flexDirection:'column', position:'relative' }}>
+                {isPop && <div style={{ position:'absolute', top:14, right:14, background:C.primary, color:'#fff', padding:'3px 10px', borderRadius:999, fontSize:11, fontWeight:700 }}>Populaire</div>}
+                <div style={{ fontSize:13, fontWeight:700, color: isPop ? 'rgba(255,255,255,0.5)' : C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>{pack.nom}</div>
+                <div style={{ fontSize:32, fontWeight:800, color: isPop ? '#fff' : C.text, marginBottom:4 }}>{pack.prix}€<span style={{ fontSize:14, fontWeight:400, color: isPop ? 'rgba(255,255,255,0.5)' : C.textSec }}>/mois</span></div>
+                <div style={{ fontSize:14, color: isPop ? 'rgba(255,255,255,0.5)' : C.textSec, marginBottom:16 }}>{pack.desc}</div>
+                {pack.features.filter(f=>f.trim()).map(f=>(
+                  <div key={f} style={{ fontSize:13, color: isPop ? 'rgba(255,255,255,0.85)' : C.text, padding:'4px 0', display:'flex', gap:8 }}><span style={{ color: isPop ? C.primary : C.green }}>✓</span>{f}</div>
+                ))}
+                <div style={{ flex:1 }} />
+                <button onClick={()=>{ setBrief(p=>({...p, type:'Montage vidéo', quantite: String(i === 0 ? 4 : i === 1 ? 10 : 20) })); setStep(1); }}
+                  style={{ marginTop:16, width:'100%', padding:'12px', background: isPop ? C.primary : C.bg, color: isPop ? '#fff' : C.text, border: isPop ? 'none' : `2px solid ${C.border}`, borderRadius:10, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
+                  {isPop ? `Choisir ${pack.nom} →` : 'Choisir'}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         {/* Service unitaire */}
