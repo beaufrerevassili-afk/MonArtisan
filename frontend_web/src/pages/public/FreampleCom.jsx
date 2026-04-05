@@ -294,7 +294,7 @@ export default function FreampleCom() {
             <div style={{ fontSize:20, fontWeight:300, color:L.text, letterSpacing:'-0.02em', lineHeight:1.35, marginBottom:6 }}>
               Vous avez un projet ?<br/><span style={{ fontWeight:700 }}>Parlons-en.</span>
             </div>
-            <div style={{ fontSize:13.5, color:L.textSec, lineHeight:1.55 }}>Réponse sous 2 heures, devis gratuit et sans engagement.</div>
+            <div style={{ fontSize:13.5, color:L.textSec, lineHeight:1.55 }}>Réponse sous 24 heures, devis gratuit et sans engagement.</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:10, flexShrink:0 }}>
             <a href="https://wa.me/33769387193?text=Bonjour, j'aimerais discuter d'un projet" target="_blank" rel="noopener noreferrer"

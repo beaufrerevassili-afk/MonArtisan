@@ -174,7 +174,7 @@ export default function PortfolioCom() {
             Envie d'un résultat <span style={{ fontWeight:700 }}>similaire</span> ?
           </h2>
           <p style={{ fontSize:14, color:L.textSec, lineHeight:1.6, marginBottom:32 }}>
-            Parlez-nous de votre projet. Devis gratuit, réponse sous 2h.
+            Parlez-nous de votre projet. Devis gratuit, réponse sous 24h.
           </p>
           <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
             <button onClick={()=>navigate('/com')}
