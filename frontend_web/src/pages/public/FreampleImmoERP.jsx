@@ -3,17 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
-
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldLight:'#F5EFE0', goldDark:'#8B7240',
-  border:'#E8E6E1', blue:'#2563EB', blueBg:'#EFF6FF',
-  red:'#DC2626', redBg:'#FEF2F2', green:'#16A34A', greenBg:'#F0FDF4',
-  orange:'#D97706', orangeBg:'#FFFBEB',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../../design/luxe';
 
 export default function FreampleImmoERP() {
   const navigate = useNavigate();

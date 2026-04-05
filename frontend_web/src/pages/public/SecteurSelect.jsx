@@ -4,15 +4,7 @@ import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useAuth } from '../../context/AuthContext';
 import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
-
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldLight:'#F5EFE0', goldDark:'#8B7240',
-  border:'#E8E6E1',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../../design/luxe';
 
 const DEV_EMAIL = 'freamplecom@gmail.com';
 

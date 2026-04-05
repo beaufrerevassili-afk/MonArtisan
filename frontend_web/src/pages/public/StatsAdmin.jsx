@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import LUXE from '../../design/luxe';
 
+// StatsAdmin uses slightly different accent shades for its charts
 const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldDark:'#8B7240', border:'#E8E6E1',
+  ...LUXE,
   green:'#22C55E', blue:'#3B82F6', purple:'#8B5CF6', orange:'#F59E0B',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
 };
 
 export default function StatsAdmin() {

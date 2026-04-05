@@ -2,21 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
+import LUXE from '../../design/luxe';
 
+// PortfolioCom uses a warmer sub-palette that overrides several shared tokens
 const L = {
+  ...LUXE,
   bg: '#F8F6F2',
   bgSoft: '#EFECE6',
-  white: '#FFFFFF',
   noir: '#1A1A1A',
   text: '#1A1A1A',
   textSec: '#7A7570',
   textLight: '#A8A29E',
   gold: '#B8975A',
-  goldLight: '#F5EFE0',
-  goldDark: '#8B7240',
   border: '#E2DDD5',
   borderLight: '#EDE9E3',
-  font: "'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const CATEGORIES = ['Tout', 'Montage vidéo', 'TikTok', 'YouTube', 'Reels', 'Design'];

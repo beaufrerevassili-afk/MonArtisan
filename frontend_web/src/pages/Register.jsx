@@ -15,7 +15,6 @@ const METIERS = [
 const METIERS_PAR_SECTEUR = {
   btp:        METIERS,
   coiffure:   ['Coiffeur·se', 'Barbier', 'Coloriste', 'Manucure / Prothésiste ongulaire', 'Esthéticien·ne', 'Maquilleur·se', 'Responsable salon', 'Autre'],
-  restaurant: ['Chef cuisinier·ère', 'Gérant·e de restaurant', 'Maître d\'hôtel', 'Pizzaiolo', 'Traiteur·e', 'Pâtissier·ère', 'Barman / Barmaid', 'Autre'],
 };
 
 const DOCUMENTS_COIFFURE = [
@@ -545,7 +544,7 @@ export default function Register() {
           </h1>
           <p style={{ color: '#6B6B6B', fontSize: '0.9375rem' }}>
             {role==='client' ? 'Un seul compte pour tous les services.'
-              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne', restaurant:'Gérez votre restaurant en ligne'}[secteur] || 'Créez votre espace professionnel')
+              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne'}[secteur] || 'Créez votre espace professionnel')
               : 'Développez votre activité avec Freample.'}
           </p>
         </div>

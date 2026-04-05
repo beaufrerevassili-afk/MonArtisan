@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/public/Landing';
 import Login from './pages/Login';
@@ -17,14 +17,6 @@ import DashboardPatron from './pages/patron/Dashboard';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
 import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
-import PortfolioCom from './pages/public/PortfolioCom';
-import ProLanding from './pages/public/ProLanding';
-import StatsAdmin from './pages/public/StatsAdmin';
-import FreampleImmo from './pages/public/FreampleImmo';
-import FreampleImmoERP from './pages/public/FreampleImmoERP';
-import FreampleLogement from './pages/public/FreampleLogement';
-import ImmoDemo from './pages/public/ImmoDemo';
-import FreampleDroit from './pages/public/FreampleDroit';
 import SuiviCommande from './pages/public/SuiviCommande';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
@@ -58,6 +50,23 @@ import Missions from './pages/shared/Missions';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
+
+// ── Lazy-loaded heavy pages ──
+const ImmoDemo = React.lazy(() => import('./pages/public/ImmoDemo'));
+const FreampleDroit = React.lazy(() => import('./pages/public/FreampleDroit'));
+const FreampleImmo = React.lazy(() => import('./pages/public/FreampleImmo'));
+const FreampleImmoERP = React.lazy(() => import('./pages/public/FreampleImmoERP'));
+const FreampleLogement = React.lazy(() => import('./pages/public/FreampleLogement'));
+const PortfolioCom = React.lazy(() => import('./pages/public/PortfolioCom'));
+const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
+const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
+
+const LazySpinner = () => (
+  <div style={{ display:'flex', justifyContent:'center', alignItems:'center', minHeight:'100vh' }}>
+    <div style={{ width:32, height:32, border:'3px solid #E8E6E1', borderTopColor:'#C9A96E', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+  </div>
+);
 
 class ErrorBoundary extends Component {
   state = { hasError: false, error: null };
@@ -121,6 +130,7 @@ function AppRoutes() {
   usePageTracker();
 
   return (
+    <Suspense fallback={<LazySpinner />}>
     <Routes>
       {/* ── Routes publiques ── */}
       <Route path="/" element={<SecteurSelect />} />
@@ -252,6 +262,7 @@ function AppRoutes() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 

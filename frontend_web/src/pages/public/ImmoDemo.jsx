@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldLight:'#F5EFE0', goldDark:'#8B7240',
-  border:'#E8E6E1', green:'#16A34A', greenBg:'#F0FDF4',
-  red:'#DC2626', redBg:'#FEF2F2', blue:'#2563EB', blueBg:'#EFF6FF',
-  orange:'#D97706', orangeBg:'#FFFBEB',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../../design/luxe';
 
 const STORAGE_KEY = 'freample_immo_data';
 const TYPES_BIEN = ['Appartement','Studio','Maison','Local commercial','Parking','Cave','Terrain'];

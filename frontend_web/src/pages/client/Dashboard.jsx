@@ -948,16 +948,12 @@ const MONTHLY_DATA = [
 const DONUT_SEGMENTS = [
   { label: '🔨 BTP & Travaux', value: 12000, color: '#5B5BD6' },
   { label: '✂️ Coiffure',      value: 400,   color: '#E535AB' },
-  { label: '🍽️ Restaurant',    value: 200,   color: '#FF9500' },
-  { label: '🏖️ Vacances',      value: 100,   color: '#34C759' },
 ];
 
 const RECENT_ACTIVITY = [
   { date: '22 mar', label: 'Rénovation salle de bain', sector: 'BTP',        amount: 9500, icon: '🔨', color: '#5B5BD6', statut: 'payée'   },
   { date: '18 mar', label: 'Coupe + coloration',       sector: 'Coiffure',   amount: 85,   icon: '✂️', color: '#E535AB', statut: 'payée'   },
-  { date: '15 mar', label: 'Trattoria Genovese',       sector: 'Restaurant', amount: 62,   icon: '🍽️', color: '#FF9500', statut: 'payée'   },
   { date: '12 mar', label: 'Pose carrelage T3',        sector: 'BTP',        amount: 3200, icon: '🔨', color: '#5B5BD6', statut: 'payée'   },
-  { date: '05 mar', label: "Vacances Côte d'Azur",     sector: 'Vacances',   amount: 420,  icon: '🏖️', color: '#34C759', statut: 'à venir' },
 ];
 
 function AccueilTab({ user, navigate, setActiveTab }) {
@@ -966,7 +962,7 @@ function AccueilTab({ user, navigate, setActiveTab }) {
     { label: 'Dépenses totales', value: '12 700 €', icon: '💶', sub: '6 derniers mois',       color: '#5B5BD6', bg: '#EBF5FF', tab: null },
     { label: 'Ce mois-ci',       value: '1 600 €',  icon: '📅', sub: '↓ 8 % vs mois dernier', color: '#1A7A3C', bg: '#ECFDF5', tab: null },
     { label: 'Commandes actives',value: '2',         icon: '⚡', sub: 'En cours de traitement', color: '#FF9500', bg: '#FFF8EC', tab: null },
-    { label: 'Services utilisés',value: '3',         icon: '🎯', sub: 'BTP · Coiffure · Resto', color: '#AF52DE', bg: '#F5EEFF', tab: null },
+    { label: 'Services utilisés',value: '2',         icon: '🎯', sub: 'BTP · Coiffure', color: '#AF52DE', bg: '#F5EEFF', tab: null },
   ];
 
   return (

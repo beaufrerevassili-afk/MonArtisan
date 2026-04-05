@@ -3,16 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useScaleIn, useFadeUp, StaggerChildren } from '../../utils/scrollAnimations';
-
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldLight:'#F5EFE0', goldDark:'#8B7240',
-  border:'#E8E6E1', green:'#16A34A', greenBg:'#F0FDF4',
-  blue:'#2563EB', blueBg:'#EFF6FF', red:'#DC2626',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../../design/luxe';
 
 const STORAGE_KEY = 'freample_immo_data';
 const TYPES = ['Tous','Appartement','Maison','Studio','Loft','Local commercial'];

@@ -5,15 +5,7 @@ import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { getTarifs } from '../../data/tarifsCom';
 import api from '../../services/api';
 import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
-
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldLight:'#F5EFE0', goldDark:'#8B7240',
-  border:'#E8E6E1', borderLight:'#F0EDE8',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../../design/luxe';
 const inp={width:'100%',padding:'14px 16px',borderRadius:4,border:`1px solid ${L.border}`,fontSize:15,fontFamily:L.font,outline:'none',boxSizing:'border-box',background:L.white};
 const lbl={fontSize:12,fontWeight:600,color:L.textSec,display:'block',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.08em'};
 

@@ -1,16 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-// ── Palette luxe ──
-const L = {
-  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
-  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
-  gold:'#C9A96E', goldDark:'#8B7240', border:'#E8E6E1',
-  red:'#DC2626', redBg:'#FEF2F2',
-  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
-  serif:"'Cormorant Garamond','Georgia',serif",
-};
+import L from '../design/luxe';
 
 // ── Comptes démo ──
 const CLIENT_DEMO = { role:'Client', email:'client@demo.com', motdepasse:'client123', icon:'👤', universal:true };
