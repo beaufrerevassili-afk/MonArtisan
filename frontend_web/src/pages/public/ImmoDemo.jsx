@@ -23,17 +23,17 @@ const DEFAULT_DATA = {
     { id:2, nom:'SCI Patrimoine 75', type:'IS', parts:500 },
   ],
   biens: [
-    { id:1, sciId:1, type:'Appartement', adresse:'24 rue de la Liberté, Nice', surface:65, valeur:180000, loyer:850, charges:150, locataireId:1, dpe:'C', loyerRef:null, assurance:{pno:220,gli:0}, taxeFonciere:1200 },
-    { id:2, sciId:1, type:'Studio', adresse:'8 av. Jean Médecin, Nice', surface:28, valeur:95000, loyer:550, charges:80, locataireId:2, dpe:'D', loyerRef:null, assurance:{pno:120,gli:180}, taxeFonciere:650 },
-    { id:3, sciId:2, type:'Appartement', adresse:'15 rue du Faubourg, Paris 10e', surface:45, valeur:320000, loyer:1200, charges:200, locataireId:3, dpe:'E', loyerRef:1350, assurance:{pno:180,gli:0}, taxeFonciere:2100 },
-    { id:4, sciId:2, type:'Local commercial', adresse:'42 bd Voltaire, Paris 11e', surface:55, valeur:280000, loyer:2200, charges:350, locataireId:4, dpe:null, loyerRef:null, assurance:{pno:350,gli:0}, taxeFonciere:3200 },
-    { id:5, sciId:2, type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, valeur:250000, loyer:0, charges:180, locataireId:null, dpe:'F', loyerRef:950, assurance:{pno:160,gli:0}, taxeFonciere:1800 },
+    { id:1, sciId:1, nom:'Appt Liberté', type:'Appartement', adresse:'24 rue de la Liberté, Nice', surface:65, pieces:3, prixAchat:165000, fraisNotaire:12400, travaux:8000, dateAcquisition:'2022-06-15', valeur:180000, loyer:850, autresRevenus:0, charges:150, chargesNonRecup:50, vacanceLocative:0, locataireId:1, dpe:'C', loyerRef:null, assurance:{pno:220,gli:0}, taxeFonciere:1200 },
+    { id:2, sciId:1, nom:'Studio Médecin', type:'Studio', adresse:'8 av. Jean Médecin, Nice', surface:28, pieces:1, prixAchat:82000, fraisNotaire:6500, travaux:3000, dateAcquisition:'2023-01-10', valeur:95000, loyer:550, autresRevenus:0, charges:80, chargesNonRecup:30, vacanceLocative:0, locataireId:2, dpe:'D', loyerRef:null, assurance:{pno:120,gli:180}, taxeFonciere:650 },
+    { id:3, sciId:2, nom:'Appt Faubourg', type:'Appartement', adresse:'15 rue du Faubourg, Paris 10e', surface:45, pieces:2, prixAchat:290000, fraisNotaire:22000, travaux:15000, dateAcquisition:'2024-03-01', valeur:320000, loyer:1200, autresRevenus:0, charges:200, chargesNonRecup:80, vacanceLocative:0, locataireId:3, dpe:'E', loyerRef:1350, assurance:{pno:180,gli:0}, taxeFonciere:2100 },
+    { id:4, sciId:2, nom:'Local Voltaire', type:'Local commercial', adresse:'42 bd Voltaire, Paris 11e', surface:55, pieces:2, prixAchat:240000, fraisNotaire:18000, travaux:25000, dateAcquisition:'2021-01-15', valeur:280000, loyer:2200, autresRevenus:0, charges:350, chargesNonRecup:100, vacanceLocative:0, locataireId:4, dpe:null, loyerRef:null, assurance:{pno:350,gli:0}, taxeFonciere:3200 },
+    { id:5, sciId:2, nom:'Appt Lepic', type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, pieces:2, prixAchat:220000, fraisNotaire:17000, travaux:5000, dateAcquisition:'2025-06-01', valeur:250000, loyer:0, autresRevenus:0, charges:180, chargesNonRecup:60, vacanceLocative:950, locataireId:null, dpe:'F', loyerRef:950, assurance:{pno:160,gli:0}, taxeFonciere:1800 },
   ],
   locataires: [
-    { id:1, nom:'M. Martin', email:'martin@email.com', tel:'0612345678', debut:'2024-09-01', fin:'2027-08-31', depot:850 },
-    { id:2, nom:'Mme Duval', email:'duval@email.com', tel:'0698765432', debut:'2025-01-01', fin:'2028-12-31', depot:550 },
-    { id:3, nom:'Mme Lambert', email:'lambert@email.com', tel:'0645678901', debut:'2025-03-01', fin:'2028-02-28', depot:1200 },
-    { id:4, nom:'SARL Café Voltaire', email:'cafe@voltaire.fr', tel:'0156789012', debut:'2024-01-01', fin:'2033-12-31', depot:4400 },
+    { id:1, nom:'Martin', prenom:'Jean', email:'martin@email.com', tel:'0612345678', debut:'2024-09-01', fin:'2027-08-31', depot:850 },
+    { id:2, nom:'Duval', prenom:'Sophie', email:'duval@email.com', tel:'0698765432', debut:'2025-01-01', fin:'2028-12-31', depot:550 },
+    { id:3, nom:'Lambert', prenom:'Marie', email:'lambert@email.com', tel:'0645678901', debut:'2025-03-01', fin:'2028-02-28', depot:1200 },
+    { id:4, nom:'SARL Café Voltaire', prenom:'', email:'cafe@voltaire.fr', tel:'0156789012', debut:'2024-01-01', fin:'2033-12-31', depot:4400 },
   ],
   paiements: [
     { id:1, bienId:1, mois:'2026-04', montant:850, date:'2026-04-01', statut:'paye' },
@@ -54,9 +54,9 @@ const DEFAULT_DATA = {
     { id:6, bienId:5, cat:'Diagnostic', desc:'DPE + Amiante', montant:350, date:'2025-11-05' },
   ],
   credits: [
-    { id:1, bienId:1, banque:'Crédit Agricole', montant:140000, duree:240, taux:1.8, mensualite:692, debut:'2022-09-01', restant:118000 },
-    { id:2, bienId:3, banque:'BNP Paribas', montant:250000, duree:300, taux:2.1, mensualite:1056, debut:'2024-03-01', restant:238000 },
-    { id:3, bienId:4, banque:'Société Générale', montant:220000, duree:240, taux:1.5, mensualite:950, debut:'2021-01-01', restant:168000 },
+    { id:1, bienId:1, banque:'Crédit Agricole', montant:140000, duree:240, taux:1.8, mensualite:692, assuranceCredit:35, debut:'2022-09-01', restant:118000 },
+    { id:2, bienId:3, banque:'BNP Paribas', montant:250000, duree:300, taux:2.1, mensualite:1056, assuranceCredit:52, debut:'2024-03-01', restant:238000 },
+    { id:3, bienId:4, banque:'Société Générale', montant:220000, duree:240, taux:1.5, mensualite:950, assuranceCredit:42, debut:'2021-01-01', restant:168000 },
   ],
   associes: [
     { id:1, sciId:1, nom:'Vassili B.', parts:60, role:'Gérant' },
@@ -167,13 +167,13 @@ export default function ImmoDemo() {
 
   // ── ACTIONS ──
   const addBien = () => {
-    const b = { id:genId(), sciId:activeSci||data.scis[0]?.id||1, type:form.type||'Appartement', adresse:form.adresse||'', surface:Number(form.surface)||0, valeur:Number(form.valeur)||0, loyer:Number(form.loyer)||0, charges:Number(form.charges)||0, locataireId:null };
+    const b = { id:genId(), sciId:activeSci||data.scis[0]?.id||1, nom:form.nom||'', type:form.type||'Appartement', adresse:form.adresse||'', surface:Number(form.surface)||0, pieces:Number(form.pieces)||0, prixAchat:Number(form.prixAchat)||0, fraisNotaire:Number(form.fraisNotaire)||0, travaux:Number(form.travaux)||0, dateAcquisition:form.dateAcquisition||'', valeur:Number(form.valeur)||Number(form.prixAchat)||0, loyer:Number(form.loyer)||0, autresRevenus:Number(form.autresRevenus)||0, charges:Number(form.charges)||0, chargesNonRecup:Number(form.chargesNonRecup)||0, vacanceLocative:0, locataireId:null, dpe:form.dpe||null, loyerRef:null, assurance:{pno:0,gli:0}, taxeFonciere:Number(form.taxeFonciere)||0 };
     setData(d=>({...d, biens:[...d.biens, b]}));
     setModal(null); setForm({}); showToast('Bien ajouté');
   };
   const deleteBien = (id) => { setData(d=>({...d, biens:d.biens.filter(b=>b.id!==id), paiements:d.paiements.filter(p=>p.bienId!==id)})); showToast('Bien supprimé'); };
   const addLocataire = () => {
-    const l = { id:genId(), nom:form.nom||'', email:form.email||'', tel:form.tel||'', debut:form.debut||'', fin:form.fin||'', depot:Number(form.depot)||0 };
+    const l = { id:genId(), nom:form.nom||'', prenom:form.prenom||'', email:form.email||'', tel:form.tel||'', debut:form.debut||'', fin:form.fin||'', depot:Number(form.depot)||0 };
     setData(d=>({...d, locataires:[...d.locataires, l]}));
     if (form.bienId) setData(d=>({...d, biens:d.biens.map(b=>b.id===Number(form.bienId)?{...b,locataireId:l.id}:b)}));
     setModal(null); setForm({}); showToast('Locataire ajouté');
@@ -272,6 +272,33 @@ export default function ImmoDemo() {
                 </div>
               ))}
             </div>
+            {/* Répartition par type */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+              <div style={CARD}>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Répartition par type</div>
+                {[...new Set(biens.map(b=>b.type))].map(type=>{
+                  const nb=biens.filter(b=>b.type===type).length;
+                  const pct=biens.length>0?Math.round(nb/biens.length*100):0;
+                  return <div key={type} style={{ marginBottom:8 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}><span>{type}</span><span style={{ fontWeight:700 }}>{nb} ({pct}%)</span></div>
+                    <div style={{ height:4, background:L.cream, borderRadius:2 }}><div style={{ height:4, background:L.gold, borderRadius:2, width:`${pct}%` }} /></div>
+                  </div>;
+                })}
+              </div>
+              <div style={CARD}>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Revenus par SCI</div>
+                {data.scis.map(s=>{
+                  const sciBiens=data.biens.filter(b=>b.sciId===s.id);
+                  const rev=sciBiens.reduce((sum,b)=>sum+b.loyer+(b.autresRevenus||0),0);
+                  const pct=totalLoyers>0?Math.round(rev/totalLoyers*100):0;
+                  return <div key={s.id} style={{ marginBottom:8 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}><span>{s.nom}</span><span style={{ fontWeight:700, color:L.green }}>{rev}€/mois</span></div>
+                    <div style={{ height:4, background:L.cream, borderRadius:2 }}><div style={{ height:4, background:L.green, borderRadius:2, width:`${pct}%` }} /></div>
+                  </div>;
+                })}
+              </div>
+            </div>
+
             {impayes.length>0 && <div style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginBottom:16 }}>
               <div style={{ fontSize:13, fontWeight:700, color:L.red, marginBottom:6 }}>⚠️ {impayes.length} loyer{impayes.length>1?'s':''} impayé{impayes.length>1?'s':''} ce mois</div>
               {impayes.map(b=><div key={b.id} style={{ fontSize:12, color:L.red, padding:'2px 0' }}>• {b.adresse} — {b.loyer}€</div>)}
@@ -309,8 +336,8 @@ export default function ImmoDemo() {
                         <span style={{ fontSize:11, fontWeight:700, color:loc?L.green:L.red, background:loc?L.greenBg:L.redBg, padding:'2px 8px' }}>{loc?'Loué':'Vacant'}</span>
                         {paidThisMonth && <span style={{ fontSize:10, fontWeight:700, color:L.green, background:L.greenBg, padding:'2px 8px' }}>✓ Loyer encaissé</span>}
                       </div>
-                      <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>{b.adresse}</div>
-                      <div style={{ fontSize:12, color:L.textSec }}>{b.surface}m² {loc ? `· ${loc.nom}` : ''}</div>
+                      <div style={{ fontSize:15, fontWeight:700, marginBottom:2, cursor:'pointer' }} onClick={e=>{e.stopPropagation();setModal({type:'detailBien',data:b});}}>{b.nom||b.adresse} <span style={{ fontSize:11, color:L.gold, fontWeight:600 }}>↗</span></div>
+                      <div style={{ fontSize:12, color:L.textSec }}>{b.surface}m² · {b.pieces||0}p {loc ? `· ${loc.prenom||''} ${loc.nom}` : ''}</div>
                     </div>
                     <div style={{ textAlign:'right' }}>
                       <div style={{ fontSize:22, fontWeight:200, color:cashflowBien>=0?L.green:L.red, fontFamily:L.serif }}>{cashflowBien>=0?'+':''}{cashflowBien}€</div>
@@ -611,17 +638,54 @@ export default function ImmoDemo() {
           {tab==='outils' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Outils de calcul</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-              {/* Simulateur rendement */}
+              {/* Simulateur investissement complet */}
               <div style={CARD}>
-                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📊 Simulateur de rendement</div>
-                <div style={{ marginBottom:8 }}><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.simPrix||''} onChange={e=>setForm(f=>({...f,simPrix:e.target.value}))} style={INP} placeholder="200000" /></div>
-                <div style={{ marginBottom:8 }}><label style={LBL}>Loyer mensuel (€)</label><input type="number" value={form.simLoyer||''} onChange={e=>setForm(f=>({...f,simLoyer:e.target.value}))} style={INP} placeholder="800" /></div>
-                <div style={{ marginBottom:8 }}><label style={LBL}>Charges mensuelles (€)</label><input type="number" value={form.simCharges||''} onChange={e=>setForm(f=>({...f,simCharges:e.target.value}))} style={INP} placeholder="150" /></div>
-                {form.simPrix && form.simLoyer && <div style={{ background:L.cream, padding:'14px', marginTop:8 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:4 }}><span>Rendement brut</span><span style={{ fontWeight:700, color:L.gold }}>{((Number(form.simLoyer)*12)/Number(form.simPrix)*100).toFixed(2)}%</span></div>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:4 }}><span>Rendement net</span><span style={{ fontWeight:700, color:L.green }}>{(((Number(form.simLoyer)-Number(form.simCharges||0))*12)/Number(form.simPrix)*100).toFixed(2)}%</span></div>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}><span>Cashflow mensuel</span><span style={{ fontWeight:700, color:Number(form.simLoyer)-Number(form.simCharges||0)>0?L.green:L.red }}>{Number(form.simLoyer)-Number(form.simCharges||0)}€</span></div>
-                </div>}
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📊 Simulateur d'investissement complet</div>
+                <div style={{ fontSize:12, fontWeight:700, color:L.gold, margin:'0 0 8px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Bien</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:8 }}>
+                  <div><label style={LBL}>Prix du bien (€)</label><input type="number" value={form.simPrix||''} onChange={e=>setForm(f=>({...f,simPrix:e.target.value}))} style={INP} placeholder="200000" /></div>
+                  <div><label style={LBL}>Frais notaire + travaux</label><input type="number" value={form.simFrais||''} onChange={e=>setForm(f=>({...f,simFrais:e.target.value}))} style={INP} placeholder="25000" /></div>
+                </div>
+                <div style={{ fontSize:12, fontWeight:700, color:L.orange, margin:'8px 0 8px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Financement</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6, marginBottom:8 }}>
+                  <div><label style={LBL}>Apport (€)</label><input type="number" value={form.simApport||''} onChange={e=>setForm(f=>({...f,simApport:e.target.value}))} style={INP} placeholder="30000" /></div>
+                  <div><label style={LBL}>Taux (%)</label><input type="number" value={form.simTaux||''} onChange={e=>setForm(f=>({...f,simTaux:e.target.value}))} style={INP} placeholder="2.5" step="0.1" /></div>
+                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={form.simDuree||''} onChange={e=>setForm(f=>({...f,simDuree:e.target.value}))} style={INP} placeholder="20" /></div>
+                </div>
+                <div style={{ fontSize:12, fontWeight:700, color:L.green, margin:'8px 0 8px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Exploitation</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:8 }}>
+                  <div><label style={LBL}>Loyer estimé (€/mois)</label><input type="number" value={form.simLoyer||''} onChange={e=>setForm(f=>({...f,simLoyer:e.target.value}))} style={INP} placeholder="800" /></div>
+                  <div><label style={LBL}>Charges totales (€/mois)</label><input type="number" value={form.simCharges||''} onChange={e=>setForm(f=>({...f,simCharges:e.target.value}))} style={INP} placeholder="200" /></div>
+                </div>
+                {form.simPrix && form.simLoyer && (()=>{
+                  const prix=Number(form.simPrix);const frais=Number(form.simFrais||0);const coutTotal=prix+frais;
+                  const apport=Number(form.simApport||0);const emprunt=coutTotal-apport;
+                  const taux=Number(form.simTaux||2)/100/12;const duree=(Number(form.simDuree||20))*12;
+                  const mens=taux>0&&emprunt>0?emprunt*(taux*Math.pow(1+taux,duree))/(Math.pow(1+taux,duree)-1):emprunt>0?emprunt/duree:0;
+                  const loyer=Number(form.simLoyer);const charges=Number(form.simCharges||0);
+                  const cf=loyer-charges-mens;
+                  const rdtBrut=coutTotal>0?(loyer*12/coutTotal*100).toFixed(2):'0';
+                  const rdtNet=coutTotal>0?((loyer-charges)*12/coutTotal*100).toFixed(2):'0';
+                  const effortEpargne=cf<0?Math.abs(cf):0;
+                  const coutCredit=mens*duree;
+                  const interets=coutCredit-emprunt;
+                  return <div style={{ background:L.noir, color:'#fff', padding:'16px', marginTop:10 }}>
+                    <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Résultat de la simulation</div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:12 }}>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt brut</div><div style={{ fontSize:18, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div></div>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt net</div><div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div></div>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Cashflow</div><div style={{ fontSize:18, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
+                    </div>
+                    <div style={{ fontSize:12, lineHeight:1.8 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Emprunt</span><span>{emprunt.toLocaleString()}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Mensualité crédit</span><span>{mens.toFixed(0)}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Coût total crédit</span><span style={{color:L.red}}>{coutCredit.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Intérêts totaux</span><span style={{color:L.orange}}>{interets.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}€</span></div>
+                      {effortEpargne>0 && <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, paddingTop:4, borderTop:'1px solid rgba(255,255,255,0.1)' }}><span style={{color:L.red, fontWeight:700}}>Effort d'épargne</span><span style={{color:L.red, fontWeight:700}}>{effortEpargne.toFixed(0)}€/mois</span></div>}
+                      {cf>=0 && <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, paddingTop:4, borderTop:'1px solid rgba(255,255,255,0.1)' }}><span style={{color:L.green, fontWeight:700}}>Autofinancé !</span><span style={{color:L.green, fontWeight:700}}>+{cf.toFixed(0)}€/mois de gain</span></div>}
+                    </div>
+                  </div>;
+                })()}
               </div>
               {/* Révision de loyer */}
               <div style={CARD}>
@@ -1067,22 +1131,65 @@ export default function ImmoDemo() {
 
           {modal.type==='addBien' && <>
             <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Ajouter un bien</h3>
-            <div style={{ marginBottom:10 }}><label style={LBL}>Type</label><select value={form.type||'Appartement'} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={INP}>{TYPES_BIEN.map(t=><option key={t}>{t}</option>)}</select></div>
-            <div style={{ marginBottom:10 }}><label style={LBL}>Adresse</label><input value={form.adresse||''} onChange={e=>setForm(f=>({...f,adresse:e.target.value}))} style={INP} placeholder="12 rue..." /></div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Nom du bien</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} placeholder="Ex: Appt Liberté" /></div>
+              <div><label style={LBL}>Type</label><select value={form.type||'Appartement'} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={INP}>{[...TYPES_BIEN,'Immeuble','Colocation'].map(t=><option key={t}>{t}</option>)}</select></div>
+            </div>
+            <div style={{ marginBottom:10 }}><label style={LBL}>Adresse</label><input value={form.adresse||''} onChange={e=>setForm(f=>({...f,adresse:e.target.value}))} style={INP} placeholder="12 rue..." /></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
               <div><label style={LBL}>Surface (m²)</label><input type="number" value={form.surface||''} onChange={e=>setForm(f=>({...f,surface:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Valeur (€)</label><input type="number" value={form.valeur||''} onChange={e=>setForm(f=>({...f,valeur:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Pièces</label><input type="number" value={form.pieces||''} onChange={e=>setForm(f=>({...f,pieces:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Date acquisition</label><input type="date" value={form.dateAcquisition||''} onChange={e=>setForm(f=>({...f,dateAcquisition:e.target.value}))} style={INP} /></div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:L.gold, margin:'12px 0 8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Acquisition</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.prixAchat||''} onChange={e=>setForm(f=>({...f,prixAchat:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Frais de notaire (€)</label><input type="number" value={form.fraisNotaire||''} onChange={e=>setForm(f=>({...f,fraisNotaire:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Travaux (€)</label><input type="number" value={form.travaux||''} onChange={e=>setForm(f=>({...f,travaux:e.target.value}))} style={INP} /></div>
+            </div>
+            {form.prixAchat && <div style={{ background:L.cream, padding:'10px 14px', marginBottom:10, fontSize:12 }}>
+              <strong>Coût total :</strong> {(Number(form.prixAchat||0)+Number(form.fraisNotaire||0)+Number(form.travaux||0)).toLocaleString()}€
+            </div>}
+            <div style={{ fontSize:12, fontWeight:700, color:L.green, margin:'12px 0 8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Revenus & Charges</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
               <div><label style={LBL}>Loyer (€/mois)</label><input type="number" value={form.loyer||''} onChange={e=>setForm(f=>({...f,loyer:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={form.charges||''} onChange={e=>setForm(f=>({...f,charges:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Autres revenus (€/mois)</label><input type="number" value={form.autresRevenus||''} onChange={e=>setForm(f=>({...f,autresRevenus:e.target.value}))} style={INP} placeholder="Airbnb, parking..." /></div>
             </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={form.charges||''} onChange={e=>setForm(f=>({...f,charges:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Charges non récup.</label><input type="number" value={form.chargesNonRecup||''} onChange={e=>setForm(f=>({...f,chargesNonRecup:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Taxe foncière (€/an)</label><input type="number" value={form.taxeFonciere||''} onChange={e=>setForm(f=>({...f,taxeFonciere:e.target.value}))} style={INP} /></div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>DPE</label><select value={form.dpe||''} onChange={e=>setForm(f=>({...f,dpe:e.target.value}))} style={INP}><option value="">Non renseigné</option>{['A','B','C','D','E','F','G'].map(d=><option key={d}>{d}</option>)}</select></div>
+              <div><label style={LBL}>Valeur estimée actuelle (€)</label><input type="number" value={form.valeur||''} onChange={e=>setForm(f=>({...f,valeur:e.target.value}))} style={INP} /></div>
+            </div>
+            {/* Calculs auto */}
+            {form.prixAchat && form.loyer && (()=>{
+              const cout=Number(form.prixAchat||0)+Number(form.fraisNotaire||0)+Number(form.travaux||0);
+              const revMens=Number(form.loyer||0)+Number(form.autresRevenus||0);
+              const depMens=Number(form.charges||0)+Number(form.chargesNonRecup||0)+(Number(form.taxeFonciere||0)/12);
+              const cf=revMens-depMens;
+              const rdtBrut=cout>0?(revMens*12/cout*100).toFixed(2):'0';
+              const rdtNet=cout>0?((revMens-depMens)*12/cout*100).toFixed(2):'0';
+              return <div style={{ background:L.noir, color:'#fff', padding:'16px', marginBottom:14 }}>
+                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Calculs automatiques</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Rendement brut</div><div style={{ fontSize:18, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div></div>
+                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Rendement net</div><div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div></div>
+                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Cashflow</div><div style={{ fontSize:18, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
+                </div>
+              </div>;
+            })()}
             <button onClick={addBien} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Ajouter</button>
           </>}
 
           {modal.type==='addLocataire' && <>
             <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Ajouter un locataire</h3>
-            <div style={{ marginBottom:10 }}><label style={LBL}>Nom</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} /></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div><label style={LBL}>Nom</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} /></div>
+              <div><label style={LBL}>Prénom</label><input value={form.prenom||''} onChange={e=>setForm(f=>({...f,prenom:e.target.value}))} style={INP} /></div>
+            </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
               <div><label style={LBL}>Email</label><input value={form.email||''} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={INP} /></div>
               <div><label style={LBL}>Téléphone</label><input value={form.tel||''} onChange={e=>setForm(f=>({...f,tel:e.target.value}))} style={INP} /></div>
@@ -1116,6 +1223,84 @@ export default function ImmoDemo() {
             <div style={{ textAlign:'center', fontSize:12, color:L.textLight, marginBottom:16 }}>Document généré par Freample Immo</div>
             <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
           </>}
+
+          {modal.type==='detailBien' && modal.data && (()=>{
+            const b=modal.data;
+            const loc=getLocataire(b.locataireId);
+            const credit=(data.credits||[]).find(c=>c.bienId===b.id);
+            const deps=(data.depenses||[]).filter(d=>d.bienId===b.id);
+            const coutTotal=(b.prixAchat||0)+(b.fraisNotaire||0)+(b.travaux||0);
+            const revMens=(b.loyer||0)+(b.autresRevenus||0);
+            const depMens=(b.charges||0)+(b.chargesNonRecup||0)+(b.taxeFonciere||0)/12+(credit?.mensualite||0)+(credit?.assuranceCredit||0);
+            const cf=revMens-depMens;
+            const rdtBrut=coutTotal>0?(revMens*12/coutTotal*100).toFixed(2):'0';
+            const rdtNet=coutTotal>0?((revMens-depMens)*12/coutTotal*100).toFixed(2):'0';
+            const coutCredit=credit?(credit.mensualite*credit.duree-credit.montant):0;
+            const interets=credit?(credit.mensualite*credit.duree-credit.montant):0;
+            return <>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:6 }}>Fiche détaillée</div>
+                  <h3 style={{ fontSize:18, fontWeight:800, margin:'0 0 4px' }}>{b.nom||b.adresse}</h3>
+                  <div style={{ fontSize:12, color:L.textSec }}>{b.type} · {b.surface}m² · {b.pieces} pièce{b.pieces>1?'s':''}</div>
+                  <div style={{ fontSize:12, color:L.textLight }}>{b.adresse}</div>
+                  {b.dateAcquisition && <div style={{ fontSize:11, color:L.textLight }}>Acquis le {new Date(b.dateAcquisition).toLocaleDateString('fr-FR')}</div>}
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <div style={{ fontSize:28, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase' }}>{cf>=0?'Cashflow':'Cash low'}/mois</div>
+                </div>
+              </div>
+
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:1, background:L.border, marginBottom:16 }}>
+                <div style={{ background:L.white, padding:'14px' }}>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:6 }}>Acquisition</div>
+                  <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Prix d'achat</span><span style={{fontWeight:600}}>{(b.prixAchat||0).toLocaleString()}€</span></div></div>
+                  <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Frais notaire</span><span style={{fontWeight:600}}>{(b.fraisNotaire||0).toLocaleString()}€</span></div></div>
+                  <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Travaux</span><span style={{fontWeight:600}}>{(b.travaux||0).toLocaleString()}€</span></div></div>
+                  <div style={{ fontSize:12, borderTop:`1px solid ${L.border}`, paddingTop:4, marginTop:4 }}><div style={{ display:'flex', justifyContent:'space-between' }}><span style={{fontWeight:700}}>Coût total</span><span style={{fontWeight:800, color:L.gold}}>{coutTotal.toLocaleString()}€</span></div></div>
+                </div>
+                <div style={{ background:L.white, padding:'14px' }}>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:6 }}>Financement</div>
+                  {credit ? <>
+                    <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Prêt</span><span style={{fontWeight:600}}>{credit.montant.toLocaleString()}€</span></div></div>
+                    <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Taux</span><span style={{fontWeight:600}}>{credit.taux}% · {credit.duree/12} ans</span></div></div>
+                    <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Mensualité + assurance</span><span style={{fontWeight:600}}>{credit.mensualite}€ + {credit.assuranceCredit||0}€</span></div></div>
+                    <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}><span style={{color:L.textSec}}>Coût total crédit</span><span style={{fontWeight:600, color:L.red}}>{(credit.mensualite*credit.duree).toLocaleString()}€</span></div></div>
+                    <div style={{ fontSize:12 }}><div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Intérêts totaux</span><span style={{fontWeight:600, color:L.orange}}>{interets.toLocaleString()}€</span></div></div>
+                    <div style={{ height:4, background:L.cream, borderRadius:2, marginTop:6 }}><div style={{ height:4, background:L.green, borderRadius:2, width:`${((credit.montant-credit.restant)/credit.montant*100).toFixed(0)}%` }} /></div>
+                    <div style={{ fontSize:10, color:L.textLight, marginTop:2 }}>Remboursé: {((credit.montant-credit.restant)/credit.montant*100).toFixed(0)}% · Restant: {credit.restant.toLocaleString()}€</div>
+                  </> : <div style={{ fontSize:12, color:L.textLight }}>Pas de crédit</div>}
+                </div>
+              </div>
+
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:1, background:L.border, marginBottom:16 }}>
+                <div style={{ background:L.white, padding:'14px', textAlign:'center' }}>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>Rdt brut</div>
+                  <div style={{ fontSize:20, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div>
+                </div>
+                <div style={{ background:L.white, padding:'14px', textAlign:'center' }}>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>Rdt net</div>
+                  <div style={{ fontSize:20, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div>
+                </div>
+                <div style={{ background:L.white, padding:'14px', textAlign:'center' }}>
+                  <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>Cashflow annuel</div>
+                  <div style={{ fontSize:20, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{(cf*12).toLocaleString()}€</div>
+                </div>
+              </div>
+
+              {loc && <div style={{ background:L.cream, padding:'12px 14px', marginBottom:16 }}>
+                <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>Locataire</div>
+                <div style={{ fontSize:13, fontWeight:700 }}>{loc.prenom} {loc.nom}</div>
+                <div style={{ fontSize:11, color:L.textSec }}>{loc.email} · {loc.tel} · Dépôt: {loc.depot}€</div>
+              </div>}
+
+              {deps.length>0 && <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:6 }}>Dépenses ({deps.length})</div>
+                {deps.map(d=><div key={d.id} style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>{d.desc} ({d.cat})</span><span style={{fontWeight:600, color:L.red}}>{d.montant}€</span></div>)}
+              </div>}
+            </>;
+          })()}
 
           {modal.type==='miseEnDemeure' && modal.data && <>
             <div style={{ textAlign:'center', marginBottom:16 }}>
