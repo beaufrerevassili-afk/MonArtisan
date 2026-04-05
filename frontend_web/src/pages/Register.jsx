@@ -555,58 +555,49 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: DS.bg, padding: '32px 16px 56px', fontFamily: DS.font }}>
+    <div style={{ minHeight: '100vh', background: '#0A0A0A', padding: '32px 16px 56px', fontFamily: DS.font, color:'#fff' }}>
       <style>{`
         .reg-input {
           width: 100%; box-sizing: border-box;
-          padding: 12px 14px; border-radius: 10px;
-          border: 1.5px solid #E8E6E1;
-          background: #FFFFFF;
-          color: #0A0A0A; font-size: 0.9375rem; outline: none;
+          padding: 14px 16px; border-radius: 0;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05);
+          color: #fff; font-size: 0.9375rem; outline: none;
           transition: all 0.2s ease; font-family: inherit;
         }
-        .reg-input::placeholder { color: #A0A0A0; }
-        .reg-input:focus {
-          border-color: #4F46E5;
-          background: #FFFFFF;
-          box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
-        }
+        .reg-input::placeholder { color: rgba(255,255,255,0.3); }
+        .reg-input:focus { border-color: #C9A96E; background: rgba(255,255,255,0.08); }
         .reg-select {
           width: 100%; box-sizing: border-box;
-          padding: 12px 14px; border-radius: 10px;
-          border: 1.5px solid #E8E6E1;
-          background: #FFFFFF;
-          color: #0A0A0A; font-size: 0.9375rem; outline: none;
+          padding: 14px 16px; border-radius: 0;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05);
+          color: #fff; font-size: 0.9375rem; outline: none;
           transition: all 0.2s ease; font-family: inherit;
           appearance: none; cursor: pointer;
         }
-        .reg-select:focus {
-          border-color: #4F46E5;
-          background: #FFFFFF;
-          box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
-        }
-        .reg-select option { background: #FFFFFF; color: #0A0A0A; }
-        .reg-label { display: block; margin-bottom: 7px; font-size: 0.8125rem; font-weight: 600; color: #6B6B6B; letter-spacing: 0.02em; }
-        .reg-card { background: #FFFFFF; border-radius: 16px; border: 1px solid #E8E6E1; padding: 24px; }
+        .reg-select:focus { border-color: #C9A96E; background: rgba(255,255,255,0.08); }
+        .reg-select option { background: #0A0A0A; color: #fff; }
+        .reg-label { display: block; margin-bottom: 8px; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.08em; text-transform: uppercase; }
+        .reg-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 24px; }
         .reg-btn-primary {
           display: flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 13px 20px; border-radius: 11px;
-          background: #4F46E5;
-          border: none; color: #fff; font-size: 0.9375rem; font-weight: 600;
-          cursor: pointer; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-          letter-spacing: 0.01em; font-family: inherit; width: 100%;
+          padding: 16px 20px; border-radius: 0;
+          background: #FFFFFF; border: none; color: #0A0A0A;
+          font-size: 0.875rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+          cursor: pointer; transition: all 0.25s; font-family: inherit; width: 100%;
         }
-        .reg-btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(79,70,229,0.25); background: #4338CA; }
-        .reg-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .reg-btn-primary:not(:disabled):hover { background: #C9A96E; color: #fff; }
+        .reg-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .reg-btn-secondary {
           display: flex; align-items: center; justify-content: center; gap: 6px;
-          padding: 13px 16px; border-radius: 11px;
-          background: #F8F7F4; border: 1px solid #E8E6E1;
-          color: #6B6B6B; font-size: 0.9375rem; font-weight: 500;
+          padding: 16px 16px; border-radius: 0;
+          background: transparent; border: 1px solid rgba(255,255,255,0.12);
+          color: rgba(255,255,255,0.6); font-size: 0.875rem; font-weight: 500;
           cursor: pointer; transition: all 0.2s ease; font-family: inherit;
         }
-        .reg-btn-secondary:hover { background: #F2F1ED; color: #0A0A0A; }
-        .reg-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: regSpin 0.7s linear infinite; }
+        .reg-btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+        .reg-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #0A0A0A; border-radius: 50%; animation: regSpin 0.7s linear infinite; }
         @keyframes regSpin { to { transform: rotate(360deg); } }
         @keyframes regFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
@@ -614,31 +605,29 @@ export default function Register() {
 
         {/* Logo + titre */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, fontWeight:900, color:DS.ink, letterSpacing:'-0.05em', marginBottom:16, fontFamily:DS.font }}>
-            Freample<span style={{color:DS.gold}}>.</span>
+          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, fontWeight:900, color:'#fff', letterSpacing:'-0.05em', marginBottom:16, fontFamily:DS.font }}>
+            Freample<span style={{color:'#C9A96E'}}>.</span>
           </button>
-          <h1 style={{ fontSize: '1.625rem', fontWeight: 800, letterSpacing: '-0.04em', color: DS.ink, marginBottom: 6 }}>
-            {role==='artisan' ? 'Rejoindre la plateforme' : role==='patron' ? 'Créer mon espace pro' : 'Créer votre compte'}
+          <div style={{ fontSize:11, fontWeight:600, color:'#C9A96E', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:10 }}>Inscription</div>
+          <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,34px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', marginBottom:6, lineHeight:1.1 }}>
+            {role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></> : <>Créer votre <span style={{fontWeight:700,fontStyle:'normal'}}>compte</span></>}
           </h1>
-          <p style={{ color: DS.muted, fontSize: '0.9375rem' }}>
-            {role==='client' ? 'Un seul compte pour tous les services — coiffure, artisans, restaurants…'
-              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne', restaurant:'Gérez votre restaurant en ligne', vacances:'Gérez vos locations de vacances en ligne', hotel:'Gérez votre hôtel en ligne'}[secteur] || 'Créez votre espace professionnel')
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9375rem' }}>
+            {role==='client' ? 'Un seul compte pour tous les services.'
+              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne', restaurant:'Gérez votre restaurant en ligne'}[secteur] || 'Créez votre espace professionnel')
               : 'Développez votre activité avec Freample.'}
           </p>
         </div>
 
         {/* Sélecteur rôle (seulement step 1, masqué si vient de /pro) */}
         {step === 1 && !searchParams.get('role') && (
-          <div style={{ padding: 5, marginBottom: 16, display: 'flex', gap: 4, background: DS.bgSoft, borderRadius: DS.r.full, border: `1px solid ${DS.border}` }}>
+          <div style={{ padding:0, marginBottom:16, display:'flex', gap:8 }}>
             {[
-              { value: 'client',  label: '👤 Je suis client' },
-              { value: 'patron',  label: "🏢 J'ai une entreprise" },
+              { value:'client', label:'👤 Client' },
+              { value:'patron', label:"🏢 Entreprise" },
             ].map(r => (
-              <button
-                key={r.value}
-                onClick={() => { setRole(r.value); setError(''); }}
-                style={{ flex: 1, padding: '10px', borderRadius: DS.r.full, fontSize: '0.8125rem', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: role === r.value ? DS.accent : 'transparent', color: role === r.value ? '#fff' : DS.muted, fontFamily: DS.font }}
-              >
+              <button key={r.value} onClick={()=>{setRole(r.value);setError('');}}
+                style={{ flex:1, padding:'12px', border:`1px solid ${role===r.value?'#C9A96E':'rgba(255,255,255,0.1)'}`, background:role===r.value?'rgba(201,169,110,0.1)':'transparent', color:role===r.value?'#C9A96E':'rgba(255,255,255,0.4)', fontSize:'0.8125rem', fontWeight:600, cursor:'pointer', transition:'all .2s', fontFamily:DS.font }}>
                 {r.label}
               </button>
             ))}
@@ -648,21 +637,13 @@ export default function Register() {
         {/* Sélecteur secteur (patron uniquement, step 1, masqué si secteur prédéfini) */}
         {step === 1 && isPatron && !searchParams.get('secteur') && (
           <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: DS.subtle, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <p style={{ fontSize:'0.75rem', fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Votre secteur</p>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
               {[
-                { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux' },
+                { id:'btp', emoji:'🏗️', label:'BTP & Artisans' },
               ].map(s => (
-                <button key={s.id} type="button"
-                  onClick={() => { setSecteur(s.id); setError(''); }}
-                  style={{
-                    padding: '8px 14px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 600,
-                    border: `1.5px solid ${secteur === s.id ? DS.accent : DS.border}`,
-                    background: secteur === s.id ? DS.accentMuted : DS.bg,
-                    color: secteur === s.id ? DS.accent : DS.ink2,
-                    cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s',
-                  }}
-                >
+                <button key={s.id} type="button" onClick={()=>{setSecteur(s.id);setError('');}}
+                  style={{ padding:'10px 18px', border:`1px solid ${secteur===s.id?'#C9A96E':'rgba(255,255,255,0.1)'}`, background:secteur===s.id?'rgba(201,169,110,0.1)':'transparent', color:secteur===s.id?'#C9A96E':'rgba(255,255,255,0.4)', fontSize:'0.8125rem', fontWeight:600, cursor:'pointer', fontFamily:DS.font, transition:'all .15s' }}>
                   {s.emoji} {s.label}
                 </button>
               ))}
@@ -1195,9 +1176,9 @@ export default function Register() {
           </div>
         )}
 
-        <p style={{ textAlign: 'center', fontSize: '0.875rem', color: DS.subtle, marginTop: 20 }}>
+        <p style={{ textAlign:'center', fontSize:'0.875rem', color:'rgba(255,255,255,0.35)', marginTop:20 }}>
           Déjà un compte ?{' '}
-          <Link to="/login" style={{ color: DS.accent, fontWeight: 600, textDecoration: 'none' }}>Se connecter</Link>
+          <Link to="/login" style={{ color:'#C9A96E', fontWeight:600, textDecoration:'none' }}>Se connecter</Link>
         </p>
       </div>
     </div>
