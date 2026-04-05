@@ -96,7 +96,8 @@ export default function ImmoDemo() {
   const [data, setData] = useState(loadData);
   const [activeSci, setActiveSci] = useState(null);
   const [tab, setTab] = useState('dashboard');
-  const [modal, setModal] = useState(null); // { type:'addBien'|'addLocataire'|'quittance'|'revision'|'paiement', data }
+  const [modal, setModal] = useState(null);
+  const [subFin, setSubFin] = useState('resume'); // { type:'addBien'|'addLocataire'|'quittance'|'revision'|'paiement', data }
   const [form, setForm] = useState({});
   const [toast, setToast] = useState(null);
 
@@ -150,16 +151,9 @@ export default function ImmoDemo() {
   const TABS = [
     { id:'dashboard', label:'Tableau de bord', icon:'📊' },
     { id:'biens', label:'Biens', icon:'🏠' },
-    { id:'locataires', label:'Locataires', icon:'👥' },
-    { id:'paiements', label:'Loyers & Paiements', icon:'💰' },
-    { id:'depenses', label:'Dépenses & Travaux', icon:'🔧' },
-    { id:'credits', label:'Crédits immobiliers', icon:'🏦' },
-    { id:'quittances', label:'Quittances', icon:'📄' },
-    { id:'finances', label:'Finances', icon:'📈' },
-    { id:'associes', label:'Associés', icon:'🤝' },
-    { id:'outils', label:'Outils de calcul', icon:'🧮' },
-    { id:'banque', label:'Rapprochement bancaire', icon:'🏦' },
-    { id:'conformite', label:'Conformité & DPE', icon:'📋' },
+    { id:'gestion', label:'Locataires & Loyers', icon:'👥' },
+    { id:'finances', label:'Finances', icon:'💰' },
+    { id:'outils', label:'Outils & Conformité', icon:'🧮' },
     { id:'courriers', label:'Courriers', icon:'✉️' },
     { id:'strategie', label:'Stratégie', icon:'🏛️' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
@@ -253,17 +247,11 @@ export default function ImmoDemo() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:10, marginBottom:20 }}>
               {[
                 { l:'Loyers/mois', v:`${totalLoyers.toLocaleString()}€`, c:L.green },
-                { l:'Charges/mois', v:`${totalCharges.toLocaleString()}€`, c:L.red },
-                { l:'Crédits/mois', v:`${totalMensualites.toLocaleString()}€`, c:L.orange },
-                { l:'Cashflow réel', v:`${(cashflow-totalMensualites).toLocaleString()}€`, c:(cashflow-totalMensualites)>0?L.green:L.red },
-                { l:'Biens', v:biens.length, c:L.blue },
-                { l:'Occupation', v:`${occupation}%`, c:occupation>80?L.green:L.orange },
-                { l:'Rendement brut', v:`${rendementBrut}%`, c:L.gold },
+                { l:'Charges + Crédits', v:`${(totalCharges+totalMensualites).toLocaleString()}€`, c:L.red },
+                { l:'Cashflow net', v:`${(cashflow-totalMensualites).toLocaleString()}€`, c:(cashflow-totalMensualites)>0?L.green:L.red },
+                { l:'Biens', v:`${biens.length} (${occupation}%)`, c:L.blue },
+                { l:'Patrimoine net', v:`${((totalValeur-totalRestant)/1000).toFixed(0)}k€`, c:L.green },
                 { l:'Rendement net', v:`${rendementNet}%`, c:L.gold },
-                { l:'Patrimoine', v:`${(totalValeur/1000).toFixed(0)}k€`, c:L.blue },
-                { l:'Encours crédit', v:`${(totalRestant/1000).toFixed(0)}k€`, c:L.orange },
-                { l:'Equity', v:`${((totalValeur-totalRestant)/1000).toFixed(0)}k€`, c:L.green },
-                { l:'Dépenses YTD', v:`${totalDepenses.toLocaleString()}€`, c:L.red },
               ].map(k=>(
                 <div key={k.l} style={{ ...CARD, position:'relative' }}>
                   <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:k.c }} />
@@ -512,8 +500,8 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ LOCATAIRES ═══ */}
-          {tab==='locataires' && <>
+          {/* ═══ GESTION : Locataires + Loyers + Quittances ═══ */}
+          {tab==='gestion' && <>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Locataires ({data.locataires.length})</h2>
               <button onClick={()=>{setForm({});setModal({type:'addLocataire'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter un locataire</button>
@@ -542,11 +530,9 @@ export default function ImmoDemo() {
                 </div>;
               })}
             </div>
-          </>}
 
-          {/* ═══ PAIEMENTS ═══ */}
-          {tab==='paiements' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Loyers — {MOIS[new Date().getMonth()]} {new Date().getFullYear()}</h2>
+            {/* — Paiements — */}
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'20px 0 16px' }}>Loyers — {MOIS[new Date().getMonth()]} {new Date().getFullYear()}</h2>
             <div style={{ ...CARD, padding:0 }}>
               {biens.filter(b=>b.locataireId).map((b,i,arr)=>{
                 const loc = getLocataire(b.locataireId);
@@ -564,11 +550,9 @@ export default function ImmoDemo() {
                 </div>;
               })}
             </div>
-          </>}
 
-          {/* ═══ QUITTANCES ═══ */}
-          {tab==='quittances' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Quittances de loyer</h2>
+            {/* — Quittances — */}
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'20px 0 16px' }}>Quittances</h2>
             <p style={{ fontSize:13, color:L.textSec, marginBottom:16 }}>Cliquez sur "Générer" pour créer une quittance pour un paiement encaissé.</p>
             <div style={{ ...CARD, padding:0 }}>
               {data.paiements.filter(p=>p.statut==='paye').sort((a,b)=>b.mois.localeCompare(a.mois)).map((p,i,arr)=>{
@@ -589,8 +573,25 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ DÉPENSES & TRAVAUX ═══ */}
-          {tab==='depenses' && <>
+          {/* ═══ FINANCES (fusionné) ═══ */}
+          {tab==='finances' && <>
+            {/* Sous-tabs */}
+            <div style={{ display:'flex', gap:0, marginBottom:16, borderBottom:`1px solid ${L.border}` }}>
+              {[
+                { id:'resume', label:'Résumé' },
+                { id:'depenses', label:'Dépenses' },
+                { id:'credits', label:'Crédits' },
+                { id:'banque', label:'Banque' },
+                { id:'associes', label:'Associés' },
+              ].map(st=>(
+                <button key={st.id} onClick={()=>setSubFin(st.id)}
+                  style={{ padding:'8px 16px', background:'none', border:'none', borderBottom:`2px solid ${subFin===st.id?L.gold:'transparent'}`, fontSize:12, fontWeight:subFin===st.id?700:400, color:subFin===st.id?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}>
+                  {st.label}
+                </button>
+              ))}
+            </div>
+
+          {subFin==='depenses' && <>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Dépenses & Travaux ({depenses.length})</h2>
               <button onClick={()=>{setForm({cat:'Travaux'});setModal({type:'addDepense'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter</button>
@@ -622,8 +623,7 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ CRÉDITS IMMOBILIERS ═══ */}
-          {tab==='credits' && <>
+          {subFin==='credits' && <>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Crédits immobiliers</h2>
               <button onClick={()=>{setForm({});setModal({type:'addCredit'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter</button>
@@ -667,8 +667,7 @@ export default function ImmoDemo() {
             {credits.length===0 && <div style={{ ...CARD, textAlign:'center', color:L.textLight }}>Aucun crédit enregistré</div>}
           </>}
 
-          {/* ═══ ASSOCIÉS ═══ */}
-          {tab==='associes' && <>
+          {subFin==='associes' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Associés{sci?` — ${sci.nom}`:''}</h2>
             {!activeSci ? (
               data.scis.map(s=>{
@@ -709,7 +708,7 @@ export default function ImmoDemo() {
           </>}
 
           {/* ═══ FINANCES ═══ */}
-          {tab==='finances' && <>
+          {subFin==='resume' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Analyse financière</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:20 }}>
               <div style={CARD}>
@@ -898,8 +897,7 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ RAPPROCHEMENT BANCAIRE ═══ */}
-          {tab==='banque' && <>
+          {subFin==='banque' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Rapprochement bancaire</h2>
             <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Transactions détectées automatiquement — associez chaque mouvement à un bien.</p>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:10, marginBottom:16 }}>
@@ -926,9 +924,11 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ CONFORMITÉ & DPE ═══ */}
-          {tab==='conformite' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Conformité réglementaire</h2>
+          </>}{/* fin tab==='finances' */}
+
+          {/* Conformité dans outils — continuation */}
+          {tab==='outils' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'20px 0 6px' }}>Conformité réglementaire</h2>
             <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>DPE, encadrement des loyers, assurances — état de conformité de chaque bien.</p>
             <div style={{ ...CARD, padding:0 }}>
               {biens.map((b,i)=>{
