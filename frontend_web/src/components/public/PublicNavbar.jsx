@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import DS from '../../design/ds';
 import { useAuth } from '../../context/AuthContext';
 
-export default function PublicNavbar({ subNav = null, transparent = false }) {
+export default function PublicNavbar({ subNav = null, transparent = false, onMenuOpen = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth() || {};
@@ -39,15 +39,24 @@ export default function PublicNavbar({ subNav = null, transparent = false }) {
         transition: 'background .25s, border-color .25s, backdrop-filter .25s',
         fontFamily: DS.font,
       }}>
-        {/* Logo */}
-        <button onClick={() => navigate('/')} style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 18, fontWeight: 800, color: DS.ink, letterSpacing: '-0.05em',
-          display: 'flex', alignItems: 'center', gap: 2, fontFamily: DS.font,
-          lineHeight: 1,
-        }}>
-          Freample<span style={{ color: DS.gold }}>.</span>
-        </button>
+        {/* Hamburger + Logo */}
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+          {onMenuOpen && (
+            <button onClick={onMenuOpen} aria-label="Menu"
+              style={{ background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, padding:4, opacity:0.5, transition:'opacity .2s' }}
+              onMouseEnter={e=>e.currentTarget.style.opacity='1'} onMouseLeave={e=>e.currentTarget.style.opacity='0.5'}>
+              <span style={{ width:18, height:1.5, background:DS.ink, display:'block' }}/><span style={{ width:18, height:1.5, background:DS.ink, display:'block' }}/>
+            </button>
+          )}
+          <button onClick={() => navigate('/')} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 18, fontWeight: 800, color: DS.ink, letterSpacing: '-0.05em',
+            display: 'flex', alignItems: 'center', gap: 2, fontFamily: DS.font,
+            lineHeight: 1,
+          }}>
+            Freample<span style={{ color: DS.gold }}>.</span>
+          </button>
+        </div>
 
         {/* Actions droite */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>

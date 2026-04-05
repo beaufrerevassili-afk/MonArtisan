@@ -58,30 +58,29 @@ export default function FreampleCom(){
     <div style={{minHeight:'100vh',background:L.white,fontFamily:L.font,color:L.text}}>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
       <RecrutementBanner secteur="com"/>
-      <PublicNavbar/>
+      <PublicNavbar onMenuOpen={()=>setMenuOpen(true)}/>
 
-      {/* ══ HAMBURGER ══ */}
-      <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
-        style={{position:'fixed',top:72,left:'clamp(16px,3vw,32px)',zIndex:250,width:40,height:40,background:'rgba(255,255,255,0.85)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',border:'1px solid rgba(0,0,0,0.06)',borderRadius:10,cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,boxShadow:'0 2px 8px rgba(0,0,0,0.06)',transition:'all .25s'}}
-        onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,1)';e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)';}}
-        onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.85)';e.currentTarget.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';}}>
-        <span style={{width:16,height:1.5,background:L.noir,display:'block'}}/><span style={{width:16,height:1.5,background:L.noir,display:'block'}}/>
-      </button>
-
-      {/* ══ FULLSCREEN MENU ══ */}
-      <div style={{position:'fixed',inset:0,zIndex:2000,background:L.noir,opacity:menuOpen?1:0,pointerEvents:menuOpen?'auto':'none',transition:'opacity .45s cubic-bezier(0.4,0,0.2,1)',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center'}}>
-        <button onClick={()=>setMenuOpen(false)} style={{position:'absolute',top:20,right:28,background:'none',border:'none',cursor:'pointer',color:'#fff',fontSize:28,fontWeight:200,transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>✕</button>
-        <div style={{position:'absolute',top:24,left:28,fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.3em'}}>Freample Com</div>
-        <nav style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
-          {MENU.map((item,i)=>(
+      {/* ══ SIDEBAR MENU — Gucci style ══ */}
+      <div onClick={()=>setMenuOpen(false)} style={{position:'fixed',inset:0,zIndex:1999,background:'rgba(0,0,0,0.35)',opacity:menuOpen?1:0,pointerEvents:menuOpen?'auto':'none',transition:'opacity .35s'}}/>
+      <div style={{position:'fixed',top:0,left:0,bottom:0,zIndex:2000,width:'clamp(300px,85vw,400px)',background:L.white,transform:menuOpen?'translateX(0)':'translateX(-100%)',transition:'transform .4s cubic-bezier(0.25,0.46,0.45,0.94)',display:'flex',flexDirection:'column',boxShadow:menuOpen?'8px 0 32px rgba(0,0,0,0.1)':'none'}}>
+        <div style={{padding:'20px 28px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${L.border}`}}>
+          <div style={{fontSize:12,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em'}}>Freample Com</div>
+          <button onClick={()=>setMenuOpen(false)} style={{background:'none',border:`1px solid ${L.border}`,width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:14,color:L.textLight,transition:'border-color .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.borderColor=L.noir} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>✕</button>
+        </div>
+        <nav style={{flex:1,overflowY:'auto',padding:'12px 0'}}>
+          {MENU.map(item=>(
             <button key={item.label} onClick={()=>item.action?item.action():scrollTo(item.id)}
-              style={{background:'none',border:'none',cursor:'pointer',fontFamily:L.serif,fontSize:'clamp(28px,5vw,48px)',fontWeight:300,fontStyle:'italic',color:'#fff',padding:'12px 0',letterSpacing:'-0.02em',opacity:menuOpen?1:0,transform:menuOpen?'translateY(0)':'translateY(24px)',transition:`opacity .45s ${0.12+i*0.06}s, transform .45s ${0.12+i*0.06}s, color .2s`}}
-              onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>{item.label}</button>
+              style={{width:'100%',background:'none',border:'none',cursor:'pointer',fontFamily:L.font,textAlign:'left',padding:'14px 28px',fontSize:15,fontWeight:600,color:L.text,transition:'background .15s, color .15s',letterSpacing:'-0.01em'}}
+              onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.color=L.gold;}}
+              onMouseLeave={e=>{e.currentTarget.style.background='none';e.currentTarget.style.color=L.text;}}>
+              {item.label}
+            </button>
           ))}
         </nav>
-        <div style={{position:'absolute',bottom:28,display:'flex',gap:32,opacity:menuOpen?1:0,transition:'opacity .5s .4s'}}>
-          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'rgba(255,255,255,0.35)',textDecoration:'none',textTransform:'uppercase',letterSpacing:'0.1em',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>WhatsApp</a>
-          <a href="mailto:freamplecom@gmail.com" style={{fontSize:12,color:'rgba(255,255,255,0.35)',textDecoration:'none',textTransform:'uppercase',letterSpacing:'0.1em',transition:'color .2s'}} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>Email</a>
+        <div style={{padding:'16px 28px',borderTop:`1px solid ${L.border}`,display:'flex',gap:20}}>
+          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:L.textLight,textDecoration:'none',transition:'color .15s'}} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>WhatsApp</a>
+          <a href="mailto:freamplecom@gmail.com" style={{fontSize:11,color:L.textLight,textDecoration:'none',transition:'color .15s'}} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>Contact</a>
         </div>
       </div>
 
