@@ -382,8 +382,8 @@ export default function FreampleCom() {
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Détail</div>
             <h3 style={{ fontSize:22, fontWeight:300, margin:0, letterSpacing:'-0.02em' }}>Tous nos <span style={{ fontWeight:700 }}>tarifs</span></h3>
           </div>
-          {tarifs.map((t,i) => (
-            <details key={t.cat} style={{ marginBottom:1 }} open={i===0}>
+          {tarifs.filter(t => t.cat === 'Montage vidéo').map((t,i) => (
+            <details key={t.cat} style={{ marginBottom:1 }} open={true}>
               <summary style={{
                 padding:'16px 20px', background:L.white, border:`1px solid ${L.border}`,
                 cursor:'pointer', fontSize:14, fontWeight:600, color:L.text,
