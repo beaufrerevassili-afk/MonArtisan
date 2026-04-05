@@ -23,11 +23,11 @@ const DEFAULT_DATA = {
     { id:2, nom:'SCI Patrimoine 75', type:'IS', parts:500 },
   ],
   biens: [
-    { id:1, sciId:1, type:'Appartement', adresse:'24 rue de la Liberté, Nice', surface:65, valeur:180000, loyer:850, charges:150, locataireId:1 },
-    { id:2, sciId:1, type:'Studio', adresse:'8 av. Jean Médecin, Nice', surface:28, valeur:95000, loyer:550, charges:80, locataireId:2 },
-    { id:3, sciId:2, type:'Appartement', adresse:'15 rue du Faubourg, Paris 10e', surface:45, valeur:320000, loyer:1200, charges:200, locataireId:3 },
-    { id:4, sciId:2, type:'Local commercial', adresse:'42 bd Voltaire, Paris 11e', surface:55, valeur:280000, loyer:2200, charges:350, locataireId:4 },
-    { id:5, sciId:2, type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, valeur:250000, loyer:0, charges:180, locataireId:null },
+    { id:1, sciId:1, type:'Appartement', adresse:'24 rue de la Liberté, Nice', surface:65, valeur:180000, loyer:850, charges:150, locataireId:1, dpe:'C', loyerRef:null, assurance:{pno:220,gli:0}, taxeFonciere:1200 },
+    { id:2, sciId:1, type:'Studio', adresse:'8 av. Jean Médecin, Nice', surface:28, valeur:95000, loyer:550, charges:80, locataireId:2, dpe:'D', loyerRef:null, assurance:{pno:120,gli:180}, taxeFonciere:650 },
+    { id:3, sciId:2, type:'Appartement', adresse:'15 rue du Faubourg, Paris 10e', surface:45, valeur:320000, loyer:1200, charges:200, locataireId:3, dpe:'E', loyerRef:1350, assurance:{pno:180,gli:0}, taxeFonciere:2100 },
+    { id:4, sciId:2, type:'Local commercial', adresse:'42 bd Voltaire, Paris 11e', surface:55, valeur:280000, loyer:2200, charges:350, locataireId:4, dpe:null, loyerRef:null, assurance:{pno:350,gli:0}, taxeFonciere:3200 },
+    { id:5, sciId:2, type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, valeur:250000, loyer:0, charges:180, locataireId:null, dpe:'F', loyerRef:950, assurance:{pno:160,gli:0}, taxeFonciere:1800 },
   ],
   locataires: [
     { id:1, nom:'M. Martin', email:'martin@email.com', tel:'0612345678', debut:'2024-09-01', fin:'2027-08-31', depot:850 },
@@ -65,6 +65,17 @@ const DEFAULT_DATA = {
     { id:4, sciId:2, nom:'Marius L.', parts:100, role:'Associé' },
     { id:5, sciId:2, nom:'Maxence R.', parts:100, role:'Associé' },
   ],
+  banque: [
+    { id:1, date:'2026-04-01', label:'VIR Martin loyer avril', montant:850, bienId:1, rapproche:true },
+    { id:2, date:'2026-04-02', label:'VIR Duval loyer avril', montant:550, bienId:2, rapproche:true },
+    { id:3, date:'2026-04-01', label:'VIR Café Voltaire avril', montant:2200, bienId:4, rapproche:true },
+    { id:4, date:'2026-04-05', label:'PRLV Crédit Agricole ech.04', montant:-692, bienId:1, rapproche:true },
+    { id:5, date:'2026-04-05', label:'PRLV BNP ech.04', montant:-1056, bienId:3, rapproche:true },
+    { id:6, date:'2026-04-05', label:'PRLV SG ech.04', montant:-950, bienId:4, rapproche:true },
+    { id:7, date:'2026-04-10', label:'PRLV AXA PNO Riviera', montant:-220, bienId:1, rapproche:false },
+    { id:8, date:'2026-04-12', label:'CB Leroy Merlin robinet', montant:-89, bienId:2, rapproche:false },
+  ],
+  courriers: [],
   nextId: 20,
 };
 
@@ -112,6 +123,20 @@ export default function ImmoDemo() {
 
   const impayes = biens.filter(b=>b.locataireId && !data.paiements.find(p=>p.bienId===b.id && p.mois===currentMonth && p.statut==='paye'));
 
+  // Scoring locataire (basé sur historique paiements)
+  const getLocataireScore = (locId) => {
+    const bien = data.biens.find(b=>b.locataireId===locId);
+    if(!bien) return { score:0, label:'N/A', color:L.textLight };
+    const payments = data.paiements.filter(p=>p.bienId===bien.id);
+    const paid = payments.filter(p=>p.statut==='paye').length;
+    const total = Math.max(payments.length, 1);
+    const ratio = paid/total*100;
+    if(ratio>=95) return { score:ratio, label:'Excellent', color:L.green };
+    if(ratio>=80) return { score:ratio, label:'Bon', color:L.blue };
+    if(ratio>=60) return { score:ratio, label:'Moyen', color:L.orange };
+    return { score:ratio, label:'À risque', color:L.red };
+  };
+
   // Dépenses
   const depenses = activeSci ? (data.depenses||[]).filter(d=>biens.some(b=>b.id===d.bienId)) : (data.depenses||[]);
   const totalDepenses = depenses.reduce((s,d)=>s+d.montant,0);
@@ -133,6 +158,9 @@ export default function ImmoDemo() {
     { id:'finances', label:'Finances', icon:'📈' },
     { id:'associes', label:'Associés', icon:'🤝' },
     { id:'outils', label:'Outils de calcul', icon:'🧮' },
+    { id:'banque', label:'Rapprochement bancaire', icon:'🏦' },
+    { id:'conformite', label:'Conformité & DPE', icon:'📋' },
+    { id:'courriers', label:'Courriers', icon:'✉️' },
     { id:'strategie', label:'Stratégie', icon:'🏛️' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
   ];
@@ -351,17 +379,23 @@ export default function ImmoDemo() {
             <div style={{ ...CARD, padding:0 }}>
               {data.locataires.map((l,i)=>{
                 const bien = data.biens.find(b=>b.locataireId===l.id);
-                return <div key={l.id} style={{ padding:'14px 18px', borderBottom:i<data.locataires.length-1?`1px solid ${L.border}`:'none', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:700 }}>{l.nom}</div>
+                const score = getLocataireScore(l.id);
+                const joursBail = bien ? Math.floor((new Date(l.fin)-new Date())/(1000*60*60*24)) : 0;
+                return <div key={l.id} style={{ padding:'14px 18px', borderBottom:i<data.locataires.length-1?`1px solid ${L.border}`:'none', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
+                      <span style={{ fontSize:14, fontWeight:700 }}>{l.nom}</span>
+                      <span style={{ fontSize:10, fontWeight:700, color:score.color, background:`${score.color}15`, padding:'2px 8px' }}>{score.label} ({score.score.toFixed(0)}%)</span>
+                      {joursBail>0&&joursBail<180 && <span style={{ fontSize:10, fontWeight:600, color:L.orange, background:L.orangeBg, padding:'2px 8px' }}>Bail expire dans {joursBail}j</span>}
+                    </div>
                     <div style={{ fontSize:12, color:L.textSec }}>{l.email} · {l.tel}</div>
                     <div style={{ fontSize:11, color:L.textLight }}>Bail: {l.debut} → {l.fin} · Dépôt: {l.depot}€</div>
                   </div>
-                  <div style={{ textAlign:'right' }}>
+                  <div style={{ textAlign:'right', flexShrink:0 }}>
                     {bien ? <>
-                      <div style={{ fontSize:13, fontWeight:700, color:L.green }}>{bien.loyer}€/mois</div>
-                      <div style={{ fontSize:11, color:L.textSec }}>{bien.adresse.slice(0,30)}...</div>
-                    </> : <span style={{ fontSize:11, color:L.textLight }}>Sans bien assigné</span>}
+                      <div style={{ fontSize:14, fontWeight:700, color:L.green }}>{bien.loyer}€/mois</div>
+                      <div style={{ fontSize:11, color:L.textSec }}>{bien.adresse.split(',')[0]}</div>
+                    </> : <span style={{ fontSize:11, color:L.textLight }}>Sans bien</span>}
                   </div>
                 </div>;
               })}
@@ -682,6 +716,113 @@ export default function ImmoDemo() {
                   Ici: micro = {(totalLoyers*12*0.7).toFixed(0)}€ vs réel = {Math.max(0,(totalLoyers*12-totalCharges*12-totalDepenses-totalMensualites*12*0.35)).toFixed(0)}€ → <strong>{(totalLoyers*12*0.7) > Math.max(0,(totalLoyers*12-totalCharges*12-totalDepenses-totalMensualites*12*0.35)) ? 'Régime réel recommandé' : 'Micro-foncier suffisant'}</strong>
                 </div>
               </div>
+            </div>
+          </>}
+
+          {/* ═══ RAPPROCHEMENT BANCAIRE ═══ */}
+          {tab==='banque' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Rapprochement bancaire</h2>
+            <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Transactions détectées automatiquement — associez chaque mouvement à un bien.</p>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:10, marginBottom:16 }}>
+              {[
+                { l:'Entrées', v:`+${(data.banque||[]).filter(t=>t.montant>0).reduce((s,t)=>s+t.montant,0).toLocaleString()}€`, c:L.green },
+                { l:'Sorties', v:`${(data.banque||[]).filter(t=>t.montant<0).reduce((s,t)=>s+t.montant,0).toLocaleString()}€`, c:L.red },
+                { l:'Solde', v:`${(data.banque||[]).reduce((s,t)=>s+t.montant,0).toLocaleString()}€`, c:L.blue },
+                { l:'Rapprochées', v:`${(data.banque||[]).filter(t=>t.rapproche).length}/${(data.banque||[]).length}`, c:L.gold },
+              ].map(k=><div key={k.l} style={{ ...CARD }}><div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{k.l}</div><div style={{ fontSize:18, fontWeight:200, color:k.c, fontFamily:L.serif }}>{k.v}</div></div>)}
+            </div>
+            <div style={{ ...CARD, padding:0 }}>
+              <div style={{ padding:'10px 18px', borderBottom:`1px solid ${L.border}`, display:'grid', gridTemplateColumns:'90px 1fr 100px 80px', gap:8, fontSize:11, fontWeight:700, color:L.textSec }}>
+                <span>Date</span><span>Libellé</span><span style={{ textAlign:'right' }}>Montant</span><span style={{ textAlign:'center' }}>Statut</span>
+              </div>
+              {(data.banque||[]).sort((a,b)=>b.date.localeCompare(a.date)).map((t,i,arr)=>(
+                <div key={t.id} style={{ padding:'10px 18px', borderBottom:i<arr.length-1?`1px solid ${L.border}`:'none', display:'grid', gridTemplateColumns:'90px 1fr 100px 80px', gap:8, alignItems:'center', fontSize:12 }}>
+                  <span style={{ color:L.textLight }}>{new Date(t.date).toLocaleDateString('fr-FR')}</span>
+                  <span style={{ fontWeight:500 }}>{t.label}</span>
+                  <span style={{ textAlign:'right', fontWeight:700, color:t.montant>=0?L.green:L.red }}>{t.montant>=0?'+':''}{t.montant}€</span>
+                  <span style={{ textAlign:'center' }}>{t.rapproche ? <span style={{ fontSize:10, fontWeight:700, color:L.green, background:L.greenBg, padding:'2px 8px' }}>✓</span> :
+                    <button onClick={()=>setData(d=>({...d, banque:d.banque.map(x=>x.id===t.id?{...x,rapproche:true}:x)}))} style={{ fontSize:10, fontWeight:600, color:L.blue, background:L.blueBg, border:'none', padding:'2px 8px', cursor:'pointer' }}>Rapprocher</button>}</span>
+                </div>
+              ))}
+            </div>
+          </>}
+
+          {/* ═══ CONFORMITÉ & DPE ═══ */}
+          {tab==='conformite' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Conformité réglementaire</h2>
+            <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>DPE, encadrement des loyers, assurances — état de conformité de chaque bien.</p>
+            <div style={{ ...CARD, padding:0 }}>
+              {biens.map((b,i)=>{
+                const dpeColors = {A:L.green,B:L.green,C:'#84CC16',D:L.orange,E:L.orange,F:L.red,G:L.red};
+                const dpeOk = b.dpe && !['F','G'].includes(b.dpe);
+                const loyerOk = !b.loyerRef || b.loyer <= b.loyerRef;
+                const pnoOk = b.assurance?.pno > 0;
+                return <div key={b.id} style={{ padding:'16px 18px', borderBottom:i<biens.length-1?`1px solid ${L.border}`:'none' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700 }}>{b.adresse}</div>
+                      <div style={{ fontSize:11, color:L.textSec }}>{b.type} · {b.surface}m²</div>
+                    </div>
+                    <div style={{ display:'flex', gap:4 }}>
+                      {b.dpe && <span style={{ fontSize:12, fontWeight:800, color:'#fff', background:dpeColors[b.dpe]||L.textLight, padding:'2px 10px' }}>DPE {b.dpe}</span>}
+                      {!b.dpe && <span style={{ fontSize:10, fontWeight:600, color:L.red, background:L.redBg, padding:'2px 8px' }}>DPE manquant</span>}
+                    </div>
+                  </div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+                    {/* DPE */}
+                    <div style={{ background:dpeOk?L.greenBg:L.redBg, border:`1px solid ${dpeOk?L.green:L.red}20`, padding:'10px 12px' }}>
+                      <div style={{ fontSize:10, fontWeight:600, color:dpeOk?L.green:L.red, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>DPE</div>
+                      <div style={{ fontSize:12, fontWeight:600, color:dpeOk?L.green:L.red }}>{dpeOk ? `Classe ${b.dpe} — Conforme` : b.dpe ? `Classe ${b.dpe} — Interdit à la location` : 'Diagnostic manquant'}</div>
+                      {b.dpe && ['F','G'].includes(b.dpe) && <div style={{ fontSize:10, color:L.red, marginTop:4 }}>Loi Climat : obligation de rénovation énergétique</div>}
+                    </div>
+                    {/* Encadrement loyers */}
+                    <div style={{ background:loyerOk?L.greenBg:L.redBg, border:`1px solid ${loyerOk?L.green:L.red}20`, padding:'10px 12px' }}>
+                      <div style={{ fontSize:10, fontWeight:600, color:loyerOk?L.green:L.red, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>Loyer</div>
+                      {b.loyerRef ? <div style={{ fontSize:12, fontWeight:600, color:loyerOk?L.green:L.red }}>
+                        {b.loyer}€ / {b.loyerRef}€ max {loyerOk?'✓':'✕'}
+                      </div> : <div style={{ fontSize:12, color:L.textLight }}>Zone non encadrée</div>}
+                    </div>
+                    {/* Assurance */}
+                    <div style={{ background:pnoOk?L.greenBg:L.redBg, border:`1px solid ${pnoOk?L.green:L.red}20`, padding:'10px 12px' }}>
+                      <div style={{ fontSize:10, fontWeight:600, color:pnoOk?L.green:L.red, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>Assurance PNO</div>
+                      <div style={{ fontSize:12, fontWeight:600, color:pnoOk?L.green:L.red }}>{pnoOk ? `${b.assurance.pno}€/an — Actif` : 'Non souscrite'}</div>
+                      {b.assurance?.gli>0 && <div style={{ fontSize:10, color:L.blue, marginTop:2 }}>+ GLI {b.assurance.gli}€/an</div>}
+                    </div>
+                  </div>
+                  {b.taxeFonciere>0 && <div style={{ fontSize:11, color:L.textSec, marginTop:8 }}>Taxe foncière: {b.taxeFonciere}€/an · {(b.taxeFonciere/12).toFixed(0)}€/mois</div>}
+                </div>;
+              })}
+            </div>
+            {biens.some(b=>b.dpe&&['F','G'].includes(b.dpe)) && <div style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginTop:12, fontSize:12, color:L.red, lineHeight:1.7 }}>
+              <strong>⚠️ Attention :</strong> Vous avez des biens classés F ou G. Depuis le 1er janvier 2025, les logements classés G sont interdits à la location. Les F seront interdits en 2028. Planifiez vos travaux de rénovation énergétique.
+              <div style={{ marginTop:8 }}><button onClick={()=>navigate('/btp')} style={{ ...BTN, fontSize:11, padding:'6px 14px', background:L.blue }}>🔧 Trouver un artisan RGE</button></div>
+            </div>}
+          </>}
+
+          {/* ═══ COURRIERS ═══ */}
+          {tab==='courriers' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Courriers types</h2>
+            <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Générez des courriers juridiquement conformes en 1 clic.</p>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:10 }}>
+              {[
+                { icon:'⚠️', title:'Mise en demeure', desc:'Relance formelle pour loyer impayé. Délai de 8 jours.', color:L.red, action:()=>{if(impayes[0]) setModal({type:'miseEnDemeure',data:{bien:impayes[0],loc:getLocataire(impayes[0].locataireId)}});else showToast('Aucun impayé');} },
+                { icon:'📈', title:'Augmentation de loyer', desc:'Notification d\'augmentation basée sur l\'IRL. Préavis 6 mois.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'augmentation'}}) },
+                { icon:'🚪', title:'Congé pour vente', desc:'Notification au locataire de la vente du bien. Préavis 6 mois.', color:L.orange, action:()=>setModal({type:'courrier',data:{type:'conge_vente'}}) },
+                { icon:'🔄', title:'Renouvellement bail', desc:'Proposition de renouvellement du bail. Conditions identiques ou modifiées.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'renouvellement'}}) },
+                { icon:'📋', title:'Régularisation des charges', desc:'Décompte annuel provisions vs charges réelles.', color:L.green, action:()=>setModal({type:'courrier',data:{type:'regularisation'}}) },
+                { icon:'📝', title:'Attestation de loyer', desc:'Attestation pour les démarches CAF / APL du locataire.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'attestation'}}) },
+              ].map(c=>(
+                <div key={c.title} onClick={c.action} style={{ ...CARD, cursor:'pointer', transition:'all .15s', borderLeft:`3px solid ${c.color}` }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=c.color;e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.04)';}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.borderLeftColor=c.color;e.currentTarget.style.boxShadow='none';}}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                    <span style={{ fontSize:20 }}>{c.icon}</span>
+                    <span style={{ fontSize:14, fontWeight:700, color:L.text }}>{c.title}</span>
+                  </div>
+                  <div style={{ fontSize:12, color:L.textSec, lineHeight:1.5 }}>{c.desc}</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:c.color, marginTop:8 }}>Générer →</div>
+                </div>
+              ))}
             </div>
           </>}
 
