@@ -19,8 +19,8 @@ const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août'
 
 const DEFAULT_DATA = {
   scis: [
-    { id:1, nom:'SCI Riviera', type:'IR', parts:100 },
-    { id:2, nom:'SCI Patrimoine 75', type:'IS', parts:500 },
+    { id:1, nom:'SCI Riviera', type:'IR', parts:100, tva:false, cloture:'12-31', siret:'12345678900012' },
+    { id:2, nom:'SCI Patrimoine 75', type:'IS', parts:500, tva:true, cloture:'12-31', siret:'98765432100034' },
   ],
   biens: [
     { id:1, sciId:1, nom:'Appt Liberté', type:'Appartement', adresse:'24 rue de la Liberté, Nice', surface:65, pieces:3, prixAchat:165000, fraisNotaire:12400, travaux:8000, dateAcquisition:'2022-06-15', valeur:180000, loyer:850, autresRevenus:0, charges:150, chargesNonRecup:50, vacanceLocative:0, locataireId:1, dpe:'C', loyerRef:null, assurance:{pno:220,gli:0}, taxeFonciere:1200 },
@@ -707,6 +707,9 @@ export default function ImmoDemo() {
             <div style={{ display:'flex', gap:0, marginBottom:16, borderBottom:`1px solid ${L.border}` }}>
               {[
                 { id:'resume', label:'Résumé' },
+                { id:'resultat', label:'Résultat/bien' },
+                { id:'tva', label:'TVA' },
+                { id:'etatlocatif', label:'État locatif' },
                 { id:'depenses', label:'Dépenses' },
                 { id:'credits', label:'Crédits' },
                 { id:'banque', label:'Banque' },
@@ -719,6 +722,134 @@ export default function ImmoDemo() {
                 </button>
               ))}
             </div>
+
+          {/* ── RÉSULTAT FISCAL PAR BIEN ── */}
+          {subFin==='resultat' && <>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+              <h2 style={{ fontSize:16, fontWeight:800, margin:0 }}>Résultat fiscal par bien</h2>
+              <button onClick={()=>{
+                const rows=[['Bien','Adresse','SCI','Loyers','Charges','TF','Intérêts','Résultat']];
+                biens.forEach(b=>{
+                  const s=data.scis.find(x=>x.id===b.sciId);
+                  const cr=(data.credits||[]).find(c=>c.bienId===b.id);
+                  const int=cr?Math.round(cr.restant*cr.taux/100):0;
+                  const dep=(data.depenses||[]).filter(d=>d.bienId===b.id).reduce((s,d)=>s+d.montant,0);
+                  const res=b.loyer*12-(b.charges*12)-(b.taxeFonciere||0)-int-dep;
+                  rows.push([b.nom||b.type,b.adresse,s?.nom||'',`${b.loyer*12}`,`${b.charges*12}`,`${b.taxeFonciere||0}`,`${int}`,`${res}`]);
+                });
+                const csv=rows.map(r=>r.join(';')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resultat_fiscal_par_bien.csv';a.click();showToast('Export CSV');
+              }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>📥 Export</button>
+            </div>
+            <div style={{ ...CARD, padding:0 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr', padding:'10px 14px', fontSize:10, fontWeight:700, color:L.textSec, borderBottom:`2px solid ${L.border}` }}>
+                <span>Bien</span><span style={{textAlign:'right'}}>Loyers/an</span><span style={{textAlign:'right'}}>Charges/an</span><span style={{textAlign:'right'}}>TF</span><span style={{textAlign:'right'}}>Intérêts</span><span style={{textAlign:'right'}}>Résultat</span>
+              </div>
+              {biens.map(b=>{
+                const cr=(data.credits||[]).find(c=>c.bienId===b.id);
+                const int=cr?Math.round(cr.restant*cr.taux/100):0;
+                const dep=(data.depenses||[]).filter(d=>d.bienId===b.id).reduce((s,d)=>s+d.montant,0);
+                const res=b.loyer*12-b.charges*12-(b.taxeFonciere||0)-int-dep;
+                return <div key={b.id} style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr', padding:'10px 14px', fontSize:12, borderBottom:`1px solid ${L.border}` }}>
+                  <span style={{ fontWeight:600 }}>{b.nom||b.type}<br/><span style={{ fontSize:10, color:L.textLight }}>{b.adresse.split(',')[0]}</span></span>
+                  <span style={{ textAlign:'right', color:L.green }}>{(b.loyer*12).toLocaleString()}€</span>
+                  <span style={{ textAlign:'right', color:L.red }}>{(b.charges*12).toLocaleString()}€</span>
+                  <span style={{ textAlign:'right', color:L.red }}>{(b.taxeFonciere||0).toLocaleString()}€</span>
+                  <span style={{ textAlign:'right', color:L.orange }}>{int.toLocaleString()}€</span>
+                  <span style={{ textAlign:'right', fontWeight:700, color:res>=0?L.green:L.red }}>{res.toLocaleString()}€</span>
+                </div>;
+              })}
+              <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr 1fr', padding:'12px 14px', fontSize:12, fontWeight:800, borderTop:`2px solid ${L.border}` }}>
+                <span>TOTAL</span>
+                <span style={{ textAlign:'right', color:L.green }}>{(totalLoyers*12).toLocaleString()}€</span>
+                <span style={{ textAlign:'right', color:L.red }}>{(totalCharges*12).toLocaleString()}€</span>
+                <span style={{ textAlign:'right', color:L.red }}>{biens.reduce((s,b)=>s+(b.taxeFonciere||0),0).toLocaleString()}€</span>
+                <span style={{ textAlign:'right', color:L.orange }}>{credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0).toLocaleString()}€</span>
+                <span style={{ textAlign:'right', color:(totalLoyers*12-totalCharges*12-biens.reduce((s,b)=>s+(b.taxeFonciere||0),0)-credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0)-totalDepenses)>=0?L.green:L.red }}>{(totalLoyers*12-totalCharges*12-biens.reduce((s,b)=>s+(b.taxeFonciere||0),0)-credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0)-totalDepenses).toLocaleString()}€</span>
+              </div>
+            </div>
+            {/* Quote-parts par associé */}
+            <div style={{ ...CARD, marginTop:12 }}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>Répartition par associé (quotes-parts)</div>
+              {data.scis.map(s=>{
+                const sciBiens=data.biens.filter(b=>b.sciId===s.id);
+                const sciRes=sciBiens.reduce((sum,b)=>{const cr=(data.credits||[]).find(c=>c.bienId===b.id);const int=cr?Math.round(cr.restant*cr.taux/100):0;const dep=(data.depenses||[]).filter(d=>d.bienId===b.id).reduce((s,d)=>s+d.montant,0);return sum+b.loyer*12-b.charges*12-(b.taxeFonciere||0)-int-dep;},0);
+                const ass=(data.associes||[]).filter(a=>a.sciId===s.id);const totalParts=ass.reduce((s,a)=>s+a.parts,0);
+                return <div key={s.id} style={{ marginBottom:8 }}>
+                  <div style={{ fontSize:12, fontWeight:700, marginBottom:4 }}>🏛️ {s.nom} — Résultat: {sciRes.toLocaleString()}€</div>
+                  {ass.map(a=><div key={a.id} style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'3px 0', paddingLeft:16 }}>
+                    <span style={{ color:L.textSec }}>{a.nom} ({a.parts}/{totalParts} parts)</span>
+                    <span style={{ fontWeight:700, color:sciRes>=0?L.green:L.red }}>{totalParts>0?Math.round(sciRes*a.parts/totalParts).toLocaleString():0}€</span>
+                  </div>)}
+                </div>;
+              })}
+            </div>
+          </>}
+
+          {/* ── TVA ── */}
+          {subFin==='tva' && <>
+            <h2 style={{ fontSize:16, fontWeight:800, margin:'0 0 12px' }}>TVA collectée & déductible</h2>
+            {data.scis.filter(s=>s.tva).length===0 ? (
+              <div style={{ ...CARD, textAlign:'center', padding:32, color:L.textLight }}>
+                <div style={{ fontSize:32, marginBottom:8, opacity:0.3 }}>🚫</div>
+                <div style={{ fontSize:14 }}>Aucune SCI assujettie à la TVA</div>
+                <div style={{ fontSize:12, marginTop:4 }}>Modifiez les paramètres de vos SCI pour activer la TVA.</div>
+              </div>
+            ) : data.scis.filter(s=>s.tva).map(s=>{
+              const sciBiens=data.biens.filter(b=>b.sciId===s.id);
+              const loyersHT=sciBiens.reduce((sum,b)=>sum+b.loyer,0)*12;
+              const tvaCollectee=Math.round(loyersHT*0.20);
+              const chargesHT=sciBiens.reduce((sum,b)=>sum+b.charges,0)*12+totalDepenses;
+              const tvaDeductible=Math.round(chargesHT*0.20);
+              const tvaNette=tvaCollectee-tvaDeductible;
+              return <div key={s.id} style={{ ...CARD, marginBottom:12 }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>🏛️ {s.nom}</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                  <div style={{ background:L.cream, padding:'12px', textAlign:'center' }}>
+                    <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>TVA collectée</div>
+                    <div style={{ fontSize:18, fontWeight:200, color:L.red, fontFamily:L.serif }}>{tvaCollectee.toLocaleString()}€</div>
+                  </div>
+                  <div style={{ background:L.cream, padding:'12px', textAlign:'center' }}>
+                    <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', marginBottom:4 }}>TVA déductible</div>
+                    <div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{tvaDeductible.toLocaleString()}€</div>
+                  </div>
+                  <div style={{ background:L.noir, padding:'12px', textAlign:'center', color:'#fff' }}>
+                    <div style={{ fontSize:10, color:L.gold, textTransform:'uppercase', marginBottom:4 }}>TVA nette à reverser</div>
+                    <div style={{ fontSize:18, fontWeight:200, fontFamily:L.serif }}>{tvaNette.toLocaleString()}€</div>
+                  </div>
+                </div>
+              </div>;
+            })}
+          </>}
+
+          {/* ── ÉTAT LOCATIF ── */}
+          {subFin==='etatlocatif' && <>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+              <h2 style={{ fontSize:16, fontWeight:800, margin:0 }}>État locatif général</h2>
+              <button onClick={()=>window.print()} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>🖨️ Imprimer</button>
+            </div>
+            <div style={{ ...CARD, padding:0 }}>
+              <div style={{ padding:'12px 18px', background:L.cream, borderBottom:`1px solid ${L.border}`, display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1.5fr', fontSize:10, fontWeight:700, color:L.textSec }}>
+                <span>Bien</span><span>Surface</span><span>Loyer</span><span>Statut</span><span>Locataire / Bail</span>
+              </div>
+              {biens.map(b=>{
+                const loc=getLocataire(b.locataireId);
+                return <div key={b.id} style={{ padding:'10px 18px', borderBottom:`1px solid ${L.border}`, display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1.5fr', fontSize:12, alignItems:'center' }}>
+                  <div><div style={{ fontWeight:600 }}>{b.nom||b.type}</div><div style={{ fontSize:10, color:L.textLight }}>{b.adresse}</div></div>
+                  <span>{b.surface}m² · {b.pieces}p</span>
+                  <span style={{ fontWeight:700, color:b.loyer>0?L.green:L.textLight }}>{b.loyer>0?`${b.loyer}€`:'—'}</span>
+                  <span style={{ fontWeight:600, color:loc?L.green:L.red }}>{loc?'Loué':'Vacant'}</span>
+                  <div>{loc ? <><div style={{ fontSize:11 }}>{loc.prenom} {loc.nom}</div><div style={{ fontSize:10, color:L.textLight }}>{loc.debut} → {loc.fin}</div></> : <span style={{ fontSize:11, color:L.textLight }}>—</span>}</div>
+                </div>;
+              })}
+              <div style={{ padding:'12px 18px', background:L.cream, display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1.5fr', fontSize:12, fontWeight:800 }}>
+                <span>{biens.length} biens</span>
+                <span>{biens.reduce((s,b)=>s+b.surface,0)}m²</span>
+                <span style={{ color:L.green }}>{totalLoyers}€/mois</span>
+                <span>{occupation}% occupé</span>
+                <span>{data.locataires.length} locataires</span>
+              </div>
+            </div>
+          </>}
 
           {subFin==='depenses' && <>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
@@ -1321,6 +1452,7 @@ export default function ImmoDemo() {
                 { icon:'🔄', title:'Renouvellement bail', desc:'Proposition de renouvellement du bail. Conditions identiques ou modifiées.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'renouvellement'}}) },
                 { icon:'📋', title:'Régularisation des charges', desc:'Décompte annuel provisions vs charges réelles.', color:L.green, action:()=>setModal({type:'courrier',data:{type:'regularisation'}}) },
                 { icon:'📝', title:'Attestation de loyer', desc:'Attestation pour les démarches CAF / APL du locataire.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'attestation'}}) },
+                { icon:'📑', title:'Contrat de bail', desc:'Bail d\'habitation conforme loi ELAN/ALUR. Meublé ou vide.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'bail'}}) },
               ].map(c=>(
                 <div key={c.title} onClick={c.action} style={{ ...CARD, cursor:'pointer', transition:'all .15s', borderLeft:`3px solid ${c.color}` }}
                   onMouseEnter={e=>{e.currentTarget.style.borderColor=c.color;e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.04)';}}
@@ -2254,6 +2386,7 @@ export default function ImmoDemo() {
               renouvellement:{titre:'Proposition de renouvellement de bail',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nVotre bail arrivant à échéance le ${loc?.fin||''}, je vous propose son renouvellement aux conditions suivantes :\n\nDurée : 3 ans\nLoyer mensuel : ${bien?.loyer||0}€\nCharges : ${bien?.charges||0}€/mois\n\nLes autres conditions restent inchangées.\n\nDans l'attente de votre réponse, veuillez agréer mes salutations distinguées.\n\nLe bailleur`},
               regularisation:{titre:'Régularisation annuelle des charges',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nConformément à l'article 23 de la loi du 6 juillet 1989, je procède à la régularisation annuelle des charges locatives.\n\nProvisions versées : ${(bien?.charges||0)*12}€\nCharges réelles : à compléter\nSolde : à calculer\n\nLe détail des charges est à votre disposition sur demande.\n\nLe bailleur`},
               attestation:{titre:'Attestation de loyer (CAF/APL)',corps:`Je soussigné(e), bailleur du logement situé au ${bien?.adresse||''}, certifie que :\n\nMonsieur/Madame ${loc?.prenom||''} ${loc?.nom||''} est locataire de ce logement depuis le ${loc?.debut||''}.\n\nLe montant du loyer mensuel est de ${bien?.loyer||0}€ hors charges.\nLe montant des charges mensuelles est de ${bien?.charges||0}€.\n\nCette attestation est délivrée pour servir et valoir ce que de droit.\n\nFait à __________, le ${new Date().toLocaleDateString('fr-FR')}\n\nLe bailleur\n(Signature)`},
+              bail:{titre:'Contrat de bail d\'habitation (Loi ELAN/ALUR)',corps:`CONTRAT DE LOCATION\nLoi n°89-462 du 6 juillet 1989 modifiée par la loi ELAN du 23 novembre 2018\n\n1. DÉSIGNATION DES PARTIES\nBailleur : SCI / Propriétaire\nLocataire : ${loc?.prenom||''} ${loc?.nom||''}\n\n2. OBJET DU CONTRAT\nBien situé au : ${bien?.adresse||''}\nType : ${bien?.type||''}\nSurface habitable : ${bien?.surface||''}m²\nNombre de pièces : ${bien?.pieces||''}\n\n3. DURÉE\nDurée du bail : 3 ans (vide) / 1 an (meublé)\nDate de prise d'effet : ${loc?.debut||''}\nDate de fin : ${loc?.fin||''}\n\n4. CONDITIONS FINANCIÈRES\nLoyer mensuel : ${bien?.loyer||0}€ hors charges\nCharges mensuelles : ${bien?.charges||0}€ (provision)\nDépôt de garantie : ${loc?.depot||0}€\nMode de paiement : Virement bancaire\n\n5. CLAUSE RÉSOLUTOIRE\nConformément à l'article 24 de la loi du 6 juillet 1989, le bail sera résilié de plein droit en cas de non-paiement du loyer.\n\n6. DIAGNOSTICS\nDPE : ${bien?.dpe||'À fournir'}\nConformément aux articles L134-1 et suivants du Code de la construction.\n\nFait en deux exemplaires à __________, le ${new Date().toLocaleDateString('fr-FR')}\n\nLe bailleur                    Le locataire\n(Signature)                    (Signature)`},
             };
             const tpl=templates[type]||{titre:'Courrier',corps:''};
             const allLocs=data.locataires.filter(l=>data.biens.some(b=>b.locataireId===l.id));
