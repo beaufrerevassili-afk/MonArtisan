@@ -71,19 +71,18 @@ export default function FreampleCom() {
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
 
-      {/* ══ HAMBURGER MENU — Gucci style ══ */}
+      {/* ══ HAMBURGER — discret, intégré dans la navbar ══ */}
       <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
         style={{
-          position:'fixed', top:20, left:20, zIndex:1100, width:44, height:44,
-          background:'rgba(10,10,10,0.7)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)',
-          border:'none', cursor:'pointer', display:'flex', flexDirection:'column',
-          alignItems:'center', justifyContent:'center', gap:5, transition:'all .2s',
+          position:'fixed', top:16, right:'clamp(16px,4vw,48px)', zIndex:1100,
+          width:36, height:36, background:'none', border:'none', cursor:'pointer',
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5,
+          opacity:0.5, transition:'opacity .25s',
         }}
-        onMouseEnter={e=>e.currentTarget.style.background='rgba(10,10,10,0.9)'}
-        onMouseLeave={e=>e.currentTarget.style.background='rgba(10,10,10,0.7)'}>
-        <span style={{ width:20, height:1.5, background:'#fff', display:'block' }} />
-        <span style={{ width:20, height:1.5, background:'#fff', display:'block' }} />
-        <span style={{ width:14, height:1.5, background:'#fff', display:'block', alignSelf:'flex-start', marginLeft:12 }} />
+        onMouseEnter={e=>e.currentTarget.style.opacity='1'}
+        onMouseLeave={e=>e.currentTarget.style.opacity='0.5'}>
+        <span style={{ width:18, height:1, background:L.noir, display:'block', transition:'all .2s' }} />
+        <span style={{ width:18, height:1, background:L.noir, display:'block', transition:'all .2s' }} />
       </button>
 
       {/* ══ FULLSCREEN OVERLAY MENU ══ */}
