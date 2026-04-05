@@ -177,7 +177,7 @@ export default function ProLanding() {
             <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.12 }}>
               Pas d'abonnement, <span style={{ fontWeight:700, fontStyle:'normal' }}>pas de surprise</span>
             </h2>
-            <p style={{ fontSize:15, color:L.textSec }}>Vous ne payez qu'une commission sur les transactions clients réalisées via la plateforme.</p>
+            <p style={{ fontSize:15, color:L.textSec }}>La commission est prélevée sur le client, pas sur vous. Vous recevez 100% de votre prestation.</p>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:0, border:`1px solid ${L.border}` }}>
             {/* Comment ça marche */}
@@ -187,7 +187,7 @@ export default function ProLanding() {
                 { step:'1', desc:'Le client vous trouve et demande un devis' },
                 { step:'2', desc:'Vous envoyez le devis depuis Freample' },
                 { step:'3', desc:'Le client paie en ligne via la plateforme' },
-                { step:'4', desc:'Une commission est prélevée automatiquement' },
+                { step:'4', desc:'Une commission est prélevée automatiquement sur le client' },
               ].map(s=>(
                 <div key={s.step} style={{ display:'flex', gap:12, marginBottom:14, alignItems:'flex-start' }}>
                   <div style={{ width:24, height:24, background:L.gold, color:'#fff', fontSize:12, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.step}</div>
@@ -225,7 +225,7 @@ export default function ProLanding() {
           </div>
           {[
             { q:'L\'inscription est-elle gratuite ?', a:'Oui, l\'inscription et l\'accès à toutes les fonctionnalités sont gratuits. Pas d\'abonnement.' },
-            { q:'Comment fonctionne la commission ?', a:'Une commission est prélevée uniquement sur les paiements clients effectués via la plateforme. Pas de paiement via Freample = pas de commission.' },
+            { q:'Comment fonctionne la commission ?', a:'La commission est prélevée sur le client, pas sur le professionnel. Vous recevez 100% du montant de votre prestation.' },
             { q:'Combien de temps pour s\'inscrire ?', a:'5 minutes. Renseignez votre activité, créez votre profil et commencez à recevoir des demandes.' },
             { q:'Quels secteurs sont disponibles ?', a:'BTP (plomberie, électricité, peinture…) et communication (montage vidéo, création de contenu). D\'autres secteurs arrivent.' },
             { q:'Mes données sont-elles sécurisées ?', a:'Oui, hébergement sécurisé, chiffrement SSL, sauvegardes quotidiennes.' },
