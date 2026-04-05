@@ -94,8 +94,14 @@ export default function PublicNavbar({ subNav = null, transparent = false }) {
               )}
             </div>
           ) : (
-            /* ── Non connecté : boutons login/register ── */
+            /* ── Non connecté : Espace pro + login/register ── */
             <>
+              <button onClick={() => navigate('/pro')}
+                style={{ padding: '7px 14px', background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: DS.muted, cursor: 'pointer', transition: 'color .15s', fontFamily: DS.font }}
+                onMouseEnter={e => e.currentTarget.style.color = DS.ink}
+                onMouseLeave={e => e.currentTarget.style.color = DS.muted}>
+                Espace pro
+              </button>
               <button onClick={() => {
                   const sector = location.pathname.split('/')[1];
                   const valid = ['vacances','restaurant','coiffure','btp','course','eat','com'];
