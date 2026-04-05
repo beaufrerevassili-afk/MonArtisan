@@ -2107,9 +2107,16 @@ export default function ImmoDemo() {
               <p>Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
               <p style={{ marginTop:20 }}>Le bailleur,<br/><em>(Signature)</em></p>
             </div>
-            <div style={{ display:'flex', gap:8 }}>
-              <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
-              <button onClick={()=>{enregistrerPaiement(modal.data.bien?.id);setModal(null);}} style={{ ...BTN, flex:1, background:L.green }}>Marquer comme payé</button>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+              <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>🖨️ Imprimer</button>
+              <button onClick={()=>{
+                const email=modal.data.loc?.email;
+                if(!email){showToast('Pas d\'email');return;}
+                const corps=`Objet : Mise en demeure de payer — Loyer impayé\n\nMadame, Monsieur ${modal.data.loc?.nom},\n\nJe constate que le loyer de ${modal.data.bien?.loyer}€ relatif au bien situé au ${modal.data.bien?.adresse} n'a pas été réglé.\n\nJe vous mets en demeure de procéder au règlement dans un délai de 8 jours.\n\nLe bailleur`;
+                window.open(`mailto:${email}?subject=${encodeURIComponent('Mise en demeure — Loyer impayé')}&body=${encodeURIComponent(corps)}`, '_blank');
+                showToast(`Email préparé pour ${modal.data.loc?.nom}`);
+              }} style={{ ...BTN, flex:1, background:L.blue }}>📧 Email</button>
+              <button onClick={()=>{enregistrerPaiement(modal.data.bien?.id);setModal(null);}} style={{ ...BTN, flex:1, background:L.green }}>✓ Payé</button>
             </div>
           </>}
 
@@ -2154,17 +2161,33 @@ export default function ImmoDemo() {
               attestation:{titre:'Attestation de loyer (CAF/APL)',corps:`Je soussigné(e), bailleur du logement situé au ${bien?.adresse||''}, certifie que :\n\nMonsieur/Madame ${loc?.prenom||''} ${loc?.nom||''} est locataire de ce logement depuis le ${loc?.debut||''}.\n\nLe montant du loyer mensuel est de ${bien?.loyer||0}€ hors charges.\nLe montant des charges mensuelles est de ${bien?.charges||0}€.\n\nCette attestation est délivrée pour servir et valoir ce que de droit.\n\nFait à __________, le ${new Date().toLocaleDateString('fr-FR')}\n\nLe bailleur\n(Signature)`},
             };
             const tpl=templates[type]||{titre:'Courrier',corps:''};
+            const allLocs=data.locataires.filter(l=>data.biens.some(b=>b.locataireId===l.id));
             return <>
-              <div style={{ textAlign:'center', marginBottom:16 }}>
+              <div style={{ textAlign:'center', marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>Courrier</div>
                 <div style={{ fontSize:16, fontWeight:800 }}>{tpl.titre}</div>
+              </div>
+              {/* Sélecteur destinataire */}
+              <div style={{ marginBottom:12 }}>
+                <label style={LBL}>Destinataire</label>
+                <select value={form.courrierDest||loc?.id||''} onChange={e=>setForm(f=>({...f,courrierDest:e.target.value}))} style={INP}>
+                  {allLocs.map(l=><option key={l.id} value={l.id}>{l.prenom} {l.nom} — {l.email}</option>)}
+                </select>
               </div>
               <div style={{ border:`1px solid ${L.border}`, padding:'20px', marginBottom:16, fontSize:13, lineHeight:1.8, whiteSpace:'pre-wrap' }}>
                 <p style={{ textAlign:'right', color:L.textSec }}>Fait à __________, le {new Date().toLocaleDateString('fr-FR')}</p>
                 <p><strong>Objet : {tpl.titre}</strong></p>
                 {tpl.corps}
               </div>
-              <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
+              <div style={{ display:'flex', gap:8 }}>
+                <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>🖨️ Imprimer / PDF</button>
+                <button onClick={()=>{
+                  const dest=data.locataires.find(l=>l.id===Number(form.courrierDest||loc?.id));
+                  if(!dest?.email){showToast('Pas d\'email pour ce locataire');return;}
+                  window.open(`mailto:${dest.email}?subject=${encodeURIComponent(tpl.titre)}&body=${encodeURIComponent(tpl.corps.replace(/\n/g,'\r\n'))}`, '_blank');
+                  showToast(`Email préparé pour ${dest.prenom} ${dest.nom}`);
+                }} style={{ ...BTN, flex:1, background:L.blue }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.blue}>📧 Envoyer par email</button>
+              </div>
             </>;
           })()}
 
