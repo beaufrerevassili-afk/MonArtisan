@@ -266,7 +266,31 @@ export default function ImmoDemo() {
 
           {/* ═══ DASHBOARD ═══ */}
           {tab==='dashboard' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>{sci?.nom || 'Vue consolidée'}</h2>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+              <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>{sci?.nom || 'Vue consolidée'}</h2>
+              <div style={{ fontSize:11, color:L.textLight }}>{new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+            </div>
+
+            {/* Actions rapides */}
+            <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
+              <button onClick={()=>{
+                const toEncaisser=biens.filter(b=>b.locataireId&&!data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye'));
+                if(toEncaisser.length===0){showToast('Tous les loyers sont encaissés ✓');return;}
+                toEncaisser.forEach(b=>enregistrerPaiement(b.id));
+                showToast(`${toEncaisser.length} loyer${toEncaisser.length>1?'s':''} encaissé${toEncaisser.length>1?'s':''}`);
+              }} style={{ ...BTN, fontSize:11, padding:'8px 16px', background:L.green }}>
+                💰 Encaisser tous les loyers ({biens.filter(b=>b.locataireId&&!data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye')).length})
+              </button>
+              <button onClick={()=>{showToast(`${biens.filter(b=>b.locataireId).length} quittances générées — envoi simulé`);}} style={{ ...BTN, fontSize:11, padding:'8px 16px', background:L.blue }}>
+                📄 Générer toutes les quittances
+              </button>
+              {impayes.length>0 && <button onClick={()=>{showToast(`${impayes.length} relance${impayes.length>1?'s':''} envoyée${impayes.length>1?'s':''}`);}} style={{ ...BTN, fontSize:11, padding:'8px 16px', background:L.red }}>
+                ⚠️ Relancer les {impayes.length} impayé{impayes.length>1?'s':''}
+              </button>}
+              <button onClick={()=>setTab('annonces')} style={{ ...BTN_OUTLINE, fontSize:11, padding:'8px 16px' }}>
+                📢 {biens.filter(b=>b.publie).length} annonce{biens.filter(b=>b.publie).length>1?'s':''} · {(data.candidatures||[]).filter(c=>c.statut==='nouvelle').length} nouvelle{(data.candidatures||[]).filter(c=>c.statut==='nouvelle').length>1?'s':''}
+              </button>
+            </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:10, marginBottom:20 }}>
               {[
                 { l:'Loyers/mois', v:`${totalLoyers.toLocaleString()}€`, c:L.green },
@@ -423,6 +447,29 @@ export default function ImmoDemo() {
                 <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.green, borderRadius:2 }}/>Encaissé</span>
                 <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.border }}/>Attendu</span>
               </div>
+            </div>
+
+            {/* Suivi loyers du mois */}
+            <div style={{ ...CARD, marginBottom:16, padding:0 }}>
+              <div style={{ padding:'12px 18px', borderBottom:`1px solid ${L.border}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:13, fontWeight:700 }}>Loyers — {MOIS[new Date().getMonth()]}</span>
+                <span style={{ fontSize:11, color:L.textLight }}>{biens.filter(b=>b.locataireId&&data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye')).length}/{biens.filter(b=>b.locataireId).length} encaissés</span>
+              </div>
+              {biens.filter(b=>b.locataireId).map((b,i,arr)=>{
+                const loc=getLocataire(b.locataireId);
+                const paid=data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye');
+                return <div key={b.id} style={{ padding:'8px 18px', borderBottom:i<arr.length-1?`1px solid ${L.border}`:'none', display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:12 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ width:8, height:8, borderRadius:'50%', background:paid?L.green:L.red }} />
+                    <span style={{ fontWeight:600 }}>{loc?.prenom} {loc?.nom}</span>
+                    <span style={{ color:L.textLight }}>— {b.nom||b.adresse.split(',')[0]}</span>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span style={{ fontWeight:700, color:paid?L.green:L.red }}>{b.loyer}€</span>
+                    {!paid && <button onClick={()=>enregistrerPaiement(b.id)} style={{ fontSize:10, padding:'3px 8px', background:L.green, color:'#fff', border:'none', cursor:'pointer', fontFamily:L.font, fontWeight:600 }}>Encaisser</button>}
+                  </div>
+                </div>;
+              })}
             </div>
 
             {impayes.length>0 && <div style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginBottom:16 }}>
@@ -620,6 +667,7 @@ export default function ImmoDemo() {
                 { id:'credits', label:'Crédits' },
                 { id:'banque', label:'Banque' },
                 { id:'associes', label:'Associés' },
+                { id:'fiscal', label:'Aide fiscale' },
               ].map(st=>(
                 <button key={st.id} onClick={()=>setSubFin(st.id)}
                   style={{ padding:'8px 16px', background:'none', border:'none', borderBottom:`2px solid ${subFin===st.id?L.gold:'transparent'}`, fontSize:12, fontWeight:subFin===st.id?700:400, color:subFin===st.id?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}>
@@ -933,6 +981,81 @@ export default function ImmoDemo() {
               </div>
             </div>
           </>}
+
+          {subFin==='fiscal' && (()=>{
+            const loyersAn=totalLoyers*12;
+            const chargesAn=totalCharges*12;
+            const depensesAn=totalDepenses;
+            const interetsAn=credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0);
+            const taxeFonciereAn=biens.reduce((s,b)=>s+(b.taxeFonciere||0),0);
+            const assurancesAn=biens.reduce((s,b)=>s+(b.assurance?.pno||0)+(b.assurance?.gli||0),0);
+            const totalDeductible=chargesAn+depensesAn+interetsAn+taxeFonciereAn+assurancesAn;
+            const microBase=loyersAn*0.7;
+            const reelBase=Math.max(0,loyersAn-totalDeductible);
+            return <>
+              <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Aide à la déclaration fiscale</h2>
+              <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Chiffres pré-calculés à reporter sur vos formulaires fiscaux.</p>
+
+              {/* 2044 — Revenus fonciers */}
+              <div style={{ ...CARD, marginBottom:16 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                  <div style={{ fontSize:14, fontWeight:700 }}>📋 Déclaration 2044 — Revenus fonciers</div>
+                  <span style={{ fontSize:10, fontWeight:600, color:L.gold, background:L.goldLight, padding:'3px 10px' }}>SCI à l'IR</span>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:L.green, marginBottom:8 }}>Recettes</div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 211 — Loyers bruts</span><span style={{fontWeight:700}}>{loyersAn.toLocaleString()}€</span></div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:L.red, marginBottom:8 }}>Charges déductibles</div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 221 — Frais de gestion</span><span style={{fontWeight:600}}>{Math.round(loyersAn*0.02)}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 223 — Primes d'assurance</span><span style={{fontWeight:600}}>{assurancesAn}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 224 — Travaux</span><span style={{fontWeight:600}}>{depensesAn.toLocaleString()}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 227 — Taxe foncière</span><span style={{fontWeight:600}}>{taxeFonciereAn.toLocaleString()}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 250 — Intérêts d'emprunt</span><span style={{fontWeight:600}}>{interetsAn.toLocaleString()}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Ligne 240 — Charges copropriété</span><span style={{fontWeight:600}}>{chargesAn.toLocaleString()}€</span></div>
+                  </div>
+                </div>
+                <div style={{ background:L.noir, color:'#fff', padding:'14px 18px', marginTop:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span style={{ fontSize:13, fontWeight:600 }}>Revenu foncier net (régime réel)</span>
+                  <span style={{ fontSize:20, fontWeight:200, fontFamily:L.serif, color:reelBase>0?L.gold:L.green }}>{reelBase.toLocaleString()}€</span>
+                </div>
+                <div style={{ background:L.cream, padding:'12px 18px', marginTop:1, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span style={{ fontSize:12, color:L.textSec }}>Comparaison micro-foncier (30%)</span>
+                  <span style={{ fontSize:14, fontWeight:700 }}>{microBase.toLocaleString()}€</span>
+                </div>
+                <div style={{ padding:'10px 18px', fontSize:12, color:reelBase<microBase?L.green:L.orange, fontWeight:600 }}>
+                  {reelBase<microBase ? '✅ Le régime réel est plus avantageux — vous économisez '+(microBase-reelBase).toLocaleString()+'€ d\'assiette imposable' : '⚠️ Le micro-foncier est plus simple et suffisant pour votre situation'}
+                </div>
+              </div>
+
+              {/* 2072 — SCI */}
+              <div style={{ ...CARD }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                  <div style={{ fontSize:14, fontWeight:700 }}>📋 Déclaration 2072 — SCI</div>
+                  <span style={{ fontSize:10, fontWeight:600, color:L.blue, background:L.blueBg, padding:'3px 10px' }}>Par SCI</span>
+                </div>
+                {data.scis.map(s=>{
+                  const sciBiens=data.biens.filter(b=>b.sciId===s.id);
+                  const sciLoyers=sciBiens.reduce((sum,b)=>sum+b.loyer,0)*12;
+                  const sciCharges=sciBiens.reduce((sum,b)=>sum+b.charges+(b.taxeFonciere||0)/12,0)*12;
+                  const sciAssoc=(data.associes||[]).filter(a=>a.sciId===s.id);
+                  const totalParts=sciAssoc.reduce((sum,a)=>sum+a.parts,0);
+                  return <div key={s.id} style={{ marginBottom:16, padding:'14px', border:`1px solid ${L.border}` }}>
+                    <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>🏛️ {s.nom} ({s.type})</div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Recettes brutes</span><span style={{fontWeight:700}}>{sciLoyers.toLocaleString()}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>Charges déductibles</span><span style={{fontWeight:600}}>{sciCharges.toLocaleString()}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'4px 0', borderBottom:`1px solid ${L.border}`, fontWeight:700 }}><span>Résultat net</span><span style={{color:(sciLoyers-sciCharges)>0?L.green:L.red}}>{(sciLoyers-sciCharges).toLocaleString()}€</span></div>
+                    {sciAssoc.length>0 && <div style={{ marginTop:8, fontSize:11, color:L.textSec }}>
+                      <div style={{ fontWeight:600, marginBottom:4 }}>Quote-parts par associé :</div>
+                      {sciAssoc.map(a=><div key={a.id}>• {a.nom} ({a.parts} parts, {totalParts>0?(a.parts/totalParts*100).toFixed(0):0}%) → <strong>{totalParts>0?Math.round((sciLoyers-sciCharges)*a.parts/totalParts).toLocaleString():0}€</strong></div>)}
+                    </div>}
+                  </div>;
+                })}
+              </div>
+            </>;
+          })()}
 
           {subFin==='banque' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Rapprochement bancaire</h2>
