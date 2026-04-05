@@ -30,6 +30,7 @@ export default function SecteurSelect() {
     <div style={{ minHeight:'100vh', background:L.noir, fontFamily:L.font, color:'#fff', display:'flex', flexDirection:'column' }}>
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}
         button:hover .choice-img{transform:scale(1.08)!important}
         button:hover .choice-overlay{background:linear-gradient(180deg, rgba(10,10,10,0.15) 0%, rgba(10,10,10,0.65) 100%)!important}
         button:hover .choice-border{border-color:rgba(201,169,110,0.5)!important}
@@ -101,8 +102,21 @@ export default function SecteurSelect() {
         </div>
       </div>
 
+      {/* Marquee métiers */}
+      <div style={{ overflow:'hidden', padding:'14px 0', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display:'flex', animation:'marquee 35s linear infinite', whiteSpace:'nowrap' }}>
+          {[...Array(3)].map((_,k)=><span key={k} style={{display:'flex'}}>
+            {['Plombier','Électricien','Peintre','Menuisier','Maçon','Carreleur','Chauffagiste','Serrurier','Couvreur','Monteur vidéo','Designer','Community manager'].map(m=>(
+              <span key={m+k} style={{ fontSize:12, color:'rgba(255,255,255,0.15)', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.12em', padding:'0 24px' }}>
+                {m} <span style={{ color:L.gold, margin:'0 6px' }}>·</span>
+              </span>
+            ))}
+          </span>)}
+        </div>
+      </div>
+
       {/* Footer minimal */}
-      <div style={{ padding:'20px 32px', textAlign:'center' }}>
+      <div style={{ padding:'16px 32px', textAlign:'center' }}>
         <span style={{ fontSize:11, color:'rgba(255,255,255,0.2)', letterSpacing:'0.1em', textTransform:'uppercase' }}>© 2026 Freample</span>
       </div>
     </div>
