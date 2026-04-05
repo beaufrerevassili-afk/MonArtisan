@@ -35,7 +35,15 @@ export default function FreampleCom(){
   useEffect(()=>{api.get('/com/tarifs').then(r=>{if(r.data.tarifs)setTarifs(r.data.tarifs);if(r.data.packs)setPacks(r.data.packs);}).catch(()=>{});},[]);
 
   const f=(k)=>({value:brief[k],onChange:e=>setBrief(p=>({...p,[k]:e.target.value}))});
-  const scrollTo=(id)=>{setMenuOpen(false);setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),400);};
+  const scrollTo=(id)=>{
+    setMenuOpen(false);
+    setTimeout(()=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      const y=el.getBoundingClientRect().top+window.scrollY-80;
+      window.scrollTo({top:y,behavior:'smooth'});
+    },450);
+  };
   const MENU=[
     {label:'Accueil Freample',action:()=>{setMenuOpen(false);navigate('/');}},
     {label:'Freample Artisans',action:()=>{setMenuOpen(false);navigate('/btp');}},
@@ -352,7 +360,7 @@ export default function FreampleCom(){
         </div>
       )}
 
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}`}</style>
+      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}} html{scroll-behavior:smooth}`}</style>
     </div>
   );
 }
