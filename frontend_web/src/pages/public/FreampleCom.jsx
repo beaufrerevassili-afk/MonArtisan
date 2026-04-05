@@ -35,13 +35,26 @@ export default function FreampleCom(){
   useEffect(()=>{api.get('/com/tarifs').then(r=>{if(r.data.tarifs)setTarifs(r.data.tarifs);if(r.data.packs)setPacks(r.data.packs);}).catch(()=>{});},[]);
 
   const f=(k)=>({value:brief[k],onChange:e=>setBrief(p=>({...p,[k]:e.target.value}))});
+  const smoothScroll=(target,duration=1200)=>{
+    const start=window.scrollY;
+    const diff=target-start;
+    let startTime=null;
+    const ease=(t)=>t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;
+    const step=(time)=>{
+      if(!startTime) startTime=time;
+      const progress=Math.min((time-startTime)/duration,1);
+      window.scrollTo(0,start+diff*ease(progress));
+      if(progress<1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
   const scrollTo=(id)=>{
     setMenuOpen(false);
     setTimeout(()=>{
       const el=document.getElementById(id);
       if(!el) return;
       const y=el.getBoundingClientRect().top+window.scrollY-80;
-      window.scrollTo({top:y,behavior:'smooth'});
+      smoothScroll(y,1400);
     },450);
   };
   const MENU=[
@@ -360,7 +373,7 @@ export default function FreampleCom(){
         </div>
       )}
 
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}} html{scroll-behavior:smooth}`}</style>
+      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}`}</style>
     </div>
   );
 }
