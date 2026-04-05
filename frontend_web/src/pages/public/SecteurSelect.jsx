@@ -109,179 +109,65 @@ export default function SecteurSelect() {
   );
 
   // ═══════════════════════════════════════════════════
-  // ÉCRAN 2 — ESPACE CLIENT
+  // ÉCRAN 2 — ESPACE CLIENT (simple, opérationnel)
   // ═══════════════════════════════════════════════════
   return (
-    <div style={{ minHeight:'100vh', background:L.white, fontFamily:L.font, color:L.text }}>
+    <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
 
-      {/* ═══ HERO ═══ */}
-      <header style={{
-        background:L.noir, padding:'clamp(88px,16vh,150px) 32px clamp(80px,14vh,130px)',
-        textAlign:'center', position:'relative', overflow:'hidden',
-      }}>
-        <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1800&q=85)', backgroundSize:'cover', backgroundPosition:'center', opacity:0.2 }} />
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.92) 100%)' }} />
-        <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
+      {/* ═══ TITRE + 2 CARTES ═══ */}
+      <section style={{ maxWidth:900, margin:'0 auto', padding:'clamp(48px,8vh,80px) clamp(20px,4vw,40px)' }}>
 
-        <div style={{ maxWidth:720, margin:'0 auto', position:'relative', zIndex:1 }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:28 }}>Espace client</div>
-          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(36px,7vw,68px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.02, letterSpacing:'-0.02em', margin:'0 0 20px' }}>
-            Vos projets méritent<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>l'excellence</span>
+        <div style={{ textAlign:'center', marginBottom:'clamp(32px,5vh,52px)' }}>
+          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4.5vw,40px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 8px', lineHeight:1.1 }}>
+            De quoi avez-vous <span style={{ fontWeight:700, fontStyle:'normal' }}>besoin</span> ?
           </h1>
-          <p style={{ fontSize:'clamp(15px,1.8vw,18px)', color:'rgba(255,255,255,0.4)', lineHeight:1.65, margin:'0 auto 44px', maxWidth:480, fontWeight:300 }}>
-            Artisans certifiés, montage vidéo professionnel — une plateforme premium pour tous vos besoins.
-          </p>
-          <button onClick={()=>navigate('/btp')} style={{ padding:'16px 48px', background:L.white, color:L.noir, border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .3s' }}
-            onMouseEnter={e=>{e.currentTarget.style.background=L.gold;e.currentTarget.style.color='#fff';}}
-            onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.color=L.noir;}}>
-            Trouver un artisan
-          </button>
+          <p style={{ fontSize:15, color:L.textSec, margin:0 }}>Choisissez un service pour commencer.</p>
         </div>
-        <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold }} />
-      </header>
 
-      {/* ═══ FREAMPLE ARTISANS — MIS EN AVANT (blanc, split) ═══ */}
-      <section ref={r1} style={{ background:L.white, padding:'clamp(72px,10vh,110px) 0', scrollMarginTop:20 }}>
-        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', flexWrap:'wrap' }}>
-          <div style={{ flex:'1 1 480px', minHeight:460, background:'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=900&q=80) center/cover', position:'relative' }}>
-            <div style={{ position:'absolute', inset:0, background:'rgba(10,10,10,0.15)' }} />
-            <div style={{ position:'absolute', top:24, left:24, background:L.gold, color:'#fff', fontSize:10, fontWeight:700, padding:'6px 16px', letterSpacing:'0.12em', textTransform:'uppercase' }}>Service principal</div>
+        {/* CARTE PRINCIPALE — Freample Artisans */}
+        <div onClick={()=>navigate('/btp')} style={{ background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', marginBottom:16, display:'flex', flexWrap:'wrap', overflow:'hidden', transition:'all .25s' }}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.boxShadow='0 8px 28px rgba(0,0,0,0.06)';}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.boxShadow='none';}}>
+          <div style={{ flex:'1 1 320px', minHeight:260, background:'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80) center/cover', position:'relative' }}>
+            <div style={{ position:'absolute', top:16, left:16, background:L.gold, color:'#fff', fontSize:10, fontWeight:700, padding:'5px 14px', letterSpacing:'0.1em', textTransform:'uppercase' }}>Recommandé</div>
           </div>
-          <div style={{ flex:'1 1 480px', padding:'clamp(48px,6vh,72px) clamp(36px,5vw,64px)', display:'flex', flexDirection:'column', justifyContent:'center', background:L.cream }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:16 }}>Artisans & Travaux</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(30px,4vw,48px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 14px', lineHeight:1.1 }}>
-              Freample <span style={{ fontWeight:700, fontStyle:'normal' }}>Artisans</span>
-            </h2>
-            <p style={{ fontSize:15, color:L.textSec, lineHeight:1.65, margin:'0 0 8px' }}>
-              Trouvez un <strong>plombier, électricien, peintre ou menuisier certifié</strong> près de chez vous. Comparez les professionnels, consultez les avis et demandez un <strong>devis gratuit</strong> en quelques clics.
+          <div style={{ flex:'1 1 320px', padding:'clamp(28px,4vh,44px) clamp(24px,3vw,40px)', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:10 }}>Artisans & Travaux</div>
+            <h2 style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:800, color:L.text, letterSpacing:'-0.03em', margin:'0 0 10px' }}>Freample Artisans</h2>
+            <p style={{ fontSize:14, color:L.textSec, lineHeight:1.6, margin:'0 0 20px' }}>
+              Plombier, électricien, peintre, menuisier — trouvez un pro certifié près de chez vous et demandez un devis gratuit.
             </p>
-            <p style={{ fontSize:13.5, color:L.textLight, lineHeight:1.6, margin:'0 0 32px' }}>
-              Artisans vérifiés · Devis sous 24h · Suivi en temps réel · Paiement sécurisé
-            </p>
-            <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
-              <button onClick={()=>navigate('/btp')} style={{ padding:'14px 36px', background:L.noir, color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.05em', textTransform:'uppercase', transition:'all .25s' }}
-                onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-                Trouver un artisan
-              </button>
-              <button onClick={()=>navigate('/btp')} style={{ padding:'14px 28px', background:'transparent', color:L.text, border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'border-color .2s' }}
-                onMouseEnter={e=>e.currentTarget.style.borderColor=L.noir} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>
-                Découvrir la démo
-              </button>
+            <div style={{ display:'flex', gap:16, flexWrap:'wrap', fontSize:12, color:L.textLight, marginBottom:20 }}>
+              <span>🛡️ Artisans vérifiés</span><span>⚡ Devis sous 24h</span><span>💳 Paiement sécurisé</span>
             </div>
+            <div style={{ fontSize:14, fontWeight:700, color:L.gold, letterSpacing:'0.03em' }}>Trouver un artisan →</div>
           </div>
         </div>
+
+        {/* CARTE SECONDAIRE — Freample Com */}
+        <div onClick={()=>navigate('/com')} style={{ background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', display:'flex', alignItems:'center', padding:'clamp(20px,3vh,32px) clamp(20px,3vw,32px)', gap:20, transition:'all .25s' }}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.boxShadow='none';}}>
+          <div style={{ width:56, height:56, background:L.cream, display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, flexShrink:0 }}>🎬</div>
+          <div style={{ flex:1 }}>
+            <h3 style={{ fontSize:17, fontWeight:700, color:L.text, margin:'0 0 4px', letterSpacing:'-0.02em' }}>Freample Com</h3>
+            <p style={{ fontSize:13.5, color:L.textSec, margin:0, lineHeight:1.5 }}>Montage vidéo pro pour TikTok, YouTube, Reels — livré en 72h, à partir de 63,45€.</p>
+          </div>
+          <span style={{ fontSize:13, fontWeight:600, color:L.gold, flexShrink:0 }}>Voir →</span>
+        </div>
+
       </section>
 
-      {/* ── Séparateur doré ── */}
-      <div style={{ display:'flex', alignItems:'center', background:L.white }}><div style={{ flex:1, height:1, background:L.border }}/><div style={{ width:6, height:6, borderRadius:'50%', background:L.gold, margin:'0 20px' }}/><div style={{ flex:1, height:1, background:L.border }}/></div>
-
-      {/* ═══ FREAMPLE COM — Service support (blanc) ═══ */}
-      <section ref={r2} style={{ background:L.white, padding:'clamp(72px,10vh,110px) 0' }}>
-        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', flexWrap:'wrap', flexDirection:'row-reverse' }}>
-          <div style={{ flex:'1 1 480px', minHeight:420, background:'url(https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=900&q=80) center/cover', position:'relative' }}>
-            <div style={{ position:'absolute', inset:0, background:'rgba(10,10,10,0.1)' }} />
-          </div>
-          <div style={{ flex:'1 1 480px', padding:'clamp(48px,6vh,72px) clamp(36px,5vw,64px)', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:16 }}>Création de contenu</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(28px,3.5vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 14px', lineHeight:1.1 }}>
-              Freample <span style={{ fontWeight:700, fontStyle:'normal' }}>Com</span>
-            </h2>
-            <p style={{ fontSize:15, color:L.textSec, lineHeight:1.65, margin:'0 0 8px' }}>
-              <strong>Montage vidéo professionnel</strong> pour TikTok, YouTube Shorts, Reels Instagram. Envoyez votre brief, recevez un contenu prêt à publier en <strong>72 heures</strong>.
-            </p>
-            <p style={{ fontSize:13.5, color:L.textLight, lineHeight:1.6, margin:'0 0 28px' }}>
-              À partir de 63,45€ · Sous-titres animés · Musique tendance · Satisfait ou refait
-            </p>
-            <button onClick={()=>navigate('/com')} style={{ padding:'14px 36px', background:'transparent', color:L.text, border:`1px solid ${L.border}`, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.05em', textTransform:'uppercase', transition:'all .25s', alignSelf:'flex-start' }}
-              onMouseEnter={e=>{e.currentTarget.style.background=L.noir;e.currentTarget.style.color='#fff';e.currentTarget.style.borderColor=L.noir;}}
-              onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=L.text;e.currentTarget.style.borderColor=L.border;}}>
-              Découvrir Freample Com
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Image break parallaxe ── */}
-      <div role="img" aria-label="Espace de travail créatif professionnel" style={{ height:'clamp(180px,28vh,320px)', backgroundImage:'url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80)', backgroundSize:'cover', backgroundPosition:'center', backgroundAttachment:'fixed' }} />
-
-      {/* ═══ POURQUOI FREAMPLE (crème) ═══ */}
-      <section ref={r3} style={{ background:L.cream, padding:'clamp(64px,9vh,100px) 32px' }}>
-        <div style={{ maxWidth:900, margin:'0 auto', textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Pourquoi Freample</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 48px', lineHeight:1.12 }}>
-            L'exigence au service de <span style={{ fontWeight:700, fontStyle:'normal' }}>vos projets</span>
-          </h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
-            {[
-              { icon:'⚡', title:'Rapidité', desc:'Devis artisan sous 24h. Montage vidéo livré en 72h.' },
-              { icon:'🛡️', title:'Qualité garantie', desc:'Artisans certifiés, monteurs professionnels, avis vérifiés.' },
-              { icon:'💎', title:'Sur mesure', desc:'Chaque projet est unique. On s\'adapte à votre vision.' },
-              { icon:'🔒', title:'Paiement sécurisé', desc:'Transaction protégée. Satisfait ou refait.' },
-            ].map(s => (
-              <div key={s.title} style={{ textAlign:'center' }}>
-                <div style={{ fontSize:28, marginBottom:14 }}>{s.icon}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, color:L.text, marginBottom:6 }}>{s.title}</h3>
-                <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Marquee ── */}
-      <div style={{ background:L.white, borderTop:`1px solid ${L.border}`, borderBottom:`1px solid ${L.border}`, overflow:'hidden', padding:'12px 0' }}>
-        <div style={{ display:'flex', animation:'marquee 28s linear infinite', whiteSpace:'nowrap' }}>
-          {[...Array(3)].map((_,k)=><span key={k} style={{display:'flex'}}>
-            {['Qualité','Innovation','Créativité','Rigueur','Expertise','Engagement','Authenticité'].map(w=>(
-              <span key={w+k} style={{fontFamily:L.serif,fontSize:16,fontStyle:'italic',color:L.textLight,padding:'0 32px',fontWeight:400}}>{w} <span style={{color:L.gold,margin:'0 8px',fontStyle:'normal'}}>—</span></span>
-            ))}
-          </span>)}
-        </div>
-      </div>
-
-      {/* ═══ CTA FINAL (noir) ═══ */}
-      <section ref={r4} style={{ background:L.noir, padding:'clamp(72px,12vh,120px) 32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)', pointerEvents:'none' }} />
-        <div style={{ position:'relative', zIndex:1, maxWidth:560, margin:'0 auto' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:20 }}>Prêt à commencer ?</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(28px,5vw,50px)', fontWeight:300, fontStyle:'italic', color:'#fff', letterSpacing:'-0.02em', lineHeight:1.08, margin:'0 0 16px' }}>
-            Confiez-nous votre <span style={{ fontWeight:700, fontStyle:'normal' }}>prochain projet</span>
-          </h2>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', lineHeight:1.6, margin:'0 0 40px', fontWeight:300 }}>
-            Artisans, montage vidéo, création de contenu — commencez avec un devis gratuit.
-          </p>
-          <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
-            <button onClick={()=>navigate('/btp')} style={{ padding:'16px 44px', background:L.gold, color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}
-              onMouseEnter={e=>e.currentTarget.style.background=L.goldDark} onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
-              Trouver un artisan
-            </button>
-            <button onClick={()=>navigate('/com')} style={{ padding:'16px 36px', background:'transparent', color:'#fff', border:'1px solid rgba(255,255,255,0.15)', fontSize:13, fontWeight:400, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .25s' }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.4)'} onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'}>
-              Montage vidéo
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ FOOTER ═══ */}
-      <footer style={{ padding:'28px 32px', borderTop:`1px solid ${L.border}`, textAlign:'center', background:L.white }}>
-        <nav style={{ display:'flex', justifyContent:'center', gap:24, marginBottom:14, flexWrap:'wrap' }}>
-          {[{label:'Artisans',href:'/btp'},{label:'Montage vidéo',href:'/com'},{label:'Coiffure',href:'/coiffure'},{label:'Portfolio',href:'/com/portfolio'},{label:'CGU',href:'/cgu'}].map(l=>(
-            <a key={l.label} href={l.href} style={{fontSize:12,color:L.textSec,textDecoration:'none',textTransform:'uppercase',letterSpacing:'0.06em',transition:'color .15s'}}
-              onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textSec}>{l.label}</a>
-          ))}
-        </nav>
-        <p style={{ fontSize:11, color:L.textLight, letterSpacing:'0.1em', textTransform:'uppercase', margin:0 }}>© 2026 Freample · Tous droits réservés</p>
+      {/* ── Retour + Footer ── */}
+      <footer style={{ padding:'20px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
+        <button onClick={()=>setChoix(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:L.textLight, fontFamily:L.font, transition:'color .15s', marginBottom:8 }}
+          onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>
+          ← Changer de profil
+        </button>
+        <div style={{ fontSize:11, color:L.textLight, letterSpacing:'0.08em', textTransform:'uppercase' }}>© 2026 Freample</div>
       </footer>
 
-      {/* Retour au choix */}
-      <button onClick={()=>setChoix(null)} style={{ position:'fixed', bottom:28, left:28, background:'rgba(255,255,255,0.9)', backdropFilter:'blur(10px)', border:`1px solid ${L.border}`, borderRadius:10, padding:'8px 16px', fontSize:12, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, zIndex:100, transition:'all .2s', letterSpacing:'0.03em' }}
-        onMouseEnter={e=>{e.currentTarget.style.borderColor=L.noir;e.currentTarget.style.color=L.noir;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
-        ← Changer de profil
-      </button>
-
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}`}</style>
     </div>
   );
 }
