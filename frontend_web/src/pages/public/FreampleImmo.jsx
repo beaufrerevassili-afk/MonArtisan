@@ -14,11 +14,27 @@ const L = {
   serif:"'Cormorant Garamond','Georgia',serif",
 };
 
-function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity .8s cubic-bezier(0.25,0.46,0.45,0.94), transform .8s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
+// Apple-style scroll animations
+function useFadeUp(delay=0){
+  const ref=useRef(null);
+  useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(40px)';el.style.transition=`opacity 1s ${delay}s cubic-bezier(0.4,0,0,1), transform 1s ${delay}s cubic-bezier(0.4,0,0,1)`;const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.08});obs.observe(el);return()=>obs.disconnect();},[]);
+  return ref;
+}
+function useScaleIn(delay=0){
+  const ref=useRef(null);
+  useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='scale(0.92)';el.style.transition=`opacity 1.2s ${delay}s cubic-bezier(0.4,0,0,1), transform 1.2s ${delay}s cubic-bezier(0.4,0,0,1)`;const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='scale(1)';obs.disconnect();}},{threshold:0.08});obs.observe(el);return()=>obs.disconnect();},[]);
+  return ref;
+}
+function StaggerChildren({children,style={}}){
+  const ref=useRef(null);
+  useEffect(()=>{const el=ref.current;if(!el)return;const kids=[...el.children];kids.forEach(k=>{k.style.opacity='0';k.style.transform='translateY(30px)';});const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){kids.forEach((k,i)=>{setTimeout(()=>{k.style.transition='opacity .8s cubic-bezier(0.4,0,0,1), transform .8s cubic-bezier(0.4,0,0,1)';k.style.opacity='1';k.style.transform='translateY(0)';},i*100);});obs.disconnect();}},{threshold:0.05});obs.observe(el);return()=>obs.disconnect();},[]);
+  return <div ref={ref} style={style}>{children}</div>;
+}
 
 export default function FreampleImmo() {
   const navigate = useNavigate();
-  const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal(),r5=useReveal(),r6=useReveal();
+  const r1=useFadeUp(),r2=useFadeUp(0.1),r3=useFadeUp(0.1),r4=useFadeUp(0.1),r5=useFadeUp(),r6=useFadeUp();
+  const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15);
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
@@ -62,8 +78,8 @@ export default function FreampleImmo() {
       {/* ══════════════════════════════════════════════════════
           SECTION APPLE 1 — Gestion SCI (fond blanc)
          ══════════════════════════════════════════════════════ */}
-      <section ref={r2} style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
-        <div style={{ maxWidth:700, margin:'0 auto' }}>
+      <section style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
+        <div ref={s1} style={{ maxWidth:700, margin:'0 auto' }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>Gestion privée</div>
           <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, color:L.text, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
             Multi-SCI
@@ -77,11 +93,11 @@ export default function FreampleImmo() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          SECTION APPLE 3 — Loyers & Locataires (fond crème)
-         ══════════════════════════════════════════════════════ */}
-      <section ref={r3} style={{ background:L.cream, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
-        <div style={{ maxWidth:700, margin:'0 auto' }}>
+      {/* Parallax image */}
+      <div style={{ height:'clamp(200px,30vh,360px)', backgroundImage:'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=80)', backgroundSize:'cover', backgroundPosition:'center', backgroundAttachment:'fixed' }} />
+
+      <section style={{ background:L.cream, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
+        <div ref={s2} style={{ maxWidth:700, margin:'0 auto' }}>
           <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, color:L.text, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
             Loyers & Locataires
           </h2>
@@ -91,11 +107,8 @@ export default function FreampleImmo() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          SECTION APPLE 4 — Comptabilité & Fiscalité (fond blanc)
-         ══════════════════════════════════════════════════════ */}
-      <section ref={r4} style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
-        <div style={{ maxWidth:700, margin:'0 auto' }}>
+      <section style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
+        <div ref={s3} style={{ maxWidth:700, margin:'0 auto' }}>
           <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, color:L.text, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
             Comptabilité SCI
           </h2>
@@ -116,7 +129,7 @@ export default function FreampleImmo() {
               Un outil <span style={{ fontWeight:700, fontStyle:'normal' }}>complet</span>
             </h2>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
+          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
             {[
               { icon:'🏢', title:'Multi-SCI', desc:'Basculez d\'une SCI à l\'autre en un clic. Vision consolidée ou par structure.' },
               { icon:'🏠', title:'Parc immobilier', desc:'Fiches détaillées par bien : photos, surface, charges, historique travaux.' },
@@ -141,7 +154,7 @@ export default function FreampleImmo() {
                 <p style={{ fontSize:12.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{f.desc}</p>
               </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </section>
 
