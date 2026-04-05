@@ -102,8 +102,8 @@ export default function FreampleCom() {
 
       {/* ══ HERO ══ */}
       <section style={{ background:L.noir, padding:'clamp(80px,14vh,140px) 32px clamp(72px,12vh,120px)', textAlign:'center', position:'relative', overflow:'hidden' }}>
-        <video autoPlay muted loop playsInline style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.25 }} src="https://videos.pexels.com/video-files/7710243/7710243-uhd_2560_1440_25fps.mp4" />
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.85) 100%)' }} />
+        <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1585951237313-1979e4df7385?w=1800&q=85)', backgroundSize:'cover', backgroundPosition:'center 30%', opacity:0.35 }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.88) 100%)' }} />
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
         <div style={{ maxWidth:720, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:28 }}>Freample Com</div>
