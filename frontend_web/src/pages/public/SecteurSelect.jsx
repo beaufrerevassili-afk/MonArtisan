@@ -32,6 +32,9 @@ const SECTORS_DEV = [
   { id:'recrutement', label:'Recrutement', icon:'💼', href:'/recrutement' },
   { id:'pro', label:'Espace pro', icon:'🏢', href:'/pro' },
   { id:'portfolio', label:'Portfolio Com', icon:'🎥', href:'/com/portfolio' },
+  { id:'immo', label:'Freample Immo', icon:'🏠', href:'/immo' },
+  { id:'droit', label:'Freample Droit', icon:'⚖️', href:'/droit' },
+  { id:'stats', label:'Statistiques', icon:'📈', href:'/admin/stats' },
 ];
 
 function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity .8s cubic-bezier(0.25,0.46,0.45,0.94), transform .8s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
