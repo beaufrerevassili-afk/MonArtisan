@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
+import { useAuth } from '../../context/AuthContext';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -12,11 +13,37 @@ const L = {
   serif:"'Cormorant Garamond','Georgia',serif",
 };
 
+const DEV_EMAIL = 'freamplecom@gmail.com';
+
+const SECTORS_PUBLIC = [
+  { id:'btp', label:'Freample Artisans', icon:'🏗️', href:'/btp' },
+  { id:'com', label:'Freample Com', icon:'🎬', href:'/com' },
+  { id:'recrutement', label:'Recrutement', icon:'💼', href:'/recrutement' },
+  { id:'pro', label:'Espace pro', icon:'🏢', href:'/pro' },
+];
+const SECTORS_DEV = [
+  { id:'btp', label:'Freample Artisans', icon:'🏗️', href:'/btp' },
+  { id:'com', label:'Freample Com', icon:'🎬', href:'/com' },
+  { id:'coiffure', label:'Coiffure & Beauté', icon:'✂️', href:'/coiffure' },
+  { id:'restaurant', label:'Restauration', icon:'🍽️', href:'/restaurant' },
+  { id:'eat', label:'Freample Eat', icon:'🛵', href:'/eat' },
+  { id:'course', label:'Freample Course', icon:'🚗', href:'/course' },
+  { id:'vacances', label:'Vacances & Séjours', icon:'🏖️', href:'/vacances' },
+  { id:'recrutement', label:'Recrutement', icon:'💼', href:'/recrutement' },
+  { id:'pro', label:'Espace pro', icon:'🏢', href:'/pro' },
+  { id:'portfolio', label:'Portfolio Com', icon:'🎥', href:'/com/portfolio' },
+];
+
 function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;if(!el)return;el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity .8s cubic-bezier(0.25,0.46,0.45,0.94), transform .8s cubic-bezier(0.25,0.46,0.45,0.94)';const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){el.style.opacity='1';el.style.transform='translateY(0)';obs.disconnect();}},{threshold:0.1});obs.observe(el);return()=>obs.disconnect();},[]);return ref;}
 
 export default function SecteurSelect() {
   const navigate = useNavigate();
+  const auth = useAuth() || {};
+  const user = auth.user || null;
+  const isDev = user?.email === DEV_EMAIL;
+  const menuItems = isDev ? SECTORS_DEV : SECTORS_PUBLIC;
   const [mounted, setMounted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => { setMounted(true); document.title = 'Freample — Artisans certifiés & montage vidéo professionnel en France'; }, []);
 
   const r1=useReveal(), r2=useReveal(), r3=useReveal();
@@ -25,6 +52,36 @@ export default function SecteurSelect() {
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <RecrutementBanner />
       <PublicNavbar />
+
+      {/* ══ HAMBURGER ══ */}
+      <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
+        style={{ position:'fixed', top:72, left:'clamp(16px,3vw,32px)', zIndex:250, width:40, height:40, background:'rgba(255,255,255,0.9)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', border:`1px solid rgba(0,0,0,0.06)`, borderRadius:10, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', transition:'all .25s' }}
+        onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)';}} onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';}}>
+        <span style={{ width:16, height:1.5, background:L.noir }}/><span style={{ width:16, height:1.5, background:L.noir }}/>
+      </button>
+
+      {/* ══ FULLSCREEN MENU ══ */}
+      <div style={{ position:'fixed', inset:0, zIndex:2000, background:L.noir, opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .4s cubic-bezier(0.4,0,0.2,1)', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center' }}>
+        <button onClick={()=>setMenuOpen(false)} style={{ position:'absolute', top:20, right:28, background:'none', border:'none', cursor:'pointer', color:'#fff', fontSize:28, fontWeight:200, transition:'color .2s' }}
+          onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>✕</button>
+        <div style={{ position:'absolute', top:24, left:28, fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em' }}>Freample</div>
+        {isDev && <div style={{ position:'absolute', top:24, right:80, fontSize:10, fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.1)', padding:'3px 10px', borderRadius:4 }}>Mode dev</div>}
+        <nav style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+          {menuItems.map((item,i)=>(
+            <button key={item.id} onClick={()=>{setMenuOpen(false);navigate(item.href);}}
+              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:L.serif, fontSize:'clamp(22px,4vw,38px)', fontWeight:300, fontStyle:'italic', color:'#fff', padding:'10px 0', letterSpacing:'-0.02em', opacity:menuOpen?1:0, transform:menuOpen?'translateY(0)':'translateY(20px)', transition:`opacity .4s ${0.1+i*0.05}s, transform .4s ${0.1+i*0.05}s, color .2s`, display:'flex', alignItems:'center', gap:14 }}
+              onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>
+              <span style={{ fontSize:'clamp(18px,2.5vw,24px)', fontStyle:'normal', opacity:0.5 }}>{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <div style={{ position:'absolute', bottom:28, display:'flex', gap:24, opacity:menuOpen?1:0, transition:'opacity .5s .4s' }}>
+          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>WhatsApp</a>
+          <a href="mailto:freamplecom@gmail.com" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>Contact</a>
+          <a href="/cgu" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>CGU</a>
+        </div>
+      </div>
 
       {/* ═══════════════════════════════════════════════
           HERO — Direct, une phrase, un CTA
