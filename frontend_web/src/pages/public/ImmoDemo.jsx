@@ -2011,89 +2011,166 @@ export default function ImmoDemo() {
           </>}
 
           {modal.type==='dossierBancaire' && (()=>{
-            const loyersAn=totalLoyers*12;
-            const chargesAn=(totalCharges+totalMensualites)*12;
-            const cfAn=(cashflow-totalMensualites)*12;
-            const txEnd=totalLoyers>0?(totalMensualites/totalLoyers*100).toFixed(1):0;
+            const txSecu=Number(form.dossierSecu||5);
+            // Projet simulé — utilise le premier bien vacant ou le dernier bien
+            const bienProjet=biens.find(b=>!b.locataireId)||biens[biens.length-1]||{};
+            const prixAchat=Number(form.dossierPrix||bienProjet.prixAchat||200000);
+            const fraisNotaire=Number(form.dossierNotaire||Math.round(prixAchat*0.075));
+            const montantTravaux=Number(form.dossierTravaux||bienProjet.travaux||10000);
+            const loyerEstime=Number(form.dossierLoyer||bienProjet.loyer||800);
+            const chargesEstimees=Number(form.dossierCharges||bienProjet.charges||150);
+            const apport=Number(form.dossierApport||0);
+            const tauxCredit=Number(form.dossierTaux||2.5);
+            const dureeCredit=Number(form.dossierDuree||20);
+            const assuranceCredit=Number(form.dossierAssurance||35);
+            const strategie=form.dossierStrategie||'Location nue';
+            const coutTotal=prixAchat+fraisNotaire+montantTravaux;
+            const margeSec=Math.round(coutTotal*txSecu/100);
+            const coutAjuste=coutTotal+margeSec;
+            const emprunt=coutAjuste-apport;
+            const t=tauxCredit/100/12; const n=dureeCredit*12;
+            const mensualite=t>0?Math.round(emprunt*(t*Math.pow(1+t,n))/(Math.pow(1+t,n)-1)):Math.round(emprunt/n);
+            const coutTotalCredit=mensualite*n;
+            const interetsTotaux=coutTotalCredit-emprunt;
+            const cfMensuel=loyerEstime-chargesEstimees-mensualite-assuranceCredit;
+            const cfAnnuel=cfMensuel*12;
+            const rdtBrut=coutTotal>0?((loyerEstime*12)/coutTotal*100):0;
+            const rdtNet=coutTotal>0?(((loyerEstime-chargesEstimees)*12)/coutTotal*100):0;
+            // Scénarios
+            const scenarioBase=cfMensuel;
+            const scenarioDegrade=loyerEstime*0.85-chargesEstimees*1.15-mensualite-assuranceCredit;
+            const scenarioVacance=loyerEstime*0.9-chargesEstimees-mensualite-assuranceCredit; // 10% vacance
+            const R=r=><div style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}`, fontSize:12 }}><span style={{color:L.textSec}}>{r.l}</span><span style={{fontWeight:r.b?800:600, color:r.c||L.text}}>{r.v}</span></div>;
+
             return <>
-              <div style={{ textAlign:'center', marginBottom:16 }}>
-                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>Dossier bancaire</div>
+              <div style={{ textAlign:'center', marginBottom:12 }}>
+                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:6 }}>Dossier d'investissement</div>
                 <div style={{ fontSize:18, fontWeight:800 }}>Demande de financement immobilier</div>
-                <div style={{ fontSize:12, color:L.textSec, marginTop:4 }}>Généré par Freample Immo le {new Date().toLocaleDateString('fr-FR')}</div>
+                <div style={{ fontSize:11, color:L.textSec, marginTop:4 }}>Freample Immo · {new Date().toLocaleDateString('fr-FR')}</div>
               </div>
 
-              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
-                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>1. Situation patrimoniale</div>
-                <div style={{ padding:'12px 18px', fontSize:12 }}>
-                  {[
-                    {l:'Nombre de biens détenus',v:data.biens.length},
-                    {l:'Valeur totale du patrimoine',v:`${totalValeur.toLocaleString()}€`},
-                    {l:'Encours de crédits',v:`${totalRestant.toLocaleString()}€`},
-                    {l:'Patrimoine net',v:`${(totalValeur-totalRestant).toLocaleString()}€`},
-                    {l:'LTV global',v:`${totalValeur>0?(totalRestant/totalValeur*100).toFixed(1):0}%`},
-                    {l:'Nombre de SCI',v:data.scis.length},
-                  ].map(r=><div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>{r.l}</span><span style={{fontWeight:600}}>{r.v}</span></div>)}
+              {/* Paramètres du projet */}
+              <div style={{ background:L.cream, padding:'14px', marginBottom:14, fontSize:11 }}>
+                <div style={{ fontWeight:700, fontSize:12, marginBottom:8 }}>Paramétrer le projet</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6, marginBottom:6 }}>
+                  <div><label style={LBL}>Prix d'achat</label><input type="number" value={form.dossierPrix||prixAchat} onChange={e=>setForm(f=>({...f,dossierPrix:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Frais notaire</label><input type="number" value={form.dossierNotaire||fraisNotaire} onChange={e=>setForm(f=>({...f,dossierNotaire:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Travaux</label><input type="number" value={form.dossierTravaux||montantTravaux} onChange={e=>setForm(f=>({...f,dossierTravaux:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:6, marginBottom:6 }}>
+                  <div><label style={LBL}>Loyer estimé</label><input type="number" value={form.dossierLoyer||loyerEstime} onChange={e=>setForm(f=>({...f,dossierLoyer:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Charges</label><input type="number" value={form.dossierCharges||chargesEstimees} onChange={e=>setForm(f=>({...f,dossierCharges:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Apport</label><input type="number" value={form.dossierApport||0} onChange={e=>setForm(f=>({...f,dossierApport:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Marge sécu. (%)</label><input type="number" value={form.dossierSecu||5} onChange={e=>setForm(f=>({...f,dossierSecu:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:6 }}>
+                  <div><label style={LBL}>Taux (%)</label><input type="number" value={form.dossierTaux||2.5} step="0.1" onChange={e=>setForm(f=>({...f,dossierTaux:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={form.dossierDuree||20} onChange={e=>setForm(f=>({...f,dossierDuree:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Assurance/mois</label><input type="number" value={form.dossierAssurance||35} onChange={e=>setForm(f=>({...f,dossierAssurance:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+                  <div><label style={LBL}>Stratégie</label><select value={form.dossierStrategie||'Location nue'} onChange={e=>setForm(f=>({...f,dossierStrategie:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
                 </div>
               </div>
 
-              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
-                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>2. Revenus locatifs</div>
-                <div style={{ padding:'12px 18px', fontSize:12 }}>
-                  {[
-                    {l:'Loyers annuels bruts',v:`${loyersAn.toLocaleString()}€`},
-                    {l:'Charges + crédits annuels',v:`${chargesAn.toLocaleString()}€`},
-                    {l:'Cashflow annuel net',v:`${cfAn.toLocaleString()}€`},
-                    {l:'Taux d\'occupation',v:`${occupation}%`},
-                    {l:'Rendement net moyen',v:`${rendementNet}%`},
-                    {l:'Taux d\'endettement actuel',v:`${txEnd}%`},
-                  ].map(r=><div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>{r.l}</span><span style={{fontWeight:600}}>{r.v}</span></div>)}
+              {/* 1. Présentation du projet */}
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'10px 14px', fontWeight:700, fontSize:12 }}>1. Présentation du projet</div>
+                <div style={{ padding:'12px 14px', fontSize:12 }}>
+                  <R l="Stratégie d'investissement" v={strategie} />
+                  <R l="Prix d'acquisition" v={`${prixAchat.toLocaleString()}€`} />
+                  <R l="Frais de notaire" v={`${fraisNotaire.toLocaleString()}€`} />
+                  <R l="Travaux" v={`${montantTravaux.toLocaleString()}€`} />
+                  <R l="Coût total du projet" v={`${coutTotal.toLocaleString()}€`} b c={L.text} />
+                  <R l={`Marge de sécurité (${txSecu}%)`} v={`+${margeSec.toLocaleString()}€`} c={L.orange} />
+                  <R l="Coût total ajusté" v={`${coutAjuste.toLocaleString()}€`} b c={L.gold} />
                 </div>
               </div>
 
-              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
-                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>3. Détail des biens</div>
-                <div style={{ padding:'12px 18px', fontSize:11 }}>
-                  {data.biens.map(b=>{
-                    const cr=(data.credits||[]).find(c=>c.bienId===b.id);
-                    const loc=getLocataire(b.locataireId);
-                    return <div key={b.id} style={{ padding:'8px 0', borderBottom:`1px solid ${L.border}` }}>
-                      <div style={{ fontWeight:700, fontSize:12 }}>{b.nom||b.type} — {b.adresse}</div>
-                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:4, marginTop:4, color:L.textSec }}>
-                        <span>Valeur: {b.valeur?.toLocaleString()}€</span>
-                        <span>Loyer: {b.loyer}€/mois</span>
-                        <span>Statut: {loc?`Loué (${loc.prenom} ${loc.nom})`:'Vacant'}</span>
-                        {cr && <span>Crédit: {cr.mensualite}€/mois · Restant: {cr.restant?.toLocaleString()}€</span>}
-                      </div>
-                    </div>;
-                  })}
+              {/* 2. Plan de financement */}
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'10px 14px', fontWeight:700, fontSize:12 }}>2. Plan de financement</div>
+                <div style={{ padding:'12px 14px', fontSize:12 }}>
+                  <R l="Apport personnel" v={`${apport.toLocaleString()}€`} c={L.green} />
+                  <R l="Capital emprunté" v={`${emprunt.toLocaleString()}€`} />
+                  <R l="Taux du crédit" v={`${tauxCredit}% sur ${dureeCredit} ans`} />
+                  <R l="Mensualité (M = C×t(1+t)ⁿ/((1+t)ⁿ-1))" v={`${mensualite}€/mois`} b c={L.orange} />
+                  <R l="Assurance emprunteur" v={`${assuranceCredit}€/mois`} />
+                  <R l="Coût total du crédit" v={`${coutTotalCredit.toLocaleString()}€`} c={L.red} />
+                  <R l="Intérêts totaux" v={`${interetsTotaux.toLocaleString()}€`} c={L.red} />
                 </div>
               </div>
 
-              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
-                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>4. Crédits en cours</div>
-                <div style={{ padding:'12px 18px', fontSize:12 }}>
-                  {credits.length===0?<div style={{color:L.textLight}}>Aucun crédit en cours</div>:
-                  credits.map(c=>{
-                    const b=data.biens.find(x=>x.id===c.bienId);
-                    return <div key={c.id} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}>
-                      <span style={{color:L.textSec}}>{c.banque} — {b?.nom||b?.adresse}</span>
-                      <span style={{fontWeight:600}}>{c.mensualite}€/mois · {c.taux}% · Restant {c.restant?.toLocaleString()}€</span>
-                    </div>;
-                  })}
-                  <div style={{ marginTop:8, fontWeight:700, display:'flex', justifyContent:'space-between' }}>
-                    <span>Total mensualités</span><span>{totalMensualites}€/mois</span>
+              {/* 3. Indicateurs de performance */}
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'10px 14px', fontWeight:700, fontSize:12 }}>3. Indicateurs de performance</div>
+                <div style={{ padding:'12px 14px', fontSize:12 }}>
+                  <R l="Loyer mensuel estimé" v={`${loyerEstime}€`} c={L.green} />
+                  <R l="Charges mensuelles" v={`${chargesEstimees}€`} c={L.red} />
+                  <R l="Mensualité + assurance" v={`${mensualite+assuranceCredit}€`} c={L.orange} />
+                  <R l="Cashflow mensuel" v={`${cfMensuel>=0?'+':''}${cfMensuel}€`} b c={cfMensuel>=0?L.green:L.red} />
+                  <R l="Cashflow annuel" v={`${cfAnnuel>=0?'+':''}${cfAnnuel.toLocaleString()}€`} b c={cfAnnuel>=0?L.green:L.red} />
+                  <R l="Rentabilité brute" v={`${rdtBrut.toFixed(2)}%`} c={L.gold} />
+                  <R l="Rentabilité nette" v={`${rdtNet.toFixed(2)}%`} b c={L.gold} />
+                  <R l={cfMensuel>=0?'Autofinancé':'Effort d\'épargne'} v={cfMensuel>=0?'✅ Oui':`${Math.abs(cfMensuel)}€/mois`} b c={cfMensuel>=0?L.green:L.red} />
+                </div>
+              </div>
+
+              {/* 4. Analyse du risque + scénarios */}
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'10px 14px', fontWeight:700, fontSize:12 }}>4. Analyse du risque</div>
+                <div style={{ padding:'12px 14px', fontSize:12 }}>
+                  <div style={{ marginBottom:10 }}>
+                    <div style={{ fontWeight:700, marginBottom:4 }}>Marge de sécurité intégrée</div>
+                    <div style={{ color:L.textSec, fontSize:11, lineHeight:1.6 }}>Une marge de {txSecu}% ({margeSec.toLocaleString()}€) a été appliquée au coût total pour anticiper les imprévus : travaux supplémentaires, vacance locative prolongée, charges sous-estimées.</div>
+                  </div>
+                  <div style={{ fontWeight:700, marginBottom:6 }}>Scénarios alternatifs</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+                    <div style={{ background:L.greenBg, padding:'10px', textAlign:'center', border:`1px solid ${L.green}20` }}>
+                      <div style={{ fontSize:10, color:L.green, fontWeight:600, marginBottom:4 }}>Scénario base</div>
+                      <div style={{ fontSize:16, fontWeight:700, color:L.green }}>{scenarioBase>=0?'+':''}{scenarioBase}€</div>
+                      <div style={{ fontSize:9, color:L.textLight }}>Loyer 100% · Charges 100%</div>
+                    </div>
+                    <div style={{ background:L.orangeBg, padding:'10px', textAlign:'center', border:`1px solid ${L.orange}20` }}>
+                      <div style={{ fontSize:10, color:L.orange, fontWeight:600, marginBottom:4 }}>Vacance 10%</div>
+                      <div style={{ fontSize:16, fontWeight:700, color:L.orange }}>{scenarioVacance>=0?'+':''}{Math.round(scenarioVacance)}€</div>
+                      <div style={{ fontSize:9, color:L.textLight }}>Loyer 90% · Charges 100%</div>
+                    </div>
+                    <div style={{ background:L.redBg, padding:'10px', textAlign:'center', border:`1px solid ${L.red}20` }}>
+                      <div style={{ fontSize:10, color:L.red, fontWeight:600, marginBottom:4 }}>Dégradé</div>
+                      <div style={{ fontSize:16, fontWeight:700, color:L.red }}>{scenarioDegrade>=0?'+':''}{Math.round(scenarioDegrade)}€</div>
+                      <div style={{ fontSize:9, color:L.textLight }}>Loyer -15% · Charges +15%</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
-                <div style={{ background:L.noir, color:'#fff', padding:'14px 18px', fontSize:13 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}><span>Capacité d'endettement résiduelle (35%)</span><span style={{fontWeight:700, color:L.gold}}>{Math.max(0,Math.round(totalLoyers*0.35-totalMensualites))}€/mois</span></div>
-                  <div style={{ display:'flex', justifyContent:'space-between' }}><span>Emprunt additionnel possible (20 ans)</span><span style={{fontWeight:700, color:L.gold}}>{(Math.max(0,Math.round(totalLoyers*0.35-totalMensualites))>0?Math.round(Math.max(0,totalLoyers*0.35-totalMensualites)*(Math.pow(1+0.025/12,240)-1)/(0.025/12*Math.pow(1+0.025/12,240))):0).toLocaleString()}€</span></div>
+              {/* 5. Situation patrimoniale existante */}
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'10px 14px', fontWeight:700, fontSize:12 }}>5. Patrimoine existant de l'emprunteur</div>
+                <div style={{ padding:'12px 14px', fontSize:12 }}>
+                  <R l="Biens détenus" v={data.biens.length} />
+                  <R l="Patrimoine brut" v={`${totalValeur.toLocaleString()}€`} />
+                  <R l="Encours crédits" v={`${totalRestant.toLocaleString()}€`} />
+                  <R l="Patrimoine net" v={`${(totalValeur-totalRestant).toLocaleString()}€`} b c={L.green} />
+                  <R l="Revenus locatifs annuels" v={`${(totalLoyers*12).toLocaleString()}€`} c={L.green} />
+                  <R l="Taux d'occupation" v={`${occupation}%`} />
+                  <R l="Rendement net moyen" v={`${rendementNet}%`} />
+                  <R l="Taux endettement actuel" v={`${totalLoyers>0?(totalMensualites/totalLoyers*100).toFixed(1):0}%`} c={totalLoyers>0&&totalMensualites/totalLoyers<0.35?L.green:L.red} />
                 </div>
               </div>
 
-              <div style={{ textAlign:'center', fontSize:11, color:L.textLight, marginBottom:14 }}>Document généré par Freample Immo — ne constitue pas un avis financier</div>
+              {/* 6. Synthèse décisionnelle */}
+              <div style={{ background:L.noir, color:'#fff', padding:'16px', marginBottom:14 }}>
+                <div style={{ fontSize:12, fontWeight:700, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>6. Synthèse décisionnelle</div>
+                <div style={{ fontSize:12, lineHeight:1.8 }}>
+                  {cfMensuel>=0 && <div style={{ color:L.green }}>✅ <strong>Autofinancement :</strong> Le bien génère un cashflow positif de {cfMensuel}€/mois, démontrant sa capacité à couvrir l'intégralité des charges.</div>}
+                  {cfMensuel<0 && <div style={{ color:L.orange }}>⚠️ <strong>Effort d'épargne :</strong> Un complément de {Math.abs(cfMensuel)}€/mois est nécessaire. Ce montant reste maîtrisé et compatible avec un investissement patrimonial.</div>}
+                  <div style={{ color:rdtNet>4?L.green:L.gold }}>📈 <strong>Rentabilité :</strong> Rendement net de {rdtNet.toFixed(2)}%, {rdtNet>6?'excellent':rdtNet>4?'satisfaisant':'correct'} pour ce type d'investissement ({strategie}).</div>
+                  <div>🛡️ <strong>Sécurité :</strong> Marge de {txSecu}% intégrée ({margeSec.toLocaleString()}€). {scenarioDegrade>-200?'Le projet reste viable même en scénario dégradé.':'Attention au scénario dégrad�� — prévoir une réserve de trésorerie.'}</div>
+                  <div>🏛️ <strong>Patrimoine :</strong> Cet investissement portera le patrimoine total à {(totalValeur+prixAchat).toLocaleString()}€ ({data.biens.length+1} biens), renforçant la diversification et l'assise patrimoniale.</div>
+                </div>
+              </div>
+
+              <div style={{ textAlign:'center', fontSize:10, color:L.textLight, marginBottom:12 }}>Document généré par Freample Immo — simulation, ne constitue pas un conseil financier</div>
               <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>📄 Imprimer / Exporter PDF</button>
             </>;
           })()}
