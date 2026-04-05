@@ -185,7 +185,7 @@ export default function FreampleCom() {
             fontSize:'clamp(15px,1.8vw,18px)', color:'rgba(255,255,255,0.5)',
             lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300,
           }}>
-            TikTok, Reels, YouTube — un rendu professionnel,<br/>livré en 72 heures.
+            Misez sur le digital pour des résultats réels.
           </p>
           <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
             <button onClick={()=>setStep(1)} style={{
@@ -247,7 +247,7 @@ export default function FreampleCom() {
         <div style={{ maxWidth:800, margin:'0 auto', display:'flex', justifyContent:'center', gap:'clamp(32px,6vw,80px)', flexWrap:'wrap', textAlign:'center' }}>
           {[
             { val:'72h', label:'Délai de livraison' },
-            { val:'49€', label:'À partir de' },
+            { val:'63.45€', label:'À partir de' },
             { val:'100%', label:'Satisfait ou refait' },
           ].map(s=>(
             <div key={s.val}>
@@ -322,7 +322,7 @@ export default function FreampleCom() {
               Nos <span style={{ fontWeight:700 }}>formules</span>
             </h2>
             <p style={{ fontSize:14, color:L.textSec }}>
-              Ou <button onClick={()=>setStep(1)} style={{ background:'none', border:'none', color:L.gold, fontWeight:600, cursor:'pointer', fontFamily:L.font, fontSize:14, textDecoration:'underline', textUnderlineOffset:3 }}>demandez un devis sur mesure</button>
+              Des formules adaptées à chaque ambition.
             </p>
           </div>
 
@@ -346,12 +346,6 @@ export default function FreampleCom() {
                     {pack.prix}€<span style={{ fontSize:14, fontWeight:400, color: isPop ? 'rgba(255,255,255,0.35)' : L.textLight }}>/mois</span>
                   </div>
                   <div style={{ fontSize:13, color: isPop ? 'rgba(255,255,255,0.4)' : L.textSec, marginBottom:24 }}>{pack.desc}</div>
-                  <div style={{ width:32, height:1, background: isPop ? 'rgba(255,255,255,0.1)' : L.border, marginBottom:20 }} />
-                  {pack.features.filter(f=>f.trim()).map(feat=>(
-                    <div key={feat} style={{ fontSize:13, color: isPop ? 'rgba(255,255,255,0.7)' : L.text, padding:'5px 0', display:'flex', gap:10, alignItems:'flex-start' }}>
-                      <span style={{ color: isPop ? L.gold : L.gold, fontSize:11, marginTop:2 }}>+</span>{feat}
-                    </div>
-                  ))}
                   <div style={{ flex:1, minHeight:20 }} />
                   <button onClick={()=>{ setBrief(p=>({...p, type:'Montage vidéo', quantite: String(i === 0 ? 4 : i === 1 ? 10 : 20) })); setStep(1); }}
                     style={{
@@ -467,49 +461,28 @@ export default function FreampleCom() {
             {/* Step 1 */}
             {step === 1 && (<div>
               <div style={{ marginBottom:20 }}>
-                <label style={lbl}>Type de service</label>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                  {[{v:'Montage vidéo',icon:'🎬'},{v:'Réseaux sociaux',icon:'📱'},{v:'Design',icon:'🎨'},{v:'Publicité',icon:'📈'}].map(t=>(
-                    <button key={t.v} onClick={()=>setBrief(p=>({...p,type:t.v}))}
+                <label style={lbl}>Format</label>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                  {['TikTok / Reel','YouTube Short','YouTube Long','Clip promo','Stories'].map(fmt=>(
+                    <button key={fmt} onClick={()=>setBrief(p=>({...p,format:fmt}))}
                       style={{
-                        padding:'18px 16px', border:`1px solid ${brief.type===t.v?L.noir:L.border}`,
-                        background: brief.type===t.v?L.noir:'transparent',
-                        cursor:'pointer', fontFamily:L.font, textAlign:'left', transition:'all .15s',
+                        padding:'8px 16px', border:`1px solid ${brief.format===fmt?L.noir:L.border}`,
+                        background: brief.format===fmt?L.noir:'transparent',
+                        color: brief.format===fmt?'#fff':L.textSec,
+                        fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:L.font, transition:'all .15s',
                       }}>
-                      <span style={{ fontSize:20 }}>{t.icon}</span>
-                      <div style={{ fontSize:13, fontWeight:600, marginTop:6, color: brief.type===t.v?'#fff':L.text }}>{t.v}</div>
+                      {fmt}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {brief.type==='Montage vidéo' && (
-                <div style={{ marginBottom:20 }}>
-                  <label style={lbl}>Format</label>
-                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                    {['TikTok / Reel','YouTube Short','YouTube Long','Clip promo','Stories'].map(fmt=>(
-                      <button key={fmt} onClick={()=>setBrief(p=>({...p,format:fmt}))}
-                        style={{
-                          padding:'8px 16px', border:`1px solid ${brief.format===fmt?L.noir:L.border}`,
-                          background: brief.format===fmt?L.noir:'transparent',
-                          color: brief.format===fmt?'#fff':L.textSec,
-                          fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:L.font, transition:'all .15s',
-                        }}>
-                        {fmt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:20 }}>
-                <div><label style={lbl}>Quantité</label><select {...f('quantite')} style={{...inp}}>{['1','2','3','5','10','15','20'].map(n=><option key={n} value={n}>{n}</option>)}</select></div>
-                <div><label style={lbl}>Style</label>
-                  <select value={brief.style} onChange={e=>setBrief(p=>({...p,style:e.target.value}))} style={{...inp}}>
-                    <option value="">Non précisé</option>
-                    <option>Dynamique</option><option>Minimaliste</option><option>Fun / Décalé</option><option>Pro / Corporate</option><option>Cinématique</option>
-                  </select>
-                </div>
+              <div style={{ marginBottom:20 }}>
+                <label style={lbl}>Style</label>
+                <select value={brief.style} onChange={e=>setBrief(p=>({...p,style:e.target.value}))} style={{...inp}}>
+                  <option value="">Non précisé</option>
+                  <option>Dynamique</option><option>Minimaliste</option><option>Fun / Décalé</option><option>Pro / Corporate</option><option>Cinématique</option>
+                </select>
               </div>
 
               <div style={{ marginBottom:20 }}>
@@ -538,11 +511,11 @@ export default function FreampleCom() {
                 <textarea {...f('description')} placeholder="Décrivez votre vision, le ton souhaité…" rows={3} style={{...inp, resize:'vertical', lineHeight:1.55}} />
               </div>
 
-              <button onClick={()=>{ if(brief.type) setStep(2); }}
+              <button onClick={()=>setStep(2)}
                 style={{
-                  width:'100%', padding:'16px', background: brief.type?L.noir:'#D0D0D0',
+                  width:'100%', padding:'16px', background:L.noir,
                   color:'#fff', border:'none', fontSize:13, fontWeight:600,
-                  cursor:brief.type?'pointer':'not-allowed', fontFamily:L.font,
+                  cursor:'pointer', fontFamily:L.font,
                   letterSpacing:'0.04em', textTransform:'uppercase',
                 }}>
                 Continuer
