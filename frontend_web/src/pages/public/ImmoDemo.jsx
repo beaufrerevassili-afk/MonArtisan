@@ -27,7 +27,11 @@ const DEFAULT_DATA = {
     { id:2, sciId:1, nom:'Studio Médecin', type:'Studio', adresse:'8 av. Jean Médecin, Nice', surface:28, pieces:1, prixAchat:82000, fraisNotaire:6500, travaux:3000, dateAcquisition:'2023-01-10', valeur:95000, loyer:550, autresRevenus:0, charges:80, chargesNonRecup:30, vacanceLocative:0, locataireId:2, dpe:'D', loyerRef:null, assurance:{pno:120,gli:180}, taxeFonciere:650 },
     { id:3, sciId:2, nom:'Appt Faubourg', type:'Appartement', adresse:'15 rue du Faubourg, Paris 10e', surface:45, pieces:2, prixAchat:290000, fraisNotaire:22000, travaux:15000, dateAcquisition:'2024-03-01', valeur:320000, loyer:1200, autresRevenus:0, charges:200, chargesNonRecup:80, vacanceLocative:0, locataireId:3, dpe:'E', loyerRef:1350, assurance:{pno:180,gli:0}, taxeFonciere:2100 },
     { id:4, sciId:2, nom:'Local Voltaire', type:'Local commercial', adresse:'42 bd Voltaire, Paris 11e', surface:55, pieces:2, prixAchat:240000, fraisNotaire:18000, travaux:25000, dateAcquisition:'2021-01-15', valeur:280000, loyer:2200, autresRevenus:0, charges:350, chargesNonRecup:100, vacanceLocative:0, locataireId:4, dpe:null, loyerRef:null, assurance:{pno:350,gli:0}, taxeFonciere:3200 },
-    { id:5, sciId:2, nom:'Appt Lepic', type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, pieces:2, prixAchat:220000, fraisNotaire:17000, travaux:5000, dateAcquisition:'2025-06-01', valeur:250000, loyer:0, autresRevenus:0, charges:180, chargesNonRecup:60, vacanceLocative:950, locataireId:null, dpe:'F', loyerRef:950, assurance:{pno:160,gli:0}, taxeFonciere:1800 },
+    { id:5, sciId:2, nom:'Appt Lepic', type:'Appartement', adresse:'7 rue Lepic, Paris 18e', surface:38, pieces:2, prixAchat:220000, fraisNotaire:17000, travaux:5000, dateAcquisition:'2025-06-01', valeur:250000, loyer:950, autresRevenus:0, charges:180, chargesNonRecup:60, vacanceLocative:950, locataireId:null, dpe:'F', loyerRef:950, assurance:{pno:160,gli:0}, taxeFonciere:1800, publie:true, meuble:false, description:'Bel appartement à rénover, 2 pièces, quartier Montmartre. Proche métro Abbesses.', photos:['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80'] },
+  ],
+  candidatures: [
+    { id:1, bienId:5, nom:'Dupont', prenom:'Alice', email:'alice@email.com', tel:'0678901234', message:'Bonjour, très intéressée par ce bien. Dossier complet disponible.', revenus:2800, statut:'nouvelle', date:'2026-04-03' },
+    { id:2, bienId:5, nom:'Berger', prenom:'Thomas', email:'thomas.b@email.com', tel:'0612340987', message:'Je cherche un 2P dans le quartier, disponible immédiatement.', revenus:3200, statut:'visite_planifiee', date:'2026-04-01' },
   ],
   locataires: [
     { id:1, nom:'Martin', prenom:'Jean', email:'martin@email.com', tel:'0612345678', debut:'2024-09-01', fin:'2027-08-31', depot:850 },
@@ -165,6 +169,7 @@ export default function ImmoDemo() {
     { id:'gestion', label:'Locataires & Loyers', icon:'👥' },
     { id:'finances', label:'Finances', icon:'💰' },
     { id:'outils', label:'Outils & Conformité', icon:'🧮' },
+    { id:'annonces', label:'Annonces & Candidatures', icon:'📢' },
     { id:'courriers', label:'Courriers', icon:'✉️' },
     { id:'strategie', label:'Stratégie', icon:'🏛️' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
@@ -1011,6 +1016,77 @@ export default function ImmoDemo() {
           </>}
 
           {/* ═══ COURRIERS ═══ */}
+          {/* ═══ ANNONCES & CANDIDATURES ═══ */}
+          {tab==='annonces' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Annonces & Candidatures</h2>
+            <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Publiez vos biens vacants sur Freample Logement et gérez les candidatures.</p>
+
+            {/* Biens publiables */}
+            <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>Vos biens</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:24 }}>
+              {biens.map(b=>{
+                const loc=getLocataire(b.locataireId);
+                const cands=(data.candidatures||[]).filter(c=>c.bienId===b.id);
+                const isPublished=b.publie;
+                return <div key={b.id} style={{ ...CARD, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, padding:'14px 18px' }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14, fontWeight:700 }}>{b.nom||b.adresse}</div>
+                    <div style={{ fontSize:11, color:L.textSec }}>{b.adresse} · {b.surface}m² · {b.loyer}€/mois</div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    {loc ? <span style={{ fontSize:10, fontWeight:600, color:L.green, background:L.greenBg, padding:'3px 8px' }}>Loué — {loc.prenom} {loc.nom}</span>
+                    : <>
+                      {cands.length>0 && <span style={{ fontSize:10, fontWeight:700, color:L.blue, background:L.blueBg, padding:'3px 8px' }}>{cands.length} candidature{cands.length>1?'s':''}</span>}
+                      <button onClick={()=>setData(d=>({...d, biens:d.biens.map(x=>x.id===b.id?{...x, publie:!x.publie}:x)}))}
+                        style={{ ...BTN, fontSize:10, padding:'5px 14px', background:isPublished?L.red:L.green }}
+                        onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                        {isPublished?'Dépublier':'Publier sur Logement'}
+                      </button>
+                    </>}
+                  </div>
+                </div>;
+              })}
+            </div>
+
+            {/* Pipeline candidatures */}
+            {(data.candidatures||[]).length>0 && <>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>Candidatures reçues</div>
+              {(data.candidatures||[]).map((c,i)=>{
+                const bien=data.biens.find(b=>b.id===c.bienId);
+                const statusColors={nouvelle:{bg:L.blueBg,color:L.blue,label:'Nouvelle'},visite_planifiee:{bg:'#FFFBEB',color:L.orange,label:'Visite planifiée'},dossier_recu:{bg:'#F5F3FF',color:'#7C3AED',label:'Dossier reçu'},acceptee:{bg:L.greenBg,color:L.green,label:'Acceptée'},refusee:{bg:L.redBg,color:L.red,label:'Refusée'}};
+                const st=statusColors[c.statut]||statusColors.nouvelle;
+                return <div key={c.id} style={{ ...CARD, marginBottom:8, padding:'16px 18px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700 }}>{c.prenom} {c.nom}</div>
+                      <div style={{ fontSize:11, color:L.textSec }}>{c.email} · {c.tel} · Revenus: {c.revenus}€/mois</div>
+                      <div style={{ fontSize:11, color:L.textLight }}>Pour: {bien?.nom||bien?.adresse} · {new Date(c.date).toLocaleDateString('fr-FR')}</div>
+                    </div>
+                    <span style={{ fontSize:10, fontWeight:700, color:st.color, background:st.bg, padding:'3px 10px', flexShrink:0 }}>{st.label}</span>
+                  </div>
+                  {c.message && <div style={{ fontSize:12, color:L.textSec, background:L.cream, padding:'10px 14px', marginBottom:10, lineHeight:1.5, fontStyle:'italic' }}>"{c.message}"</div>}
+                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                    {['nouvelle','visite_planifiee','dossier_recu'].includes(c.statut) && <>
+                      {c.statut==='nouvelle' && <button onClick={()=>setData(d=>({...d,candidatures:d.candidatures.map(x=>x.id===c.id?{...x,statut:'visite_planifiee'}:x)}))} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:L.orange }}>Planifier visite</button>}
+                      {c.statut==='visite_planifiee' && <button onClick={()=>setData(d=>({...d,candidatures:d.candidatures.map(x=>x.id===c.id?{...x,statut:'dossier_recu'}:x)}))} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:'#7C3AED' }}>Dossier reçu</button>}
+                      {c.statut==='dossier_recu' && <button onClick={()=>{
+                        const newLoc={id:genId(),nom:c.nom,prenom:c.prenom,email:c.email,tel:c.tel,debut:new Date().toISOString().slice(0,10),fin:new Date(Date.now()+3*365*24*60*60*1000).toISOString().slice(0,10),depot:bien?.loyer||0};
+                        setData(d=>({...d,
+                          candidatures:d.candidatures.map(x=>x.id===c.id?{...x,statut:'acceptee'}:x.bienId===c.bienId?{...x,statut:'refusee'}:x),
+                          locataires:[...d.locataires,newLoc],
+                          biens:d.biens.map(b=>b.id===c.bienId?{...b,locataireId:newLoc.id,publie:false}:b),
+                        }));
+                        showToast(`${c.prenom} ${c.nom} est maintenant locataire !`);
+                      }} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:L.green }}>✓ Accepter le dossier</button>}
+                      <button onClick={()=>setData(d=>({...d,candidatures:d.candidatures.map(x=>x.id===c.id?{...x,statut:'refusee'}:x)}))} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px', color:L.red, borderColor:L.red+'40' }}>Refuser</button>
+                    </>}
+                    <a href={`mailto:${c.email}?subject=Votre candidature — ${bien?.nom||bien?.adresse}`} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px', textDecoration:'none', display:'inline-flex' }}>Contacter</a>
+                  </div>
+                </div>;
+              })}
+            </>}
+          </>}
+
           {tab==='courriers' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Courriers types</h2>
             <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Générez des courriers juridiquement conformes en 1 clic.</p>
