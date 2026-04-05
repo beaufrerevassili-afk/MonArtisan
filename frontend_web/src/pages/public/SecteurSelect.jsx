@@ -28,7 +28,12 @@ export default function SecteurSelect() {
   // ═══════════════════════════════════════════════════
   if (!choix) return (
     <div style={{ minHeight:'100vh', background:L.noir, fontFamily:L.font, color:'#fff', display:'flex', flexDirection:'column' }}>
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        button:hover .choice-img{transform:scale(1.08)!important}
+        button:hover .choice-overlay{background:linear-gradient(180deg, rgba(10,10,10,0.15) 0%, rgba(10,10,10,0.65) 100%)!important}
+        button:hover .choice-border{border-color:rgba(201,169,110,0.5)!important}
+      `}</style>
 
       {/* Navbar minimal */}
       <div style={{ padding:'20px 32px', textAlign:'center' }}>
@@ -42,45 +47,56 @@ export default function SecteurSelect() {
         </h1>
         <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', marginBottom:48, textAlign:'center' }}>Choisissez votre espace pour une expérience adaptée.</p>
 
-        <div style={{ display:'flex', gap:'clamp(16px,3vw,32px)', flexWrap:'wrap', justifyContent:'center', maxWidth:800 }}>
+        <div style={{ display:'flex', gap:0, flexWrap:'wrap', justifyContent:'center', maxWidth:920, width:'100%' }}>
           {/* CLIENT */}
           <button onClick={()=>setChoix('client')}
             style={{
-              flex:'1 1 320px', maxWidth:380, background:'transparent', border:`1px solid rgba(255,255,255,0.1)`,
-              padding:'clamp(36px,5vh,56px) 32px', cursor:'pointer', fontFamily:L.font,
-              textAlign:'center', transition:'all .35s', position:'relative', overflow:'hidden',
+              flex:'1 1 360px', maxWidth:460, minHeight:'clamp(280px,40vh,420px)', cursor:'pointer', fontFamily:L.font,
+              textAlign:'center', position:'relative', overflow:'hidden', border:'none', padding:0,
               animation:'fadeUp .7s .2s both',
-            }}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.background='rgba(201,169,110,0.04)';}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.background='transparent';}}>
-            <div style={{ fontSize:52, marginBottom:20, filter:'grayscale(0.2)' }}>👤</div>
-            <div style={{ fontFamily:L.serif, fontSize:'clamp(24px,3vw,34px)', fontWeight:300, fontStyle:'italic', color:'#fff', marginBottom:8, letterSpacing:'-0.02em' }}>
-              Je suis <span style={{ fontWeight:700, fontStyle:'normal' }}>client</span>
+            }}>
+            {/* Photo fond */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&q=80)', backgroundSize:'cover', backgroundPosition:'center', transition:'transform .6s cubic-bezier(0.25,0.46,0.45,0.94)' }}
+              className="choice-img" />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.25) 0%, rgba(10,10,10,0.75) 100%)', transition:'background .35s' }}
+              className="choice-overlay" />
+            {/* Bordure dorée au hover */}
+            <div style={{ position:'absolute', inset:0, border:'2px solid transparent', transition:'border-color .35s', pointerEvents:'none' }} className="choice-border" />
+            {/* Contenu */}
+            <div style={{ position:'relative', zIndex:1, padding:'clamp(40px,6vh,64px) 36px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', height:'100%', boxSizing:'border-box' }}>
+              <div style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', color:'#fff', marginBottom:8, letterSpacing:'-0.02em' }}>
+                Je suis <span style={{ fontWeight:700, fontStyle:'normal' }}>client</span>
+              </div>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.55)', lineHeight:1.6, margin:'0 0 20px', maxWidth:300 }}>
+                Artisans, montage vidéo, services de beauté — trouvez ce dont vous avez besoin.
+              </p>
+              <div style={{ fontSize:12, color:L.gold, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' }}>Découvrir →</div>
             </div>
-            <p style={{ fontSize:14, color:'rgba(255,255,255,0.4)', lineHeight:1.6, margin:0 }}>
-              Trouvez un artisan, réservez un service ou faites monter vos vidéos par des professionnels.
-            </p>
-            <div style={{ marginTop:24, fontSize:12, color:L.gold, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Accéder →</div>
           </button>
 
           {/* ARTISAN / PRO */}
           <button onClick={()=>navigate('/login')}
             style={{
-              flex:'1 1 320px', maxWidth:380, background:'transparent', border:`1px solid rgba(255,255,255,0.1)`,
-              padding:'clamp(36px,5vh,56px) 32px', cursor:'pointer', fontFamily:L.font,
-              textAlign:'center', transition:'all .35s', position:'relative', overflow:'hidden',
+              flex:'1 1 360px', maxWidth:460, minHeight:'clamp(280px,40vh,420px)', cursor:'pointer', fontFamily:L.font,
+              textAlign:'center', position:'relative', overflow:'hidden', border:'none', padding:0,
               animation:'fadeUp .7s .35s both',
-            }}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.background='rgba(201,169,110,0.04)';}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.background='transparent';}}>
-            <div style={{ fontSize:52, marginBottom:20, filter:'grayscale(0.2)' }}>🔧</div>
-            <div style={{ fontFamily:L.serif, fontSize:'clamp(24px,3vw,34px)', fontWeight:300, fontStyle:'italic', color:'#fff', marginBottom:8, letterSpacing:'-0.02em' }}>
-              Je suis <span style={{ fontWeight:700, fontStyle:'normal' }}>professionnel</span>
+            }}>
+            {/* Photo fond */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80)', backgroundSize:'cover', backgroundPosition:'center', transition:'transform .6s cubic-bezier(0.25,0.46,0.45,0.94)' }}
+              className="choice-img" />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.25) 0%, rgba(10,10,10,0.75) 100%)', transition:'background .35s' }}
+              className="choice-overlay" />
+            <div style={{ position:'absolute', inset:0, border:'2px solid transparent', transition:'border-color .35s', pointerEvents:'none' }} className="choice-border" />
+            {/* Contenu */}
+            <div style={{ position:'relative', zIndex:1, padding:'clamp(40px,6vh,64px) 36px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', height:'100%', boxSizing:'border-box' }}>
+              <div style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', color:'#fff', marginBottom:8, letterSpacing:'-0.02em' }}>
+                Je suis <span style={{ fontWeight:700, fontStyle:'normal' }}>professionnel</span>
+              </div>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.55)', lineHeight:1.6, margin:'0 0 20px', maxWidth:300 }}>
+                Gérez votre activité, vos devis, vos clients et votre agenda.
+              </p>
+              <div style={{ fontSize:12, color:L.gold, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' }}>Se connecter →</div>
             </div>
-            <p style={{ fontSize:14, color:'rgba(255,255,255,0.4)', lineHeight:1.6, margin:0 }}>
-              Gérez votre activité, vos devis, vos clients et votre agenda depuis un seul espace.
-            </p>
-            <div style={{ marginTop:24, fontSize:12, color:L.gold, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Se connecter →</div>
           </button>
         </div>
       </div>
