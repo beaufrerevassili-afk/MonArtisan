@@ -40,7 +40,7 @@ export default function FreampleCom() {
             On monte vos vidéos.<br/>Vous publiez.
           </h1>
           <p style={{ fontSize:'clamp(15px,2vw,17px)', color:'rgba(255,255,255,0.6)', lineHeight:1.5, margin:'0 0 28px' }}>
-            TikTok, Reels, YouTube — livré en 48h. À partir de 49€.
+            TikTok, Reels, YouTube — livré en 72h. À partir de 49€.
           </p>
           <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
             <button onClick={()=>setStep(1)} style={{ padding:'14px 32px', background:'#fff', color:C.dark, border:'none', borderRadius:999, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
@@ -52,7 +52,7 @@ export default function FreampleCom() {
             </a>
           </div>
           <div style={{ display:'flex', justifyContent:'center', gap:20, marginTop:24, flexWrap:'wrap' }}>
-            {['⚡ Livré en 48h','✅ Satisfait ou refait','🔒 Paiement sécurisé'].map(t=>(
+            {['⚡ Livré en 72h','✅ Satisfait ou refait','🔒 Paiement sécurisé'].map(t=>(
               <span key={t} style={{ fontSize:13, color:'rgba(255,255,255,0.5)', fontWeight:500 }}>{t}</span>
             ))}
           </div>
@@ -129,7 +129,7 @@ export default function FreampleCom() {
             <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>Growth</div>
             <div style={{ fontSize:32, fontWeight:800, color:'#fff', marginBottom:4 }}>349€<span style={{ fontSize:14, fontWeight:400, color:'rgba(255,255,255,0.5)' }}>/mois</span></div>
             <div style={{ fontSize:14, color:'rgba(255,255,255,0.5)', marginBottom:16 }}>10 TikToks + 5 Reels</div>
-            {['10 TikToks / mois','5 Reels Instagram','Sous-titres + effets','2 révisions / vidéo','Livraison 48h','Stratégie contenu'].map(f=>(
+            {['10 TikToks / mois','5 Reels Instagram','Sous-titres + effets','2 révisions / vidéo','Livraison 72h','Stratégie contenu'].map(f=>(
               <div key={f} style={{ fontSize:13, color:'rgba(255,255,255,0.85)', padding:'4px 0', display:'flex', gap:8 }}><span style={{ color:C.primary }}>✓</span>{f}</div>
             ))}
             <div style={{ flex:1 }} />
@@ -144,7 +144,7 @@ export default function FreampleCom() {
             <div style={{ fontSize:13, fontWeight:700, color:C.textSec, textTransform:'uppercase', letterSpacing:1, marginBottom:6 }}>Pro</div>
             <div style={{ fontSize:32, fontWeight:800, marginBottom:4 }}>699€<span style={{ fontSize:14, fontWeight:400, color:C.textSec }}>/mois</span></div>
             <div style={{ fontSize:14, color:C.textSec, marginBottom:16 }}>20 TikToks + gestion RS</div>
-            {['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 48h','Appel stratégie mensuel'].map(f=>(
+            {['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 72h','Appel stratégie mensuel'].map(f=>(
               <div key={f} style={{ fontSize:13, color:C.text, padding:'4px 0', display:'flex', gap:8 }}><span style={{ color:C.green }}>✓</span>{f}</div>
             ))}
             <div style={{ flex:1 }} />
@@ -164,7 +164,7 @@ export default function FreampleCom() {
 
         {/* Réassurance */}
         <div style={{ display:'flex', justifyContent:'center', gap:24, marginTop:24, flexWrap:'wrap' }}>
-          {['🔄 Résiliable','⚡ 48h livraison','✅ Satisfait ou refait','💳 Paiement sécurisé'].map(r=>(
+          {['🔄 Résiliable','⚡ 72h livraison','✅ Satisfait ou refait','💳 Paiement sécurisé'].map(r=>(
             <span key={r} style={{ fontSize:13, color:C.textSec }}>{r}</span>
           ))}
         </div>
