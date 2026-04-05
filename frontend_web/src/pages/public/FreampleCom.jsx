@@ -467,45 +467,11 @@ export default function FreampleCom() {
             {/* Step 1 */}
             {step === 1 && (<div>
               <div style={{ marginBottom:20 }}>
-                <label style={lbl}>Format</label>
-                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                  {['TikTok / Reel','YouTube Short','YouTube Long','Clip promo','Stories'].map(fmt=>(
-                    <button key={fmt} onClick={()=>setBrief(p=>({...p,format:fmt}))}
-                      style={{
-                        padding:'8px 16px', border:`1px solid ${brief.format===fmt?L.noir:L.border}`,
-                        background: brief.format===fmt?L.noir:'transparent',
-                        color: brief.format===fmt?'#fff':L.textSec,
-                        fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:L.font, transition:'all .15s',
-                      }}>
-                      {fmt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ marginBottom:20 }}>
-                <label style={lbl}>Style</label>
+                <label style={lbl}>Style souhaité</label>
                 <select value={brief.style} onChange={e=>setBrief(p=>({...p,style:e.target.value}))} style={{...inp}}>
                   <option value="">Non précisé</option>
                   <option>Dynamique</option><option>Minimaliste</option><option>Fun / Décalé</option><option>Pro / Corporate</option><option>Cinématique</option>
                 </select>
-              </div>
-
-              <div style={{ marginBottom:20 }}>
-                <label style={lbl}>Options</label>
-                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                  {[{v:'Sous-titres',i:'💬'},{v:'Musique',i:'🎵'},{v:'Transitions',i:'✨'},{v:'Voix-off',i:'🎙️'},{v:'Miniature',i:'🖼️'}].map(o=>(
-                    <button key={o.v} onClick={()=>toggleOpt(o.v)}
-                      style={{
-                        padding:'8px 14px', border:`1px solid ${brief.options.includes(o.v)?L.noir:L.border}`,
-                        background:brief.options.includes(o.v)?L.noir:'transparent',
-                        fontSize:13, fontWeight:500, cursor:'pointer', fontFamily:L.font,
-                        color:brief.options.includes(o.v)?'#fff':L.textSec, transition:'all .15s',
-                      }}>
-                      {o.i} {o.v}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div style={{ marginBottom:20 }}>
