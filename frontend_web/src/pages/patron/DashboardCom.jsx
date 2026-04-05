@@ -27,6 +27,7 @@ const TABS = [
   { id:'portfolio', icon:'🎥', label:'Portfolio' },
   { id:'equipe',    icon:'👨‍💻', label:'Équipe' },
   { id:'rapports',  icon:'📊', label:'Rapports' },
+  { id:'stats',     icon:'📈', label:'Statistiques site' },
 ];
 
 const PROJET_STATUS = {
@@ -84,7 +85,7 @@ function FidBadge({ f }) {
   return <span style={{ background:s.bg, color:s.c, borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{s.l}</span>;
 }
 
-const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', portfolio:'portfolio', equipe:'equipe', rapports:'rapports' };
+const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', portfolio:'portfolio', equipe:'equipe', rapports:'rapports', stats:'stats' };
 
 const MONTEUR_COLORS = { 'Marius':{ bg:'#DBEAFE', border:'#3B82F6', color:'#1D4ED8', dot:'#3B82F6' }, 'Maxence':{ bg:'#FEE2E2', border:'#EF4444', color:'#DC2626', dot:'#EF4444' }, 'Vassili':{ bg:'#F5F3FF', border:'#8B5CF6', color:'#5B21B6', dot:'#8B5CF6' }, 'Mathieu':{ bg:'#D1FAE5', border:'#10B981', color:'#065F46', dot:'#10B981' } };
 const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
@@ -112,6 +113,7 @@ export default function DashboardCom() {
   const [editingPack, setEditingPack] = useState(null); // index
   const [portfolio, setPortfolio] = useState([]);
   const [newVideo, setNewVideo] = useState({ titre:'', description:'', categorie:'Montage vidéo', video_url:'', thumbnail_url:'' });
+  const [siteStats, setSiteStats] = useState(null);
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
   const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
 
@@ -185,6 +187,8 @@ export default function DashboardCom() {
     }).catch(() => {});
     // Charger portfolio
     api.get('/com/portfolio').then(r => setPortfolio(r.data.items || [])).catch(() => {});
+    // Charger stats site
+    api.get('/analytics/stats').then(r => setSiteStats(r.data)).catch(() => {});
   }, []);
 
   const [toast, setToast] = useState(null);
@@ -1478,6 +1482,67 @@ export default function DashboardCom() {
             ))}
           </div>
         </div>
+      </div>)}
+
+      {/* TAB: Statistiques site */}
+      {tab === 'stats' && (<div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700 }}>Statistiques du site</div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Visites en temps réel sur toutes les pages Freample</div>
+          </div>
+          <button onClick={()=>api.get('/analytics/stats').then(r=>setSiteStats(r.data)).catch(()=>{})} style={GHOST}>↻ Actualiser</button>
+        </div>
+
+        {!siteStats ? (
+          <div style={{ textAlign:'center', padding:40, color:'#8B8B8B' }}>Chargement des statistiques...</div>
+        ) : (
+          <>
+            {/* KPIs */}
+            <div style={{ display:'flex', gap:16, marginBottom:24, flexWrap:'wrap' }}>
+              <KpiCard label="Aujourd'hui" value={siteStats.today} accent="#22C55E" />
+              <KpiCard label="Cette semaine" value={siteStats.week} accent="#3B82F6" />
+              <KpiCard label="Ce mois" value={siteStats.month} accent={V} />
+              <KpiCard label="Total" value={siteStats.total} accent="#F59E0B" />
+            </div>
+
+            {/* Graphique 30 jours */}
+            {siteStats.byDay?.length > 0 && (
+              <div style={{ ...CARD, marginBottom:24 }}>
+                <div style={HDR}>Visites des 30 derniers jours</div>
+                <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:140, padding:'10px 0' }}>
+                  {siteStats.byDay.map(d => {
+                    const max = Math.max(...siteStats.byDay.map(x=>parseInt(x.views)||1));
+                    const h = Math.max(4, Math.round((parseInt(d.views)/max)*120));
+                    const date = new Date(d.day);
+                    const label = `${date.getDate()}/${date.getMonth()+1}`;
+                    return (
+                      <div key={d.day} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }} title={`${label}: ${d.views} visites`}>
+                        <div style={{ fontSize:10, fontWeight:700, color:V }}>{d.views}</div>
+                        <div style={{ width:'100%', background:V, borderRadius:'4px 4px 0 0', height:h, minWidth:4, transition:'height .3s' }} />
+                        <div style={{ fontSize:8, color:'#8B8B8B', transform:'rotate(-45deg)', whiteSpace:'nowrap' }}>{label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Pages les plus visitées */}
+            <div style={CARD}>
+              <div style={HDR}>Pages les plus visitées</div>
+              {(siteStats.byPage||[]).length === 0 ? (
+                <div style={{ padding:20, textAlign:'center', color:'#8B8B8B', fontSize:13 }}>Aucune donnée encore</div>
+              ) : (siteStats.byPage||[]).map((p,i) => (
+                <div key={p.page} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:i<siteStats.byPage.length-1?'1px solid #F0F0F0':'none' }}>
+                  <div style={{ width:28, height:28, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, fontSize:12, fontWeight:700, color:V }}>{i+1}</div>
+                  <div style={{ flex:1, fontSize:14, color:'#1C1C1E', fontWeight:500 }}>{p.page}</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:V }}>{p.views} <span style={{ fontSize:11, fontWeight:400, color:'#8B8B8B' }}>visites</span></div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>)}
 
       {/* MODAL: Projet detail (with IMPROVEMENT 2 + 4) */}

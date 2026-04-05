@@ -107,6 +107,51 @@ app.use('/client',  authenticateToken, clientRoutes);
 app.use('/patron',  authenticateToken, patronRoutes);
 app.use('/artisan', authenticateToken, artisanRoutes);
 
+// ─── Analytics (visites) ────────────────────────────────────
+(async () => {
+  try {
+    await db.query(`CREATE TABLE IF NOT EXISTS analytics_visits (
+      id SERIAL PRIMARY KEY,
+      page VARCHAR(255) NOT NULL,
+      referrer TEXT,
+      user_agent TEXT,
+      ip VARCHAR(64),
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+  } catch(e) { console.log('analytics table:', e.message); }
+})();
+
+// Track visit (public, no auth)
+app.post('/analytics/visit', (req, res) => {
+  const { page } = req.body;
+  if (!page) return res.status(400).json({ error:'page required' });
+  const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
+  const ua = req.headers['user-agent'] || '';
+  const ref = req.headers['referer'] || '';
+  db.query('INSERT INTO analytics_visits (page, referrer, user_agent, ip) VALUES ($1,$2,$3,$4)', [page, ref, ua, ip]).catch(()=>{});
+  res.json({ ok:true });
+});
+
+// Get stats (auth required)
+app.get('/analytics/stats', authenticateToken, async (req, res) => {
+  try {
+    const total = await db.query('SELECT COUNT(*) as total FROM analytics_visits');
+    const today = await db.query("SELECT COUNT(*) as total FROM analytics_visits WHERE created_at >= CURRENT_DATE");
+    const week = await db.query("SELECT COUNT(*) as total FROM analytics_visits WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'");
+    const month = await db.query("SELECT COUNT(*) as total FROM analytics_visits WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'");
+    const byPage = await db.query("SELECT page, COUNT(*) as views FROM analytics_visits GROUP BY page ORDER BY views DESC LIMIT 20");
+    const byDay = await db.query("SELECT DATE(created_at) as day, COUNT(*) as views FROM analytics_visits WHERE created_at >= CURRENT_DATE - INTERVAL '30 days' GROUP BY DATE(created_at) ORDER BY day");
+    res.json({
+      total: parseInt(total.rows[0]?.total||0),
+      today: parseInt(today.rows[0]?.total||0),
+      week: parseInt(week.rows[0]?.total||0),
+      month: parseInt(month.rows[0]?.total||0),
+      byPage: byPage.rows,
+      byDay: byDay.rows,
+    });
+  } catch(err) { res.status(500).json({ error:err.message }); }
+});
+
 // ─── Démarrage ──────────────────────────────────────────────
 
 db.testConnection().then(() => {

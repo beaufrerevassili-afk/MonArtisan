@@ -117,8 +117,18 @@ function ProtectedRoute({ children, roles }) {
   return children;
 }
 
+function usePageTracker() {
+  const loc = typeof window !== 'undefined' ? window.location : null;
+  React.useEffect(() => {
+    if (!loc) return;
+    const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    fetch(`${API}/analytics/visit`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ page:loc.pathname }) }).catch(()=>{});
+  }, [loc?.pathname]);
+}
+
 function AppRoutes() {
   const { user } = useAuth();
+  usePageTracker();
 
   return (
     <Routes>

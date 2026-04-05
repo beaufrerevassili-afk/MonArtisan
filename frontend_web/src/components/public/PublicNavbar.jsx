@@ -61,16 +61,45 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
         {/* Actions droite */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {user && user.email === 'freamplecom@gmail.com' ? (
-            /* ── Compte dev — accès total ── */
-            <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            /* ── Compte dev — accès total avec dropdown ── */
+            <div ref={menuRef} style={{ display:'flex', gap:6, alignItems:'center', position:'relative' }}>
               <button onClick={() => navigate('/patron/dashboard')}
                 style={{ padding:'7px 14px', background:'none', border:'none', fontSize:13, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'color .15s', fontFamily:DS.font }}
                 onMouseEnter={e=>e.currentTarget.style.color=DS.ink} onMouseLeave={e=>e.currentTarget.style.color=DS.muted}>
                 Dashboard
               </button>
-              <div style={{ width:32, height:32, borderRadius:'50%', background:'#22C55E', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff', cursor:'default' }} title="Mode dev">
+              <button onClick={() => setMenuOpen(!menuOpen)}
+                style={{ width:32, height:32, borderRadius:'50%', background:'#22C55E', border:'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff', cursor:'pointer', transition:'opacity .15s' }}
+                onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
                 {user.nom ? user.nom[0].toUpperCase() : 'D'}
-              </div>
+              </button>
+              {menuOpen && (
+                <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, background:'#fff', border:`1px solid ${DS.border}`, boxShadow:'0 8px 32px rgba(0,0,0,0.12)', minWidth:220, overflow:'hidden', zIndex:300 }}>
+                  <div style={{ padding:'14px 18px', borderBottom:`1px solid ${DS.border}` }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:DS.ink }}>{user.nom || 'Admin'}</div>
+                    <div style={{ fontSize:12, color:DS.muted, marginTop:2 }}>{user.email}</div>
+                    <div style={{ fontSize:10, fontWeight:700, color:'#22C55E', marginTop:4 }}>Mode développeur</div>
+                  </div>
+                  {[
+                    { label:'📊 Dashboard', action:()=>navigate('/patron/dashboard') },
+                    { label:'📈 Statistiques', action:()=>navigate('/patron/dashboard?onglet=stats') },
+                    { label:'🏠 Accueil', action:()=>navigate('/') },
+                  ].map(item=>(
+                    <button key={item.label} onClick={()=>{item.action();setMenuOpen(false);}}
+                      style={{ display:'block', width:'100%', padding:'11px 18px', background:'none', border:'none', textAlign:'left', fontSize:14, color:DS.ink, cursor:'pointer', fontFamily:DS.font, transition:'background .1s' }}
+                      onMouseEnter={e=>e.currentTarget.style.background=DS.bgSoft} onMouseLeave={e=>e.currentTarget.style.background='none'}>
+                      {item.label}
+                    </button>
+                  ))}
+                  <div style={{ borderTop:`1px solid ${DS.border}` }}>
+                    <button onClick={()=>{logout();setMenuOpen(false);navigate('/');}}
+                      style={{ display:'block', width:'100%', padding:'11px 18px', background:'none', border:'none', textAlign:'left', fontSize:14, color:'#DC2626', cursor:'pointer', fontFamily:DS.font, fontWeight:600, transition:'background .1s' }}
+                      onMouseEnter={e=>e.currentTarget.style.background='#FEF2F2'} onMouseLeave={e=>e.currentTarget.style.background='none'}>
+                      🚪 Se déconnecter
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : user && user.role === 'client' ? (
             /* ── Connecté client : icône compte avec dropdown ── */

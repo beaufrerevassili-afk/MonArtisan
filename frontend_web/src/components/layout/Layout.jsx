@@ -738,6 +738,7 @@ export default function Layout({ children }) {
                 { label: 'Portfolio',      path: '/patron/dashboard?onglet=portfolio',   Icon: IconStar       },
                 { label: 'Équipe',         path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam       },
                 { label: 'Rapports',       path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
+                { label: 'Stats site',     path: '/patron/dashboard?onglet=stats',       Icon: IconStar       },
               ];
             }
 
