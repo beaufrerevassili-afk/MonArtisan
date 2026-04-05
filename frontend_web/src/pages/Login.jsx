@@ -1,408 +1,241 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import PublicNavbar from '../components/public/PublicNavbar';
-import DS from '../design/ds';
 
-// ─── Comptes démo ────────────────────────────────────────────────────────────
-const CLIENT_DEMO = {
-  role: 'Client', email: 'client@demo.com', motdepasse: 'client123',
-  color: DS.accent, icon: '👤', universal: true,
+// ── Palette luxe ──
+const L = {
+  bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
+  text:'#1A1A1A', textSec:'#6B6B6B', textLight:'#A0A0A0',
+  gold:'#C9A96E', goldDark:'#8B7240', border:'#E8E6E1',
+  red:'#DC2626', redBg:'#FEF2F2',
+  font:"'Inter',-apple-system,'Helvetica Neue',Arial,sans-serif",
+  serif:"'Cormorant Garamond','Georgia',serif",
 };
 
+// ── Comptes démo ──
+const CLIENT_DEMO = { role:'Client', email:'client@demo.com', motdepasse:'client123', icon:'👤', universal:true };
 const SECTEUR_COMPTES = {
   btp: [
-    { role: 'Patron BTP',  email: 'patron.btp@demo.com',  motdepasse: 'patron123',  color: '#5B5BD6', icon: '🏗️' },
-    { role: 'Employé BTP', email: 'employe.btp@demo.com', motdepasse: 'employe123', color: '#7C85D6', icon: '👷' },
+    { role:'Chef d\'entreprise BTP', email:'patron.btp@demo.com', motdepasse:'patron123', icon:'🏗️' },
+    { role:'Employé BTP', email:'employe.btp@demo.com', motdepasse:'employe123', icon:'👷' },
   ],
   coiffure: [
-    { role: 'Patron Coiffure',  email: 'patron.coiffure@demo.com',  motdepasse: 'patron123',  color: '#E535AB', icon: '✂️' },
-    { role: 'Employé Coiffure', email: 'employe.coiffure@demo.com', motdepasse: 'employe123', color: '#FF6DC4', icon: '💇' },
+    { role:'Gérant·e salon', email:'patron.coiffure@demo.com', motdepasse:'patron123', icon:'✂️' },
+    { role:'Employé·e salon', email:'employe.coiffure@demo.com', motdepasse:'employe123', icon:'💇' },
   ],
   restaurant: [
-    { role: 'Patron Restaurant',  email: 'patron.restaurant@demo.com',  motdepasse: 'patron123',  color: '#FF6000', icon: '🍽️' },
-    { role: 'Employé Restaurant', email: 'employe.restaurant@demo.com', motdepasse: 'employe123', color: '#FF9333', icon: '👨‍🍳' },
+    { role:'Gérant·e restaurant', email:'patron.restaurant@demo.com', motdepasse:'patron123', icon:'🍽️' },
+    { role:'Employé·e restaurant', email:'employe.restaurant@demo.com', motdepasse:'employe123', icon:'👨‍🍳' },
   ],
   vacances: [
-    { role: 'Patron Hôtel',  email: 'patron.hotel@demo.com',  motdepasse: 'patron123',  color: '#0080FF', icon: '🏨' },
-    { role: 'Employé Hôtel', email: 'employe.hotel@demo.com', motdepasse: 'employe123', color: '#33A0FF', icon: '🛎️' },
+    { role:'Gérant·e hôtel', email:'patron.hotel@demo.com', motdepasse:'patron123', icon:'🏨' },
+    { role:'Employé·e hôtel', email:'employe.hotel@demo.com', motdepasse:'employe123', icon:'🛎️' },
   ],
   course: [
-    { role: 'Patron Course',    email: 'patron.course@demo.com',    motdepasse: 'patron123',  color: '#000000', icon: '🚗' },
-    { role: 'Chauffeur Course', email: 'employe.course@demo.com',   motdepasse: 'employe123', color: '#444444', icon: '🏎️' },
+    { role:'Gérant·e VTC', email:'patron.course@demo.com', motdepasse:'patron123', icon:'🚗' },
+    { role:'Chauffeur', email:'employe.course@demo.com', motdepasse:'employe123', icon:'🧑‍✈️' },
   ],
   eat: [
-    { role: 'Patron Eat',  email: 'patron.eat@demo.com',  motdepasse: 'patron123',  color: '#05944F', icon: '🛵' },
-    { role: 'Livreur Eat', email: 'employe.eat@demo.com', motdepasse: 'employe123', color: '#22C55E', icon: '📦' },
+    { role:'Gérant·e livraison', email:'patron.eat@demo.com', motdepasse:'patron123', icon:'🛵' },
+    { role:'Livreur', email:'employe.eat@demo.com', motdepasse:'employe123', icon:'📦' },
   ],
-  com: [],
+  com: [
+    { role:'Gérant·e Freample Com', email:'patron.com@demo.com', motdepasse:'patron123', icon:'🎬' },
+    { role:'Monteur vidéo', email:'employe.com@demo.com', motdepasse:'employe123', icon:'🎥' },
+  ],
 };
-
 const GENERIC_DEMO = [
-  { role: 'Client',            email: 'client@demo.com',  motdepasse: 'client123',  color: DS.accent,   icon: '👤', universal: true },
-  { role: "Chef d'entreprise", email: 'patron@demo.com',  motdepasse: 'patron123',  color: '#7C3AED',   icon: '💼' },
-  { role: 'Employé',           email: 'artisan@demo.com', motdepasse: 'artisan123', color: '#059669',   icon: '👷' },
+  CLIENT_DEMO,
+  { role:"Chef d'entreprise", email:'patron.btp@demo.com', motdepasse:'patron123', icon:'🏢' },
+  { role:'Employé', email:'employe.btp@demo.com', motdepasse:'employe123', icon:'👷' },
 ];
-
-// ─── Config secteur ───────────────────────────────────────────────────────────
 const SECTOR_CONFIG = {
-  btp:        { label: 'BTP & Travaux',    color: '#5B5BD6', bg: '#EEF2FF', icon: '🔨' },
-  coiffure:   { label: 'Coiffure',         color: '#E535AB', bg: '#FFF0F8', icon: '✂️' },
-  restaurant: { label: 'Restaurant',       color: '#FF6000', bg: '#FFF3E8', icon: '🍽️' },
-  vacances:   { label: 'Vacances & Hôtel', color: '#0080FF', bg: '#E8F4FF', icon: '🏖️' },
-  course:     { label: 'Course VTC',       color: '#000000', bg: '#F3F3F3', icon: '🚗' },
-  eat:        { label: 'Freample Eat',     color: '#05944F', bg: '#F0FDF4', icon: '🛵' },
-  com:        { label: 'Freample Com',    color: '#8B5CF6', bg: '#F5F3FF', icon: '🎬' },
+  btp:       { label:'BTP',         icon:'🏗️' },
+  coiffure:  { label:'Coiffure',    icon:'✂️' },
+  restaurant:{ label:'Restaurant',  icon:'🍽️' },
+  vacances:  { label:'Vacances',    icon:'🏨' },
+  course:    { label:'VTC',         icon:'🚗' },
+  eat:       { label:'Livraison',   icon:'🛵' },
+  com:       { label:'Freample Com',icon:'🎬' },
 };
+const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/fondateur/dashboard' };
+const PUBLIC_SECTORS = ['vacances','restaurant','coiffure','btp','course','eat','com'];
 
-const REDIRECTIONS = {
-  client:      '/',
-  patron:      '/patron/dashboard',
-  artisan:     '/artisan/dashboard',
-  super_admin: '/admin/dashboard',
-  fondateur:   '/fondateur/dashboard',
-};
+const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };
 
-const PUBLIC_SECTORS = ['vacances', 'restaurant', 'coiffure', 'btp'];
-
-// ─── Composant ────────────────────────────────────────────────────────────────
 export default function Login() {
   const { user, login } = useAuth();
-  const navigate        = useNavigate();
-  const [searchParams]  = useSearchParams();
-
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const fromSector = searchParams.get('from');
-  const sector     = fromSector && PUBLIC_SECTORS.includes(fromSector) ? fromSector : null;
-  const sectorCfg  = sector ? SECTOR_CONFIG[sector] : null;
+  const sector = fromSector && PUBLIC_SECTORS.includes(fromSector) ? fromSector : null;
 
-  const [form, setForm]           = useState({ email: '', motdepasse: '' });
-  const [error, setError]         = useState('');
-  const [loading, setLoading]     = useState(false);
-  const [showPwd, setShowPwd]     = useState(false);
-  const [demoSector, setDemoSector] = useState(null); // secteur choisi manuellement dans les démos
-  const [pendingRole, setPendingRole] = useState(null); // rôle en attente de choix secteur ('patron'|'artisan')
+  const [form, setForm] = useState({ email:'', motdepasse:'' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const [demoSector, setDemoSector] = useState(null);
+  const [pendingRole, setPendingRole] = useState(null);
 
   const getDestination = (role) => {
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
     return REDIRECTIONS[role] || '/';
   };
 
-  // Redirect only non-client roles (pro users go to their dashboard, clients can still log in as pro)
   if (user && user.role !== 'client') return <Navigate to={getDestination(user.role)} replace />;
 
-  // Secteur effectif : depuis l'URL ou choisi manuellement
   const activeSector = sector || demoSector;
-  const activeSectorCfg = activeSector ? SECTOR_CONFIG[activeSector] : null;
-
-  // Comptes démo filtrés : client universel + comptes du secteur actif
-  const demoAccounts = activeSector
-    ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector] || [])]
-    : GENERIC_DEMO;
-
-  const accentColor = sectorCfg?.color || DS.ink;
+  const demoAccounts = activeSector ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector]||[])] : GENERIC_DEMO;
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const data = await login(form.email, form.motdepasse);
-      navigate(getDestination(data.role));
-    } catch (err) {
-      setError(err.response?.data?.erreur || 'Identifiants incorrects');
-    } finally {
-      setLoading(false);
-    }
+    e.preventDefault(); setError(''); setLoading(true);
+    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role)); }
+    catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
+    finally { setLoading(false); }
   }
 
   async function remplirDemo(compte) {
-    // Si c'est un compte générique Chef/Employé sans secteur choisi → forcer le choix
-    const isGenericPatronArtisan = !compte.universal && !activeSector
-      && ["Chef d'entreprise", 'Employé'].includes(compte.role);
-    if (isGenericPatronArtisan) {
-      setPendingRole(compte.role === "Chef d'entreprise" ? 'patron' : 'artisan');
-      return;
-    }
-    setError('');
-    setLoading(true);
-    try {
-      const data = await login(compte.email, compte.motdepasse);
-      navigate(getDestination(data.role));
-    } catch (err) {
-      setError(err.response?.data?.erreur || 'Identifiants incorrects');
-    } finally {
-      setLoading(false);
-    }
+    const isGeneric = !compte.universal && !activeSector && ["Chef d'entreprise",'Employé'].includes(compte.role);
+    if (isGeneric) { setPendingRole(compte.role === "Chef d'entreprise" ? 'patron' : 'artisan'); return; }
+    setError(''); setLoading(true);
+    try { const data = await login(compte.email, compte.motdepasse); navigate(getDestination(data.role)); }
+    catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
+    finally { setLoading(false); }
   }
 
-  // Quand un secteur est choisi après clic sur Patron/Artisan générique → connexion auto
   function handleSectorSelect(id) {
-    if (demoSector === id && !pendingRole) {
-      setDemoSector(null);
-      return;
-    }
+    if (demoSector === id && !pendingRole) { setDemoSector(null); return; }
     setDemoSector(id);
     if (pendingRole) {
-      const comptesSecteur = SECTEUR_COMPTES[id] || [];
-      // Patron → premier compte du secteur, Artisan → deuxième (employé)
-      const compte = pendingRole === 'patron' ? comptesSecteur[0] : comptesSecteur[1];
-      if (compte) {
-        setPendingRole(null);
-        // Petit délai pour voir la sélection avant connexion
-        setTimeout(() => remplirDemo(compte), 300);
-      }
+      const comptes = SECTEUR_COMPTES[id] || [];
+      const compte = pendingRole === 'patron' ? comptes[0] : comptes[1];
+      if (compte) { setPendingRole(null); setTimeout(()=>remplirDemo(compte), 300); }
     }
   }
 
-  const inputStyle = {
-    width: '100%', boxSizing: 'border-box',
-    padding: '11px 14px', borderRadius: DS.r.md,
-    border: `1.5px solid ${DS.border}`, background: DS.bg,
-    fontSize: 14, color: DS.ink, outline: 'none',
-    fontFamily: DS.font, transition: 'border-color .15s',
-  };
-
   return (
-    <div style={{ minHeight: '100vh', background: DS.bgSoft, fontFamily: DS.font }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse-border { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); } }
-      `}</style>
-      <PublicNavbar />
+    <div style={{ minHeight:'100vh', background:L.noir, fontFamily:L.font, display:'flex', flexDirection:'column' }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 'clamp(28px,5vh,56px) 20px 48px' }}>
-        <div style={{
-          width: '100%', maxWidth: 440,
-          background: DS.bg, borderRadius: DS.r.xxl,
-          border: `1px solid ${DS.border}`, boxShadow: DS.shadow.xl,
-          padding: 'clamp(24px,5vw,40px)',
-        }}>
+      {/* ── Navbar ── */}
+      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(24px,4vw,48px)', height:60, borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:800, color:'#fff', fontFamily:L.font, letterSpacing:'-0.04em' }}>
+          Freample<span style={{ color:L.gold }}>.</span>
+        </button>
+        <Link to={sector ? `/register?secteur=${sector}` : '/register'} style={{ fontSize:13, color:L.gold, textDecoration:'none', fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase', transition:'color .15s' }}>
+          Créer un compte
+        </Link>
+      </nav>
 
-          {/* ── Badge secteur ── */}
-          {sectorCfg && (
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '6px 14px', borderRadius: DS.r.full,
-              background: sectorCfg.bg, border: `1px solid ${sectorCfg.color}30`,
-              marginBottom: 22,
-            }}>
-              <span style={{ fontSize: 15 }}>{sectorCfg.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: sectorCfg.color }}>
-                Espace {sectorCfg.label}
-              </span>
+      {/* ── Contenu ── */}
+      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(24px,4vh,48px) 20px' }}>
+        <div style={{ width:'100%', maxWidth:420 }}>
+
+          {/* Header */}
+          <div style={{ textAlign:'center', marginBottom:36 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>
+              {sector ? `Espace ${SECTOR_CONFIG[sector]?.label||sector}` : 'Connexion'}
             </div>
-          )}
-
-          {/* ── En-tête ── */}
-          <div style={{ marginBottom: 26 }}>
-            <button
-              onClick={() => navigate('/')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 14, fontSize: 17, fontWeight: 800, color: DS.ink, letterSpacing: '-0.05em', fontFamily: DS.font, lineHeight: 1 }}
-            >
-              Freample<span style={{ color: DS.gold }}>.</span>
-            </button>
-            <h1 style={{ fontSize: 'clamp(1.25rem,3vw,1.625rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.15 }}>
-              {sectorCfg ? 'Connectez-vous' : 'Bon retour 👋'}
+            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', color:'#fff', letterSpacing:'-0.02em', margin:0, lineHeight:1.1 }}>
+              Bon <span style={{ fontWeight:700, fontStyle:'normal' }}>retour</span>
             </h1>
-            <p style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>
-              {sectorCfg
-                ? `Accédez à votre espace ${sectorCfg.label}`
-                : 'Accédez à votre espace professionnel'}
-            </p>
           </div>
 
-          {/* ── Formulaire ── */}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Formulaire */}
+          <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:18 }}>
             <div>
-              <label htmlFor="login-email" style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: DS.ink2 }}>
-                Adresse e-mail
-              </label>
-              <input
-                id="login-email"
-                type="email"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                placeholder="votre@email.com"
-                required
-                autoComplete="email"
-                style={inputStyle}
-                onFocus={e => e.currentTarget.style.borderColor = accentColor}
-                onBlur={e => e.currentTarget.style.borderColor = DS.border}
-              />
+              <label style={{ display:'block', marginBottom:8, fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Adresse e-mail</label>
+              <input type="email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} placeholder="votre@email.com" required autoComplete="email"
+                style={{ ...inp, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#fff' }}
+                onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
             </div>
-
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <label htmlFor="login-password" style={{ fontSize: 13, fontWeight: 600, color: DS.ink2 }}>
-                  Mot de passe
-                </label>
-                <Link to="/forgot-password" style={{ fontSize: 13, color: accentColor, textDecoration: 'none', fontWeight: 500 }}>
-                  Oublié ?
-                </Link>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                <label style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Mot de passe</label>
+                <Link to="/forgot-password" style={{ fontSize:12, color:L.gold, textDecoration:'none', fontWeight:500 }}>Oublié ?</Link>
               </div>
-              <div style={{ position: 'relative' }}>
-                <input
-                  id="login-password"
-                  type={showPwd ? 'text' : 'password'}
-                  value={form.motdepasse}
-                  onChange={e => setForm({ ...form, motdepasse: e.target.value })}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                  style={{ ...inputStyle, paddingRight: 44 }}
-                  onFocus={e => e.currentTarget.style.borderColor = accentColor}
-                  onBlur={e => e.currentTarget.style.borderColor = DS.border}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd(!showPwd)}
-                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.subtle, display: 'flex', padding: 2, transition: 'color .15s' }}
-                  onMouseEnter={e => e.currentTarget.style.color = DS.ink}
-                  onMouseLeave={e => e.currentTarget.style.color = DS.subtle}
-                >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    {showPwd
-                      ? <><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></>
-                      : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
-                    }
-                  </svg>
+              <div style={{ position:'relative' }}>
+                <input type={showPwd?'text':'password'} value={form.motdepasse} onChange={e=>setForm({...form, motdepasse:e.target.value})} placeholder="••••••••" required autoComplete="current-password"
+                  style={{ ...inp, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#fff', paddingRight:44 }}
+                  onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                <button type="button" onClick={()=>setShowPwd(!showPwd)}
+                  style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.35)', fontSize:14 }}>
+                  {showPwd ? '🙈' : '👁️'}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div role="alert" style={{ background: DS.redBg, border: `1px solid ${DS.red}40`, borderRadius: DS.r.sm, padding: '10px 14px', color: DS.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-                {error}
-              </div>
+              <div style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', padding:'10px 14px', fontSize:13, color:'#FCA5A5' }}>{error}</div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%', padding: '12px 24px', borderRadius: DS.r.md,
-                background: accentColor, border: 'none', color: '#fff',
-                fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8, fontFamily: DS.font,
-                transition: 'opacity .15s', marginTop: 4,
-              }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.85'; }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = loading ? '0.7' : '1'; }}
-            >
-              {loading ? (
-                <>
-                  <div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
-                  Connexion…
-                </>
-              ) : 'Se connecter →'}
+            <button type="submit" disabled={loading}
+              style={{ width:'100%', padding:'16px', background:L.white, color:L.noir, border:'none', fontSize:14, fontWeight:600, cursor:loading?'not-allowed':'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'all .25s', opacity:loading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+              onMouseEnter={e=>{if(!loading){e.currentTarget.style.background=L.gold;e.currentTarget.style.color='#fff';}}}
+              onMouseLeave={e=>{if(!loading){e.currentTarget.style.background=L.white;e.currentTarget.style.color=L.noir;}}}>
+              {loading ? <><div style={{ width:16, height:16, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:L.noir, borderRadius:'50%', animation:'spin .7s linear infinite' }}/>Connexion…</> : 'Se connecter'}
             </button>
           </form>
 
-          {/* ── Séparateur ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0 16px' }}>
-            <div style={{ flex: 1, height: 1, background: DS.border }} />
-            <span style={{ fontSize: 12, color: DS.subtle, fontWeight: 500, whiteSpace: 'nowrap' }}>
-              {activeSector ? `Comptes ${activeSectorCfg?.label || activeSector}` : 'Comptes de démonstration'}
+          {/* Séparateur */}
+          <div style={{ display:'flex', alignItems:'center', gap:14, margin:'28px 0 20px' }}>
+            <div style={{ flex:1, height:1, background:'rgba(255,255,255,0.08)' }} />
+            <span style={{ fontSize:11, color:'rgba(255,255,255,0.25)', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em' }}>
+              {activeSector ? SECTOR_CONFIG[activeSector]?.label : 'Démonstration'}
             </span>
-            <div style={{ flex: 1, height: 1, background: DS.border }} />
+            <div style={{ flex:1, height:1, background:'rgba(255,255,255,0.08)' }} />
           </div>
 
-          {/* ── Sélecteur de secteur (quand pas de secteur dans l'URL) ── */}
+          {/* Sélecteur secteur */}
           {!sector && (
-            <div style={{
-              marginBottom: 12,
-              ...(pendingRole ? {
-                background: '#FFFBEB', border: '2px solid #F59E0B', borderRadius: DS.r.md,
-                padding: '14px 16px', animation: 'pulse-border .6s ease-in-out',
-              } : {}),
-            }}>
-              {pendingRole ? (
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#B45309', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>👆</span>
-                  Choisissez votre secteur pour accéder au compte {pendingRole === 'patron' ? "Chef d'entreprise" : 'Employé'}
-                </div>
-              ) : (
-                <div style={{ fontSize: 11, color: DS.subtle, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-                  Choisir un espace
+            <div style={{ marginBottom:16, ...(pendingRole ? { background:'rgba(201,169,110,0.08)', border:`1px solid ${L.gold}40`, padding:'14px 16px' } : {}) }}>
+              {pendingRole && (
+                <div style={{ fontSize:12, fontWeight:600, color:L.gold, marginBottom:10 }}>
+                  Choisissez un secteur pour le compte {pendingRole === 'patron' ? "Chef d'entreprise" : 'Employé'}
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                 {Object.entries(SECTOR_CONFIG).map(([id, cfg]) => (
-                  <button
-                    key={id}
-                    onClick={() => handleSectorSelect(id)}
-                    style={{
-                      padding: pendingRole ? '8px 16px' : '5px 12px',
-                      borderRadius: DS.r.full, fontSize: pendingRole ? 13 : 12, fontWeight: 600,
-                      border: `1.5px solid ${demoSector === id ? cfg.color : pendingRole ? cfg.color + '60' : DS.border}`,
-                      background: demoSector === id ? cfg.bg : DS.bg,
-                      color: demoSector === id ? cfg.color : pendingRole ? cfg.color : DS.muted,
-                      cursor: 'pointer', transition: 'all .15s',
-                    }}
-                  >
+                  <button key={id} onClick={()=>handleSectorSelect(id)}
+                    style={{ padding:'7px 14px', fontSize:12, fontWeight:600, border:`1px solid ${demoSector===id ? L.gold : 'rgba(255,255,255,0.1)'}`, background:demoSector===id ? 'rgba(201,169,110,0.1)' : 'transparent', color:demoSector===id ? L.gold : 'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+                    onMouseEnter={e=>{if(demoSector!==id){e.currentTarget.style.borderColor='rgba(255,255,255,0.25)';e.currentTarget.style.color='rgba(255,255,255,0.6)';}}}
+                    onMouseLeave={e=>{if(demoSector!==id){e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(255,255,255,0.4)';}}}>
                     {cfg.icon} {cfg.label}
                   </button>
                 ))}
               </div>
-              {pendingRole && (
-                <button onClick={() => setPendingRole(null)} style={{ marginTop: 10, fontSize: 12, color: DS.muted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: DS.font, textDecoration: 'underline' }}>
-                  Annuler
-                </button>
-              )}
+              {pendingRole && <button onClick={()=>setPendingRole(null)} style={{ marginTop:10, fontSize:12, color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', fontFamily:L.font }}>Annuler</button>}
             </div>
           )}
 
-          {/* ── Comptes démo (filtrés par secteur) ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {/* Comptes démo */}
+          <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {demoAccounts.map((c, i) => (
-              <button
-                key={i}
-                onClick={() => remplirDemo(c)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 14px', borderRadius: DS.r.md,
-                  background: DS.bgSoft, border: `1px solid ${DS.border}`,
-                  cursor: 'pointer', transition: 'all .15s', textAlign: 'left',
-                  fontFamily: DS.font, width: '100%',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = DS.bgMuted; e.currentTarget.style.borderColor = DS.muted; }}
-                onMouseLeave={e => { e.currentTarget.style.background = DS.bgSoft; e.currentTarget.style.borderColor = DS.border; }}
-              >
-                <div style={{
-                  width: 32, height: 32, borderRadius: DS.r.sm, flexShrink: 0,
-                  background: `${c.color}18`, border: `1px solid ${c.color}40`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-                }}>
-                  {c.icon}
+              <button key={i} onClick={()=>remplirDemo(c)}
+                style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 16px', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', cursor:'pointer', fontFamily:L.font, width:'100%', textAlign:'left', transition:'all .2s' }}
+                onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.06)';e.currentTarget.style.borderColor='rgba(255,255,255,0.12)';}}
+                onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.03)';e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';}}>
+                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, background:'rgba(255,255,255,0.05)', flexShrink:0 }}>{c.icon}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#fff' }}>{c.role}</div>
+                  <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: DS.ink }}>{c.role}</div>
-                  <div style={{ fontSize: 11, color: DS.muted, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>
-                </div>
-                {c.universal && (
-                  <div style={{ fontSize: 10, fontWeight: 700, color: DS.green, background: DS.greenBg, padding: '2px 8px', borderRadius: DS.r.full, flexShrink: 0 }}>
-                    Universel
-                  </div>
-                )}
+                {c.universal && <div style={{ fontSize:10, fontWeight:700, color:L.gold, border:`1px solid ${L.gold}40`, padding:'2px 8px', flexShrink:0, letterSpacing:'0.04em' }}>Universel</div>}
               </button>
             ))}
           </div>
 
-          {/* ── Lien inscription ── */}
-          <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: DS.muted }}>
+          {/* Inscription */}
+          <p style={{ textAlign:'center', marginTop:28, fontSize:14, color:'rgba(255,255,255,0.35)' }}>
             Pas encore de compte ?{' '}
-            <Link
-              to={sector ? `/register?secteur=${sector}` : '/register'}
-              style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}
-            >
-              Créer un compte
-            </Link>
+            <Link to={sector ? `/register?secteur=${sector}` : '/register'} style={{ color:L.gold, textDecoration:'none', fontWeight:600 }}>Créer un compte</Link>
           </p>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding:'16px 32px', textAlign:'center', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+        <span style={{ fontSize:11, color:'rgba(255,255,255,0.15)', letterSpacing:'0.1em', textTransform:'uppercase' }}>© 2026 Freample</span>
       </div>
     </div>
   );
