@@ -27,11 +27,14 @@ export default function FreampleCom() {
     { nom:'Pro',     prix:699, desc:'20 TikToks + gestion RS', populaire:false, features:['20 TikToks / mois','10 Reels Instagram','Gestion 1 réseau social','Révisions illimitées','Livraison 72h','Appel stratégie mensuel'] },
   ]);
 
+  const [portfolio, setPortfolio] = useState([]);
+
   useEffect(() => {
     api.get('/com/tarifs').then(r => {
       if (r.data.tarifs) setTarifs(r.data.tarifs);
       if (r.data.packs) setPacks(r.data.packs);
     }).catch(() => {});
+    api.get('/com/portfolio').then(r => setPortfolio(r.data.items || [])).catch(() => {});
   }, []);
 
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
@@ -109,7 +112,44 @@ export default function FreampleCom() {
         </div>
       </div>
 
-      {/* ══ PRICING — Plus bas, pour ceux qui veulent ══ */}
+      {/* ══ PORTFOLIO ══ */}
+      {portfolio.length > 0 && (
+        <div id="portfolio" style={{ background:C.bg, borderTop:`1px solid ${C.border}`, padding:'48px 24px' }}>
+          <div style={{ maxWidth:900, margin:'0 auto' }}>
+            <h2 style={{ fontSize:22, fontWeight:800, textAlign:'center', marginBottom:6 }}>Nos réalisations</h2>
+            <p style={{ fontSize:14, color:C.textSec, textAlign:'center', marginBottom:32 }}>Découvrez quelques-unes de nos dernières productions</p>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:16 }}>
+              {portfolio.map(item => (
+                <a key={item.id} href={item.video_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', color:'inherit' }}>
+                  <div style={{ borderRadius:14, border:`1px solid ${C.border}`, overflow:'hidden', transition:'all .2s', cursor:'pointer' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    {/* Thumbnail */}
+                    <div style={{ height:180, background:'#0F0A1A', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+                      {item.thumbnail_url ? (
+                        <img src={item.thumbnail_url} alt={item.titre} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      ) : (
+                        <span style={{ fontSize:48, opacity:0.3 }}>🎬</span>
+                      )}
+                      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <div style={{ width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, boxShadow:'0 4px 12px rgba(0,0,0,0.2)' }}>▶</div>
+                      </div>
+                    </div>
+                    {/* Info */}
+                    <div style={{ padding:'14px 16px' }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:3 }}>{item.titre}</div>
+                      {item.description && <div style={{ fontSize:12.5, color:C.textSec, marginBottom:6 }}>{item.description}</div>}
+                      <span style={{ fontSize:11, fontWeight:600, color:C.primary, background:C.soft, padding:'3px 10px', borderRadius:6 }}>{item.categorie}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ��═ PRICING — Plus bas, pour ceux qui veulent ══ */}
       <div id="tarifs" style={{ background:C.soft, borderTop:`1px solid ${C.border}`, padding:'48px 24px' }}>
         <div style={{ maxWidth:900, margin:'0 auto' }}>
           <h2 style={{ fontSize:22, fontWeight:800, textAlign:'center', marginBottom:6 }}>Nos formules</h2>

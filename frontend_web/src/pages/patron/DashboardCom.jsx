@@ -24,6 +24,7 @@ const TABS = [
   { id:'paiements', icon:'💳', label:'Paiements' },
   { id:'clients',   icon:'👥', label:'Clients' },
   { id:'tarifs',    icon:'💰', label:'Grille tarifaire' },
+  { id:'portfolio', icon:'🎥', label:'Portfolio' },
   { id:'equipe',    icon:'👨‍💻', label:'Équipe' },
   { id:'rapports',  icon:'📊', label:'Rapports' },
 ];
@@ -83,7 +84,7 @@ function FidBadge({ f }) {
   return <span style={{ background:s.bg, color:s.c, borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{s.l}</span>;
 }
 
-const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', equipe:'equipe', rapports:'rapports' };
+const TAB_MAP = { projets:'projets', agenda:'agenda', archives:'archives', devis:'devis', factures:'factures', paiements:'paiements', clients:'clients', tarifs:'tarifs', portfolio:'portfolio', equipe:'equipe', rapports:'rapports' };
 
 const MONTEUR_COLORS = { 'Marius':{ bg:'#DBEAFE', border:'#3B82F6', color:'#1D4ED8', dot:'#3B82F6' }, 'Maxence':{ bg:'#FEE2E2', border:'#EF4444', color:'#DC2626', dot:'#EF4444' }, 'Vassili':{ bg:'#F5F3FF', border:'#8B5CF6', color:'#5B21B6', dot:'#8B5CF6' }, 'Mathieu':{ bg:'#D1FAE5', border:'#10B981', color:'#065F46', dot:'#10B981' } };
 const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
@@ -109,6 +110,8 @@ export default function DashboardCom() {
   ];
   const [packs, setPacks] = useState(PACKS_DEFAULT);
   const [editingPack, setEditingPack] = useState(null); // index
+  const [portfolio, setPortfolio] = useState([]);
+  const [newVideo, setNewVideo] = useState({ titre:'', description:'', categorie:'Montage vidéo', video_url:'', thumbnail_url:'' });
   const [paiements, setPaiements] = useState(PAIEMENTS_INIT);
   const [vue, setVue] = useState(localStorage.getItem('com_vue') || 'monteur');
 
@@ -180,6 +183,8 @@ export default function DashboardCom() {
       if (r.data?.tarifs) { setTarifs(r.data.tarifs); saveTarifs(r.data.tarifs); }
       if (r.data?.packs) setPacks(r.data.packs);
     }).catch(() => {});
+    // Charger portfolio
+    api.get('/com/portfolio').then(r => setPortfolio(r.data.items || [])).catch(() => {});
   }, []);
 
   const [toast, setToast] = useState(null);
@@ -1247,6 +1252,116 @@ export default function DashboardCom() {
           <span style={{ fontSize:18 }}>💡</span>
           <span style={{ fontSize:13, color:'#5B21B6' }}>Les modifications sont sauvegardées automatiquement et visibles immédiatement sur la page publique <strong>/com</strong></span>
         </div>
+      </div>)}
+
+      {/* TAB: Portfolio */}
+      {tab === 'portfolio' && (<div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700 }}>Portfolio</div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Ajoutez vos réalisations — visibles sur la page publique /com</div>
+          </div>
+          <div style={{ fontSize:13, color:V, fontWeight:700 }}>{portfolio.length} vidéo{portfolio.length > 1 ? 's' : ''}</div>
+        </div>
+
+        {/* Formulaire d'ajout */}
+        <div style={{ ...CARD, marginBottom:20, padding:'20px' }}>
+          <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>Ajouter une vidéo</div>
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
+            <div style={{ flex:'1 1 200px' }}>
+              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Titre</label>
+              <input value={newVideo.titre} onChange={e => setNewVideo(p=>({...p, titre:e.target.value}))} placeholder="Ex: Montage TikTok @influenceur"
+                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+            </div>
+            <div style={{ flex:'0 0 160px' }}>
+              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Catégorie</label>
+              <select value={newVideo.categorie} onChange={e => setNewVideo(p=>({...p, categorie:e.target.value}))}
+                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', background:'#fff', boxSizing:'border-box' }}>
+                <option>Montage vidéo</option>
+                <option>TikTok</option>
+                <option>YouTube</option>
+                <option>Reels</option>
+                <option>Design</option>
+                <option>Autre</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
+            <div style={{ flex:'1 1 300px' }}>
+              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Lien vidéo (YouTube, TikTok, Vimeo, Google Drive…)</label>
+              <input value={newVideo.video_url} onChange={e => setNewVideo(p=>({...p, video_url:e.target.value}))} placeholder="https://..."
+                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+            </div>
+            <div style={{ flex:'1 1 200px' }}>
+              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>URL miniature (optionnel)</label>
+              <input value={newVideo.thumbnail_url} onChange={e => setNewVideo(p=>({...p, thumbnail_url:e.target.value}))} placeholder="https://... image.jpg"
+                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+            </div>
+          </div>
+          <div style={{ marginBottom:10 }}>
+            <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Description courte (optionnel)</label>
+            <input value={newVideo.description} onChange={e => setNewVideo(p=>({...p, description:e.target.value}))} placeholder="Montage dynamique pour campagne été 2026"
+              style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
+          </div>
+          <button onClick={() => {
+            if (!newVideo.titre || !newVideo.video_url) return showToast('Titre et lien vidéo requis');
+            api.post('/com/portfolio', newVideo).then(r => {
+              setPortfolio(p => [r.data, ...p]);
+              setNewVideo({ titre:'', description:'', categorie:'Montage vidéo', video_url:'', thumbnail_url:'' });
+              showToast('Vidéo ajoutée au portfolio');
+            }).catch(() => showToast('Erreur lors de l\'ajout'));
+          }} style={{ ...BTN, padding:'10px 24px', fontSize:14 }}>
+            Ajouter au portfolio
+          </button>
+        </div>
+
+        {/* Liste des vidéos */}
+        {portfolio.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'48px 20px', color:'#8B8B8B' }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>🎥</div>
+            <div style={{ fontSize:15, fontWeight:600, marginBottom:4 }}>Aucune vidéo dans le portfolio</div>
+            <div style={{ fontSize:13 }}>Ajoutez vos réalisations pour les afficher sur la page publique</div>
+          </div>
+        ) : (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14 }}>
+            {portfolio.map(item => (
+              <div key={item.id} style={{ ...CARD, padding:0, overflow:'hidden' }}>
+                {/* Thumbnail */}
+                <div style={{ height:160, background:'#1C1C1E', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+                  {item.thumbnail_url ? (
+                    <img src={item.thumbnail_url} alt={item.titre} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  ) : (
+                    <span style={{ fontSize:48, opacity:0.3 }}>🎬</span>
+                  )}
+                  <a href={item.video_url} target="_blank" rel="noopener noreferrer"
+                    style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.3)', opacity:0, transition:'opacity .2s', textDecoration:'none' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                    onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+                    <span style={{ background:'rgba(255,255,255,0.95)', borderRadius:12, padding:'8px 20px', fontSize:13, fontWeight:700, color:'#1C1C1E' }}>▶ Voir la vidéo</span>
+                  </a>
+                </div>
+                {/* Info */}
+                <div style={{ padding:'14px 16px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:3 }}>{item.titre}</div>
+                      {item.description && <div style={{ fontSize:12, color:'#8B8B8B', marginBottom:4 }}>{item.description}</div>}
+                      <span style={{ fontSize:11, fontWeight:600, color:V, background:V_SOFT, padding:'2px 8px', borderRadius:6 }}>{item.categorie}</span>
+                    </div>
+                    <button onClick={() => {
+                      api.delete(`/com/portfolio/${item.id}`).then(() => {
+                        setPortfolio(p => p.filter(x => x.id !== item.id));
+                        showToast('Vidéo supprimée');
+                      }).catch(() => showToast('Erreur'));
+                    }} style={{ background:'none', border:'1px solid #FECACA', borderRadius:8, padding:'4px 8px', cursor:'pointer', fontSize:11, color:'#DC2626', fontFamily:'inherit', flexShrink:0 }}>
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>)}
 
       {/* TAB: Équipe interne */}

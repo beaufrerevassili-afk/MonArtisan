@@ -360,4 +360,51 @@ router.put('/projets/:id/avancement', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ erreur: err.message }); }
 });
 
+// ══════════════════════════════════════════════════════════
+// PORTFOLIO
+// ══════════════════════════════════════════════════════════
+
+// Auto-create table
+(async () => {
+  try {
+    await query(`CREATE TABLE IF NOT EXISTS com_portfolio (
+      id SERIAL PRIMARY KEY,
+      titre VARCHAR(255) NOT NULL,
+      description TEXT,
+      categorie VARCHAR(100),
+      video_url TEXT NOT NULL,
+      thumbnail_url TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+  } catch (e) { console.log('com_portfolio table check:', e.message); }
+})();
+
+// GET all portfolio items (public)
+router.get('/portfolio', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM com_portfolio ORDER BY created_at DESC');
+    res.json({ items: result.rows });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+// POST new portfolio item
+router.post('/portfolio', authenticateToken, async (req, res) => {
+  try {
+    const { titre, description, categorie, video_url, thumbnail_url } = req.body;
+    const result = await query(
+      'INSERT INTO com_portfolio (titre, description, categorie, video_url, thumbnail_url) VALUES ($1,$2,$3,$4,$5) RETURNING *',
+      [titre, description || '', categorie || '', video_url, thumbnail_url || '']
+    );
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+// DELETE portfolio item
+router.delete('/portfolio/:id', authenticateToken, async (req, res) => {
+  try {
+    await query('DELETE FROM com_portfolio WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
 module.exports = router;
