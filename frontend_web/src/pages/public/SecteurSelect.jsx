@@ -6,13 +6,13 @@ import RecrutementBanner from '../../components/public/RecrutementBanner';
 import HideForClient from '../../components/public/HideForClient';
 
 const CATEGORIES = [
-  { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',  sub: 'Coiffeurs, barbiers, instituts' },
-  { id: 'restaurant', emoji: 'FR', label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
-  { id: 'eat',        emoji: 'FRe', label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
-  { id: 'course',     emoji: 'FRc', label: 'Bientôt disponible',  sub: 'Nouveau service en préparation', locked: true },
-  { id: 'com',        emoji: '🎬', label: 'Freample Com',        sub: 'Marketing, montage vidéo, design' },
-  { id: 'vacances',   emoji: 'V',  label: 'Bientôt disponible',   sub: 'Nouveau service en préparation', locked: true },
-  { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux',  sub: 'Plombier, électricien, maçon' },
+  { id: 'btp',        emoji: '🏗️', label: 'Travaux & Dépannage',  desc: 'Besoin d\'un plombier, électricien ou peintre ? Comparez les pros et demandez un devis gratuit.', cta: 'Découvrir la démo', demo: true },
+  { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',   desc: 'Coiffeurs, barbiers, instituts de beauté — consultez les disponibilités et réservez en ligne.', cta: 'Découvrir la démo', demo: true },
+  { id: 'com',        emoji: '🎬', label: 'Freample Com',         desc: 'Montage vidéo pro pour TikTok, YouTube, Reels. Envoyez votre brief, on s\'occupe du reste.', cta: 'Envoyer mon brief', active: true },
+  { id: 'restaurant', emoji: 'FR', label: 'Bientôt disponible',   desc: 'Nouveau service en préparation', locked: true },
+  { id: 'eat',        emoji: 'FRe', label: 'Bientôt disponible',  desc: 'Nouveau service en préparation', locked: true },
+  { id: 'course',     emoji: 'FRc', label: 'Bientôt disponible',  desc: 'Nouveau service en préparation', locked: true },
+  { id: 'vacances',   emoji: 'V',  label: 'Bientôt disponible',   desc: 'Nouveau service en préparation', locked: true },
 ];
 
 const SUGGESTIONS = [
@@ -174,126 +174,61 @@ export default function SecteurSelect() {
       <RecrutementBanner />
       <PublicNavbar />
 
-      {/* ── Hero ── */}
+      {/* ── 3 services direct ── */}
       <section style={{
-        background: DS.bg,
-        padding: 'clamp(48px,9vh,88px) clamp(16px,5vw,48px) clamp(36px,6vh,64px)',
-        textAlign: 'center',
-        borderBottom: `1px solid ${DS.border}`,
-        opacity: mounted?1:0, transform: mounted?'none':'translateY(16px)',
-        transition: 'opacity .55s ease, transform .55s ease',
+        padding: 'clamp(40px,7vh,72px) clamp(16px,5vw,48px) 0',
+        maxWidth: 1100, margin: '0 auto',
+        opacity: mounted?1:0, transform: mounted?'none':'translateY(12px)',
+        transition: 'opacity .5s ease, transform .5s ease',
       }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <HideForClient>
-            <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', background:DS.goldLight, border:`1px solid #EDE8D4`, borderRadius:DS.r.full, fontSize:12, color:DS.goldDark, fontWeight:600, letterSpacing:0.3, marginBottom:24 }}>
-              <span style={{ width:5, height:5, borderRadius:'50%', background:DS.gold }} />
-              Plateforme de réservation & gestion pour pros
-            </div>
-          </HideForClient>
-
-          <h1 style={{ fontSize:'clamp(2rem,5.5vw,3.25rem)', fontWeight:900, letterSpacing:'-0.055em', lineHeight:1.08, margin:'0 0 18px', color:DS.ink }}>
-            Trouvez et réservez les<br/>meilleurs professionnels
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(28px,4vh,44px)' }}>
+          <h1 style={{ fontSize: 'clamp(1.75rem,4.5vw,2.75rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.05em', lineHeight: 1.1, margin: '0 0 12px' }}>
+            Freample, la simplicité à votre service.
           </h1>
-          <p style={{ fontSize:'clamp(1rem,2vw,1.125rem)', color:DS.muted, lineHeight:1.65, margin:'0 0 36px', fontWeight:400 }}>
-            Coiffeurs, artisans, restaurants, hôtels — réservez en quelques secondes, sans compte.
+          <p style={{ fontSize: 'clamp(0.95rem,2vw,1.125rem)', color: DS.muted, lineHeight: 1.6, margin: 0, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto' }}>
+            Choisissez ce dont vous avez besoin, on s'occupe du reste.
           </p>
-
-          {/* Barre de recherche + autocomplete */}
-          <div style={{ position:'relative', maxWidth:560, margin:'0 auto' }}>
-            <form onSubmit={handleSearch}
-              style={{ display:'flex', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.full, overflow:'visible', boxShadow:DS.shadow.md, transition:'box-shadow .2s' }}
-              onFocusCapture={e => e.currentTarget.style.boxShadow=DS.shadow.lg}
-              onBlurCapture={e => e.currentTarget.style.boxShadow=DS.shadow.md}>
-              <div style={{ flex:1, display:'flex', alignItems:'center', padding:'0 20px', gap:10 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DS.subtle} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={e => { setQuery(e.target.value); setShowSuggestions(true); setActiveIdx(-1); }}
-                  onFocus={() => { if (query.length >= 1) setShowSuggestions(true); }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Coiffeur, plombier, restaurant, villa…"
-                  autoComplete="off"
-                  style={{ flex:1, border:'none', outline:'none', fontSize:15, color:DS.ink, background:'none', fontFamily:DS.font, padding:'15px 0' }}
-                />
-                {query && (
-                  <button type="button"
-                    onClick={() => { setQuery(''); setShowSuggestions(false); inputRef.current?.focus(); }}
-                    style={{ background:'none', border:'none', cursor:'pointer', color:DS.subtle, padding:2, display:'flex', flexShrink:0 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                )}
-              </div>
-              <button type="submit"
-                style={{ padding:'0 28px', background:DS.ink, border:'none', cursor:'pointer', color:'#fff', fontSize:13, fontWeight:700, transition:'opacity .15s', borderRadius:`0 ${DS.r.full}px ${DS.r.full}px 0`, flexShrink:0 }}
-                onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
-                onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
-                Rechercher
-              </button>
-            </form>
-
-            {/* Dropdown */}
-            {showSuggestions && filteredSuggestions.length > 0 && (
-              <div ref={dropdownRef}
-                style={{ position:'absolute', top:'calc(100% + 8px)', left:0, right:0, background:DS.bg, border:`1px solid ${DS.border}`, borderRadius:DS.r.lg, boxShadow:DS.shadow.lg, zIndex:200, overflow:'hidden' }}>
-                {filteredSuggestions.map((s, i) => (
-                  <div key={i}
-                    onMouseDown={() => goToSecteur(s.secteur, s.label)}
-                    onMouseEnter={() => setActiveIdx(i)}
-                    style={{ padding:'11px 18px', display:'flex', alignItems:'center', gap:12, cursor:'pointer', background:i===activeIdx?DS.bgSoft:'transparent', transition:'background .1s', borderBottom: i < filteredSuggestions.length-1 ? `1px solid ${DS.borderLight || DS.border}` : 'none' }}>
-                    <span style={{ fontSize:16 }}>{catEmoji(s.secteur)}</span>
-                    <span style={{ flex:1, fontSize:14, color:DS.ink, fontWeight:500 }}>{s.label}</span>
-                    <span style={{ fontSize:11, color:DS.subtle, background:DS.bgSoft, padding:'2px 9px', borderRadius:DS.r.full, flexShrink:0 }}>
-                      {catLabel(s.secteur)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+        </div>
+        {/* FreampleCom — mis en avant */}
+        {CATEGORIES.filter(c => c.active).map(cat => (
+          <div key={cat.id} onClick={() => navigate(`/${cat.id}`)}
+            style={{ background: DS.ink, borderRadius: 20, padding: 'clamp(28px,4vh,40px) clamp(24px,4vw,36px)', cursor: 'pointer', transition: 'all .2s', marginBottom: 16, position: 'relative', overflow: 'hidden' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.15)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div style={{ position: 'absolute', top: 16, right: 20, background: '#22C55E', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, letterSpacing: '0.02em' }}>Disponible maintenant</div>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>{cat.emoji}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 6 }}>{cat.label}</div>
+            <div style={{ fontSize: 14.5, color: 'rgba(255,255,255,0.7)', lineHeight: 1.55, maxWidth: 420, marginBottom: 20 }}>{cat.desc}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', background: '#fff', color: DS.ink, borderRadius: 12, fontSize: 14, fontWeight: 700 }}>
+              {cat.cta} <span style={{ fontSize: 16 }}>→</span>
+            </div>
           </div>
+        ))}
+
+        {/* BTP + Coiffure */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+          {CATEGORIES.filter(c => !c.locked && !c.active).map(cat => (
+            <div key={cat.id} onClick={() => navigate(`/${cat.id}`)}
+              style={{ padding: '32px 28px', background: '#fff', border: `1.5px solid ${DS.border}`, borderRadius: 20, cursor: 'pointer', fontFamily: DS.font, transition: 'all .2s', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = DS.ink; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <div style={{ position: 'absolute', top: 16, right: 16, background: '#FEF3C7', color: '#92400E', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, letterSpacing: '0.01em' }}>En cours de développement</div>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>{cat.emoji}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: DS.ink, letterSpacing: '-0.03em', marginBottom: 6 }}>{cat.label}</div>
+              <div style={{ fontSize: 14, color: DS.muted, lineHeight: 1.55, marginBottom: 20, flex: 1 }}>{cat.desc}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', background: DS.bgSoft, color: DS.ink, borderRadius: 10, fontSize: 13, fontWeight: 700, alignSelf: 'flex-start' }}>
+                {cat.cta} <span style={{ fontSize: 14 }}>→</span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── Catégories ── */}
-      <section style={{ padding:'clamp(32px,5vh,52px) clamp(16px,5vw,48px)', maxWidth:1100, margin:'0 auto' }}>
-
-        {/* Services disponibles */}
-        <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:'0 0 24px' }}>Nos services</h2>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
-          {CATEGORIES.filter(c => !c.locked).map(cat => (
-            <button key={cat.id} onClick={() => navigate(`/${cat.id}`)}
-              style={{ padding:'24px 20px', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font }}
-              onMouseEnter={e=>{ e.currentTarget.style.background=DS.bgSoft; e.currentTarget.style.borderColor=DS.ink; e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow=DS.shadow.md; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background=DS.bg; e.currentTarget.style.borderColor=DS.border; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}>
-              <div style={{ fontSize:28, marginBottom:12 }}>{cat.emoji}</div>
-              <div style={{ fontSize:15, fontWeight:700, color:DS.ink, marginBottom:4, letterSpacing:'-0.02em' }}>{cat.label}</div>
-              <div style={{ fontSize:12, color:DS.muted, lineHeight:1.4 }}>{cat.sub}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* En cours de développement */}
-        <div style={{ marginTop:48 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:20 }}>
-            <span style={{ fontSize:18 }}>🚧</span>
-            <h2 style={{ fontSize:13, fontWeight:700, color:DS.muted, textTransform:'uppercase', letterSpacing:2.5, margin:0 }}>En cours de développement</h2>
-          </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(168px,1fr))', gap:12 }}>
-            {CATEGORIES.filter(c => c.locked).map(cat => {
-              const isUnlocked = unlockedSectors.includes(cat.id);
-              return (
-                <button key={cat.id} onClick={() => isUnlocked ? navigate(`/${cat.id}`) : setLockModal(cat.id)}
-                  style={{ padding:'18px 16px', background:'#F9FAFB', border:'1px dashed #D1D5DB', borderRadius:DS.r.lg, cursor:'pointer', textAlign:'left', transition:'all .18s', fontFamily:DS.font, position:'relative', overflow:'hidden' }}
-                  onMouseEnter={e=>{ e.currentTarget.style.background='#F3F4F6'; e.currentTarget.style.borderColor='#9CA3AF'; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.background='#F9FAFB'; e.currentTarget.style.borderColor='#D1D5DB'; }}>
-                  <div style={{ fontSize:15, fontWeight:800, color:'#9CA3AF', marginBottom:8, letterSpacing:'-0.03em' }}>{cat.emoji}</div>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#9CA3AF', marginBottom:3 }}>{cat.label}</div>
-                  <div style={{ fontSize:11, color:'#B0B0B0', lineHeight:1.4 }}>{cat.sub}</div>
-                  <div style={{ position:'absolute', top:8, right:8, fontSize:10, background:'#F3F4F6', padding:'2px 8px', borderRadius:20, color:'#9CA3AF', fontWeight:600 }}>Bientôt</div>
-                </button>
-              );
-            })}
-          </div>
+      {/* ── D'autres services arrivent ── */}
+      <section style={{ padding: '0 clamp(16px,5vw,48px) clamp(40px,6vh,64px)', maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', padding: '28px 20px', background: '#FAFAFA', borderRadius: 14, border: '1px dashed #E0E0E0' }}
+          onClick={() => setLockModal('eat')}>
+          <span style={{ fontSize: 14, color: DS.muted, cursor: 'pointer' }}>D'autres services arrivent bientôt — restez connectés.</span>
         </div>
       </section>
 

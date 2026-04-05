@@ -398,146 +398,145 @@ export default function Landing() {
       <PublicNavbar />
 
       {/* ── Hero ── */}
-      <section style={{ background: 'linear-gradient(160deg, #FFF8F0 0%, #FFFAF5 60%, #F8F6FF 100%)', borderBottom: `1px solid ${DS.border}`, padding: 'clamp(36px,6vw,64px) clamp(16px,4vw,48px) 0' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <section style={{ background: DS.bg, borderBottom: `1px solid ${DS.border}`, padding: 'clamp(36px,6vw,56px) clamp(16px,4vw,48px) 0' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
-          {/* Badge + titre */}
+          {/* Titre + sous-titre */}
           <div style={{ marginBottom: 28 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 14px', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: DS.r.full, fontSize: 11.5, color: '#EA580C', fontWeight: 700, letterSpacing: 0.3, marginBottom: 18 }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#F97316' }} />
-              Artisans & Travaux · Certifiés RGE
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-              <div>
-                <h1 style={{ fontSize: 'clamp(1.625rem,3.5vw,2.25rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.045em', margin: 0, lineHeight: 1.1 }}>
-                  Trouvez votre artisan idéal
-                </h1>
-                <p style={{ fontSize: 14, color: DS.muted, margin: '8px 0 0', lineHeight: 1.5 }}>Plombiers, électriciens, menuisiers — vérifiés et certifiés partout en France</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 4 }}>
-                <HideForClient>
-                  <button onClick={() => navigate('/register')}
-                    style={{ padding: '9px 18px', background: '#F97316', border: 'none', borderRadius: DS.r.full, fontSize: 12.5, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#EA580C'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#F97316'}>
-                    Créer un compte gratuit
-                  </button>
-                </HideForClient>
-              </div>
-            </div>
+            <h1 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
+              Travaux & Dépannage
+            </h1>
+            <p style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Trouvez un artisan de confiance en quelques clics</p>
+          </div>
 
-            {/* Stats rapides */}
-            <div style={{ display: 'flex', gap: 'clamp(16px,3vw,32px)', flexWrap: 'wrap', marginTop: 20, marginBottom: 4 }}>
-              {[
-                { val: '2 400+', label: 'artisans vérifiés' },
-                { val: '24h',    label: 'délai devis moyen' },
-                { val: '4.8/5',  label: 'note moyenne' },
-                { val: '100%',   label: 'RC Pro contrôlée' },
-              ].map(s => (
-                <div key={s.val} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                  <span style={{ fontSize: 'clamp(14px,2vw,18px)', fontWeight: 800, color: '#EA580C', letterSpacing: '-0.03em' }}>{s.val}</span>
-                  <span style={{ fontSize: 12, color: DS.muted, fontWeight: 500 }}>{s.label}</span>
+          {/* ── Grille métiers cliquables ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: 10, marginBottom: 24 }}>
+            {[
+              { m: 'Plomberie',    icon: '🔧' },
+              { m: 'Électricité',  icon: '⚡' },
+              { m: 'Peinture',     icon: '🎨' },
+              { m: 'Menuiserie',   icon: '🪚' },
+              { m: 'Maçonnerie',   icon: '🧱' },
+              { m: 'Carrelage',    icon: '🔲' },
+              { m: 'Chauffage',    icon: '🔥' },
+              { m: 'Serrurerie',   icon: '🔑' },
+              { m: 'Jardinage',    icon: '🌿' },
+            ].map(({ m, icon }) => {
+              const active = metier === m;
+              return (
+                <button key={m} onClick={() => { setMetier(active ? '' : m); setTimeout(search, 50); }}
+                  style={{
+                    padding: '16px 8px', background: active ? DS.ink : '#fff', border: `1.5px solid ${active ? DS.ink : DS.border}`,
+                    borderRadius: 14, cursor: 'pointer', textAlign: 'center', fontFamily: DS.font,
+                    transition: 'all .15s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                  }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = DS.ink; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = DS.shadow.sm; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; } }}>
+                  <span style={{ fontSize: 22 }}>{icon}</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: active ? '#fff' : DS.ink, letterSpacing: '-0.01em' }}>{m}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Barre ville + recherche libre ── */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+            {/* Ville */}
+            <div style={{ flex: '1 1 220px', position: 'relative', background: '#fff', border: `1.5px solid ${DS.border}`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', transition: 'border-color .15s' }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = DS.ink}
+              onBlurCapture={e => e.currentTarget.style.borderColor = DS.border}>
+              <IconMapPin size={16} color={DS.muted} />
+              <input
+                type="text"
+                value={villeInput}
+                onChange={e => { setVilleInput(e.target.value); if (!e.target.value) setVille(''); }}
+                placeholder="Ville ou code postal"
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '13px 0' }}
+              />
+              {villeSuggestions.length > 0 && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 300, background: '#fff', borderRadius: 12, border: `1px solid ${DS.border}`, boxShadow: DS.shadow.lg, overflow: 'hidden' }}>
+                  {villeSuggestions.map(v => (
+                    <button key={v} onClick={() => { setVille(v); setVilleInput(v); setVilleSuggestions([]); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', padding: '11px 16px', fontSize: 14, cursor: 'pointer', background: 'none', border: 'none', color: DS.ink, transition: 'background 0.1s', fontFamily: DS.font }}
+                      onMouseEnter={e => e.currentTarget.style.background = DS.bgSoft}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                      <IconMapPin size={12} color={DS.subtle} /> {v}
+                    </button>
+                  ))}
                 </div>
+              )}
+            </div>
+            {/* Recherche libre */}
+            <div style={{ flex: '2 1 300px', background: '#fff', border: `1.5px solid ${DS.border}`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', transition: 'border-color .15s' }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = DS.ink}
+              onBlurCapture={e => e.currentTarget.style.borderColor = DS.border}>
+              <IconSearch size={16} color={DS.muted} />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') search(); }}
+                placeholder="Décrivez votre besoin…"
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '13px 0' }}
+              />
+            </div>
+            {/* Bouton */}
+            <button onClick={search}
+              style={{ padding: '0 28px', background: DS.ink, border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, color: '#fff', cursor: 'pointer', fontFamily: DS.font, transition: 'opacity .15s', whiteSpace: 'nowrap', flexShrink: 0 }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              Rechercher
+            </button>
+          </div>
+
+          {/* Filtres + confiance */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, padding: '10px 0 18px' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+              <FilterPill label={dispoLabel} value={disponibilite} open={dispoOpen} setOpen={setDispoOpen} others={[setMetierOpen, setNoteOpen]}>
+                {DISPONIBILITES.map(d => <DropItem key={d.value} active={disponibilite === d.value} label={d.label} onClick={() => { setDispo(d.value); setDispoOpen(false); }} />)}
+              </FilterPill>
+              <FilterPill label={noteLabel} value={noteMin} open={noteOpen} setOpen={setNoteOpen} others={[setMetierOpen, setDispoOpen]}>
+                {NOTES.map(n => <DropItem key={n.value} active={noteMin === n.value} label={n.label} onClick={() => { setNoteMin(n.value); setNoteOpen(false); }} />)}
+              </FilterPill>
+              {(metier || ville || disponibilite || noteMin) && (
+                <button onClick={() => { setMetier(''); setVille(''); setVilleInput(''); setDispo(''); setNoteMin(''); setTimeout(search, 50); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, background: 'none', color: DS.muted, border: `1px solid ${DS.border}`, cursor: 'pointer', fontFamily: DS.font }}>
+                  <IconX size={11} /> Tout effacer
+                </button>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {[
+                { icon: '🛡️', label: 'Vérifiés' },
+                { icon: '⚡', label: 'Devis 24h' },
+                { icon: '⭐', label: 'Avis certifiés' },
+              ].map(s => (
+                <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: DS.muted, fontWeight: 600 }}>
+                  <span style={{ fontSize: 13 }}>{s.icon}</span> {s.label}
+                </span>
               ))}
             </div>
-          </div>
-
-          {/* Barre de recherche */}
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', border: `1.5px solid ${DS.border}`, borderRadius: DS.r.full, background: DS.bg, boxShadow: DS.shadow.md, overflow: 'visible', transition: 'box-shadow .2s' }}
-              onFocusCapture={e => e.currentTarget.style.boxShadow = DS.shadow.lg}
-              onBlurCapture={e => e.currentTarget.style.boxShadow = DS.shadow.md}>
-              {/* Recherche */}
-              <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', borderRight: `1px solid ${DS.border}` }}>
-                <IconSearch size={16} color={DS.muted} />
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 9, fontWeight: 700, color: DS.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2, display: 'block' }}>Recherche</label>
-                  <input
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') search(); }}
-                    placeholder="Plombier, électricien, menuisier…"
-                    style={{ border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, width: '100%', padding: '8px 0' }}
-                  />
-                </div>
-              </div>
-              {/* Ville */}
-              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', borderRight: `1px solid ${DS.border}` }}>
-                <IconMapPin size={14} color={DS.muted} />
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 9, fontWeight: 700, color: DS.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2, display: 'block' }}>Ville</label>
-                  <input
-                    type="text"
-                    value={villeInput}
-                    onChange={e => { setVilleInput(e.target.value); if (!e.target.value) setVille(''); }}
-                    placeholder="Paris, Lyon, Marseille…"
-                    style={{ border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, width: '100%', padding: '8px 0' }}
-                  />
-                </div>
-                {villeSuggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 300, background: DS.bg, borderRadius: DS.r.md, border: `1px solid ${DS.border}`, boxShadow: DS.shadow.lg, overflow: 'hidden' }}>
-                    {villeSuggestions.map(v => (
-                      <button key={v} onClick={() => { setVille(v); setVilleInput(v); setVilleSuggestions([]); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '0.875rem', cursor: 'pointer', background: 'none', border: 'none', color: DS.ink, transition: 'background 0.1s', fontFamily: DS.font }}
-                        onMouseEnter={e => { e.currentTarget.style.background = DS.bgSoft; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}>
-                        <IconMapPin size={12} color={DS.subtle} /> {v}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Bouton recherche */}
-              <button onClick={search}
-                style={{ padding: '0 28px', background: DS.ink, border: 'none', borderRadius: `0 ${DS.r.full}px ${DS.r.full}px 0`, fontWeight: 700, fontSize: 14, color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font, transition: 'opacity .15s' }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-                Rechercher
-              </button>
-            </div>
-          </div>
-
-          {/* Filtres */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 16px' }} onClick={e => e.stopPropagation()}>
-            <FilterPill label={metierLabel} value={metier} open={metierOpen} setOpen={setMetierOpen} others={[setDispoOpen, setNoteOpen]}>
-              <DropItem active={!metier} label="Tous les métiers" onClick={() => { setMetier(''); setMetierOpen(false); }} />
-              {METIERS.map(m => <DropItem key={m} active={metier === m} label={m} onClick={() => { setMetier(m); setMetierOpen(false); }} />)}
-            </FilterPill>
-            <FilterPill label={dispoLabel} value={disponibilite} open={dispoOpen} setOpen={setDispoOpen} others={[setMetierOpen, setNoteOpen]}>
-              {DISPONIBILITES.map(d => <DropItem key={d.value} active={disponibilite === d.value} label={d.label} onClick={() => { setDispo(d.value); setDispoOpen(false); }} />)}
-            </FilterPill>
-            <FilterPill label={noteLabel} value={noteMin} open={noteOpen} setOpen={setNoteOpen} others={[setMetierOpen, setDispoOpen]}>
-              {NOTES.map(n => <DropItem key={n.value} active={noteMin === n.value} label={n.label} onClick={() => { setNoteMin(n.value); setNoteOpen(false); }} />)}
-            </FilterPill>
-            {(metier || ville || disponibilite || noteMin) && (
-              <button onClick={() => { setMetier(''); setVille(''); setVilleInput(''); setDispo(''); setNoteMin(''); setTimeout(search, 50); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 12px', borderRadius: DS.r.full, fontSize: '0.8125rem', fontWeight: 500, background: 'none', color: DS.muted, border: `1px solid ${DS.border}`, cursor: 'pointer', fontFamily: DS.font }}
-                onMouseEnter={e => { e.currentTarget.style.color = DS.ink; e.currentTarget.style.borderColor = DS.ink; }}
-                onMouseLeave={e => { e.currentTarget.style.color = DS.muted; e.currentTarget.style.borderColor = DS.border; }}>
-                <IconX size={12} /> Effacer
-              </button>
-            )}
-          </div>
-
-          {/* Gages de confiance */}
-          <div style={{ display: 'flex', gap: 'clamp(16px,3vw,36px)', flexWrap: 'wrap', padding: '10px 0 16px', borderTop: `1px solid ${DS.borderLight}` }}>
-            {[
-              { icon: '🛡️', label: 'Artisans vérifiés' },
-              { icon: '⚡', label: 'Devis sous 24h' },
-              { icon: '💳', label: 'Paiement sécurisé' },
-              { icon: '⭐', label: 'Avis authentiques' },
-            ].map(s => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: '0.875rem' }}>{s.icon}</span>
-                <span style={{ fontSize: '0.75rem', color: DS.muted, fontWeight: 600 }}>{s.label}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
+      {/* ══ CTA Devis gratuit ══ */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px,4vw,40px) clamp(20px,5vw,60px) 0' }}>
+        <div style={{ background: DS.ink, borderRadius: 16, padding: 'clamp(20px,3vh,28px) clamp(20px,3vw,32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 'clamp(1rem,2.5vw,1.25rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 4 }}>Besoin d'un artisan ? Décrivez votre projet.</div>
+            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.65)' }}>Recevez jusqu'à 3 devis gratuits sous 24h, sans engagement.</div>
+          </div>
+          <button onClick={() => navigate('/register?role=client')}
+            style={{ padding: '12px 28px', background: '#fff', color: DS.ink, border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font, transition: 'opacity .15s', flexShrink: 0 }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            Demander un devis gratuit →
+          </button>
+        </div>
+      </div>
+
       {/* ══════════════════ RESULTS ══════════════════ */}
-      <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(32px, 5vw, 56px) clamp(20px, 5vw, 60px) 80px' }}>
+      <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px, 4vw, 40px) clamp(20px, 5vw, 60px) 80px' }}>
 
         {/* Section header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
