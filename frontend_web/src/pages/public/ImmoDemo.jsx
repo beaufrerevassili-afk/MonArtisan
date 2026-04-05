@@ -272,30 +272,145 @@ export default function ImmoDemo() {
                 </div>
               ))}
             </div>
-            {/* Répartition par type */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+            {/* Graphiques */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:16 }}>
+              {/* DONUT — Répartition par type */}
               <div style={CARD}>
-                <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Répartition par type</div>
-                {[...new Set(biens.map(b=>b.type))].map(type=>{
-                  const nb=biens.filter(b=>b.type===type).length;
-                  const pct=biens.length>0?Math.round(nb/biens.length*100):0;
-                  return <div key={type} style={{ marginBottom:8 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}><span>{type}</span><span style={{ fontWeight:700 }}>{nb} ({pct}%)</span></div>
-                    <div style={{ height:4, background:L.cream, borderRadius:2 }}><div style={{ height:4, background:L.gold, borderRadius:2, width:`${pct}%` }} /></div>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Répartition par type</div>
+                {(()=>{
+                  const COLORS = [L.gold,'#3B82F6','#22C55E','#EC4899','#F59E0B','#8B5CF6','#14B8A6'];
+                  const types=[...new Set(biens.map(b=>b.type))];
+                  const total=biens.length||1;
+                  let cumul=0;
+                  const segments=types.map((type,i)=>{
+                    const nb=biens.filter(b=>b.type===type).length;
+                    const pct=nb/total;
+                    const start=cumul;cumul+=pct;
+                    return { type, nb, pct, start, color:COLORS[i%COLORS.length] };
+                  });
+                  const r=50,cx=60,cy=60,sw=14;
+                  return <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                    <svg width={120} height={120} viewBox="0 0 120 120">
+                      {segments.map(s=>{
+                        const circ=2*Math.PI*r;
+                        return <circle key={s.type} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth={sw}
+                          strokeDasharray={`${s.pct*circ} ${circ}`}
+                          strokeDashoffset={-s.start*circ}
+                          transform={`rotate(-90 ${cx} ${cy})`}
+                          style={{ transition:'stroke-dasharray .6s, stroke-dashoffset .6s' }} />;
+                      })}
+                      <text x={cx} y={cy-4} textAnchor="middle" style={{ fontSize:20, fontWeight:200, fill:L.text, fontFamily:L.serif }}>{total}</text>
+                      <text x={cx} y={cy+10} textAnchor="middle" style={{ fontSize:8, fill:L.textLight, textTransform:'uppercase', letterSpacing:'0.1em' }}>biens</text>
+                    </svg>
+                    <div>
+                      {segments.map(s=>(
+                        <div key={s.type} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, fontSize:11 }}>
+                          <div style={{ width:8, height:8, background:s.color, borderRadius:2, flexShrink:0 }} />
+                          <span style={{ color:L.textSec }}>{s.type}</span>
+                          <span style={{ fontWeight:700, marginLeft:'auto' }}>{s.nb}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>;
+                })()}
+              </div>
+
+              {/* DONUT — Revenus vs Charges vs Crédit */}
+              <div style={CARD}>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Cashflow mensuel</div>
+                {(()=>{
+                  const rev=totalLoyers;const ch=totalCharges;const cr=totalMensualites;const total=rev||1;
+                  const segments=[
+                    { label:'Loyers', val:rev, color:L.green },
+                    { label:'Charges', val:ch, color:L.orange },
+                    { label:'Crédits', val:cr, color:L.red },
+                  ];
+                  const r=50,cx=60,cy=60,sw=14;
+                  let cumul=0;
+                  return <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                    <svg width={120} height={120} viewBox="0 0 120 120">
+                      {segments.map(s=>{
+                        const pct=s.val/total;const start=cumul;cumul+=pct;const circ=2*Math.PI*r;
+                        return <circle key={s.label} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth={sw}
+                          strokeDasharray={`${pct*circ} ${circ}`} strokeDashoffset={-start*circ}
+                          transform={`rotate(-90 ${cx} ${cy})`} style={{ transition:'all .6s' }} />;
+                      })}
+                      <text x={cx} y={cy-4} textAnchor="middle" style={{ fontSize:16, fontWeight:200, fill:cashflow-totalMensualites>=0?L.green:L.red, fontFamily:L.serif }}>{cashflow-totalMensualites>=0?'+':''}{cashflow-totalMensualites}</text>
+                      <text x={cx} y={cy+10} textAnchor="middle" style={{ fontSize:8, fill:L.textLight }}>€/mois</text>
+                    </svg>
+                    <div>
+                      {segments.map(s=>(
+                        <div key={s.label} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6, fontSize:11 }}>
+                          <div style={{ width:8, height:8, background:s.color, borderRadius:2 }} />
+                          <span style={{ color:L.textSec }}>{s.label}</span>
+                          <span style={{ fontWeight:700, marginLeft:'auto' }}>{s.val}€</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>;
+                })()}
+              </div>
+
+              {/* DONUT — Patrimoine vs Dettes */}
+              <div style={CARD}>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Patrimoine net</div>
+                {(()=>{
+                  const equity=totalValeur-totalRestant;
+                  const pctEquity=totalValeur>0?(equity/totalValeur):1;
+                  const r=50,cx=60,cy=60,sw=14,circ=2*Math.PI*r;
+                  return <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                    <svg width={120} height={120} viewBox="0 0 120 120">
+                      <circle cx={cx} cy={cy} r={r} fill="none" stroke={L.red} strokeWidth={sw} opacity={0.3} />
+                      <circle cx={cx} cy={cy} r={r} fill="none" stroke={L.green} strokeWidth={sw}
+                        strokeDasharray={`${pctEquity*circ} ${circ}`} strokeDashoffset={0}
+                        transform={`rotate(-90 ${cx} ${cy})`} style={{ transition:'all .6s' }} />
+                      <text x={cx} y={cy-4} textAnchor="middle" style={{ fontSize:14, fontWeight:200, fill:L.green, fontFamily:L.serif }}>{(equity/1000).toFixed(0)}k</text>
+                      <text x={cx} y={cy+10} textAnchor="middle" style={{ fontSize:8, fill:L.textLight }}>€ net</text>
+                    </svg>
+                    <div>
+                      {[
+                        { label:'Patrimoine brut', val:`${(totalValeur/1000).toFixed(0)}k€`, color:L.gold },
+                        { label:'Dettes', val:`${(totalRestant/1000).toFixed(0)}k€`, color:L.red },
+                        { label:'Patrimoine net', val:`${(equity/1000).toFixed(0)}k€`, color:L.green },
+                        { label:'LTV', val:`${totalValeur>0?(totalRestant/totalValeur*100).toFixed(0):0}%`, color:L.blue },
+                      ].map(s=>(
+                        <div key={s.label} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, fontSize:11 }}>
+                          <div style={{ width:8, height:8, background:s.color, borderRadius:2 }} />
+                          <span style={{ color:L.textSec }}>{s.label}</span>
+                          <span style={{ fontWeight:700, marginLeft:'auto' }}>{s.val}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>;
+                })()}
+              </div>
+            </div>
+
+            {/* Graphique barres — Encaissements 6 derniers mois */}
+            <div style={{ ...CARD, marginBottom:16 }}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Encaissements mensuels</div>
+              <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:140, padding:'0 0 24px' }}>
+                {Array.from({length:6}).map((_,i)=>{
+                  const d=new Date(); d.setMonth(d.getMonth()-5+i);
+                  const mKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                  const mLabel=MOIS[d.getMonth()].slice(0,3);
+                  const encaisse=data.paiements.filter(p=>p.mois===mKey&&p.statut==='paye').reduce((s,p)=>s+p.montant,0);
+                  const attendu=totalLoyers;
+                  const max=Math.max(totalLoyers,1);
+                  const isCurrent=i===5;
+                  return <div key={mKey} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:encaisse>=attendu*0.9?L.green:encaisse>0?L.orange:L.textLight }}>{encaisse>0?`${encaisse}€`:''}</div>
+                    <div style={{ width:'100%', display:'flex', gap:2, alignItems:'flex-end', justifyContent:'center', height:90 }}>
+                      <div style={{ width:'40%', background:L.green, borderRadius:'3px 3px 0 0', height:Math.max(4,encaisse/max*80), opacity:isCurrent?1:0.6, transition:'height .4s' }} title={`Encaissé: ${encaisse}€`} />
+                      <div style={{ width:'40%', background:L.border, borderRadius:'3px 3px 0 0', height:Math.max(4,attendu/max*80), opacity:0.4 }} title={`Attendu: ${attendu}€`} />
+                    </div>
+                    <div style={{ fontSize:10, color:isCurrent?L.text:L.textLight, fontWeight:isCurrent?700:400 }}>{mLabel}</div>
                   </div>;
                 })}
               </div>
-              <div style={CARD}>
-                <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Revenus par SCI</div>
-                {data.scis.map(s=>{
-                  const sciBiens=data.biens.filter(b=>b.sciId===s.id);
-                  const rev=sciBiens.reduce((sum,b)=>sum+b.loyer+(b.autresRevenus||0),0);
-                  const pct=totalLoyers>0?Math.round(rev/totalLoyers*100):0;
-                  return <div key={s.id} style={{ marginBottom:8 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}><span>{s.nom}</span><span style={{ fontWeight:700, color:L.green }}>{rev}€/mois</span></div>
-                    <div style={{ height:4, background:L.cream, borderRadius:2 }}><div style={{ height:4, background:L.green, borderRadius:2, width:`${pct}%` }} /></div>
-                  </div>;
-                })}
+              <div style={{ display:'flex', gap:16, justifyContent:'center', fontSize:11 }}>
+                <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.green, borderRadius:2 }}/>Encaissé</span>
+                <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.border }}/>Attendu</span>
               </div>
             </div>
 
