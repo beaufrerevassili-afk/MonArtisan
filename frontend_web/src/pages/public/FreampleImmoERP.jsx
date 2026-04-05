@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -22,7 +23,23 @@ export default function FreampleImmoERP() {
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
+      <RecrutementBanner />
       <PublicNavbar />
+
+      {/* ══ SOUS-NAV APPLE STYLE ══ */}
+      <div style={{ position:'sticky', top:58, zIndex:190, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}`, display:'flex', justifyContent:'center', gap:0, padding:'0 24px' }}>
+        {[
+          { label:'Freample Immo', href:'/immo', active:false },
+          { label:'ERP & Diagnostics', href:'/immo/erp', active:true },
+        ].map(item => (
+          <button key={item.label} onClick={()=>navigate(item.href)}
+            style={{ padding:'12px 24px', background:'none', border:'none', borderBottom:`2px solid ${item.active?L.noir:'transparent'}`, fontSize:13, fontWeight:item.active?700:400, color:item.active?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+            onMouseEnter={e=>{if(!item.active)e.currentTarget.style.color=L.text;}}
+            onMouseLeave={e=>{if(!item.active)e.currentTarget.style.color=L.textSec;}}>
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       {/* ══ HERO ══ */}
       <section style={{ background:L.noir, padding:'clamp(80px,14vh,130px) 32px clamp(64px,10vh,100px)', textAlign:'center', position:'relative', overflow:'hidden' }}>

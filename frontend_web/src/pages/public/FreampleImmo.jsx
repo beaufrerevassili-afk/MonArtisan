@@ -25,6 +25,21 @@ export default function FreampleImmo() {
       <RecrutementBanner />
       <PublicNavbar />
 
+      {/* ══ SOUS-NAV APPLE STYLE ══ */}
+      <div style={{ position:'sticky', top:58, zIndex:190, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}`, display:'flex', justifyContent:'center', gap:0, padding:'0 24px' }}>
+        {[
+          { label:'Freample Immo', href:'/immo', active:true },
+          { label:'ERP & Diagnostics', href:'/immo/erp', active:false },
+        ].map(item => (
+          <button key={item.label} onClick={()=>navigate(item.href)}
+            style={{ padding:'12px 24px', background:'none', border:'none', borderBottom:`2px solid ${item.active?L.noir:'transparent'}`, fontSize:13, fontWeight:item.active?700:400, color:item.active?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+            onMouseEnter={e=>{if(!item.active)e.currentTarget.style.color=L.text;}}
+            onMouseLeave={e=>{if(!item.active)e.currentTarget.style.color=L.textSec;}}>
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       {/* ══════════════════════════════════════════════════════
           HERO
          ══════════════════════════════════════════════════════ */}
@@ -45,43 +60,7 @@ export default function FreampleImmo() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SECTION APPLE 1 — ERP & Diagnostics (fond noir)
-         ══════════════════════════════════════════════════════ */}
-      <section ref={r1} style={{ background:L.noir, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center', position:'relative' }}>
-        <div style={{ maxWidth:700, margin:'0 auto' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>Service</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, color:'#fff', letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
-            ERP & Diagnostics
-          </h2>
-          <p style={{ fontSize:17, color:'rgba(255,255,255,0.5)', lineHeight:1.6, margin:'0 auto 20px', maxWidth:480 }}>
-            État des Risques et Pollutions. Zonage réglementaire. PPR. Arrêtés préfectoraux. Tout en un.
-          </p>
-          <div style={{ display:'flex', justifyContent:'center', gap:24, marginBottom:40, flexWrap:'wrap' }}>
-            <button onClick={()=>navigate('/immo/erp')} style={{ fontSize:14, color:L.gold, background:'none', border:'none', cursor:'pointer', fontFamily:L.font, fontWeight:600, transition:'color .15s' }}
-              onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color=L.gold}>
-              En savoir plus →
-            </button>
-          </div>
-
-          {/* Cartes documents */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:12, maxWidth:600, margin:'0 auto' }}>
-            {[
-              { code:'ERP', color:L.red, bg:'rgba(220,38,38,0.1)' },
-              { code:'ENSA', color:L.orange, bg:'rgba(217,119,6,0.1)' },
-              { code:'ERPS', color:L.orange, bg:'rgba(217,119,6,0.1)' },
-              { code:'PPR', color:L.blue, bg:'rgba(37,99,235,0.1)' },
-            ].map(d => (
-              <div key={d.code} style={{ background:d.bg, border:`1px solid ${d.color}30`, padding:'20px 16px', textAlign:'center' }}>
-                <div style={{ fontSize:18, fontWeight:800, color:d.color, letterSpacing:'0.02em' }}>{d.code}</div>
-                <div style={{ fontSize:10, color:'rgba(255,255,255,0.35)', marginTop:4, textTransform:'uppercase', letterSpacing:'0.06em' }}>Obligatoire</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════
-          SECTION APPLE 2 — Gestion SCI (fond blanc)
+          SECTION APPLE 1 — Gestion SCI (fond blanc)
          ══════════════════════════════════════════════════════ */}
       <section ref={r2} style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
         <div style={{ maxWidth:700, margin:'0 auto' }}>
