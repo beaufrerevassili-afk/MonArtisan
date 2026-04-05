@@ -1085,7 +1085,7 @@ export default function DashboardCom() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700 }}>Grille tarifaire</div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Modifiez les prix — les changements sont visibles immédiatement sur le site</div>
+            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Ajoutez, modifiez ou supprimez des lignes — visible en temps réel sur le site</div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={() => { const r = resetTarifs(); setTarifs(r); api.put('/com/tarifs', { tarifs: r }).catch(()=>{}); showToast('Tarifs réinitialisés'); }} style={GHOST}>↺ Réinitialiser</button>
@@ -1093,7 +1093,21 @@ export default function DashboardCom() {
         </div>
         {tarifs.map((t, ci) => (
           <div key={t.cat} style={{ marginBottom:20 }}>
-            <div style={HDR}>{t.cat}</div>
+            <div style={{ ...HDR, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span>{t.cat}</span>
+              <button onClick={() => {
+                const newId = `${t.cat.slice(0,2).toLowerCase()}${Date.now()}`;
+                const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: [...cat.items, { id: newId, nom: 'Nouveau service', prix: 0 }] });
+                setTarifs(updated);
+                saveTarifs(updated);
+                api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
+                setEditingTarif({ catIdx: ci, itemIdx: updated[ci].items.length - 1 });
+                setEditNom('Nouveau service');
+                setEditPrix('0');
+              }} style={{ background:'none', border:`1px solid ${V}40`, borderRadius:8, padding:'4px 12px', cursor:'pointer', fontSize:12, fontWeight:700, color:V, fontFamily:'inherit' }}>
+                + Ajouter
+              </button>
+            </div>
             <div style={{ ...CARD, padding:0, overflow:'hidden' }}>
               {t.items.map((item, ji) => {
                 const isEditing = editingTarif && editingTarif.catIdx === ci && editingTarif.itemIdx === ji;
@@ -1101,9 +1115,9 @@ export default function DashboardCom() {
                   <div key={item.id||ji} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', borderBottom: ji < t.items.length-1 ? '1px solid #F0F0F0' : 'none' }}>
                     {isEditing ? (
                       <>
-                        <input value={editNom} onChange={e=>setEditNom(e.target.value)} style={{ flex:1, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none' }} />
+                        <input value={editNom} onChange={e=>setEditNom(e.target.value)} placeholder="Nom du service" style={{ flex:1, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none' }} />
                         <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                          <input type="number" value={editPrix} onChange={e=>setEditPrix(e.target.value)} style={{ width:80, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', textAlign:'right' }} />
+                          <input type="number" value={editPrix} onChange={e=>setEditPrix(e.target.value)} placeholder="Prix" style={{ width:80, padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', textAlign:'right' }} />
                           <span style={{ fontSize:14, fontWeight:700, color:V }}>€</span>
                         </div>
                         <button onClick={() => {
@@ -1126,11 +1140,26 @@ export default function DashboardCom() {
                           onMouseLeave={e=>{e.currentTarget.style.borderColor='#E9E5F5';e.currentTarget.style.color='#8B8B8B';}}>
                           ✎ Modifier
                         </button>
+                        <button onClick={() => {
+                          const updated = tarifs.map((cat, i) => i !== ci ? cat : { ...cat, items: cat.items.filter((_, j) => j !== ji) });
+                          setTarifs(updated);
+                          saveTarifs(updated);
+                          api.put('/com/tarifs', { tarifs: updated }).catch(() => {});
+                          showToast('Ligne supprimée');
+                        }}
+                          style={{ background:'none', border:'1px solid #FECACA', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#DC2626', fontFamily:'inherit', transition:'all .15s' }}
+                          onMouseEnter={e=>{e.currentTarget.style.background='#FEF2F2';}}
+                          onMouseLeave={e=>{e.currentTarget.style.background='none';}}>
+                          ✕ Suppr.
+                        </button>
                       </>
                     )}
                   </div>
                 );
               })}
+              {t.items.length === 0 && (
+                <div style={{ padding:'20px', textAlign:'center', fontSize:13, color:'#8B8B8B' }}>Aucun service dans cette catégorie</div>
+              )}
             </div>
           </div>
         ))}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import HideForClient from '../../components/public/HideForClient';
@@ -11,8 +11,6 @@ const C = {
   bg:'#FFFFFF', soft:'#F5F3FF', border:'#E9E5F5',
   green:'#059669', font:"Inter,-apple-system,'Helvetica Neue',Arial,sans-serif",
 };
-
-const TARIFS = getTarifs();
 const inp = { width:'100%', padding:'12px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:15, fontFamily:C.font, outline:'none', boxSizing:'border-box' };
 const lbl = { fontSize:13, fontWeight:600, color:C.text, display:'block', marginBottom:6 };
 
@@ -22,6 +20,11 @@ export default function FreampleCom() {
   const [brief, setBrief] = useState({ type:'', format:'', quantite:'1', style:'', reference:'', options:[], description:'', nom:'', email:'', deadline:'' });
   const [sending, setSending] = useState(false);
   const [suiviToken, setSuiviToken] = useState(null);
+  const [tarifs, setTarifs] = useState(getTarifs());
+
+  useEffect(() => {
+    api.get('/com/tarifs').then(r => { if (r.data.tarifs) setTarifs(r.data.tarifs); }).catch(() => {});
+  }, []);
 
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
   const toggleOpt = (v) => setBrief(p=>({...p, options: p.options.includes(v) ? p.options.filter(x=>x!==v) : [...p.options, v] }));
@@ -172,7 +175,7 @@ export default function FreampleCom() {
       <div style={{ background:C.soft, padding:'40px 24px', borderTop:`1px solid ${C.border}` }}>
         <div style={{ maxWidth:600, margin:'0 auto' }}>
           <h3 style={{ fontSize:18, fontWeight:700, textAlign:'center', marginBottom:20 }}>Tous nos tarifs</h3>
-          {TARIFS.map((t,i) => (
+          {tarifs.map((t,i) => (
             <details key={t.cat} style={{ marginBottom:8 }} open={i===0}>
               <summary style={{ padding:'12px 16px', background:C.bg, border:`1px solid ${C.border}`, borderRadius:10, cursor:'pointer', fontSize:15, fontWeight:700, color:C.text, listStyle:'none' }}>
                 {t.cat}
