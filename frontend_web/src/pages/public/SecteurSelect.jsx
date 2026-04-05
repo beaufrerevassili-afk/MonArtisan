@@ -75,7 +75,7 @@ export default function SecteurSelect() {
           </button>
 
           {/* ARTISAN / PRO */}
-          <button onClick={()=>navigate('/login')}
+          <button onClick={()=>navigate('/pro')}
             style={{
               flex:'1 1 360px', maxWidth:460, minHeight:'clamp(280px,40vh,420px)', cursor:'pointer', fontFamily:L.font,
               textAlign:'center', position:'relative', overflow:'hidden', border:'none', padding:0,
