@@ -735,6 +735,7 @@ export default function Layout({ children }) {
                 { label: 'Paiements',      path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
                 { label: 'Clients',        path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
                 { label: 'Tarifs',         path: '/patron/dashboard?onglet=tarifs',       Icon: IconFinance    },
+                { label: 'Portfolio',      path: '/patron/dashboard?onglet=portfolio',   Icon: IconStar       },
                 { label: 'Équipe',         path: '/patron/dashboard?onglet=equipe',      Icon: IconTeam       },
                 { label: 'Rapports',       path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
               ];
