@@ -36,11 +36,11 @@ export default function ProLanding() {
           Freample<span style={{ color:L.gold }}>.</span>
         </button>
         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-          <button onClick={()=>navigate('/login')} style={{ padding:'8px 20px', background:'none', border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+          <a href="/login" style={{ padding:'8px 20px', background:'none', border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s', textDecoration:'none', display:'inline-flex', alignItems:'center' }}
             onMouseEnter={e=>{e.currentTarget.style.borderColor=L.noir;e.currentTarget.style.color=L.noir;}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
             Se connecter
-          </button>
+          </a>
           <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
             onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
             S'inscrire gratuitement
