@@ -107,8 +107,8 @@ export default function SecteurSelect() {
         <div style={{ display:'flex', animation:'marquee 35s linear infinite', whiteSpace:'nowrap' }}>
           {[...Array(3)].map((_,k)=><span key={k} style={{display:'flex'}}>
             {['Plombier','Électricien','Peintre','Menuisier','Maçon','Carreleur','Chauffagiste','Serrurier','Couvreur','Monteur vidéo','Designer','Community manager'].map(m=>(
-              <span key={m+k} style={{ fontSize:12, color:'rgba(255,255,255,0.15)', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.12em', padding:'0 24px' }}>
-                {m} <span style={{ color:L.gold, margin:'0 6px' }}>·</span>
+              <span key={m+k} style={{ fontSize:12, color:L.gold, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.12em', padding:'0 24px', opacity:0.7 }}>
+                {m} <span style={{ opacity:0.4, margin:'0 6px' }}>·</span>
               </span>
             ))}
           </span>)}
