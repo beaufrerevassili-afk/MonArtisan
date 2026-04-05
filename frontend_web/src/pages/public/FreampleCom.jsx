@@ -46,7 +46,7 @@ export default function FreampleCom() {
             <button onClick={()=>setStep(1)} style={{ padding:'14px 32px', background:'#fff', color:C.dark, border:'none', borderRadius:999, fontSize:16, fontWeight:700, cursor:'pointer', fontFamily:C.font }}>
               Démarrer un projet →
             </button>
-            <a href="https://wa.me/33612345678?text=Bonjour, je suis intéressé par vos services Freample Com" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/33769387193?text=Bonjour, je suis intéressé par vos services Freample Com" target="_blank" rel="noopener noreferrer"
               style={{ padding:'14px 28px', background:'transparent', color:'#fff', border:'1.5px solid rgba(255,255,255,0.25)', borderRadius:999, fontSize:16, fontWeight:500, cursor:'pointer', fontFamily:C.font, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:8 }}>
               💬 Nous contacter
             </a>
@@ -89,7 +89,7 @@ export default function FreampleCom() {
             <div style={{ fontSize:14, color:C.textSec, lineHeight:1.5 }}>Appelez-nous ou écrivez-nous. On vous conseille gratuitement et on vous fait un devis sur mesure.</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
-            <a href="https://wa.me/33612345678?text=Bonjour, j'aimerais discuter d'un projet" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/33769387193?text=Bonjour, j'aimerais discuter d'un projet" target="_blank" rel="noopener noreferrer"
               style={{ padding:'12px 24px', background:'#25D366', color:'#fff', border:'none', borderRadius:10, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:C.font, textDecoration:'none', textAlign:'center', display:'flex', alignItems:'center', gap:8 }}>
               💬 WhatsApp
             </a>
@@ -194,7 +194,7 @@ export default function FreampleCom() {
       </div>
 
       {/* ══ BOUTON WHATSAPP FLOTTANT ══ */}
-      <a href="https://wa.me/33612345678?text=Bonjour, je suis intéressé par Freample Com" target="_blank" rel="noopener noreferrer"
+      <a href="https://wa.me/33769387193?text=Bonjour, je suis intéressé par Freample Com" target="_blank" rel="noopener noreferrer"
         style={{ position:'fixed', bottom:24, right:24, width:56, height:56, borderRadius:'50%', background:'#25D366', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 16px rgba(37,211,102,0.4)', zIndex:100, textDecoration:'none', transition:'transform .2s' }}
         onMouseEnter={e=>e.currentTarget.style.transform='scale(1.1)'}
         onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>

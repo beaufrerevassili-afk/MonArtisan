@@ -152,7 +152,7 @@ export default function SuiviCommande() {
             <div style={{ background:'#fff', borderRadius:16, padding:'20px 24px', border:'1px solid #E9E5F5', textAlign:'center', boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ fontSize:14, color:'#8B8B8B', marginBottom:12 }}>Une question sur votre commande ?</div>
               <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
-                <a href="https://wa.me/33612345678?text=Bonjour, j'ai une question sur ma commande (code: ${token})" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/33769387193?text=Bonjour, j'ai une question sur ma commande (code: ${token})" target="_blank" rel="noopener noreferrer"
                   style={{ padding:'10px 20px', background:'#25D366', color:'#fff', border:'none', borderRadius:10, fontSize:14, fontWeight:700, textDecoration:'none' }}>
                   💬 WhatsApp
                 </a>
