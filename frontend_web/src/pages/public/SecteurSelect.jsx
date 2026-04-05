@@ -60,26 +60,45 @@ export default function SecteurSelect() {
         <span style={{ width:16, height:1.5, background:L.noir }}/><span style={{ width:16, height:1.5, background:L.noir }}/>
       </button>
 
-      {/* ══ FULLSCREEN MENU ══ */}
-      <div style={{ position:'fixed', inset:0, zIndex:2000, background:L.noir, opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .4s cubic-bezier(0.4,0,0.2,1)', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center' }}>
-        <button onClick={()=>setMenuOpen(false)} style={{ position:'absolute', top:20, right:28, background:'none', border:'none', cursor:'pointer', color:'#fff', fontSize:28, fontWeight:200, transition:'color .2s' }}
-          onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>✕</button>
-        <div style={{ position:'absolute', top:24, left:28, fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em' }}>Freample</div>
-        {isDev && <div style={{ position:'absolute', top:24, right:80, fontSize:10, fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.1)', padding:'3px 10px', borderRadius:4 }}>Mode dev</div>}
-        <nav style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+      {/* ══ SIDEBAR MENU — Gucci style ══ */}
+      {/* Overlay */}
+      <div onClick={()=>setMenuOpen(false)} style={{ position:'fixed', inset:0, zIndex:1999, background:'rgba(0,0,0,0.35)', opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .35s' }} />
+      {/* Panel */}
+      <div style={{
+        position:'fixed', top:0, left:0, bottom:0, zIndex:2000,
+        width:'clamp(300px,85vw,400px)', background:L.white,
+        transform:menuOpen?'translateX(0)':'translateX(-100%)',
+        transition:'transform .4s cubic-bezier(0.25,0.46,0.45,0.94)',
+        display:'flex', flexDirection:'column', boxShadow:menuOpen?'8px 0 32px rgba(0,0,0,0.1)':'none',
+      }}>
+        {/* Header */}
+        <div style={{ padding:'20px 28px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:`1px solid ${L.border}` }}>
+          <div style={{ fontSize:12, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em' }}>Freample</div>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {isDev && <span style={{ fontSize:10, fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.08)', padding:'3px 10px', borderRadius:4 }}>Dev</span>}
+            <button onClick={()=>setMenuOpen(false)} style={{ background:'none', border:`1px solid ${L.border}`, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:L.textLight, transition:'border-color .15s' }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor=L.noir} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>✕</button>
+          </div>
+        </div>
+
+        {/* Menu items */}
+        <nav style={{ flex:1, overflowY:'auto', padding:'12px 0' }}>
           {menuItems.map((item,i)=>(
             <button key={item.id} onClick={()=>{setMenuOpen(false);navigate(item.href);}}
-              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:L.serif, fontSize:'clamp(22px,4vw,38px)', fontWeight:300, fontStyle:'italic', color:'#fff', padding:'10px 0', letterSpacing:'-0.02em', opacity:menuOpen?1:0, transform:menuOpen?'translateY(0)':'translateY(20px)', transition:`opacity .4s ${0.1+i*0.05}s, transform .4s ${0.1+i*0.05}s, color .2s`, display:'flex', alignItems:'center', gap:14 }}
-              onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>
-              <span style={{ fontSize:'clamp(18px,2.5vw,24px)', fontStyle:'normal', opacity:0.5 }}>{item.icon}</span>
-              {item.label}
+              style={{ width:'100%', background:'none', border:'none', cursor:'pointer', fontFamily:L.font, textAlign:'left', padding:'14px 28px', display:'flex', alignItems:'center', gap:14, transition:'background .15s, color .15s', color:L.text }}
+              onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.color=L.gold;}}
+              onMouseLeave={e=>{e.currentTarget.style.background='none';e.currentTarget.style.color=L.text;}}>
+              <span style={{ fontSize:18, width:28, textAlign:'center', opacity:0.7 }}>{item.icon}</span>
+              <span style={{ fontSize:15, fontWeight:600, letterSpacing:'-0.01em' }}>{item.label}</span>
             </button>
           ))}
         </nav>
-        <div style={{ position:'absolute', bottom:28, display:'flex', gap:24, opacity:menuOpen?1:0, transition:'opacity .5s .4s' }}>
-          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>WhatsApp</a>
-          <a href="mailto:freamplecom@gmail.com" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>Contact</a>
-          <a href="/cgu" style={{ fontSize:12, color:'rgba(255,255,255,0.3)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'}>CGU</a>
+
+        {/* Footer */}
+        <div style={{ padding:'16px 28px', borderTop:`1px solid ${L.border}`, display:'flex', gap:20 }}>
+          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:L.textLight, textDecoration:'none', transition:'color .15s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>WhatsApp</a>
+          <a href="mailto:freamplecom@gmail.com" style={{ fontSize:11, color:L.textLight, textDecoration:'none', transition:'color .15s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>Contact</a>
+          <a href="/cgu" style={{ fontSize:11, color:L.textLight, textDecoration:'none', transition:'color .15s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>CGU</a>
         </div>
       </div>
 
