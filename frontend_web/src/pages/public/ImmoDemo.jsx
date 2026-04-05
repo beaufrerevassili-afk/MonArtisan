@@ -171,6 +171,7 @@ export default function ImmoDemo() {
     { id:'outils', label:'Outils & Conformité', icon:'🧮' },
     { id:'annonces', label:'Annonces & Candidatures', icon:'📢' },
     { id:'courriers', label:'Courriers', icon:'✉️' },
+    { id:'pilotage', label:'Pilotage & Décision', icon:'🎯' },
     { id:'strategie', label:'Stratégie', icon:'🏛️' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
   ];
@@ -1233,6 +1234,158 @@ export default function ImmoDemo() {
                   <div style={{ fontSize:11, fontWeight:600, color:c.color, marginTop:8 }}>Générer →</div>
                 </div>
               ))}
+            </div>
+          </>}
+
+          {/* ═══ PILOTAGE & DÉCISION ═══ */}
+          {tab==='pilotage' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Pilotage & Aide à la décision</h2>
+
+            {/* 1. COMPARATEUR DE BIENS côte à côte */}
+            <div style={{ ...CARD, marginBottom:16 }}>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📊 Comparateur de biens — Performance</div>
+              <div style={{ overflowX:'auto' }}>
+                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+                  <thead>
+                    <tr style={{ background:L.cream }}>
+                      <th style={{ padding:'10px 12px', textAlign:'left', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>Bien</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>Loyer</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>Charges</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>Crédit</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>Cashflow</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>Rdt brut</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>Rdt net</th>
+                      <th style={{ padding:'10px 8px', textAlign:'right', borderBottom:`2px solid ${L.border}` }}>ROI réel</th>
+                      <th style={{ padding:'10px 8px', textAlign:'center', borderBottom:`2px solid ${L.border}` }}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {biens.map(b=>{
+                      const cr=(data.credits||[]).find(c=>c.bienId===b.id);
+                      const mens=cr?.mensualite||0;
+                      const cf=b.loyer-b.charges-mens;
+                      const cout=(b.prixAchat||0)+(b.fraisNotaire||0)+(b.travaux||0);
+                      const rdtB=cout>0?((b.loyer*12)/cout*100):0;
+                      const rdtN=cout>0?(((b.loyer-b.charges)*12)/cout*100):0;
+                      // ROI réel = (loyers encaissés + plus-value latente - dépenses) / coût total
+                      const loyersTotal=data.paiements.filter(p=>p.bienId===b.id&&p.statut==='paye').reduce((s,p)=>s+p.montant,0);
+                      const depBien=(data.depenses||[]).filter(d=>d.bienId===b.id).reduce((s,d)=>s+d.montant,0);
+                      const plusValue=(b.valeur||0)-cout;
+                      const roi=cout>0?((loyersTotal+plusValue-depBien)/cout*100):0;
+                      // Score composite
+                      const score=Math.min(100,Math.max(0, Math.round(rdtN*5 + (cf>0?20:0) + (b.locataireId?15:0) + Math.min(roi/2,20))));
+                      const scoreColor=score>=70?L.green:score>=40?L.orange:L.red;
+                      return <tr key={b.id} style={{ borderBottom:`1px solid ${L.border}` }}>
+                        <td style={{ padding:'10px 12px' }}>
+                          <div style={{ fontWeight:700, fontSize:13 }}>{b.nom||b.type}</div>
+                          <div style={{ fontSize:10, color:L.textLight }}>{b.adresse.split(',')[0]}</div>
+                        </td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', color:L.green, fontWeight:600 }}>{b.loyer}€</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', color:L.red }}>{b.charges}€</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', color:L.orange }}>{mens||'—'}</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', fontWeight:700, color:cf>=0?L.green:L.red }}>{cf>=0?'+':''}{cf}€</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right' }}>{rdtB.toFixed(1)}%</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', color:L.gold, fontWeight:600 }}>{rdtN.toFixed(1)}%</td>
+                        <td style={{ padding:'10px 8px', textAlign:'right', color:roi>=0?L.green:L.red }}>{roi.toFixed(1)}%</td>
+                        <td style={{ padding:'10px 8px', textAlign:'center' }}>
+                          <div style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:32, height:32, borderRadius:'50%', border:`2px solid ${scoreColor}`, fontSize:11, fontWeight:800, color:scoreColor }}>{score}</div>
+                        </td>
+                      </tr>;
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize:10, color:L.textLight, marginTop:8 }}>Score = rendement net (50%) + cashflow positif (20%) + occupé (15%) + ROI (15%)</div>
+            </div>
+
+            {/* 2. SIMULATEUR IR vs IS */}
+            <div style={{ ...CARD, marginBottom:16 }}>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>⚖️ IR vs IS — Quel régime fiscal choisir ?</div>
+              {(()=>{
+                const revAn=totalLoyers*12;
+                const chargesAn=totalCharges*12+totalDepenses;
+                const interetsAn=credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0);
+                const baseIR=Math.max(0,revAn-chargesAn-interetsAn);
+                const amortissement=biens.reduce((s,b)=>s+(b.valeur||0)*0.02,0); // 2%/an immo
+                const baseIS=Math.max(0,revAn-chargesAn-interetsAn-amortissement);
+                const tmi30=baseIR*0.30; const tmi41=baseIR*0.41;
+                const ps=baseIR*0.172;
+                const is15=Math.min(baseIS,42500)*0.15+Math.max(0,baseIS-42500)*0.25;
+                return <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <div style={{ padding:'16px', border:`2px solid ${L.border}` }}>
+                    <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>SCI à l'IR</div>
+                    <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Revenus nets</span><span style={{fontWeight:600}}>{baseIR.toLocaleString()}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>IR (TMI 30%)</span><span style={{fontWeight:600, color:L.red}}>{tmi30.toLocaleString()}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>PS (17.2%)</span><span style={{fontWeight:600, color:L.red}}>{ps.toFixed(0)}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between', borderTop:`1px solid ${L.border}`, paddingTop:4, marginTop:4 }}><span style={{fontWeight:700}}>Impôt total</span><span style={{fontWeight:800, color:L.red}}>{(tmi30+ps).toFixed(0)}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{fontWeight:700}}>Net après impôt</span><span style={{fontWeight:800, color:L.green}}>{(baseIR-tmi30-ps).toFixed(0)}€</span></div>
+                    </div>
+                    <div style={{ fontSize:10, color:L.textLight, marginTop:8 }}>+ Plus-value des particuliers (abattements durée)</div>
+                  </div>
+                  <div style={{ padding:'16px', border:`2px solid ${L.gold}` }}>
+                    <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>SCI à l'IS</div>
+                    <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Revenus nets</span><span style={{fontWeight:600}}>{baseIS.toLocaleString()}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Amortissement déduit</span><span style={{fontWeight:600, color:L.green}}>-{amortissement.toLocaleString()}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>IS (15%/25%)</span><span style={{fontWeight:600, color:L.red}}>{is15.toFixed(0)}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between', borderTop:`1px solid ${L.border}`, paddingTop:4, marginTop:4 }}><span style={{fontWeight:700}}>Impôt total</span><span style={{fontWeight:800, color:L.red}}>{is15.toFixed(0)}€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{fontWeight:700}}>Net après impôt</span><span style={{fontWeight:800, color:L.green}}>{(baseIS-is15).toFixed(0)}€</span></div>
+                    </div>
+                    <div style={{ fontSize:10, color:L.textLight, marginTop:8 }}>+ Amortissement du bien · - PV professionnelle (pas d'abattement)</div>
+                  </div>
+                </div>;
+              })()}
+              <div style={{ padding:'10px 14px', marginTop:10, fontSize:12, fontWeight:600, color:(()=>{
+                const revAn=totalLoyers*12;const chargesAn=totalCharges*12+totalDepenses;const interetsAn=credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0);
+                const baseIR=Math.max(0,revAn-chargesAn-interetsAn);const amort=biens.reduce((s,b)=>s+(b.valeur||0)*0.02,0);const baseIS=Math.max(0,revAn-chargesAn-interetsAn-amort);
+                const irTotal=baseIR*0.30+baseIR*0.172;const isTotal=Math.min(baseIS,42500)*0.15+Math.max(0,baseIS-42500)*0.25;
+                return isTotal<irTotal?L.gold:L.green;
+              })(), background:L.cream }}>
+                {(()=>{
+                  const revAn=totalLoyers*12;const chargesAn=totalCharges*12+totalDepenses;const interetsAn=credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0);
+                  const baseIR=Math.max(0,revAn-chargesAn-interetsAn);const amort=biens.reduce((s,b)=>s+(b.valeur||0)*0.02,0);const baseIS=Math.max(0,revAn-chargesAn-interetsAn-amort);
+                  const irTotal=baseIR*0.30+baseIR*0.172;const isTotal=Math.min(baseIS,42500)*0.15+Math.max(0,baseIS-42500)*0.25;
+                  const eco=Math.abs(irTotal-isTotal);
+                  return isTotal<irTotal ? `💡 L'IS vous fait économiser ${eco.toFixed(0)}€/an d'impôts grâce à l'amortissement` : `💡 L'IR est plus avantageux dans votre situation (${eco.toFixed(0)}€/an d'économie)`;
+                })()}
+              </div>
+            </div>
+
+            {/* 3. SCÉNARIO D'INVESTISSEMENT — Faut-il acheter un nouveau bien ? */}
+            <div style={{ ...CARD }}>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>🎯 Faut-il acheter un nouveau bien ?</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:14 }}>
+                <div style={{ background:L.cream, padding:'14px' }}>
+                  <div style={{ fontSize:12, fontWeight:700, marginBottom:8 }}>Votre capacité actuelle</div>
+                  <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Patrimoine net</span><span style={{fontWeight:600}}>{((totalValeur-totalRestant)/1000).toFixed(0)}k€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>LTV actuel</span><span style={{fontWeight:600}}>{totalValeur>0?(totalRestant/totalValeur*100).toFixed(0):0}%</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Cashflow mensuel</span><span style={{fontWeight:700, color:(cashflow-totalMensualites)>=0?L.green:L.red}}>{cashflow-totalMensualites}€</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Mensualités crédits</span><span style={{fontWeight:600}}>{totalMensualites}€/mois</span></div>
+                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Taux endettement (est.)</span><span style={{fontWeight:700, color:totalLoyers>0&&totalMensualites/totalLoyers>0.35?L.red:L.green}}>{totalLoyers>0?(totalMensualites/totalLoyers*100).toFixed(0):0}%</span></div>
+                  </div>
+                </div>
+                <div style={{ background:L.noir, color:'#fff', padding:'14px' }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:L.gold, marginBottom:8 }}>Capacité d'emprunt estimée</div>
+                  {(()=>{
+                    const revMens=totalLoyers;
+                    const chargesMens=totalMensualites;
+                    const capaciteMens=Math.max(0,revMens*0.35-chargesMens);
+                    const tauxMensuel=0.025/12;
+                    const duree=240;
+                    const capaciteEmprunt=capaciteMens>0?Math.round(capaciteMens*(Math.pow(1+tauxMensuel,duree)-1)/(tauxMensuel*Math.pow(1+tauxMensuel,duree))):0;
+                    return <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Mensualité disponible</span><span style={{fontWeight:600}}>{capaciteMens.toFixed(0)}€/mois</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Emprunt possible (20 ans, 2.5%)</span><span style={{fontWeight:700, color:L.gold, fontSize:16}}>{(capaciteEmprunt/1000).toFixed(0)}k€</span></div>
+                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Bien cible (avec 10% frais)</span><span style={{fontWeight:600}}>{(capaciteEmprunt*0.9/1000).toFixed(0)}k€ max</span></div>
+                      {capaciteEmprunt>50000 && <div style={{ marginTop:6, fontSize:11, color:L.green }}>✅ Vous pouvez investir dans un bien jusqu'à {(capaciteEmprunt*0.9/1000).toFixed(0)}k€</div>}
+                      {capaciteEmprunt<=50000 && <div style={{ marginTop:6, fontSize:11, color:L.orange }}>⚠️ Capacité limitée — consolidez votre cashflow avant d'investir</div>}
+                    </div>;
+                  })()}
+                </div>
+              </div>
+              <div style={{ fontSize:11, color:L.textLight }}>Estimation basée sur un taux d'endettement de 35% des revenus locatifs. Consultez votre banquier pour une simulation officielle.</div>
             </div>
           </>}
 
