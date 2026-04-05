@@ -20,8 +20,7 @@ export default function ProLanding() {
   const MENU = [
     {label:'Fonctionnalités',id:'fonctionnalites'},
     {label:'Secteurs',id:'secteurs'},
-    {label:'Témoignages',id:'temoignages'},
-    {label:'Tarifs',id:'tarifs-pro'},
+    {label:'Commissions',id:'tarifs-pro'},
     {label:'FAQ',id:'faq'},
     {label:'S\'inscrire',action:()=>{setMenuOpen(false);navigate('/register?role=patron');}},
   ];
@@ -78,7 +77,7 @@ export default function ProLanding() {
         <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:24 }}>Espace professionnel</div>
           <h1 style={{ fontFamily:L.serif, fontSize:'clamp(34px,6.5vw,64px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 18px' }}>
-            Gérez votre activité<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>comme un leader</span>
+            Votre activité,<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>simplifiée</span>
           </h1>
           <p style={{ fontSize:'clamp(15px,1.8vw,17px)', color:'rgba(255,255,255,0.4)', lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300 }}>
             Agenda, devis, factures, clients, équipe — tout votre business dans une seule plateforme.
@@ -100,7 +99,7 @@ export default function ProLanding() {
       {/* ══ CHIFFRES ══ */}
       <section style={{ background:L.cream, padding:'clamp(40px,6vh,64px) 32px' }}>
         <div style={{ maxWidth:800, margin:'0 auto', display:'flex', justifyContent:'center', gap:'clamp(32px,6vw,80px)', flexWrap:'wrap', textAlign:'center' }}>
-          {[{val:'100%',label:'Gratuit'},{val:'5 min',label:'Inscription'},{val:'0',label:'Commission'},{val:'24/7',label:'Accessible'}].map(s=>(
+          {[{val:'5 min',label:'Inscription'},{val:'0€',label:'Abonnement'},{val:'24/7',label:'Accessible'}].map(s=>(
             <div key={s.val}>
               <div style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,42px)', fontWeight:300, color:L.gold, letterSpacing:'-0.03em', lineHeight:1 }}>{s.val}</div>
               <div style={{ fontSize:11, color:L.textSec, marginTop:8, textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:500 }}>{s.label}</div>
@@ -155,10 +154,8 @@ export default function ProLanding() {
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
             {[
-              { icon:'🏗️', title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers et devis.' },
-              { icon:'✂️', title:'Coiffure & Beauté', desc:'Réservation en ligne, agenda salon, fidélisation clients.' },
-              { icon:'🎬', title:'Montage & Création', desc:'Gestion des projets vidéo, suivi client, facturation créative.' },
-              { icon:'🍽️', title:'Restauration', desc:'Gestion des réservations, stock, équipe et caisse. (Bientôt)' },
+              { icon:'🏗️', title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers, devis et suivi client.' },
+              { icon:'🎬', title:'Communication & Création', desc:'Gestion des projets vidéo, montage, suivi client et facturation.' },
             ].map(s=>(
               <div key={s.title} style={{ background:L.cream, padding:'32px 24px', border:`1px solid ${L.border}`, transition:'all .2s' }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.transform='translateY(-2px)';}}
@@ -172,54 +169,46 @@ export default function ProLanding() {
         </div>
       </section>
 
-      {/* ══ TÉMOIGNAGES ══ */}
-      <section ref={r3} id="temoignages" style={{ background:L.cream, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
-        <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Témoignages</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 48px', lineHeight:1.12 }}>
-            Ils nous font <span style={{ fontWeight:700, fontStyle:'normal' }}>confiance</span>
-          </h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:20 }}>
-            {[
-              { nom:'Marc D.', metier:'Plombier · Paris', texte:'Depuis Freample, mes devis sont envoyés en 2 minutes. Mes clients reçoivent tout par email, c\'est pro.', note:5 },
-              { nom:'Sophie L.', metier:'Gérante salon · Lyon', texte:'L\'agenda en ligne a doublé mes réservations. Les clientes adorent pouvoir réserver à minuit.', note:5 },
-              { nom:'Karim B.', metier:'Électricien · Marseille', texte:'Le suivi de chantier est top. Je sais exactement où j\'en suis sur chaque projet, la trésorerie est claire.', note:5 },
-            ].map(t=>(
-              <div key={t.nom} style={{ background:L.white, padding:'28px 24px', border:`1px solid ${L.border}`, textAlign:'left' }}>
-                <div style={{ display:'flex', gap:2, marginBottom:14 }}>
-                  {[...Array(t.note)].map((_,i)=><span key={i} style={{ color:'#F59E0B', fontSize:14 }}>★</span>)}
-                </div>
-                <p style={{ fontSize:14, color:L.text, lineHeight:1.65, margin:'0 0 18px', fontStyle:'italic' }}>"{t.texte}"</p>
-                <div style={{ fontSize:14, fontWeight:700, color:L.text }}>{t.nom}</div>
-                <div style={{ fontSize:12, color:L.textLight }}>{t.metier}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ TARIFS ══ */}
+      {/* ══ COMMISSIONS ══ */}
       <section ref={r4} id="tarifs-pro" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
-        <div style={{ maxWidth:600, margin:'0 auto', textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Tarification</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.12 }}>
-            Simple et <span style={{ fontWeight:700, fontStyle:'normal' }}>transparent</span>
-          </h2>
-          <p style={{ fontSize:15, color:L.textSec, marginBottom:40 }}>Pas de commission, pas de frais cachés.</p>
-          <div style={{ background:L.cream, border:`1px solid ${L.border}`, padding:'44px 36px', position:'relative' }}>
-            <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:L.gold }} />
-            <div style={{ fontFamily:L.serif, fontSize:56, fontWeight:300, color:L.text, letterSpacing:'-0.03em', marginBottom:4 }}>0€</div>
-            <div style={{ fontSize:15, color:L.textSec, marginBottom:24 }}>Pendant le lancement — ensuite à partir de 29€/mois</div>
-            <div style={{ display:'flex', flexDirection:'column', gap:10, textAlign:'left', marginBottom:32 }}>
-              {['Agenda & réservations illimitées','Devis & factures illimités','Gestion clients (CRM)','Gestion d\'équipe','Suivi financier','Rapports & statistiques','Support prioritaire'].map(f=>(
-                <div key={f} style={{ fontSize:14, color:L.text, display:'flex', gap:10 }}>
-                  <span style={{ color:L.gold }}>+</span>{f}
+        <div style={{ maxWidth:700, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:44 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Commissions</div>
+            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.12 }}>
+              Pas d'abonnement, <span style={{ fontWeight:700, fontStyle:'normal' }}>pas de surprise</span>
+            </h2>
+            <p style={{ fontSize:15, color:L.textSec }}>Vous ne payez qu'une commission sur les transactions clients réalisées via la plateforme.</p>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:0, border:`1px solid ${L.border}` }}>
+            {/* Comment ça marche */}
+            <div style={{ padding:'36px 28px', background:L.cream, borderRight:`1px solid ${L.border}` }}>
+              <div style={{ fontSize:13, fontWeight:700, color:L.text, marginBottom:20 }}>Comment ça marche</div>
+              {[
+                { step:'1', desc:'Le client vous trouve et demande un devis' },
+                { step:'2', desc:'Vous envoyez le devis depuis Freample' },
+                { step:'3', desc:'Le client paie en ligne via la plateforme' },
+                { step:'4', desc:'Une commission est prélevée automatiquement' },
+              ].map(s=>(
+                <div key={s.step} style={{ display:'flex', gap:12, marginBottom:14, alignItems:'flex-start' }}>
+                  <div style={{ width:24, height:24, background:L.gold, color:'#fff', fontSize:12, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.step}</div>
+                  <div style={{ fontSize:14, color:L.textSec, lineHeight:1.5 }}>{s.desc}</div>
                 </div>
               ))}
             </div>
-            <button onClick={()=>navigate('/register?role=patron')} style={{ width:'100%', padding:'16px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
+            {/* Avantages */}
+            <div style={{ padding:'36px 28px', background:L.white }}>
+              <div style={{ fontSize:13, fontWeight:700, color:L.text, marginBottom:20 }}>Ce qui est inclus</div>
+              {['Inscription gratuite','Aucun abonnement','Devis & factures illimités','Agenda & réservations','Gestion clients (CRM)','Gestion d\'équipe','Tableau de bord financier','Support par email'].map(f=>(
+                <div key={f} style={{ fontSize:14, color:L.text, display:'flex', gap:10, padding:'6px 0' }}>
+                  <span style={{ color:L.gold, flexShrink:0 }}>+</span>{f}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign:'center', marginTop:28 }}>
+            <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'16px 44px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
               onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-              Commencer gratuitement
+              S'inscrire gratuitement
             </button>
           </div>
         </div>
@@ -235,11 +224,11 @@ export default function ProLanding() {
             </h2>
           </div>
           {[
-            { q:'Est-ce vraiment gratuit ?', a:'Oui, pendant toute la phase de lancement. Ensuite, un abonnement à partir de 29€/mois avec toutes les fonctionnalités incluses.' },
-            { q:'Combien de temps pour s\'inscrire ?', a:'5 minutes. Renseignez votre activité, créez votre profil et commencez immédiatement.' },
-            { q:'Y a-t-il une commission sur mes prestations ?', a:'Non, aucune commission. Vous fixez vos prix, vous gardez 100% de vos revenus.' },
-            { q:'Quels secteurs sont supportés ?', a:'BTP, coiffure, beauté, restauration, montage vidéo et bien d\'autres à venir.' },
-            { q:'Mes données sont-elles sécurisées ?', a:'Oui, hébergement en France, chiffrement SSL, sauvegardes quotidiennes et conformité RGPD.' },
+            { q:'L\'inscription est-elle gratuite ?', a:'Oui, l\'inscription et l\'accès à toutes les fonctionnalités sont gratuits. Pas d\'abonnement.' },
+            { q:'Comment fonctionne la commission ?', a:'Une commission est prélevée uniquement sur les paiements clients effectués via la plateforme. Pas de paiement via Freample = pas de commission.' },
+            { q:'Combien de temps pour s\'inscrire ?', a:'5 minutes. Renseignez votre activité, créez votre profil et commencez à recevoir des demandes.' },
+            { q:'Quels secteurs sont disponibles ?', a:'BTP (plomberie, électricité, peinture…) et communication (montage vidéo, création de contenu). D\'autres secteurs arrivent.' },
+            { q:'Mes données sont-elles sécurisées ?', a:'Oui, hébergement sécurisé, chiffrement SSL, sauvegardes quotidiennes.' },
           ].map(faq=>(
             <details key={faq.q} style={{ marginBottom:1 }}>
               <summary style={{ padding:'18px 20px', background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', fontSize:15, fontWeight:600, color:L.text, listStyle:'none' }}>{faq.q}</summary>
@@ -257,7 +246,7 @@ export default function ProLanding() {
             Prêt à <span style={{ fontWeight:700, fontStyle:'normal' }}>développer</span><br/>votre activité ?
           </h2>
           <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
-            Rejoignez les professionnels qui font confiance à Freample.
+            Inscription gratuite, aucun abonnement, commencez dès maintenant.
           </p>
           <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'16px 48px', background:L.gold, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}
             onMouseEnter={e=>e.currentTarget.style.background=L.goldDark} onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
