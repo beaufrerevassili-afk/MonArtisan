@@ -80,6 +80,10 @@ const DEFAULT_DATA = {
     { id:8, date:'2026-04-12', label:'CB Leroy Merlin robinet', montant:-89, bienId:2, rapproche:false },
   ],
   courriers: [],
+  objectifs: { patrimoine:2000000, biens:15, cashflow:5000, rendement:7, horizon:'2030-12-31' },
+  travaux: [
+    { id:1, bienId:5, type:'Peinture', desc:'Refaire peinture complète T2', statut:'devis_demande', artisan:null, devis:null, facture:null, date:'2026-04-03' },
+  ],
   nextId: 20,
 };
 
@@ -102,6 +106,7 @@ export default function ImmoDemo() {
   const [tab, setTab] = useState('dashboard');
   const [modal, setModal] = useState(null);
   const [subFin, setSubFin] = useState('resume');
+  const [subStrat, setSubStrat] = useState('objectifs');
   const [search, setSearch] = useState('');
   const [addStep, setAddStep] = useState(1); // { type:'addBien'|'addLocataire'|'quittance'|'revision'|'paiement', data }
   const [form, setForm] = useState({});
@@ -171,8 +176,7 @@ export default function ImmoDemo() {
     { id:'outils', label:'Outils & Conformité', icon:'🧮' },
     { id:'annonces', label:'Annonces & Candidatures', icon:'📢' },
     { id:'courriers', label:'Courriers', icon:'✉️' },
-    { id:'pilotage', label:'Pilotage & Décision', icon:'🎯' },
-    { id:'strategie', label:'Stratégie', icon:'🏛️' },
+    { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
   ];
 
@@ -570,7 +574,7 @@ export default function ImmoDemo() {
                   {/* Actions */}
                   <div style={{ display:'flex', gap:4, flexWrap:'wrap', paddingTop:8, borderTop:`1px solid ${L.border}` }}>
                     {loc && !paidThisMonth && <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser {b.loyer}€</button>}
-                    <button onClick={()=>navigate(`/btp?q=${encodeURIComponent(b.adresse)}`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.blue }}>🔧 Artisan</button>
+                    <button onClick={()=>setModal({type:'travaux',data:b})} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.blue }}>🔧 Travaux</button>
                     {!loc && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:'#8B5CF6' }}>🎬 Annonce</button>}
                     <button onClick={()=>editBien(b)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>✎ Modifier</button>
                     <button onClick={()=>setModal({type:'edl',data:b})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>📋 EDL</button>
@@ -1238,8 +1242,57 @@ export default function ImmoDemo() {
           </>}
 
           {/* ═══ PILOTAGE & DÉCISION ═══ */}
-          {tab==='pilotage' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Pilotage & Aide à la décision</h2>
+          {tab==='strategie' && <>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Stratégie & Pilotage</h2>
+            <div style={{ display:'flex', gap:0, marginBottom:16, borderBottom:`1px solid ${L.border}` }}>
+              {[{id:'objectifs',label:'Objectifs'},{id:'comparateur',label:'Comparateur'},{id:'fiscal',label:'IR vs IS'},{id:'investir',label:'Investir ?'},{id:'structure',label:'Structure'}].map(st=>(
+                <button key={st.id} onClick={()=>setSubStrat(st.id)} style={{ padding:'8px 14px', background:'none', border:'none', borderBottom:`2px solid ${subStrat===st.id?L.gold:'transparent'}`, fontSize:12, fontWeight:subStrat===st.id?700:400, color:subStrat===st.id?L.text:L.textSec, cursor:'pointer', fontFamily:L.font }}>
+                  {st.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── OBJECTIFS ── */}
+            {subStrat==='objectifs' && (()=>{
+              const obj=data.objectifs||{patrimoine:1000000,biens:10,cashflow:3000,rendement:6,horizon:'2030-12-31'};
+              const pctPatrimoine=Math.min(100,Math.round(totalValeur/obj.patrimoine*100));
+              const pctBiens=Math.min(100,Math.round(data.biens.length/obj.biens*100));
+              const cfActuel=cashflow-totalMensualites;
+              const pctCashflow=obj.cashflow>0?Math.min(100,Math.round(cfActuel/obj.cashflow*100)):0;
+              const pctRendement=Number(rendementNet)>0?Math.min(100,Math.round(Number(rendementNet)/obj.rendement*100)):0;
+              const joursRestants=Math.max(0,Math.floor((new Date(obj.horizon)-new Date())/(1000*60*60*24)));
+              return <>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                  <div style={{ fontSize:14, fontWeight:700 }}>🎯 Mes objectifs patrimoniaux</div>
+                  <button onClick={()=>setModal({type:'editObjectifs'})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>✎ Modifier</button>
+                </div>
+                <div style={{ background:L.noir, color:'#fff', padding:'16px 20px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div><div style={{ fontSize:11, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em' }}>Horizon</div><div style={{ fontSize:20, fontWeight:200, fontFamily:L.serif }}>{new Date(obj.horizon).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</div></div>
+                  <div style={{ textAlign:'right' }}><div style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>Temps restant</div><div style={{ fontSize:20, fontWeight:200, fontFamily:L.serif, color:joursRestants<365?L.orange:L.gold }}>{Math.round(joursRestants/365*10)/10} ans</div></div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {[
+                    { label:'Patrimoine', actuel:`${(totalValeur/1000).toFixed(0)}k€`, objectif:`${(obj.patrimoine/1000).toFixed(0)}k€`, pct:pctPatrimoine, color:L.gold },
+                    { label:'Nombre de biens', actuel:data.biens.length, objectif:obj.biens, pct:pctBiens, color:L.blue },
+                    { label:'Cashflow mensuel', actuel:`${cfActuel}€`, objectif:`${obj.cashflow}€`, pct:pctCashflow, color:pctCashflow>=100?L.green:L.orange },
+                    { label:'Rendement net', actuel:`${rendementNet}%`, objectif:`${obj.rendement}%`, pct:pctRendement, color:pctRendement>=100?L.green:L.orange },
+                  ].map(o=>(
+                    <div key={o.label} style={{ ...CARD }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:L.textSec, marginBottom:6 }}><span>{o.label}</span><span style={{ fontWeight:700, color:o.pct>=100?L.green:L.text }}>{o.pct}%</span></div>
+                      <div style={{ height:8, background:L.cream, borderRadius:4, marginBottom:8 }}><div style={{ height:8, background:o.color, borderRadius:4, width:`${o.pct}%`, transition:'width .4s' }} /></div>
+                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}>
+                        <span style={{ fontWeight:700 }}>{o.actuel}</span>
+                        <span style={{ color:L.textLight }}>/ {o.objectif}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>;
+            })()}
+
+            {/* ── COMPARATEUR ── */}
+            {subStrat==='comparateur' && <>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📊 Comparateur de performance</div>
 
             {/* 1. COMPARATEUR DE BIENS côte à côte */}
             <div style={{ ...CARD, marginBottom:16 }}>
@@ -1297,7 +1350,10 @@ export default function ImmoDemo() {
               </div>
               <div style={{ fontSize:10, color:L.textLight, marginTop:8 }}>Score = rendement net (50%) + cashflow positif (20%) + occupé (15%) + ROI (15%)</div>
             </div>
+            </>}
 
+            {/* ── FISCAL ── */}
+            {subStrat==='fiscal' && <>
             {/* 2. SIMULATEUR IR vs IS */}
             <div style={{ ...CARD, marginBottom:16 }}>
               <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>⚖️ IR vs IS — Quel régime fiscal choisir ?</div>
@@ -1352,6 +1408,10 @@ export default function ImmoDemo() {
               </div>
             </div>
 
+            </>}
+
+            {/* ── INVESTIR ── */}
+            {subStrat==='investir' && <>
             {/* 3. SCÉNARIO D'INVESTISSEMENT — Faut-il acheter un nouveau bien ? */}
             <div style={{ ...CARD }}>
               <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>🎯 Faut-il acheter un nouveau bien ?</div>
@@ -1389,8 +1449,8 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ STRATÉGIE PATRIMONIALE ═══ */}
-          {tab==='strategie' && (()=>{
+          {/* ── STRUCTURE ── */}
+          {subStrat==='structure' && (()=>{
             const nbBiens = data.biens.length;
             const nbSCI = data.scis.length;
             const patrimoineTotal = data.biens.reduce((s,b)=>s+b.valeur,0);
@@ -1555,6 +1615,8 @@ export default function ImmoDemo() {
             </>;
           })()}
 
+          </>}{/* fin tab==='strategie' */}
+
           {/* ═══ ALERTES + MISE EN DEMEURE + PROJECTION ═══ */}
           {tab==='alertes' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Alertes & Actions</h2>
@@ -1685,6 +1747,51 @@ export default function ImmoDemo() {
                 <button onClick={addBien} style={{ ...BTN, flex:2 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Ajouter le bien</button>
               </div>
             </>}
+          </>}
+
+          {modal.type==='editObjectifs' && (()=>{
+            const obj=data.objectifs||{};
+            return <>
+              <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Définir mes objectifs</h3>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Patrimoine cible (€)</label><input type="number" value={form.objPatrimoine??obj.patrimoine??''} onChange={e=>setForm(f=>({...f,objPatrimoine:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Nombre de biens</label><input type="number" value={form.objBiens??obj.biens??''} onChange={e=>setForm(f=>({...f,objBiens:e.target.value}))} style={INP} /></div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Cashflow mensuel (€)</label><input type="number" value={form.objCashflow??obj.cashflow??''} onChange={e=>setForm(f=>({...f,objCashflow:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Rendement net (%)</label><input type="number" value={form.objRendement??obj.rendement??''} onChange={e=>setForm(f=>({...f,objRendement:e.target.value}))} style={INP} step="0.1" /></div>
+              </div>
+              <div style={{ marginBottom:14 }}><label style={LBL}>Date horizon</label><input type="date" value={form.objHorizon??obj.horizon??''} onChange={e=>setForm(f=>({...f,objHorizon:e.target.value}))} style={INP} /></div>
+              <button onClick={()=>{setData(d=>({...d,objectifs:{patrimoine:Number(form.objPatrimoine??obj.patrimoine),biens:Number(form.objBiens??obj.biens),cashflow:Number(form.objCashflow??obj.cashflow),rendement:Number(form.objRendement??obj.rendement),horizon:form.objHorizon??obj.horizon}}));setModal(null);setForm({});showToast('Objectifs mis à jour');}} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Enregistrer</button>
+            </>;
+          })()}
+
+          {modal.type==='travaux' && modal.data && <>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 4px' }}>Demander des travaux</h3>
+            <div style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>{modal.data.nom||modal.data.adresse}</div>
+            <div style={{ marginBottom:10 }}>
+              <label style={LBL}>Type de travaux</label>
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                {['Peinture','Plomberie','Électricité','Menuiserie','Carrelage','Rénovation complète','Autre'].map(t=>(
+                  <button key={t} onClick={()=>setForm(f=>({...f,typeTravaux:t}))} style={{ padding:'7px 14px', border:`1px solid ${form.typeTravaux===t?L.gold:L.border}`, background:form.typeTravaux===t?L.goldLight:'transparent', color:form.typeTravaux===t?L.goldDark:L.textSec, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:L.font }}>{t}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ marginBottom:10 }}><label style={LBL}>Description des travaux</label><textarea value={form.descTravaux||''} onChange={e=>setForm(f=>({...f,descTravaux:e.target.value}))} rows={3} placeholder="Décrivez les travaux à réaliser..." style={{ ...INP, resize:'vertical' }} /></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
+              <div><label style={LBL}>Budget estimé (€)</label><input type="number" value={form.budgetTravaux||''} onChange={e=>setForm(f=>({...f,budgetTravaux:e.target.value}))} style={INP} placeholder="Ex: 3000" /></div>
+              <div><label style={LBL}>Urgence</label><select value={form.urgence||'normal'} onChange={e=>setForm(f=>({...f,urgence:e.target.value}))} style={INP}><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="planifie">Planifié</option></select></div>
+            </div>
+            <button onClick={()=>{
+              const trav={id:genId(),bienId:modal.data.id,type:form.typeTravaux||'Autre',desc:form.descTravaux||'',statut:'devis_demande',artisan:null,devis:Number(form.budgetTravaux)||0,facture:null,date:new Date().toISOString().slice(0,10)};
+              setData(d=>({...d,travaux:[...(d.travaux||[]),trav]}));
+              setModal(null);setForm({});
+              showToast('Demande envoyée à Freample Artisans');
+              setTimeout(()=>navigate(`/btp?q=${encodeURIComponent(form.typeTravaux||'travaux')}`),1500);
+            }} style={{ ...BTN, width:'100%', background:L.blue }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.blue}>
+              🔧 Trouver un artisan via Freample
+            </button>
+            <div style={{ fontSize:11, color:L.textSec, textAlign:'center', marginTop:8 }}>La demande sera enregistrée dans les dépenses du bien une fois la facture reçue.</div>
           </>}
 
           {modal.type==='editBien' && modal.data && <>
