@@ -627,12 +627,11 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Sélecteur rôle (seulement step 1) */}
-        {step === 1 && (
+        {/* Sélecteur rôle (seulement step 1, masqué si vient de /pro) */}
+        {step === 1 && !searchParams.get('role') && (
           <div style={{ padding: 5, marginBottom: 16, display: 'flex', gap: 4, background: DS.bgSoft, borderRadius: DS.r.full, border: `1px solid ${DS.border}` }}>
             {[
               { value: 'client',  label: '👤 Je suis client' },
-              { value: 'artisan', label: '🔨 Je suis artisan' },
               { value: 'patron',  label: "🏢 J'ai une entreprise" },
             ].map(r => (
               <button
@@ -646,17 +645,13 @@ export default function Register() {
           </div>
         )}
 
-        {/* Sélecteur secteur (patron uniquement, step 1) */}
-        {step === 1 && isPatron && (
+        {/* Sélecteur secteur (patron uniquement, step 1, masqué si secteur prédéfini) */}
+        {step === 1 && isPatron && !searchParams.get('secteur') && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 600, color: DS.subtle, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {[
                 { id: 'btp',        emoji: '🏗️', label: 'Artisans & Travaux' },
-                { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté' },
-                { id: 'restaurant', emoji: '🍽️', label: 'Restauration' },
-                { id: 'vacances',   emoji: '🏖️', label: 'Location vacances' },
-                { id: 'hotel',      emoji: '🏨', label: 'Hôtellerie' },
               ].map(s => (
                 <button key={s.id} type="button"
                   onClick={() => { setSecteur(s.id); setError(''); }}

@@ -22,7 +22,7 @@ export default function ProLanding() {
     {label:'Secteurs',id:'secteurs'},
     {label:'Commissions',id:'tarifs-pro'},
     {label:'FAQ',id:'faq'},
-    {label:'S\'inscrire',action:()=>{setMenuOpen(false);navigate('/register?role=patron');}},
+    {label:'S\'inscrire',action:()=>{setMenuOpen(false);navigate('/register?role=patron&secteur=btp');}},
   ];
 
   const r1=useReveal(),r2=useReveal(),r3=useReveal(),r4=useReveal(),r5=useReveal(),r6=useReveal();
@@ -41,7 +41,7 @@ export default function ProLanding() {
             onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
             Se connecter
           </button>
-          <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
+          <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
             onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
             S'inscrire gratuitement
           </button>
@@ -83,7 +83,7 @@ export default function ProLanding() {
             Agenda, devis, factures, clients, équipe — tout votre business dans une seule plateforme.
           </p>
           <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
-            <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'16px 44px', background:L.white, color:L.noir, border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .3s' }}
+            <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 44px', background:L.white, color:L.noir, border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .3s' }}
               onMouseEnter={e=>{e.currentTarget.style.background=L.gold;e.currentTarget.style.color='#fff';}} onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.color=L.noir;}}>
               Créer mon espace — Gratuit
             </button>
@@ -206,7 +206,7 @@ export default function ProLanding() {
             </div>
           </div>
           <div style={{ textAlign:'center', marginTop:28 }}>
-            <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'16px 44px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
+            <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 44px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
               onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
               S'inscrire gratuitement
             </button>
@@ -248,7 +248,7 @@ export default function ProLanding() {
           <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
             Inscription gratuite, aucun abonnement, commencez dès maintenant.
           </p>
-          <button onClick={()=>navigate('/register?role=patron')} style={{ padding:'16px 48px', background:L.gold, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}
+          <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 48px', background:L.gold, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}
             onMouseEnter={e=>e.currentTarget.style.background=L.goldDark} onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
             Commencer maintenant
           </button>
