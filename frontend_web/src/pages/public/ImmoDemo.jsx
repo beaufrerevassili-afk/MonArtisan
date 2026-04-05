@@ -264,10 +264,13 @@ export default function ImmoDemo() {
                     <span style={{ color:L.textSec }}>Rendement brut</span><span style={{ fontWeight:700, color:L.gold }}>{rdt}%</span>
                   </div>
                   {loc && <div style={{ display:'flex', justifyContent:'space-between', fontSize:12 }}><span style={{ color:L.textSec }}>Locataire</span><span style={{ fontWeight:600 }}>{loc.nom}</span></div>}
-                  <div style={{ display:'flex', gap:6, marginTop:12 }}>
+                  <div style={{ display:'flex', gap:4, marginTop:12, flexWrap:'wrap' }}>
                     {loc && !data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye') &&
-                      <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser loyer</button>}
-                    <button onClick={()=>deleteBien(b.id)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>Supprimer</button>
+                      <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser</button>}
+                    <button onClick={()=>navigate(`/btp?q=${encodeURIComponent(b.adresse)}`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.blue }}>🔧 Artisan</button>
+                    {!loc && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:'#8B5CF6' }}>🎬 Shooting</button>}
+                    <button onClick={()=>setModal({type:'edl',data:b})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>📋 EDL</button>
+                    <button onClick={()=>deleteBien(b.id)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>✕</button>
                   </div>
                 </div>;
               })}
@@ -617,20 +620,71 @@ export default function ImmoDemo() {
             </div>
           </>}
 
-          {/* ═══ ALERTES ═══ */}
+          {/* ═══ ALERTES + MISE EN DEMEURE + PROJECTION ═══ */}
           {tab==='alertes' && <>
-            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Alertes</h2>
+            <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 16px' }}>Alertes & Actions</h2>
+
+            {/* Impayés avec mise en demeure */}
+            {impayes.length>0 && <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:L.red, marginBottom:8 }}>⚠️ Loyers impayés</div>
+              {impayes.map(b=>{
+                const loc=getLocataire(b.locataireId);
+                return <div key={b.id} style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:600, color:L.red }}>{loc?.nom} — {b.loyer}€</div>
+                    <div style={{ fontSize:11, color:L.textSec }}>{b.adresse}</div>
+                  </div>
+                  <div style={{ display:'flex', gap:6 }}>
+                    <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:L.green }}>Encaisser</button>
+                    <button onClick={()=>setModal({type:'miseEnDemeure', data:{bien:b, loc}})} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:L.red }}>Mise en demeure</button>
+                  </div>
+                </div>;
+              })}
+            </div>}
+
+            {/* Autres alertes */}
             {[
-              ...impayes.map(b=>({ type:'danger', msg:`Loyer impayé — ${getLocataire(b.locataireId)?.nom} — ${b.loyer}€ — ${b.adresse}` })),
               ...data.locataires.filter(l=>{ const d=new Date(l.fin); const now=new Date(); const diff=(d-now)/(1000*60*60*24); return diff>0 && diff<90; }).map(l=>({ type:'warning', msg:`Fin de bail dans moins de 3 mois — ${l.nom} — ${l.fin}` })),
-              ...biens.filter(b=>!b.locataireId).map(b=>({ type:'info', msg:`Bien vacant — ${b.adresse} — perte de ${b.loyer||0}€/mois` })),
+              ...biens.filter(b=>!b.locataireId).map(b=>({ type:'info', msg:`Bien vacant — ${b.adresse} — perte estimée ${(b.loyer||0)*12}€/an`, bienId:b.id })),
+              ...credits.filter(c=>{const b=data.biens.find(x=>x.id===c.bienId);return b&&b.loyer>0&&b.loyer<c.mensualite;}).map(c=>{const b=data.biens.find(x=>x.id===c.bienId);return{type:'warning',msg:`Cashflow négatif — ${b.adresse} — loyer ${b.loyer}€ < crédit ${c.mensualite}€`};}),
             ].map((a,i)=>(
-              <div key={i} style={{ background:a.type==='danger'?L.redBg:a.type==='warning'?L.orangeBg:L.blueBg, border:`1px solid ${a.type==='danger'?L.red:a.type==='warning'?L.orange:L.blue}30`, padding:'14px 18px', marginBottom:6, display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:8, height:8, borderRadius:'50%', background:a.type==='danger'?L.red:a.type==='warning'?L.orange:L.blue }} />
-                <span style={{ fontSize:13, color:a.type==='danger'?L.red:a.type==='warning'?L.orange:L.blue, fontWeight:500 }}>{a.msg}</span>
+              <div key={i} style={{ background:a.type==='warning'?L.orangeBg:L.blueBg, border:`1px solid ${a.type==='warning'?L.orange:L.blue}30`, padding:'14px 18px', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{ width:8, height:8, borderRadius:'50%', background:a.type==='warning'?L.orange:L.blue }} />
+                  <span style={{ fontSize:13, color:a.type==='warning'?L.orange:L.blue, fontWeight:500 }}>{a.msg}</span>
+                </div>
+                {a.bienId && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:'#8B5CF6' }}>🎬 Créer annonce</button>}
               </div>
             ))}
-            {impayes.length===0 && biens.filter(b=>!b.locataireId).length===0 && <div style={{ textAlign:'center', padding:40, color:L.textLight }}>Aucune alerte</div>}
+
+            {/* Projection cashflow 12 mois */}
+            <div style={{ ...CARD, marginTop:24 }}>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>📈 Projection cashflow — 12 prochains mois</div>
+              <div style={{ overflowX:'auto' }}>
+                <div style={{ display:'flex', gap:0, minWidth:700 }}>
+                  {Array.from({length:12}).map((_,i)=>{
+                    const d=new Date(); d.setMonth(d.getMonth()+i);
+                    const m=MOIS[d.getMonth()].slice(0,3);
+                    const revenus=totalLoyers;
+                    const sortie=totalCharges+totalMensualites+(i%3===0?Math.round(totalDepenses/4):0);
+                    const net=revenus-sortie;
+                    const maxH=Math.max(totalLoyers,totalCharges+totalMensualites+totalDepenses/4)*1.2||1;
+                    return <div key={i} style={{ flex:1, textAlign:'center', borderRight:i<11?`1px solid ${L.border}`:'none', padding:'8px 4px' }}>
+                      <div style={{ fontSize:9, color:L.textLight, marginBottom:6 }}>{m}</div>
+                      <div style={{ height:80, display:'flex', alignItems:'flex-end', justifyContent:'center', gap:2 }}>
+                        <div style={{ width:12, background:L.green, borderRadius:'2px 2px 0 0', height:Math.max(4,revenus/maxH*70), opacity:0.7 }} title={`Revenus: ${revenus}€`} />
+                        <div style={{ width:12, background:L.red, borderRadius:'2px 2px 0 0', height:Math.max(4,sortie/maxH*70), opacity:0.7 }} title={`Sorties: ${sortie}€`} />
+                      </div>
+                      <div style={{ fontSize:10, fontWeight:700, color:net>0?L.green:L.red, marginTop:4 }}>{net>0?'+':''}{net}€</div>
+                    </div>;
+                  })}
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:16, justifyContent:'center', marginTop:12, fontSize:11 }}>
+                <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.green, opacity:0.7 }}/>Revenus</span>
+                <span style={{ display:'flex', alignItems:'center', gap:4 }}><div style={{ width:10, height:10, background:L.red, opacity:0.7 }}/>Sorties</span>
+              </div>
+            </div>
           </>}
         </div>
       </div>
@@ -689,6 +743,57 @@ export default function ImmoDemo() {
             </div>
             <div style={{ textAlign:'center', fontSize:12, color:L.textLight, marginBottom:16 }}>Document généré par Freample Immo</div>
             <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
+          </>}
+
+          {modal.type==='miseEnDemeure' && modal.data && <>
+            <div style={{ textAlign:'center', marginBottom:16 }}>
+              <div style={{ fontSize:11, fontWeight:600, color:L.red, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>Mise en demeure</div>
+              <div style={{ fontSize:16, fontWeight:800 }}>Lettre de relance — Loyer impayé</div>
+            </div>
+            <div style={{ border:`1px solid ${L.border}`, padding:'20px', fontSize:13, lineHeight:1.8, marginBottom:16 }}>
+              <p style={{ textAlign:'right', color:L.textSec }}>Fait à __________, le {new Date().toLocaleDateString('fr-FR')}</p>
+              <p><strong>Objet : Mise en demeure de payer — Loyer du mois de {MOIS[new Date().getMonth()]} {new Date().getFullYear()}</strong></p>
+              <p>Madame, Monsieur <strong>{modal.data.loc?.nom}</strong>,</p>
+              <p>Je constate à ce jour que le loyer du mois de {MOIS[new Date().getMonth()]} {new Date().getFullYear()}, d'un montant de <strong>{modal.data.bien?.loyer}€</strong>, relatif au bien situé au <strong>{modal.data.bien?.adresse}</strong>, n'a toujours pas été réglé.</p>
+              <p>Conformément aux dispositions de votre bail, je vous mets en demeure de procéder au règlement de cette somme dans un délai de <strong>8 jours</strong> à compter de la réception de la présente.</p>
+              <p>À défaut de régularisation dans ce délai, je me verrai contraint(e) d'engager les procédures légales prévues par la loi, pouvant aller jusqu'à la résiliation du bail et l'expulsion.</p>
+              <p>Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
+              <p style={{ marginTop:20 }}>Le bailleur,<br/><em>(Signature)</em></p>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
+              <button onClick={()=>{enregistrerPaiement(modal.data.bien?.id);setModal(null);}} style={{ ...BTN, flex:1, background:L.green }}>Marquer comme payé</button>
+            </div>
+          </>}
+
+          {modal.type==='edl' && modal.data && <>
+            <div style={{ textAlign:'center', marginBottom:16 }}>
+              <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>État des lieux</div>
+              <div style={{ fontSize:16, fontWeight:800 }}>{modal.data.adresse}</div>
+            </div>
+            <div style={{ marginBottom:10 }}><label style={LBL}>Type</label><select value={form.edlType||'entree'} onChange={e=>setForm(f=>({...f,edlType:e.target.value}))} style={INP}><option value="entree">Entrée</option><option value="sortie">Sortie</option></select></div>
+            <div style={{ marginBottom:10 }}><label style={LBL}>Date</label><input type="date" value={form.edlDate||new Date().toISOString().slice(0,10)} onChange={e=>setForm(f=>({...f,edlDate:e.target.value}))} style={INP} /></div>
+            <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>Pièces</div>
+            {['Entrée/couloir','Séjour','Cuisine','Chambre 1','Chambre 2','Salle de bain','WC','Extérieur/balcon'].map(piece=>(
+              <div key={piece} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 0', borderBottom:`1px solid ${L.border}` }}>
+                <span style={{ flex:1, fontSize:13 }}>{piece}</span>
+                {['Bon','Usure','Dégradé'].map(etat=>(
+                  <button key={etat} onClick={()=>setForm(f=>({...f,[`edl_${piece}`]:etat}))}
+                    style={{ padding:'4px 12px', fontSize:11, fontWeight:600, border:`1px solid ${form[`edl_${piece}`]===etat?(etat==='Bon'?L.green:etat==='Usure'?L.orange:L.red):L.border}`, background:form[`edl_${piece}`]===etat?(etat==='Bon'?L.greenBg:etat==='Usure'?L.orangeBg:L.redBg):'transparent', color:form[`edl_${piece}`]===etat?(etat==='Bon'?L.green:etat==='Usure'?L.orange:L.red):L.textLight, cursor:'pointer', fontFamily:L.font, transition:'all .1s' }}>
+                    {etat}
+                  </button>
+                ))}
+              </div>
+            ))}
+            <div style={{ marginTop:12, marginBottom:10 }}><label style={LBL}>Observations</label><textarea value={form.edlObs||''} onChange={e=>setForm(f=>({...f,edlObs:e.target.value}))} rows={3} style={{...INP, resize:'vertical'}} placeholder="Remarques générales..." /></div>
+            <div style={{ marginTop:12, marginBottom:10 }}><label style={LBL}>Relevés compteurs</label>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6 }}>
+                <div><label style={{...LBL,fontSize:9}}>Eau</label><input value={form.edlEau||''} onChange={e=>setForm(f=>({...f,edlEau:e.target.value}))} style={INP} placeholder="m³" /></div>
+                <div><label style={{...LBL,fontSize:9}}>Électricité</label><input value={form.edlElec||''} onChange={e=>setForm(f=>({...f,edlElec:e.target.value}))} style={INP} placeholder="kWh" /></div>
+                <div><label style={{...LBL,fontSize:9}}>Gaz</label><input value={form.edlGaz||''} onChange={e=>setForm(f=>({...f,edlGaz:e.target.value}))} style={INP} placeholder="m³" /></div>
+              </div>
+            </div>
+            <button onClick={()=>{showToast('État des lieux enregistré');setModal(null);setForm({});}} style={{ ...BTN, width:'100%', marginTop:8 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Enregistrer l'EDL</button>
           </>}
 
           {modal.type==='addDepense' && <>
