@@ -53,13 +53,22 @@ export default function FreampleCom() {
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
 
-      {/* ══ HERO — Full noir, typographie luxe ══ */}
+      {/* ══ HERO — Full noir + photo cinématique ══ */}
       <section style={{
         background:L.noir, padding:'clamp(72px,12vh,120px) 32px clamp(64px,10vh,100px)',
         textAlign:'center', position:'relative', overflow:'hidden',
       }}>
+        {/* Background image */}
+        <div style={{
+          position:'absolute', inset:0,
+          backgroundImage:'url(https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1600&q=80)',
+          backgroundSize:'cover', backgroundPosition:'center',
+          opacity:0.25,
+        }} />
+        {/* Dark gradient overlay */}
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.85) 100%)' }} />
         {/* Subtle gold line */}
-        <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold }} />
+        <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
 
         <div style={{ maxWidth:680, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:24 }}>
