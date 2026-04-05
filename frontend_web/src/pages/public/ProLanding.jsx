@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -14,6 +15,9 @@ function useReveal(){const ref=useRef(null);useEffect(()=>{const el=ref.current;
 
 export default function ProLanding() {
   const navigate = useNavigate();
+  const auth = useAuth() || {};
+  const user = auth.user || null;
+  const isPro = user && (user.role === 'patron' || user.role === 'fondateur' || user.role === 'super_admin');
   const [menuOpen, setMenuOpen] = useState(false);
   const scrollTo = (id) => { setMenuOpen(false); setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),350); };
 
@@ -36,15 +40,24 @@ export default function ProLanding() {
           Freample<span style={{ color:L.gold }}>.</span>
         </button>
         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-          <button onClick={()=>{localStorage.removeItem('token');localStorage.removeItem('user');window.location.href='/login';}} style={{ padding:'8px 20px', background:'none', border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=L.noir;e.currentTarget.style.color=L.noir;}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
-            Se connecter
-          </button>
-          <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-            S'inscrire gratuitement
-          </button>
+          {isPro ? (
+            <button onClick={()=>navigate('/patron/dashboard')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
+              onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
+              Mon espace pro
+            </button>
+          ) : (
+            <>
+              <button onClick={()=>navigate('/login')} style={{ padding:'8px 20px', background:'none', border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=L.noir;e.currentTarget.style.color=L.noir;}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
+                Se connecter
+              </button>
+              <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
+                onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
+                S'inscrire gratuitement
+              </button>
+            </>
+          )}
         </div>
       </nav>
 

@@ -87,7 +87,8 @@ export default function Login() {
     return REDIRECTIONS[role] || '/';
   };
 
-  if (user) return <Navigate to={getDestination(user.role)} replace />;
+  // Redirect only non-client roles (pro users go to their dashboard, clients can still log in as pro)
+  if (user && user.role !== 'client') return <Navigate to={getDestination(user.role)} replace />;
 
   // Secteur effectif : depuis l'URL ou choisi manuellement
   const activeSector = sector || demoSector;
