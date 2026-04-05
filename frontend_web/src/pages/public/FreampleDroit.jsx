@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
+import { genererDocument } from '../../data/documentsJuridiques';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -55,6 +56,7 @@ export default function FreampleDroit() {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedAvocat, setSelectedAvocat] = useState(null);
   const [docForm, setDocForm] = useState({});
+  const [docGenere, setDocGenere] = useState(null);
   const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15);
   const r1=useFadeUp(),r2=useFadeUp(0.1);
 
@@ -288,14 +290,14 @@ export default function FreampleDroit() {
 
       {/* ═══ MODAL DOCUMENT ═══ */}
       {selectedDoc && (
-        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={()=>{setSelectedDoc(null);setDocForm({});}}>
+        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={()=>{setSelectedDoc(null);setDocForm({});setDocGenere(null);}}>
           <div style={{ background:L.white, width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:'28px 24px' }} onClick={e=>e.stopPropagation()}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
               <div>
                 <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:6 }}>Générateur</div>
                 <h3 style={{ fontSize:18, fontWeight:800, margin:0 }}>{selectedDoc.icon} {selectedDoc.label}</h3>
               </div>
-              <button onClick={()=>{setSelectedDoc(null);setDocForm({});}} style={{ background:'none', border:`1px solid ${L.border}`, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:L.textLight }}>✕</button>
+              <button onClick={()=>{setSelectedDoc(null);setDocForm({});setDocGenere(null);}} style={{ background:'none', border:`1px solid ${L.border}`, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:L.textLight }}>✕</button>
             </div>
 
             <p style={{ fontSize:13, color:L.textSec, marginBottom:16, lineHeight:1.5 }}>{selectedDoc.desc}</p>
@@ -332,15 +334,43 @@ export default function FreampleDroit() {
               <div style={{ marginBottom:10 }}><label style={{ fontSize:11, fontWeight:600, color:L.textSec, display:'block', marginBottom:4 }}>Détails / contexte</label><textarea value={docForm.details||''} onChange={e=>setDocForm(f=>({...f,details:e.target.value}))} rows={3} style={{ width:'100%', padding:'10px 12px', border:`1px solid ${L.border}`, fontSize:13, fontFamily:L.font, outline:'none', boxSizing:'border-box', resize:'vertical' }} placeholder="Décrivez votre situation..." /></div>
             </>}
 
-            <div style={{ display:'flex', gap:8, marginTop:16 }}>
-              <button onClick={()=>{showToast('Document généré — aperçu bientôt disponible');}} style={{ flex:1, padding:'14px', background:L.noir, color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
-                onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-                Générer le document
-              </button>
-              {selectedDoc.lien && <button onClick={()=>navigate(selectedDoc.lien)} style={{ padding:'14px 20px', background:'transparent', color:L.text, border:`1px solid ${L.border}`, fontSize:12, cursor:'pointer', fontFamily:L.font }}>
-                Vers {selectedDoc.lien==='/immo'?'Immo':'Artisans'}
-              </button>}
-            </div>
+            {!docGenere ? (
+              <div style={{ display:'flex', gap:8, marginTop:16 }}>
+                <button onClick={()=>{
+                  const texte = genererDocument(selectedDoc.id, docForm);
+                  setDocGenere(texte);
+                }} style={{ flex:1, padding:'14px', background:L.noir, color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
+                  onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
+                  Générer le document
+                </button>
+                {selectedDoc.lien && <button onClick={()=>navigate(selectedDoc.lien)} style={{ padding:'14px 20px', background:'transparent', color:L.text, border:`1px solid ${L.border}`, fontSize:12, cursor:'pointer', fontFamily:L.font }}>
+                  Vers {selectedDoc.lien==='/immo'?'Immo':'Artisans'}
+                </button>}
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize:12, fontWeight:700, color:L.green, textTransform:'uppercase', letterSpacing:'0.06em', marginTop:16, marginBottom:8 }}>✓ Document généré</div>
+                <textarea value={docGenere} onChange={e=>setDocGenere(e.target.value)}
+                  style={{ width:'100%', minHeight:300, padding:'16px', border:`1px solid ${L.border}`, fontSize:12, fontFamily:'monospace', lineHeight:1.7, color:L.text, background:L.cream, outline:'none', boxSizing:'border-box', resize:'vertical' }} />
+                <div style={{ fontSize:11, color:L.textLight, marginTop:6, marginBottom:12 }}>Vous pouvez modifier le texte directement ci-dessus avant d'imprimer.</div>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={()=>window.print()} style={{ flex:1, padding:'12px', background:L.noir, color:'#fff', border:'none', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
+                    onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
+                    🖨️ Imprimer / PDF
+                  </button>
+                  <button onClick={()=>{
+                    const blob = new Blob([docGenere], {type:'text/plain'});
+                    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${selectedDoc.label.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.txt`; a.click();
+                    showToast('Document téléchargé');
+                  }} style={{ padding:'12px 20px', background:'transparent', color:L.text, border:`1px solid ${L.border}`, fontSize:12, fontWeight:500, cursor:'pointer', fontFamily:L.font }}>
+                    📥 Télécharger .txt
+                  </button>
+                  <button onClick={()=>setDocGenere(null)} style={{ padding:'12px 16px', background:'transparent', color:L.textSec, border:`1px solid ${L.border}`, fontSize:12, cursor:'pointer', fontFamily:L.font }}>
+                    ← Modifier les données
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
