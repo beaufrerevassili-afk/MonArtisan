@@ -71,18 +71,19 @@ export default function FreampleCom() {
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
 
-      {/* ══ HAMBURGER — discret, intégré dans la navbar ══ */}
+      {/* ══ HAMBURGER — discret, toujours visible ══ */}
       <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
         style={{
-          position:'fixed', top:16, right:'clamp(16px,4vw,48px)', zIndex:1100,
-          width:36, height:36, background:'none', border:'none', cursor:'pointer',
-          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5,
-          opacity:0.5, transition:'opacity .25s',
+          position:'fixed', top:14, right:'clamp(16px,4vw,48px)', zIndex:1100,
+          width:40, height:40, background:'rgba(255,255,255,0.12)', backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)',
+          border:'1px solid rgba(255,255,255,0.15)', borderRadius:8, cursor:'pointer',
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4,
+          transition:'all .25s',
         }}
-        onMouseEnter={e=>e.currentTarget.style.opacity='1'}
-        onMouseLeave={e=>e.currentTarget.style.opacity='0.5'}>
-        <span style={{ width:18, height:1, background:L.noir, display:'block', transition:'all .2s' }} />
-        <span style={{ width:18, height:1, background:L.noir, display:'block', transition:'all .2s' }} />
+        onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.25)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.3)'; }}
+        onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; }}>
+        <span style={{ width:16, height:1.5, background:'#fff', display:'block' }} />
+        <span style={{ width:16, height:1.5, background:'#fff', display:'block' }} />
       </button>
 
       {/* ══ FULLSCREEN OVERLAY MENU ══ */}
