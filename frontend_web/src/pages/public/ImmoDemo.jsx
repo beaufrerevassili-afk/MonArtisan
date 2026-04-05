@@ -1699,10 +1699,22 @@ export default function ImmoDemo() {
                 <div style={{ ...CARD, borderLeft:`4px solid ${L.gold}`, marginBottom:16 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <div>
-                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Préparer un dossier bancaire</div>
-                      <div style={{ fontSize:12, color:L.textSec }}>Générez un dossier complet avec toutes les données Freample Immo pour votre banquier.</div>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Préparer un dossier d'investissement</div>
+                      <div style={{ fontSize:12, color:L.textSec }}>Créez un dossier professionnel avec marge de sécurité, scénarios et synthèse pour votre banquier.</div>
                     </div>
-                    <button onClick={()=>setModal({type:'dossierBancaire'})} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Générer le dossier</button>
+                    {!data.dossierInvestissement ?
+                      <button onClick={()=>{
+                        const bienP=biens.find(b=>!b.locataireId)||biens[biens.length-1]||{};
+                        const prix=bienP.prixAchat||200000;
+                        const dossier={prix,notaire:Math.round(prix*0.075),travaux:bienP.travaux||10000,loyer:bienP.loyer||800,charges:bienP.charges||150,apport:0,secu:5,taux:2.5,duree:20,assurance:35,strategie:'Location nue',neuf:false,created:new Date().toISOString()};
+                        setData(d=>({...d,dossierInvestissement:dossier}));
+                        showToast('Dossier créé');
+                      }} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Créer le dossier</button>
+                    : <div style={{ display:'flex', gap:6 }}>
+                        <button onClick={()=>setModal({type:'dossierBancaire'})} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Modifier le dossier</button>
+                        <button onClick={()=>setModal({type:'dossierView'})} style={{ ...BTN_OUTLINE, flexShrink:0 }}>Voir le PDF</button>
+                      </div>
+                    }
                   </div>
                 </div>
 
@@ -1948,8 +1960,8 @@ export default function ImmoDemo() {
       </div>
 
       {/* ═══ MODALS ═══ */}
-      {modal && <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', backdropFilter:'blur(6px)', zIndex:5000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>{setModal(null);setForm({});}}>
-        <div style={{ background:L.white, maxWidth:480, width:'100%', maxHeight:'85vh', overflowY:'auto', padding:'28px 24px' }} onClick={e=>e.stopPropagation()}>
+      {modal && <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', backdropFilter:'blur(6px)', zIndex:5000, display:'flex', alignItems:'center', justifyContent:'center', padding:(modal.type==='dossierBancaire'||modal.type==='dossierView')?8:20 }} onClick={()=>{setModal(null);setForm({});}}>
+        <div style={{ background:L.white, maxWidth:(modal.type==='dossierBancaire'||modal.type==='dossierView')?900:480, width:'100%', maxHeight:(modal.type==='dossierBancaire'||modal.type==='dossierView')?'95vh':'85vh', overflowY:'auto', padding:(modal.type==='dossierBancaire'||modal.type==='dossierView')?'24px 32px':'28px 24px' }} onClick={e=>e.stopPropagation()}>
 
           {modal.type==='addBien' && <>
             <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 4px' }}>Ajouter un bien</h3>
@@ -2010,20 +2022,23 @@ export default function ImmoDemo() {
             </>}
           </>}
 
-          {modal.type==='dossierBancaire' && (()=>{
-            const txSecu=Number(form.dossierSecu||5);
-            // Projet simulé — utilise le premier bien vacant ou le dernier bien
-            const bienProjet=biens.find(b=>!b.locataireId)||biens[biens.length-1]||{};
-            const prixAchat=Number(form.dossierPrix||bienProjet.prixAchat||200000);
-            const fraisNotaire=Number(form.dossierNotaire||Math.round(prixAchat*0.075));
-            const montantTravaux=Number(form.dossierTravaux||bienProjet.travaux||10000);
-            const loyerEstime=Number(form.dossierLoyer||bienProjet.loyer||800);
-            const chargesEstimees=Number(form.dossierCharges||bienProjet.charges||150);
-            const apport=Number(form.dossierApport||0);
-            const tauxCredit=Number(form.dossierTaux||2.5);
-            const dureeCredit=Number(form.dossierDuree||20);
-            const assuranceCredit=Number(form.dossierAssurance||35);
-            const strategie=form.dossierStrategie||'Location nue';
+          {(modal.type==='dossierBancaire'||modal.type==='dossierView') && (()=>{
+            const d=data.dossierInvestissement||{};
+            const isEdit=modal.type==='dossierBancaire';
+            const f=isEdit?form:{};
+            const isNeuf=isEdit?(form.dossierNeuf??d.neuf??false):d.neuf;
+            const prixAchat=Number(isEdit?(f.dossierPrix??d.prix):d.prix)||200000;
+            const notaireAuto=isNeuf?Math.round(prixAchat*0.025):Math.round(prixAchat*0.075);
+            const fraisNotaire=Number(isEdit?(f.dossierNotaire??d.notaire):d.notaire)||notaireAuto;
+            const montantTravaux=Number(isEdit?(f.dossierTravaux??d.travaux):d.travaux)||10000;
+            const loyerEstime=Number(isEdit?(f.dossierLoyer??d.loyer):d.loyer)||800;
+            const chargesEstimees=Number(isEdit?(f.dossierCharges??d.charges):d.charges)||150;
+            const apport=Number(isEdit?(f.dossierApport??d.apport):d.apport)||0;
+            const txSecu=Number(isEdit?(f.dossierSecu??d.secu):d.secu)||5;
+            const tauxCredit=Number(isEdit?(f.dossierTaux??d.taux):d.taux)||2.5;
+            const dureeCredit=Number(isEdit?(f.dossierDuree??d.duree):d.duree)||20;
+            const assuranceCredit=Number(isEdit?(f.dossierAssurance??d.assurance):d.assurance)||35;
+            const strategie=isEdit?(f.dossierStrategie??d.strategie):d.strategie||'Location nue';
             const coutTotal=prixAchat+fraisNotaire+montantTravaux;
             const margeSec=Math.round(coutTotal*txSecu/100);
             const coutAjuste=coutTotal+margeSec;
@@ -2049,27 +2064,49 @@ export default function ImmoDemo() {
                 <div style={{ fontSize:11, color:L.textSec, marginTop:4 }}>Freample Immo · {new Date().toLocaleDateString('fr-FR')}</div>
               </div>
 
-              {/* Paramètres du projet */}
-              <div style={{ background:L.cream, padding:'14px', marginBottom:14, fontSize:11 }}>
-                <div style={{ fontWeight:700, fontSize:12, marginBottom:8 }}>Paramétrer le projet</div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6, marginBottom:6 }}>
-                  <div><label style={LBL}>Prix d'achat</label><input type="number" value={form.dossierPrix||prixAchat} onChange={e=>setForm(f=>({...f,dossierPrix:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Frais notaire</label><input type="number" value={form.dossierNotaire||fraisNotaire} onChange={e=>setForm(f=>({...f,dossierNotaire:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Travaux</label><input type="number" value={form.dossierTravaux||montantTravaux} onChange={e=>setForm(f=>({...f,dossierTravaux:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+              {/* Paramètres du projet — éditable */}
+              {isEdit && <div style={{ background:L.cream, padding:'18px', marginBottom:16 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                  <div style={{ fontWeight:700, fontSize:13 }}>Paramètres du projet</div>
+                  <button onClick={()=>{
+                    setData(d=>({...d,dossierInvestissement:{prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,created:d.dossierInvestissement?.created||new Date().toISOString()}}));
+                    setModal({type:'dossierView'}); showToast('Dossier mis à jour');
+                  }} style={{ ...BTN, fontSize:11 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>💾 Enregistrer & Voir le PDF</button>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:6, marginBottom:6 }}>
-                  <div><label style={LBL}>Loyer estimé</label><input type="number" value={form.dossierLoyer||loyerEstime} onChange={e=>setForm(f=>({...f,dossierLoyer:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Charges</label><input type="number" value={form.dossierCharges||chargesEstimees} onChange={e=>setForm(f=>({...f,dossierCharges:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Apport</label><input type="number" value={form.dossierApport||0} onChange={e=>setForm(f=>({...f,dossierApport:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Marge sécu. (%)</label><input type="number" value={form.dossierSecu||5} onChange={e=>setForm(f=>({...f,dossierSecu:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
+
+                {/* Neuf / Ancien */}
+                <div style={{ display:'flex', gap:0, marginBottom:12 }}>
+                  {[{v:false,l:'Ancien (frais ~7.5%)'},{v:true,l:'Neuf (frais ~2.5%)'}].map(opt=>(
+                    <button key={String(opt.v)} onClick={()=>{
+                      setForm(f=>({...f,dossierNeuf:opt.v,dossierNotaire:String(opt.v?Math.round(prixAchat*0.025):Math.round(prixAchat*0.075))}));
+                    }} style={{ flex:1, padding:'10px', background:(isNeuf===opt.v)?L.noir:'transparent', color:(isNeuf===opt.v)?'#fff':L.textSec, border:`1px solid ${(isNeuf===opt.v)?L.noir:L.border}`, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:L.font }}>
+                      {opt.l}
+                    </button>
+                  ))}
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:6 }}>
-                  <div><label style={LBL}>Taux (%)</label><input type="number" value={form.dossierTaux||2.5} step="0.1" onChange={e=>setForm(f=>({...f,dossierTaux:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={form.dossierDuree||20} onChange={e=>setForm(f=>({...f,dossierDuree:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Assurance/mois</label><input type="number" value={form.dossierAssurance||35} onChange={e=>setForm(f=>({...f,dossierAssurance:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}} /></div>
-                  <div><label style={LBL}>Stratégie</label><select value={form.dossierStrategie||'Location nue'} onChange={e=>setForm(f=>({...f,dossierStrategie:e.target.value}))} style={{...INP,padding:'6px 8px',fontSize:11}}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:8, marginBottom:8 }}>
+                  <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={f.dossierPrix??d.prix||''} onChange={e=>{
+                    const prix=Number(e.target.value);
+                    const notaire=isNeuf?Math.round(prix*0.025):Math.round(prix*0.075);
+                    setForm(ff=>({...ff,dossierPrix:e.target.value,dossierNotaire:String(notaire)}));
+                  }} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Frais notaire (€) <span style={{color:L.gold,fontWeight:400}}>auto {isNeuf?'2.5%':'7.5%'}</span></label><input type="number" value={f.dossierNotaire??d.notaire||''} onChange={e=>setForm(ff=>({...ff,dossierNotaire:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Travaux (€)</label><input type="number" value={f.dossierTravaux??d.travaux||''} onChange={e=>setForm(ff=>({...ff,dossierTravaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Marge sécurité (%)</label><input type="number" value={f.dossierSecu??d.secu||5} onChange={e=>setForm(ff=>({...ff,dossierSecu:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
                 </div>
-              </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:8, marginBottom:8 }}>
+                  <div><label style={LBL}>Loyer estimé (€/mois)</label><input type="number" value={f.dossierLoyer??d.loyer||''} onChange={e=>setForm(ff=>({...ff,dossierLoyer:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={f.dossierCharges??d.charges||''} onChange={e=>setForm(ff=>({...ff,dossierCharges:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Apport (€)</label><input type="number" value={f.dossierApport??d.apport||''} onChange={e=>setForm(ff=>({...ff,dossierApport:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Stratégie</label><select value={f.dossierStrategie??d.strategie||'Location nue'} onChange={e=>setForm(ff=>({...ff,dossierStrategie:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+                  <div><label style={LBL}>Taux crédit (%)</label><input type="number" value={f.dossierTaux??d.taux||2.5} step="0.1" onChange={e=>setForm(ff=>({...ff,dossierTaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={f.dossierDuree??d.duree||20} onChange={e=>setForm(ff=>({...ff,dossierDuree:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Assurance (€/mois)</label><input type="number" value={f.dossierAssurance??d.assurance||35} onChange={e=>setForm(ff=>({...ff,dossierAssurance:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                </div>
+              </div>}
 
               {/* 1. Présentation du projet */}
               <div style={{ border:`1px solid ${L.border}`, marginBottom:12 }}>
