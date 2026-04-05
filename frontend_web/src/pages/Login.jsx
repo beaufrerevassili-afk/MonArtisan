@@ -39,10 +39,7 @@ const SECTEUR_COMPTES = {
     { role:'Gérant·e livraison', email:'patron.eat@demo.com', motdepasse:'patron123', icon:'🛵' },
     { role:'Livreur', email:'employe.eat@demo.com', motdepasse:'employe123', icon:'📦' },
   ],
-  com: [
-    { role:'Gérant·e Freample Com', email:'patron.com@demo.com', motdepasse:'patron123', icon:'🎬' },
-    { role:'Monteur vidéo', email:'employe.com@demo.com', motdepasse:'employe123', icon:'🎥' },
-  ],
+  com: [],
 };
 const GENERIC_DEMO = [
   CLIENT_DEMO,
@@ -56,7 +53,6 @@ const SECTOR_CONFIG = {
   vacances:  { label:'Vacances',    icon:'🏨' },
   course:    { label:'VTC',         icon:'🚗' },
   eat:       { label:'Livraison',   icon:'🛵' },
-  com:       { label:'Freample Com',icon:'🎬' },
 };
 const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/fondateur/dashboard' };
 const PUBLIC_SECTORS = ['vacances','restaurant','coiffure','btp','course','eat','com'];
