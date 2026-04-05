@@ -133,6 +133,7 @@ export default function ImmoDemo() {
     { id:'finances', label:'Finances', icon:'📈' },
     { id:'associes', label:'Associés', icon:'🤝' },
     { id:'outils', label:'Outils de calcul', icon:'🧮' },
+    { id:'strategie', label:'Stratégie', icon:'🏛️' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
   ];
 
@@ -683,6 +684,172 @@ export default function ImmoDemo() {
               </div>
             </div>
           </>}
+
+          {/* ═══ STRATÉGIE PATRIMONIALE ═══ */}
+          {tab==='strategie' && (()=>{
+            const nbBiens = data.biens.length;
+            const nbSCI = data.scis.length;
+            const patrimoineTotal = data.biens.reduce((s,b)=>s+b.valeur,0);
+            const detteTotale = (data.credits||[]).reduce((s,c)=>s+c.restant,0);
+            const loyersAnnuels = data.biens.reduce((s,b)=>s+b.loyer,0)*12;
+            const cashflowAnnuel = (data.biens.reduce((s,b)=>s+b.loyer-b.charges,0) - (data.credits||[]).reduce((s,c)=>s+c.mensualite,0))*12;
+            const ltv = patrimoineTotal>0 ? (detteTotale/patrimoineTotal*100) : 0;
+
+            // Recommandation stratégie
+            const needHolding = nbBiens >= 5 || patrimoineTotal >= 500000 || nbSCI >= 2;
+            const needIS = loyersAnnuels >= 30000;
+            const needLMNP = data.biens.some(b=>b.type==='Studio' || b.type==='Appartement');
+
+            return <>
+              <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 20px' }}>Stratégie patrimoniale</h2>
+
+              {/* KPIs stratégiques */}
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:10, marginBottom:24 }}>
+                {[
+                  { l:'Patrimoine brut', v:`${(patrimoineTotal/1000).toFixed(0)}k€`, c:L.gold },
+                  { l:'Endettement', v:`${(detteTotale/1000).toFixed(0)}k€`, c:L.red },
+                  { l:'Patrimoine net', v:`${((patrimoineTotal-detteTotale)/1000).toFixed(0)}k€`, c:L.green },
+                  { l:'LTV (dette/valeur)', v:`${ltv.toFixed(0)}%`, c:ltv>70?L.red:ltv>50?L.orange:L.green },
+                  { l:'Revenus annuels', v:`${(loyersAnnuels/1000).toFixed(0)}k€`, c:L.green },
+                  { l:'Cashflow annuel', v:`${(cashflowAnnuel/1000).toFixed(1)}k€`, c:cashflowAnnuel>=0?L.green:L.red },
+                ].map(k=>(
+                  <div key={k.l} style={{ ...CARD, position:'relative' }}>
+                    <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:k.c }} />
+                    <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{k.l}</div>
+                    <div style={{ fontSize:18, fontWeight:200, fontFamily:L.serif }}>{k.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* RECOMMANDATION AUTO */}
+              <div style={{ ...CARD, marginBottom:20, borderLeft:`4px solid ${L.gold}` }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>🏛️ Recommandation automatique</div>
+                <div style={{ fontSize:13, lineHeight:1.8, color:L.textSec }}>
+                  {nbBiens < 3 && <p style={{ margin:'0 0 8px' }}>📌 <strong>Phase de démarrage</strong> — Avec {nbBiens} bien{nbBiens>1?'s':''}, concentrez-vous sur la constitution de votre apport et l'optimisation du rendement de chaque bien. Régime micro-foncier suffisant.</p>}
+                  {nbBiens >= 3 && nbBiens < 5 && <p style={{ margin:'0 0 8px' }}>📌 <strong>Phase de croissance</strong> — Avec {nbBiens} biens, pensez au régime réel pour déduire vos charges et intérêts. {nbSCI < 2 ? 'Envisagez la création d\'une SCI pour les prochains achats.' : `Vous avez ${nbSCI} SCI, bonne structuration.`}</p>}
+                  {nbBiens >= 5 && <p style={{ margin:'0 0 8px' }}>📌 <strong>Phase d'optimisation</strong> — Avec {nbBiens} biens et {patrimoineTotal.toLocaleString()}€ de patrimoine, une <strong>holding est recommandée</strong> pour optimiser la fiscalité, la trésorerie inter-sociétés et la transmission.</p>}
+                  {needIS && <p style={{ margin:'0 0 8px' }}>💡 Vos revenus fonciers annuels ({loyersAnnuels.toLocaleString()}€) dépassent 30 000€ → <strong>le passage à l'IS peut être avantageux</strong> (imposition à 15% jusqu'à 42 500€ vs TMI personnelle).</p>}
+                  {needLMNP && <p style={{ margin:'0 0 8px' }}>💡 Certains de vos biens (studios/appartements) pourraient être éligibles au statut <strong>LMNP</strong> → amortissement du bien = quasiment 0€ d'impôts pendant 10+ ans.</p>}
+                  {ltv > 70 && <p style={{ margin:'0 0 8px', color:L.red }}>⚠️ Votre LTV est de {ltv.toFixed(0)}% — endettement élevé. Consolidez avant de racheter.</p>}
+                  {ltv < 30 && <p style={{ margin:'0 0 8px', color:L.green }}>✅ LTV de {ltv.toFixed(0)}% — excellent. Capacité d'emprunt disponible pour un nouvel investissement.</p>}
+                </div>
+              </div>
+
+              {/* SCHÉMA ORGANIGRAMME */}
+              <div style={{ ...CARD, marginBottom:20 }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>📊 Structure patrimoniale{needHolding ? ' — Holding recommandée' : ''}</div>
+
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:0, padding:'20px 0' }}>
+                  {/* Vous */}
+                  <div style={{ background:L.noir, color:'#fff', padding:'12px 32px', fontSize:14, fontWeight:700, textAlign:'center' }}>
+                    👤 Vous (personne physique)
+                  </div>
+                  <div style={{ width:2, height:24, background:L.border }} />
+
+                  {needHolding ? <>
+                    {/* Holding */}
+                    <div style={{ background:L.gold, color:'#fff', padding:'14px 40px', fontSize:14, fontWeight:700, textAlign:'center', position:'relative' }}>
+                      🏛️ HOLDING (SAS/SARL)
+                      <div style={{ fontSize:10, fontWeight:400, marginTop:2 }}>Convention de trésorerie · Remontée dividendes (régime mère-fille)</div>
+                    </div>
+                    <div style={{ width:2, height:16, background:L.border }} />
+                    <div style={{ display:'flex', gap:0, justifyContent:'center', width:'100%', maxWidth:700 }}>
+                      {data.scis.map((s,i)=>{
+                        const sciBiens = data.biens.filter(b=>b.sciId===s.id);
+                        const sciLoyers = sciBiens.reduce((sum,b)=>sum+b.loyer,0);
+                        const sciValeur = sciBiens.reduce((sum,b)=>sum+b.valeur,0);
+                        return <div key={s.id} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center' }}>
+                          <div style={{ width:2, height:16, background:L.border }} />
+                          <div style={{ border:`2px solid ${L.gold}`, padding:'12px 16px', textAlign:'center', background:L.white, width:'90%' }}>
+                            <div style={{ fontSize:13, fontWeight:700, color:L.text }}>{s.nom}</div>
+                            <div style={{ fontSize:11, color:L.textSec }}>{s.type} · {sciBiens.length} bien{sciBiens.length>1?'s':''}</div>
+                            <div style={{ fontSize:11, color:L.gold, fontWeight:600, marginTop:4 }}>{sciValeur.toLocaleString()}€ · {sciLoyers}€/mois</div>
+                          </div>
+                          <div style={{ width:2, height:12, background:L.border }} />
+                          <div style={{ display:'flex', gap:4, flexWrap:'wrap', justifyContent:'center' }}>
+                            {sciBiens.map(b=>(
+                              <div key={b.id} style={{ background:L.cream, border:`1px solid ${L.border}`, padding:'6px 10px', fontSize:10, textAlign:'center', maxWidth:120 }}>
+                                <div style={{ fontWeight:600 }}>{b.type}</div>
+                                <div style={{ color:L.textLight }}>{b.adresse.split(',')[0]}</div>
+                                <div style={{ color:b.loyer>0?L.green:L.red, fontWeight:700 }}>{b.loyer>0?`${b.loyer}€`:'Vacant'}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>;
+                      })}
+                    </div>
+                  </> : <>
+                    {/* Sans holding */}
+                    <div style={{ display:'flex', gap:16, justifyContent:'center', width:'100%', maxWidth:600 }}>
+                      {data.scis.map(s=>{
+                        const sciBiens = data.biens.filter(b=>b.sciId===s.id);
+                        return <div key={s.id} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center' }}>
+                          <div style={{ width:2, height:16, background:L.border }} />
+                          <div style={{ border:`2px solid ${L.gold}`, padding:'12px 16px', textAlign:'center', background:L.white, width:'90%' }}>
+                            <div style={{ fontSize:13, fontWeight:700 }}>{s.nom}</div>
+                            <div style={{ fontSize:11, color:L.textSec }}>{s.type} · {sciBiens.length} biens</div>
+                          </div>
+                          <div style={{ width:2, height:12, background:L.border }} />
+                          <div style={{ display:'flex', gap:4, flexWrap:'wrap', justifyContent:'center' }}>
+                            {sciBiens.map(b=>(
+                              <div key={b.id} style={{ background:L.cream, border:`1px solid ${L.border}`, padding:'6px 10px', fontSize:10, textAlign:'center' }}>
+                                <div style={{ fontWeight:600 }}>{b.type}</div>
+                                <div style={{ color:b.loyer>0?L.green:L.red, fontWeight:700 }}>{b.loyer||'Vacant'}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>;
+                      })}
+                    </div>
+                  </>}
+                </div>
+
+                {needHolding && <div style={{ background:L.blueBg, border:`1px solid ${L.blue}30`, padding:'14px 18px', marginTop:16, fontSize:12, color:L.blue, lineHeight:1.7 }}>
+                  <strong>Avantages de la holding :</strong><br/>
+                  • Régime mère-fille : exonération de 95% des dividendes remontés<br/>
+                  • Convention de trésorerie : prêts inter-sociétés sans frais bancaires<br/>
+                  • Réinvestissement : les bénéfices sont réinvestis sans passer par l'IR<br/>
+                  • Transmission : donation des parts de la holding (abattement 75% Pacte Dutreil si activité commerciale)<br/>
+                  • Effet de levier : emprunt au niveau holding pour financer les SCI filles
+                </div>}
+              </div>
+
+              {/* Comparatif régimes */}
+              <div style={{ ...CARD }}>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📋 Comparatif des régimes fiscaux</div>
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+                    <thead>
+                      <tr style={{ background:L.cream }}>
+                        <th style={{ padding:'10px 12px', textAlign:'left', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>Critère</th>
+                        <th style={{ padding:'10px 12px', textAlign:'center', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>SCI à l'IR</th>
+                        <th style={{ padding:'10px 12px', textAlign:'center', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>SCI à l'IS</th>
+                        <th style={{ padding:'10px 12px', textAlign:'center', fontWeight:700, borderBottom:`2px solid ${L.border}` }}>LMNP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { c:'Imposition', ir:'TMI (0-45%)', is:'15% puis 25%', lmnp:'Micro-BIC 50% ou réel' },
+                        { c:'Amortissement', ir:'Non', is:'Oui', lmnp:'Oui (réel)' },
+                        { c:'Déduction charges', ir:'Oui (réel)', is:'Oui', lmnp:'Oui (réel)' },
+                        { c:'Plus-value', ir:'PV des particuliers (abattements)', is:'PV pro (pas d\'abattement)', lmnp:'PV des particuliers' },
+                        { c:'Déficit foncier', ir:'10 700€/an reportable', is:'Report illimité', lmnp:'Report 10 ans sur BIC' },
+                        { c:'Transmission', ir:'Abattement parts', is:'Abattement parts', lmnp:'Succession classique' },
+                        { c:'Comptabilité', ir:'Simplifiée', is:'Obligatoire', lmnp:'Simplifiée ou réel' },
+                      ].map((r,i)=>(
+                        <tr key={r.c} style={{ borderBottom:`1px solid ${L.border}` }}>
+                          <td style={{ padding:'8px 12px', fontWeight:600, color:L.text }}>{r.c}</td>
+                          <td style={{ padding:'8px 12px', textAlign:'center', color:L.textSec }}>{r.ir}</td>
+                          <td style={{ padding:'8px 12px', textAlign:'center', color:L.textSec }}>{r.is}</td>
+                          <td style={{ padding:'8px 12px', textAlign:'center', color:L.textSec }}>{r.lmnp}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>;
+          })()}
 
           {/* ═══ ALERTES + MISE EN DEMEURE + PROJECTION ═══ */}
           {tab==='alertes' && <>
