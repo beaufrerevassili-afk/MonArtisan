@@ -2080,14 +2080,23 @@ export default function ImmoDemo() {
               {/* Paramètres du projet — éditable */}
               {isEdit && <div style={{ background:L.cream, padding:'18px', marginBottom:16 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-                  <div style={{ fontWeight:700, fontSize:13 }}>Paramètres du projet</div>
-                  <button onClick={()=>{
-                    const t2=tauxCredit/100/12;const n2=dureeCredit*12;const emp2=coutAjuste-apport;
-                    const mens2=t2>0?Math.round(emp2*(t2*Math.pow(1+t2,n2))/(Math.pow(1+t2,n2)-1)):Math.round(emp2/n2);
-                    const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
-                    setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
-                    setModal({type:'dossierView',data:updated}); showToast('Dossier mis à jour');
-                  }} style={{ ...BTN, fontSize:11 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>💾 Enregistrer & Voir le PDF</button>
+                  <div style={{ fontWeight:700, fontSize:13 }}>Paramètres du projet — {d.nom}</div>
+                  <div style={{ display:'flex', gap:6 }}>
+                    <button onClick={()=>{
+                      const t2=tauxCredit/100/12;const n2=dureeCredit*12;const emp2=coutAjuste-apport;
+                      const mens2=t2>0?Math.round(emp2*(t2*Math.pow(1+t2,n2))/(Math.pow(1+t2,n2)-1)):Math.round(emp2/n2);
+                      const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
+                      setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
+                      setModal({type:'dossierBancaire',data:updated}); showToast('✓ Modifications enregistrées');
+                    }} style={{ ...BTN, fontSize:11, background:L.green }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.green}>💾 Enregistrer</button>
+                    <button onClick={()=>{
+                      const t2=tauxCredit/100/12;const n2=dureeCredit*12;const emp2=coutAjuste-apport;
+                      const mens2=t2>0?Math.round(emp2*(t2*Math.pow(1+t2,n2))/(Math.pow(1+t2,n2)-1)):Math.round(emp2/n2);
+                      const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
+                      setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
+                      setModal({type:'dossierView',data:updated}); showToast('Dossier enregistré — mode PDF');
+                    }} style={{ ...BTN_OUTLINE, fontSize:11 }}>📄 Voir le PDF</button>
+                  </div>
                 </div>
 
                 {/* Neuf / Ancien */}
