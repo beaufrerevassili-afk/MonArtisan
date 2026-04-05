@@ -46,12 +46,115 @@ export default function FreampleCom() {
     api.get('/com/portfolio').then(r => setPortfolio(r.data.items || [])).catch(() => {});
   }, []);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const f = (k) => ({ value:brief[k], onChange:e=>setBrief(p=>({...p,[k]:e.target.value})) });
   const toggleOpt = (v) => setBrief(p=>({...p, options: p.options.includes(v) ? p.options.filter(x=>x!==v) : [...p.options, v] }));
+
+  const scrollTo = (id) => {
+    setMenuOpen(false);
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 400);
+  };
+
+  const MENU_ITEMS = [
+    { label:'Nos expertises', id:'expertises' },
+    { label:'Portfolio', id:'portfolio' },
+    { label:'Tarifs & Formules', id:'tarifs' },
+    { label:'Tous nos prix', id:'grille' },
+    { label:'Nous contacter', id:'contact' },
+    { label:'Demander un devis', action:()=>{ setMenuOpen(false); setTimeout(()=>setStep(1), 400); } },
+  ];
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
+
+      {/* ══ HAMBURGER MENU — Gucci style ══ */}
+      <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
+        style={{
+          position:'fixed', top:20, left:20, zIndex:1100, width:44, height:44,
+          background:'rgba(10,10,10,0.7)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)',
+          border:'none', cursor:'pointer', display:'flex', flexDirection:'column',
+          alignItems:'center', justifyContent:'center', gap:5, transition:'all .2s',
+        }}
+        onMouseEnter={e=>e.currentTarget.style.background='rgba(10,10,10,0.9)'}
+        onMouseLeave={e=>e.currentTarget.style.background='rgba(10,10,10,0.7)'}>
+        <span style={{ width:20, height:1.5, background:'#fff', display:'block' }} />
+        <span style={{ width:20, height:1.5, background:'#fff', display:'block' }} />
+        <span style={{ width:14, height:1.5, background:'#fff', display:'block', alignSelf:'flex-start', marginLeft:12 }} />
+      </button>
+
+      {/* ══ FULLSCREEN OVERLAY MENU ══ */}
+      <div style={{
+        position:'fixed', inset:0, zIndex:2000,
+        background:L.noir,
+        opacity: menuOpen ? 1 : 0,
+        pointerEvents: menuOpen ? 'auto' : 'none',
+        transition:'opacity .45s cubic-bezier(0.4,0,0.2,1)',
+        display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center',
+      }}>
+        {/* Close button */}
+        <button onClick={()=>setMenuOpen(false)}
+          style={{
+            position:'absolute', top:20, right:28, background:'none', border:'none',
+            cursor:'pointer', color:'#fff', fontSize:28, fontWeight:200,
+            width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center',
+            transition:'color .2s',
+          }}
+          onMouseEnter={e=>e.currentTarget.style.color=L.gold}
+          onMouseLeave={e=>e.currentTarget.style.color='#fff'}>
+          ✕
+        </button>
+
+        {/* Brand */}
+        <div style={{
+          position:'absolute', top:24, left:28,
+          fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em',
+        }}>
+          Freample Com
+        </div>
+
+        {/* Menu items */}
+        <nav style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:0 }}>
+          {MENU_ITEMS.map((item, i) => (
+            <button key={item.label}
+              onClick={()=> item.action ? item.action() : scrollTo(item.id)}
+              style={{
+                background:'none', border:'none', cursor:'pointer', fontFamily:L.font,
+                fontSize:'clamp(24px,4.5vw,40px)', fontWeight:300, color:'#fff',
+                padding:'14px 0', letterSpacing:'-0.02em',
+                opacity: menuOpen ? 1 : 0,
+                transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity .4s ${0.15 + i*0.06}s, transform .4s ${0.15 + i*0.06}s, color .2s`,
+              }}
+              onMouseEnter={e=>{ e.currentTarget.style.color=L.gold; }}
+              onMouseLeave={e=>{ e.currentTarget.style.color='#fff'; }}>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Bottom info */}
+        <div style={{
+          position:'absolute', bottom:28, display:'flex', gap:32,
+          opacity: menuOpen ? 1 : 0, transition:'opacity .5s .4s',
+        }}>
+          <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize:12, color:'rgba(255,255,255,0.35)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }}
+            onMouseEnter={e=>e.currentTarget.style.color=L.gold}
+            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
+            WhatsApp
+          </a>
+          <a href="mailto:freamplecom@gmail.com"
+            style={{ fontSize:12, color:'rgba(255,255,255,0.35)', textDecoration:'none', textTransform:'uppercase', letterSpacing:'0.1em', transition:'color .2s' }}
+            onMouseEnter={e=>e.currentTarget.style.color=L.gold}
+            onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
+            Email
+          </a>
+        </div>
+      </div>
 
       {/* ══ HERO — Full noir + photo cinématique ══ */}
       <section style={{
@@ -114,7 +217,7 @@ export default function FreampleCom() {
       </section>
 
       {/* ══ SAVOIR-FAIRE ══ */}
-      <section style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:960, margin:'0 auto' }}>
+      <section id="expertises" style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:960, margin:'0 auto', scrollMarginTop:20 }}>
         <div style={{ textAlign:'center', marginBottom:48 }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Nos expertises</div>
           <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, letterSpacing:'-0.02em', margin:0, lineHeight:1.2 }}>
@@ -157,7 +260,7 @@ export default function FreampleCom() {
 
       {/* ══ PORTFOLIO ══ */}
       {portfolio.length > 0 && (
-        <section id="portfolio" style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:960, margin:'0 auto' }}>
+        <section id="portfolio" style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:960, margin:'0 auto', scrollMarginTop:20 }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Portfolio</div>
             <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, letterSpacing:'-0.02em', margin:0, lineHeight:1.2 }}>
@@ -195,7 +298,7 @@ export default function FreampleCom() {
       )}
 
       {/* ══ CONTACT — Élégant ══ */}
-      <section style={{ padding:'0 32px clamp(48px,7vh,72px)', maxWidth:700, margin:'0 auto' }}>
+      <section id="contact" style={{ padding:'0 32px clamp(48px,7vh,72px)', maxWidth:700, margin:'0 auto', scrollMarginTop:20 }}>
         <div style={{ background:L.white, border:`1px solid ${L.border}`, padding:'40px 36px', display:'flex', alignItems:'center', gap:28, flexWrap:'wrap' }}>
           <div style={{ flex:'1 1 280px' }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:8 }}>Conseil personnalisé</div>
@@ -222,7 +325,7 @@ export default function FreampleCom() {
       </section>
 
       {/* ══ FORMULES ══ */}
-      <section id="tarifs" style={{ background:L.white, borderTop:`1px solid ${L.border}`, padding:'clamp(56px,8vh,88px) 32px' }}>
+      <section id="tarifs" style={{ background:L.white, borderTop:`1px solid ${L.border}`, padding:'clamp(56px,8vh,88px) 32px', scrollMarginTop:20 }}>
         <div style={{ maxWidth:960, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Tarification</div>
@@ -290,7 +393,7 @@ export default function FreampleCom() {
       </section>
 
       {/* ══ GRILLE PRIX DÉTAILLÉE ══ */}
-      <section style={{ background:L.bg, padding:'clamp(48px,6vh,72px) 32px', borderTop:`1px solid ${L.border}` }}>
+      <section id="grille" style={{ background:L.bg, padding:'clamp(48px,6vh,72px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
         <div style={{ maxWidth:600, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:32 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Détail</div>
