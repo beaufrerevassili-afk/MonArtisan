@@ -14,10 +14,6 @@ const NAV_DEV = [
   { label:'Freample Artisans', icon:'🏗️', href:'/btp' },
   { label:'Freample Com', icon:'🎬', href:'/com' },
   { label:'Coiffure & Beauté', icon:'✂️', href:'/coiffure' },
-  { label:'Restauration', icon:'🍽️', href:'/restaurant' },
-  { label:'Freample Eat', icon:'🛵', href:'/eat' },
-  { label:'Freample Course', icon:'🚗', href:'/course' },
-  { label:'Vacances & Séjours', icon:'🏖️', href:'/vacances' },
   { label:'Freample Immo', icon:'🏠', href:'/immo' },
   { label:'Freample Logement', icon:'🔑', href:'/immo/logement' },
   { label:'Immo — Démo investisseur', icon:'📊', href:'/immo/demo' },
@@ -180,7 +176,7 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
               </button>
               <button onClick={() => {
                   const sector = location.pathname.split('/')[1];
-                  const valid = ['vacances','restaurant','coiffure','btp','course','eat','com'];
+                  const valid = ['coiffure','btp','com'];
                   navigate(valid.includes(sector) ? `/login?from=${sector}` : '/login');
                 }}
                 style={{ padding: '7px 16px', background: 'none', border: `1px solid ${DS.border}`, borderRadius: DS.r.full, fontSize: 13, fontWeight: 500, color: DS.muted, cursor: 'pointer', transition: 'all .15s', fontFamily: DS.font }}
@@ -190,7 +186,7 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
               </button>
               <button onClick={() => {
                   const sector = location.pathname.split('/')[1];
-                  const valid = ['vacances','restaurant','coiffure','btp','course','eat','com'];
+                  const valid = ['coiffure','btp','com'];
                   navigate(valid.includes(sector) ? `/register?secteur=${sector}` : '/register');
                 }}
                 style={{ padding: '7px 20px', background: DS.ink, border: 'none', borderRadius: DS.r.full, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'opacity .15s', fontFamily: DS.font }}

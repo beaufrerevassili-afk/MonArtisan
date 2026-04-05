@@ -17,8 +17,6 @@ const SECTEURS = [
 const SECTEUR_COLOR = {
   coiffure:   { bg:'#FDF2F8', border:'#F9A8D4', text:'#9D174D' },
   btp:        { bg:'#EEF2FF', border:'#C7D2FE', text:'#3730A3' },
-  restaurant: { bg:'#FFF7ED', border:'#FED7AA', text:'#92400E' },
-  vacances:   { bg:'#EFF6FF', border:'#BFDBFE', text:'#1E40AF' },
 };
 
 const DEMO_OFFRES = [
@@ -278,7 +276,7 @@ export default function RecrutementPage() {
   const [ou, setOu] = useState(searchParams.get('ou')||'');
   const [contrat, setContrat] = useState('Tous');
   const urlSecteur = searchParams.get('secteur');
-  const [secteur, setSecteur] = useState(urlSecteur && ['coiffure','btp','restaurant','vacances'].includes(urlSecteur) ? urlSecteur : 'tous');
+  const [secteur, setSecteur] = useState(urlSecteur && ['coiffure','btp'].includes(urlSecteur) ? urlSecteur : 'tous');
   const [offres, setOffres] = useState(DEMO_OFFRES);
   const [selected, setSelected] = useState(null);
   const [postulating, setPostulating] = useState(false);

@@ -59,31 +59,11 @@ const CLIENT_TAB_MENUS = {
     { label: 'Messagerie',        path: '/client/messagerie',                   Icon: IconMessage   },
     { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
   ],
-  restaurant: [
-    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
-    { label: 'Mes réservations',  path: '/client/dashboard?tab=restaurant',     Icon: IconCalendar  },
-    { label: 'Mes commandes',     path: '/client/dashboard?tab=restaurant',     Icon: IconMissions  },
-    { label: 'Mes habitudes',     path: '/client/dashboard?tab=restaurant',     Icon: IconStar      },
-    { label: 'Paiements',         path: '/client/paiements',                    Icon: IconCreditCard},
-    { label: 'Messagerie',        path: '/client/messagerie',                   Icon: IconMessage   },
-    { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
-  ],
-  vacances: [
-    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
-    { label: 'Mes séjours',       path: '/client/dashboard?tab=vacances',       Icon: IconCalendar  },
-    { label: 'Logements favoris', path: '/client/dashboard?tab=vacances',       Icon: IconStar      },
-    { label: 'Mes voyageurs',     path: '/client/profil',                       Icon: IconUser      },
-    { label: 'Paiements',         path: '/client/paiements',                    Icon: IconCreditCard},
-    { label: 'Messagerie',        path: '/client/messagerie',                   Icon: IconMessage   },
-    { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
-  ],
 };
 
 const SECTOR_HEADERS = {
   btp:        { label: '🔨 BTP & Travaux',  color: '#5B5BD6', bg: '#EBF5FF' },
   coiffure:   { label: '✂️ Coiffure',        color: '#E535AB', bg: '#FFF0F8' },
-  restaurant: { label: '🍽️ Restaurant',      color: '#FF6000', bg: '#FFF3E8' },
-  vacances:   { label: '🏖️ Vacances',        color: '#0080FF', bg: '#E8F4FF' },
 };
 
 const MENUS = {
@@ -166,60 +146,11 @@ const PATRON_SECTOR_MENUS = {
     { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',Icon: IconStar       },
     { label: 'Mon profil',        path: '/patron/profil',                   Icon: IconUser       },
   ],
-  restaurant: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                Icon: IconHome       },
-    { label: 'Tables',            path: '/patron/dashboard?onglet=tables',  Icon: IconBuilding   },
-    { label: 'Cuisine',           path: '/patron/dashboard?onglet=commandes',Icon: IconDocument  },
-    { label: 'Réservations',      path: '/patron/dashboard?onglet=reservations',Icon: IconCalendar},
-    { label: 'Menu',              path: '/patron/dashboard?onglet=menu',    Icon: IconDocument   },
-    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',Icon: IconFinance   },
-    { label: 'Clients',           path: '/patron/dashboard?onglet=clients', Icon: IconTeam       },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',Icon: IconStar       },
-    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',Icon: IconSettings },
-    { label: 'Mon profil',        path: '/patron/profil',                   Icon: IconUser       },
-  ],
-  vacances: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
-    { label: 'Réservations',      path: '/patron/dashboard?onglet=reservations',Icon: IconCalendar   },
-    { label: 'Chambres',          path: '/patron/dashboard?onglet=chambres',    Icon: IconBuilding   },
-    { label: 'Check-in / out',    path: '/patron/dashboard?onglet=checkin',     Icon: IconDocument   },
-    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
-    { label: 'Clients',           path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
-    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',  Icon: IconSettings   },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
-    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
-  ],
-  course: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
-    { label: 'Courses',           path: '/patron/dashboard?onglet=courses',     Icon: IconMissions   },
-    { label: 'Historique',        path: '/patron/dashboard?onglet=historique',   Icon: IconDocument   },
-    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
-    { label: 'Véhicule',          path: '/patron/dashboard?onglet=vehicule',    Icon: IconBuilding   },
-    { label: 'Clients',           path: '/patron/dashboard?onglet=clients',     Icon: IconTeam       },
-    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',  Icon: IconSettings   },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
-    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
-  ],
-  eat: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                    Icon: IconHome       },
-    { label: 'Livraisons',        path: '/patron/dashboard?onglet=livraisons',  Icon: IconMissions   },
-    { label: 'Historique',        path: '/patron/dashboard?onglet=historique',   Icon: IconDocument   },
-    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',   Icon: IconFinance    },
-    { label: 'Restaurants',       path: '/patron/dashboard?onglet=restaurants',  Icon: IconBuilding   },
-    { label: 'Livreurs',          path: '/patron/dashboard?onglet=livreurs',    Icon: IconTeam       },
-    { label: 'Paramètres',        path: '/patron/dashboard?onglet=parametres',  Icon: IconSettings   },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',    Icon: IconStar       },
-    { label: 'Mon profil',        path: '/patron/profil',                       Icon: IconUser       },
-  ],
   com: 'dynamic', // handled dynamically based on vue toggle
 };
 
 const PATRON_SECTOR_HEADERS = {
   coiffure:   { label: '✂️ Coiffure',         color: '#E535AB', bg: '#FFF0F8' },
-  restaurant: { label: '🍽️ Restaurant',       color: '#FF6000', bg: '#FFF3E8' },
-  vacances:   { label: '🏨 Hôtel & Vacances', color: '#0080FF', bg: '#E8F4FF' },
-  course:     { label: '🚗 Freample Course',  color: '#000000', bg: '#F3F3F3' },
-  eat:        { label: '🛵 Freample Eat',     color: '#05944F', bg: '#F0FDF4' },
   com:        { label: '🎬 Freample Com',    color: '#8B5CF6', bg: '#F5F3FF' },
 };
 
@@ -233,10 +164,6 @@ const DEMO_NOTIFS = [
 const ROLE_LABELS_BY_SECTOR = {
   btp:        { patron:'Chef d\'entreprise BTP', artisan:'Artisan BTP' },
   coiffure:   { patron:'Gérant Salon', artisan:'Coiffeur·se' },
-  restaurant: { patron:'Restaurateur', artisan:'Employé Restaurant' },
-  vacances:   { patron:'Hôtelier', artisan:'Réceptionniste' },
-  course:     { patron:'Gérant VTC', artisan:'Chauffeur' },
-  eat:        { patron:'Gérant Eat', artisan:'Livreur' },
   com:        { patron:'Freample Com', artisan:'Monteur' },
 };
 function getRoleLabel(user) {

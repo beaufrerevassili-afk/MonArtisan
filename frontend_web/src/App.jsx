@@ -15,10 +15,6 @@ import ComClient from './pages/client/ComClient';
 import ProfilClient from './pages/client/Profil';
 import DashboardPatron from './pages/patron/Dashboard';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
-import DashboardRestaurant from './pages/patron/DashboardRestaurant';
-import DashboardHotel from './pages/patron/DashboardHotel';
-import DashboardCourse from './pages/patron/DashboardCourse';
-import DashboardEat from './pages/patron/DashboardEat';
 import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
 import PortfolioCom from './pages/public/PortfolioCom';
@@ -47,18 +43,12 @@ import RappelJuridique from './pages/patron/RappelJuridique';
 import Reputation from './pages/patron/Reputation';
 import ProfilPatron from './pages/patron/Profil';
 import DashboardArtisan from './pages/artisan/Dashboard';
-import DashboardDriver from './pages/artisan/DashboardDriver';
-import DashboardCoursier from './pages/artisan/DashboardCoursier';
 import DashboardMonteur from './pages/artisan/DashboardMonteur';
 import CGU from './pages/public/CGU';
 import RecrutementPage from './pages/public/RecrutementPage';
 import SecteurSelect from './pages/public/SecteurSelect';
 import SecteurLanding from './pages/public/SecteurLanding';
 import CoiffurePage from './pages/public/CoiffurePage';
-import RestaurantPage from './pages/public/RestaurantPage';
-import VacancesPage from './pages/public/VacancesPage';
-import FreampleEat from './pages/public/FreampleEat';
-import FreampleCourse from './pages/public/FreampleCourse';
 import SignatureDevis from './pages/public/SignatureDevis';
 import SalonDetailPage from './pages/public/SalonDetailPage';
 import DocumentView from './pages/public/DocumentView';
@@ -94,10 +84,6 @@ function PatronDashboard() {
   const { user } = useAuth();
   const secteur = user?.secteur;
   if (secteur === 'coiffure')   return <DashboardCoiffure />;
-  if (secteur === 'restaurant') return <DashboardRestaurant />;
-  if (secteur === 'vacances')   return <DashboardHotel />;
-  if (secteur === 'course')     return <DashboardCourse />;
-  if (secteur === 'eat')        return <DashboardEat />;
   if (secteur === 'com')        return <DashboardCom />;
   return <DashboardPatron />;
 }
@@ -105,8 +91,6 @@ function PatronDashboard() {
 function ArtisanDashboardSwitch() {
   const { user } = useAuth();
   const secteur = user?.secteur;
-  if (secteur === 'course') return <DashboardDriver />;
-  if (secteur === 'eat')    return <DashboardCoursier />;
   if (secteur === 'com')    return <DashboardMonteur />;
   return <DashboardArtisan />;
 }
@@ -143,10 +127,6 @@ function AppRoutes() {
       <Route path="/btp" element={<Landing />} />
       <Route path="/coiffure" element={<CoiffurePage />} />
       <Route path="/coiffure/salon/:salonId" element={<SalonDetailPage />} />
-      <Route path="/restaurant" element={<RestaurantPage />} />
-      <Route path="/vacances" element={<VacancesPage />} />
-      <Route path="/eat" element={<FreampleEat />} />
-      <Route path="/course" element={<FreampleCourse />} />
       <Route path="/com" element={<FreampleCom />} />
       <Route path="/com/portfolio" element={<PortfolioCom />} />
       <Route path="/pro" element={<ProLanding />} />

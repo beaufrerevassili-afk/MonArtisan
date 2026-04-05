@@ -23,22 +23,6 @@ const SECTEUR_COMPTES = {
     { role:'Gérant·e salon', email:'patron.coiffure@demo.com', motdepasse:'patron123', icon:'✂️' },
     { role:'Employé·e salon', email:'employe.coiffure@demo.com', motdepasse:'employe123', icon:'💇' },
   ],
-  restaurant: [
-    { role:'Gérant·e restaurant', email:'patron.restaurant@demo.com', motdepasse:'patron123', icon:'🍽️' },
-    { role:'Employé·e restaurant', email:'employe.restaurant@demo.com', motdepasse:'employe123', icon:'👨‍🍳' },
-  ],
-  vacances: [
-    { role:'Gérant·e hôtel', email:'patron.hotel@demo.com', motdepasse:'patron123', icon:'🏨' },
-    { role:'Employé·e hôtel', email:'employe.hotel@demo.com', motdepasse:'employe123', icon:'🛎️' },
-  ],
-  course: [
-    { role:'Gérant·e VTC', email:'patron.course@demo.com', motdepasse:'patron123', icon:'🚗' },
-    { role:'Chauffeur', email:'employe.course@demo.com', motdepasse:'employe123', icon:'🧑‍✈️' },
-  ],
-  eat: [
-    { role:'Gérant·e livraison', email:'patron.eat@demo.com', motdepasse:'patron123', icon:'🛵' },
-    { role:'Livreur', email:'employe.eat@demo.com', motdepasse:'employe123', icon:'📦' },
-  ],
   com: [],
 };
 const GENERIC_DEMO = [
@@ -49,13 +33,9 @@ const GENERIC_DEMO = [
 const SECTOR_CONFIG = {
   btp:       { label:'BTP',         icon:'🏗️' },
   coiffure:  { label:'Coiffure',    icon:'✂️' },
-  restaurant:{ label:'Restaurant',  icon:'🍽️' },
-  vacances:  { label:'Vacances',    icon:'🏨' },
-  course:    { label:'VTC',         icon:'🚗' },
-  eat:       { label:'Livraison',   icon:'🛵' },
 };
 const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/fondateur/dashboard' };
-const PUBLIC_SECTORS = ['vacances','restaurant','coiffure','btp','course','eat','com'];
+const PUBLIC_SECTORS = ['coiffure','btp','com'];
 
 const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };
 
