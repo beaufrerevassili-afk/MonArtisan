@@ -1411,43 +1411,77 @@ export default function ImmoDemo() {
             </>}
 
             {/* ── INVESTIR ── */}
-            {subStrat==='investir' && <>
-            {/* 3. SCÉNARIO D'INVESTISSEMENT — Faut-il acheter un nouveau bien ? */}
-            <div style={{ ...CARD }}>
-              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>🎯 Faut-il acheter un nouveau bien ?</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:14 }}>
-                <div style={{ background:L.cream, padding:'14px' }}>
-                  <div style={{ fontSize:12, fontWeight:700, marginBottom:8 }}>Votre capacité actuelle</div>
-                  <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Patrimoine net</span><span style={{fontWeight:600}}>{((totalValeur-totalRestant)/1000).toFixed(0)}k€</span></div>
-                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>LTV actuel</span><span style={{fontWeight:600}}>{totalValeur>0?(totalRestant/totalValeur*100).toFixed(0):0}%</span></div>
-                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Cashflow mensuel</span><span style={{fontWeight:700, color:(cashflow-totalMensualites)>=0?L.green:L.red}}>{cashflow-totalMensualites}€</span></div>
-                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Mensualités crédits</span><span style={{fontWeight:600}}>{totalMensualites}€/mois</span></div>
-                    <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:L.textSec}}>Taux endettement (est.)</span><span style={{fontWeight:700, color:totalLoyers>0&&totalMensualites/totalLoyers>0.35?L.red:L.green}}>{totalLoyers>0?(totalMensualites/totalLoyers*100).toFixed(0):0}%</span></div>
+            {subStrat==='investir' && (()=>{
+              const revMens=totalLoyers;
+              const chargesMens=totalMensualites;
+              const capaciteMens=Math.max(0,revMens*0.35-chargesMens);
+              const tauxMensuel=0.025/12;const duree=240;
+              const capaciteEmprunt=capaciteMens>0?Math.round(capaciteMens*(Math.pow(1+tauxMensuel,duree)-1)/(tauxMensuel*Math.pow(1+tauxMensuel,duree))):0;
+              const txEndettement=revMens>0?(chargesMens/revMens*100):0;
+              const loyersAn=totalLoyers*12;
+              const chargesAn=totalCharges*12;
+              const interetsAn=credits.reduce((s,c)=>s+Math.round(c.restant*c.taux/100),0);
+              const resteAVivre=revMens-chargesMens-totalCharges;
+              return <>
+                {/* Vision banquier */}
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>🏦 Vision banquier — Votre profil emprunteur</div>
+
+                {/* Feu tricolore */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:10, marginBottom:16 }}>
+                  {[
+                    { l:'Taux endettement', v:`${txEndettement.toFixed(0)}%`, ok:txEndettement<35, warn:txEndettement<50, note:'< 35% requis' },
+                    { l:'Reste à vivre', v:`${resteAVivre}€/mois`, ok:resteAVivre>500, warn:resteAVivre>0, note:'> 500€ idéal' },
+                    { l:'Cashflow global', v:`${cashflow-totalMensualites}€`, ok:(cashflow-totalMensualites)>0, warn:(cashflow-totalMensualites)>-500, note:'Positif idéal' },
+                    { l:'LTV patrimoine', v:`${totalValeur>0?(totalRestant/totalValeur*100).toFixed(0):0}%`, ok:totalValeur>0&&totalRestant/totalValeur<0.7, warn:totalValeur>0&&totalRestant/totalValeur<0.85, note:'< 70% idéal' },
+                    { l:'Nb biens existants', v:data.biens.length, ok:true, warn:true, note:'Expérience' },
+                    { l:'Capacité emprunt', v:`${(capaciteEmprunt/1000).toFixed(0)}k€`, ok:capaciteEmprunt>50000, warn:capaciteEmprunt>0, note:'20 ans, 2.5%' },
+                  ].map(k=>(
+                    <div key={k.l} style={{ ...CARD, position:'relative' }}>
+                      <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.ok?L.green:k.warn?L.orange:L.red }} />
+                      <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{k.l}</div>
+                      <div style={{ fontSize:18, fontWeight:200, fontFamily:L.serif, color:k.ok?L.green:k.warn?L.orange:L.red }}>{k.v}</div>
+                      <div style={{ fontSize:9, color:L.textLight, marginTop:2 }}>{k.note}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Score bancabilité */}
+                {(()=>{
+                  const scoreBanque = Math.min(100, Math.max(0,
+                    (txEndettement<35?30:txEndettement<50?15:0) +
+                    (resteAVivre>500?20:resteAVivre>0?10:0) +
+                    ((cashflow-totalMensualites)>0?20:10) +
+                    (totalValeur>0&&totalRestant/totalValeur<0.7?15:5) +
+                    (data.biens.length>=3?15:data.biens.length>=1?10:5)
+                  ));
+                  const scoreColor=scoreBanque>=70?L.green:scoreBanque>=40?L.orange:L.red;
+                  const scoreLabel=scoreBanque>=70?'Excellent — dossier solide':scoreBanque>=40?'Moyen — à renforcer':'Faible — consolidez d\'abord';
+                  return <div style={{ background:L.noir, color:'#fff', padding:'20px', marginBottom:16, display:'flex', alignItems:'center', gap:20 }}>
+                    <div style={{ width:64, height:64, borderRadius:'50%', border:`3px solid ${scoreColor}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <span style={{ fontSize:22, fontWeight:800, color:scoreColor }}>{scoreBanque}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Score bancabilité</div>
+                      <div style={{ fontSize:16, fontWeight:600 }}>{scoreLabel}</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:2 }}>Endettement (30%) + Reste à vivre (20%) + Cashflow (20%) + LTV (15%) + Expérience (15%)</div>
+                    </div>
+                  </div>;
+                })()}
+
+                {/* Bouton préparer dossier */}
+                <div style={{ ...CARD, borderLeft:`4px solid ${L.gold}`, marginBottom:16 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Préparer un dossier bancaire</div>
+                      <div style={{ fontSize:12, color:L.textSec }}>Générez un dossier complet avec toutes les données Freample Immo pour votre banquier.</div>
+                    </div>
+                    <button onClick={()=>setModal({type:'dossierBancaire'})} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Générer le dossier</button>
                   </div>
                 </div>
-                <div style={{ background:L.noir, color:'#fff', padding:'14px' }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:L.gold, marginBottom:8 }}>Capacité d'emprunt estimée</div>
-                  {(()=>{
-                    const revMens=totalLoyers;
-                    const chargesMens=totalMensualites;
-                    const capaciteMens=Math.max(0,revMens*0.35-chargesMens);
-                    const tauxMensuel=0.025/12;
-                    const duree=240;
-                    const capaciteEmprunt=capaciteMens>0?Math.round(capaciteMens*(Math.pow(1+tauxMensuel,duree)-1)/(tauxMensuel*Math.pow(1+tauxMensuel,duree))):0;
-                    return <div style={{ fontSize:12, display:'flex', flexDirection:'column', gap:4 }}>
-                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Mensualité disponible</span><span style={{fontWeight:600}}>{capaciteMens.toFixed(0)}€/mois</span></div>
-                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Emprunt possible (20 ans, 2.5%)</span><span style={{fontWeight:700, color:L.gold, fontSize:16}}>{(capaciteEmprunt/1000).toFixed(0)}k€</span></div>
-                      <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Bien cible (avec 10% frais)</span><span style={{fontWeight:600}}>{(capaciteEmprunt*0.9/1000).toFixed(0)}k€ max</span></div>
-                      {capaciteEmprunt>50000 && <div style={{ marginTop:6, fontSize:11, color:L.green }}>✅ Vous pouvez investir dans un bien jusqu'à {(capaciteEmprunt*0.9/1000).toFixed(0)}k€</div>}
-                      {capaciteEmprunt<=50000 && <div style={{ marginTop:6, fontSize:11, color:L.orange }}>⚠️ Capacité limitée — consolidez votre cashflow avant d'investir</div>}
-                    </div>;
-                  })()}
-                </div>
-              </div>
-              <div style={{ fontSize:11, color:L.textLight }}>Estimation basée sur un taux d'endettement de 35% des revenus locatifs. Consultez votre banquier pour une simulation officielle.</div>
-            </div>
-          </>}
+
+                <div style={{ fontSize:11, color:L.textLight }}>Estimation basée sur un taux d'endettement de 35% des revenus locatifs. Les critères varient selon les banques.</div>
+              </>;
+            })()}
 
           {/* ── STRUCTURE ── */}
           {subStrat==='structure' && (()=>{
@@ -1748,6 +1782,94 @@ export default function ImmoDemo() {
               </div>
             </>}
           </>}
+
+          {modal.type==='dossierBancaire' && (()=>{
+            const loyersAn=totalLoyers*12;
+            const chargesAn=(totalCharges+totalMensualites)*12;
+            const cfAn=(cashflow-totalMensualites)*12;
+            const txEnd=totalLoyers>0?(totalMensualites/totalLoyers*100).toFixed(1):0;
+            return <>
+              <div style={{ textAlign:'center', marginBottom:16 }}>
+                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>Dossier bancaire</div>
+                <div style={{ fontSize:18, fontWeight:800 }}>Demande de financement immobilier</div>
+                <div style={{ fontSize:12, color:L.textSec, marginTop:4 }}>Généré par Freample Immo le {new Date().toLocaleDateString('fr-FR')}</div>
+              </div>
+
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
+                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>1. Situation patrimoniale</div>
+                <div style={{ padding:'12px 18px', fontSize:12 }}>
+                  {[
+                    {l:'Nombre de biens détenus',v:data.biens.length},
+                    {l:'Valeur totale du patrimoine',v:`${totalValeur.toLocaleString()}€`},
+                    {l:'Encours de crédits',v:`${totalRestant.toLocaleString()}€`},
+                    {l:'Patrimoine net',v:`${(totalValeur-totalRestant).toLocaleString()}€`},
+                    {l:'LTV global',v:`${totalValeur>0?(totalRestant/totalValeur*100).toFixed(1):0}%`},
+                    {l:'Nombre de SCI',v:data.scis.length},
+                  ].map(r=><div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>{r.l}</span><span style={{fontWeight:600}}>{r.v}</span></div>)}
+                </div>
+              </div>
+
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
+                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>2. Revenus locatifs</div>
+                <div style={{ padding:'12px 18px', fontSize:12 }}>
+                  {[
+                    {l:'Loyers annuels bruts',v:`${loyersAn.toLocaleString()}€`},
+                    {l:'Charges + crédits annuels',v:`${chargesAn.toLocaleString()}€`},
+                    {l:'Cashflow annuel net',v:`${cfAn.toLocaleString()}€`},
+                    {l:'Taux d\'occupation',v:`${occupation}%`},
+                    {l:'Rendement net moyen',v:`${rendementNet}%`},
+                    {l:'Taux d\'endettement actuel',v:`${txEnd}%`},
+                  ].map(r=><div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}><span style={{color:L.textSec}}>{r.l}</span><span style={{fontWeight:600}}>{r.v}</span></div>)}
+                </div>
+              </div>
+
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
+                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>3. Détail des biens</div>
+                <div style={{ padding:'12px 18px', fontSize:11 }}>
+                  {data.biens.map(b=>{
+                    const cr=(data.credits||[]).find(c=>c.bienId===b.id);
+                    const loc=getLocataire(b.locataireId);
+                    return <div key={b.id} style={{ padding:'8px 0', borderBottom:`1px solid ${L.border}` }}>
+                      <div style={{ fontWeight:700, fontSize:12 }}>{b.nom||b.type} — {b.adresse}</div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:4, marginTop:4, color:L.textSec }}>
+                        <span>Valeur: {b.valeur?.toLocaleString()}€</span>
+                        <span>Loyer: {b.loyer}€/mois</span>
+                        <span>Statut: {loc?`Loué (${loc.prenom} ${loc.nom})`:'Vacant'}</span>
+                        {cr && <span>Crédit: {cr.mensualite}€/mois · Restant: {cr.restant?.toLocaleString()}€</span>}
+                      </div>
+                    </div>;
+                  })}
+                </div>
+              </div>
+
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
+                <div style={{ background:L.cream, padding:'12px 18px', fontWeight:700, fontSize:13, borderBottom:`1px solid ${L.border}` }}>4. Crédits en cours</div>
+                <div style={{ padding:'12px 18px', fontSize:12 }}>
+                  {credits.length===0?<div style={{color:L.textLight}}>Aucun crédit en cours</div>:
+                  credits.map(c=>{
+                    const b=data.biens.find(x=>x.id===c.bienId);
+                    return <div key={c.id} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:`1px solid ${L.border}` }}>
+                      <span style={{color:L.textSec}}>{c.banque} — {b?.nom||b?.adresse}</span>
+                      <span style={{fontWeight:600}}>{c.mensualite}€/mois · {c.taux}% · Restant {c.restant?.toLocaleString()}€</span>
+                    </div>;
+                  })}
+                  <div style={{ marginTop:8, fontWeight:700, display:'flex', justifyContent:'space-between' }}>
+                    <span>Total mensualités</span><span>{totalMensualites}€/mois</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ border:`1px solid ${L.border}`, marginBottom:16 }}>
+                <div style={{ background:L.noir, color:'#fff', padding:'14px 18px', fontSize:13 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}><span>Capacité d'endettement résiduelle (35%)</span><span style={{fontWeight:700, color:L.gold}}>{Math.max(0,Math.round(totalLoyers*0.35-totalMensualites))}€/mois</span></div>
+                  <div style={{ display:'flex', justifyContent:'space-between' }}><span>Emprunt additionnel possible (20 ans)</span><span style={{fontWeight:700, color:L.gold}}>{(Math.max(0,Math.round(totalLoyers*0.35-totalMensualites))>0?Math.round(Math.max(0,totalLoyers*0.35-totalMensualites)*(Math.pow(1+0.025/12,240)-1)/(0.025/12*Math.pow(1+0.025/12,240))):0).toLocaleString()}€</span></div>
+                </div>
+              </div>
+
+              <div style={{ textAlign:'center', fontSize:11, color:L.textLight, marginBottom:14 }}>Document généré par Freample Immo — ne constitue pas un avis financier</div>
+              <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>📄 Imprimer / Exporter PDF</button>
+            </>;
+          })()}
 
           {modal.type==='editObjectifs' && (()=>{
             const obj=data.objectifs||{};
