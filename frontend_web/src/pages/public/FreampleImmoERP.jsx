@@ -29,7 +29,8 @@ export default function FreampleImmoERP() {
       {/* ══ SOUS-NAV APPLE STYLE ══ */}
       <div style={{ position:'sticky', top:58, zIndex:190, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}`, display:'flex', justifyContent:'center', gap:0, padding:'0 24px' }}>
         {[
-          { label:'Freample Immo', href:'/immo', active:false },
+          { label:'Freample Immo', href:'/immo' },
+          { label:'Freample Logement', href:'/immo/logement' },
           { label:'ERP & Diagnostics', href:'/immo/erp', active:true },
         ].map(item => (
           <button key={item.label} onClick={()=>navigate(item.href)}

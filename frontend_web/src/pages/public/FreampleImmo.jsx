@@ -29,7 +29,8 @@ export default function FreampleImmo() {
       <div style={{ position:'sticky', top:58, zIndex:190, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}`, display:'flex', justifyContent:'center', gap:0, padding:'0 24px' }}>
         {[
           { label:'Freample Immo', href:'/immo', active:true },
-          { label:'ERP & Diagnostics', href:'/immo/erp', active:false },
+          { label:'Freample Logement', href:'/immo/logement' },
+          { label:'ERP & Diagnostics', href:'/immo/erp' },
         ].map(item => (
           <button key={item.label} onClick={()=>navigate(item.href)}
             style={{ padding:'12px 24px', background:'none', border:'none', borderBottom:`2px solid ${item.active?L.noir:'transparent'}`, fontSize:13, fontWeight:item.active?700:400, color:item.active?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}

@@ -26,6 +26,7 @@ import ProLanding from './pages/public/ProLanding';
 import StatsAdmin from './pages/public/StatsAdmin';
 import FreampleImmo from './pages/public/FreampleImmo';
 import FreampleImmoERP from './pages/public/FreampleImmoERP';
+import FreampleLogement from './pages/public/FreampleLogement';
 import ImmoDemo from './pages/public/ImmoDemo';
 import FreampleDroit from './pages/public/FreampleDroit';
 import SuiviCommande from './pages/public/SuiviCommande';
@@ -151,6 +152,7 @@ function AppRoutes() {
       <Route path="/pro" element={<ProLanding />} />
       <Route path="/admin/stats" element={<StatsAdmin />} />
       <Route path="/immo" element={<FreampleImmo />} />
+      <Route path="/immo/logement" element={<FreampleLogement />} />
       <Route path="/immo/erp" element={<FreampleImmoERP />} />
       <Route path="/immo/demo" element={<ImmoDemo />} />
       <Route path="/droit" element={<FreampleDroit />} />

@@ -211,6 +211,7 @@ export default function ImmoDemo() {
       <div style={{ display:'flex', justifyContent:'center', gap:0, background:L.white, borderBottom:`1px solid ${L.border}`, flexShrink:0 }}>
         {[
           { label:'Freample Immo', href:'/immo/demo', active:true },
+          { label:'Freample Logement', href:'/immo/logement' },
           { label:'Freample Artisans', href:'/btp' },
           { label:'Freample Com', href:'/com' },
           { label:'ERP & Diagnostics', href:'/immo/erp' },
