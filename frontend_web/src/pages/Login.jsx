@@ -78,14 +78,15 @@ export default function Login() {
     return REDIRECTIONS[role] || '/';
   };
 
-  if (user && user.role !== 'client') return <Navigate to={getDestination(user.role)} replace />;
+  // Dev account can access all public pages — don't auto-redirect
+  if (user && user.role !== 'client' && user.email !== 'freamplecom@gmail.com') return <Navigate to={getDestination(user.role)} replace />;
 
   const activeSector = sector || demoSector;
   const demoAccounts = activeSector ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector]||[])] : GENERIC_DEMO;
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true);
-    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role)); }
+    try { const data = await login(form.email, form.motdepasse); navigate(form.email === 'freamplecom@gmail.com' ? '/' : getDestination(data.role)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }

@@ -51,8 +51,20 @@ export default function PublicNavbar({ subNav = null, transparent = false }) {
 
         {/* Actions droite */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {user && user.role === 'client' ? (
-            /* ── Connecté : icône compte avec dropdown ── */
+          {user && user.email === 'freamplecom@gmail.com' ? (
+            /* ── Compte dev — accès total ── */
+            <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+              <button onClick={() => navigate('/patron/dashboard')}
+                style={{ padding:'7px 14px', background:'none', border:'none', fontSize:13, fontWeight:500, color:DS.muted, cursor:'pointer', transition:'color .15s', fontFamily:DS.font }}
+                onMouseEnter={e=>e.currentTarget.style.color=DS.ink} onMouseLeave={e=>e.currentTarget.style.color=DS.muted}>
+                Dashboard
+              </button>
+              <div style={{ width:32, height:32, borderRadius:'50%', background:'#22C55E', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff', cursor:'default' }} title="Mode dev">
+                {user.nom ? user.nom[0].toUpperCase() : 'D'}
+              </div>
+            </div>
+          ) : user && user.role === 'client' ? (
+            /* ── Connecté client : icône compte avec dropdown ── */
             <div ref={menuRef} style={{ position: 'relative' }}>
               <button onClick={() => setMenuOpen(!menuOpen)}
                 style={{ width: 38, height: 38, borderRadius: '50%', background: DS.ink, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, fontWeight: 800, fontFamily: DS.font, transition: 'opacity .15s' }}
