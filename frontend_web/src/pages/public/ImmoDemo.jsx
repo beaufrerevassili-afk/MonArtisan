@@ -166,16 +166,29 @@ export default function ImmoDemo() {
       {toast && <div style={{ position:'fixed', top:20, right:20, background:L.noir, color:'#fff', padding:'12px 24px', fontSize:13, fontWeight:600, zIndex:9999, boxShadow:'0 4px 16px rgba(0,0,0,0.15)' }}>{toast}</div>}
 
       {/* NAV */}
-      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 20px', height:52, background:L.white, borderBottom:`1px solid ${L.border}`, flexShrink:0 }}>
+      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 20px', height:48, background:L.white, borderBottom:`1px solid ${L.border}`, flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={()=>navigate('/immo')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:800, color:L.text, fontFamily:L.font }}>Freample<span style={{ color:L.gold }}>.</span> Immo</button>
-          <span style={{ fontSize:10, fontWeight:700, color:L.green, background:'rgba(34,197,94,0.08)', padding:'2px 8px', borderRadius:4 }}>Opérationnel</span>
+          <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:800, color:L.text, fontFamily:L.font }}>Freample<span style={{ color:L.gold }}>.</span></button>
+          <span style={{ fontSize:10, fontWeight:700, color:L.green, background:'rgba(34,197,94,0.08)', padding:'2px 8px', borderRadius:4 }}>Démo</span>
         </div>
-        <div style={{ display:'flex', gap:6 }}>
-          <button onClick={resetData} style={{ ...BTN_OUTLINE, fontSize:11, padding:'5px 12px' }}>↻ Reset</button>
-          <button onClick={()=>navigate('/')} style={{ ...BTN, fontSize:11, padding:'5px 12px' }}>Accueil</button>
-        </div>
+        <button onClick={resetData} style={{ ...BTN_OUTLINE, fontSize:10, padding:'4px 10px' }}>↻ Reset</button>
       </nav>
+      {/* SOUS-NAV APPLE */}
+      <div style={{ display:'flex', justifyContent:'center', gap:0, background:L.white, borderBottom:`1px solid ${L.border}`, flexShrink:0 }}>
+        {[
+          { label:'Freample Immo', href:'/immo/demo', active:true },
+          { label:'Freample Artisans', href:'/btp' },
+          { label:'Freample Com', href:'/com' },
+          { label:'ERP & Diagnostics', href:'/immo/erp' },
+        ].map(item=>(
+          <button key={item.label} onClick={()=>navigate(item.href)}
+            style={{ padding:'10px 20px', background:'none', border:'none', borderBottom:`2px solid ${item.active?L.noir:'transparent'}`, fontSize:12, fontWeight:item.active?700:400, color:item.active?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+            onMouseEnter={e=>{if(!item.active)e.currentTarget.style.color=L.text;}}
+            onMouseLeave={e=>{if(!item.active)e.currentTarget.style.color=L.textSec;}}>
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
         {/* SIDEBAR */}
