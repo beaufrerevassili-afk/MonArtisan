@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { getTarifs } from '../../data/tarifsCom';
 import api from '../../services/api';
 
@@ -52,6 +53,7 @@ export default function FreampleCom(){
   return(
     <div style={{minHeight:'100vh',background:L.white,fontFamily:L.font,color:L.text}}>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+      <RecrutementBanner secteur="com"/>
       <PublicNavbar/>
 
       {/* ══ HAMBURGER ══ */}

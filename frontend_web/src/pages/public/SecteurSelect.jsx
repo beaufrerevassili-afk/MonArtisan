@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 import HideForClient from '../../components/public/HideForClient';
 
 const L = {
@@ -127,6 +128,7 @@ export default function SecteurSelect() {
   // ═══════════════════════════════════════════════════
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
+      <RecrutementBanner />
       <PublicNavbar />
 
       {/* ═══ TITRE + 2 CARTES ═══ */}

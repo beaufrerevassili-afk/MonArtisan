@@ -312,50 +312,48 @@ export default function RecrutementPage() {
   );
 
   return (
-    <div style={{ height:'100vh', background:DS.bg, fontFamily:DS.font, color:DS.ink, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+    <div style={{ height:'100vh', background:'#FAFAF8', fontFamily:DS.font, color:'#1A1A1A', display:'flex', flexDirection:'column', overflow:'hidden' }}>
       <RecrutementBanner />
       <PublicNavbar subNav={subNav} />
 
-      {/* Hero */}
-      <div style={{ background:DS.bg, borderBottom:`1px solid ${DS.border}`, padding:'clamp(28px,5vh,48px) clamp(20px,5vw,56px) clamp(20px,3vh,32px)', flexShrink:0, opacity:mounted?1:0, transform:mounted?'none':'translateY(12px)', transition:'opacity .5s,transform .5s' }}>
-        <div style={{ maxWidth:680, margin:'0 auto' }}>
-          {/* Titre + stats */}
-          <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:22, flexWrap:'wrap', gap:12 }}>
+      {/* Hero — luxe */}
+      <div style={{ background:'#0A0A0A', padding:'clamp(36px,6vh,60px) clamp(20px,5vw,56px) clamp(28px,4vh,44px)', flexShrink:0, position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&q=80)', backgroundSize:'cover', backgroundPosition:'center', opacity:0.15 }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.9) 100%)' }} />
+        <div style={{ maxWidth:680, margin:'0 auto', position:'relative', zIndex:1 }}>
+          <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
             <div>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', background:DS.goldLight, border:`1px solid #EDE8D4`, borderRadius:DS.r.full, fontSize:11, color:DS.goldDark, fontWeight:600, marginBottom:10 }}>
-                <span style={{ width:4, height:4, borderRadius:'50%', background:DS.gold }} />
-                {offres.length} offres · 6 secteurs · Toute la France
+              <div style={{ fontSize:11, fontWeight:600, color:'#C9A96E', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>
+                {offres.length} offres · Toute la France
               </div>
-              <h1 style={{ fontSize:'clamp(1.625rem,4vw,2.5rem)', fontWeight:900, letterSpacing:'-0.05em', color:DS.ink, margin:0, lineHeight:1.1 }}>
-                Trouvez votre<br/>prochain emploi
+              <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(1.625rem,4vw,2.5rem)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', margin:0, lineHeight:1.1 }}>
+                Trouvez votre <span style={{ fontWeight:700, fontStyle:'normal' }}>prochain emploi</span>
               </h1>
             </div>
             <button onClick={() => navigate('/register?role=patron')}
-              style={{ padding:'10px 20px', background:DS.accent, border:'none', borderRadius:DS.r.full, fontSize:12, fontWeight:700, color:'#fff', cursor:'pointer', whiteSpace:'nowrap', transition:'background .15s' }}
-              onMouseEnter={e=>e.currentTarget.style.background=DS.accentHover}
-              onMouseLeave={e=>e.currentTarget.style.background=DS.accent}>
-              Publier une offre →
+              style={{ padding:'10px 24px', background:'#fff', border:'none', fontSize:12, fontWeight:600, color:'#0A0A0A', cursor:'pointer', whiteSpace:'nowrap', transition:'all .2s', letterSpacing:'0.04em', textTransform:'uppercase' }}
+              onMouseEnter={e=>{e.currentTarget.style.background='#C9A96E';e.currentTarget.style.color='#fff';}}
+              onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.color='#0A0A0A';}}>
+              Publier une offre
             </button>
           </div>
 
           {/* Barre de recherche */}
-          <div style={{ display:'flex', background:DS.bg, border:`1.5px solid ${DS.border}`, borderRadius:DS.r.full, overflow:'hidden', boxShadow:DS.shadow.md }}
-            onFocusCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.lg}
-            onBlurCapture={e=>e.currentTarget.style.boxShadow=DS.shadow.md}>
+          <div style={{ display:'flex', background:'#fff', border:'none', overflow:'hidden' }}>
             <div style={{ flex:1.3, display:'flex', flexDirection:'column', padding:'12px 20px' }}>
-              <label style={{ fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Quoi ?</label>
+              <label style={{ fontSize:'0.7rem', fontWeight:600, letterSpacing:'0.08em', color:'#A0A0A0', textTransform:'uppercase', marginBottom:4 }}>Quoi ?</label>
               <input value={quoi} onChange={e=>setQuoi(e.target.value)} placeholder="Métier, compétence…"
-                style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:DS.ink, fontFamily:DS.font, fontWeight:500 }} />
+                style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:'#1A1A1A', fontFamily:DS.font, fontWeight:500 }} />
             </div>
-            <div style={{ width:1, background:DS.border, margin:'10px 0' }} />
+            <div style={{ width:1, background:'#E8E6E1', margin:'10px 0' }} />
             <div style={{ display:'flex', flexDirection:'column', padding:'12px 20px', minWidth:140 }}>
-              <label style={{ fontSize:'0.7rem', fontWeight:700, letterSpacing:'0.1em', color:DS.subtle, textTransform:'uppercase', marginBottom:4 }}>Où ?</label>
+              <label style={{ fontSize:'0.7rem', fontWeight:600, letterSpacing:'0.08em', color:'#A0A0A0', textTransform:'uppercase', marginBottom:4 }}>Où ?</label>
               <input value={ou} onChange={e=>setOu(e.target.value)} placeholder="Ville…"
-                style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:DS.ink, fontFamily:DS.font, fontWeight:500, width:'100%' }} />
+                style={{ background:'none', border:'none', outline:'none', fontSize:'0.9rem', color:'#1A1A1A', fontFamily:DS.font, fontWeight:500, width:'100%' }} />
             </div>
             <button
-              style={{ flexShrink:0, background:DS.ink, border:'none', cursor:'pointer', padding:'0 24px', fontWeight:700, color:'#fff', fontSize:'0.875rem', transition:'opacity .15s', borderRadius:`0 ${DS.r.full}px ${DS.r.full}px 0` }}
-              onMouseEnter={e=>e.currentTarget.style.opacity='0.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+              style={{ flexShrink:0, background:'#0A0A0A', border:'none', cursor:'pointer', padding:'0 24px', fontWeight:600, color:'#fff', fontSize:'0.8rem', transition:'background .15s', letterSpacing:'0.04em', textTransform:'uppercase' }}
+              onMouseEnter={e=>e.currentTarget.style.background='#C9A96E'} onMouseLeave={e=>e.currentTarget.style.background='#0A0A0A'}>
               Rechercher
             </button>
           </div>

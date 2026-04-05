@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 
 const L = {
   bg:'#FAFAF8', white:'#FFFFFF', noir:'#0A0A0A', cream:'#F5F2EC',
@@ -33,6 +34,8 @@ export default function ProLanding() {
 
   return (
     <div style={{ minHeight:'100vh', background:L.white, fontFamily:L.font, color:L.text }}>
+
+      <RecrutementBanner />
 
       {/* ══ NAVBAR PRO ══ */}
       <nav style={{ position:'sticky', top:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(20px,4vw,48px)', height:60, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}` }}>
