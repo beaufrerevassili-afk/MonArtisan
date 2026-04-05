@@ -21,6 +21,7 @@ import DashboardCourse from './pages/patron/DashboardCourse';
 import DashboardEat from './pages/patron/DashboardEat';
 import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
+import PortfolioCom from './pages/public/PortfolioCom';
 import SuiviCommande from './pages/public/SuiviCommande';
 import DashboardAdmin from './pages/admin/Dashboard';
 import Finance from './pages/patron/Finance';
@@ -130,6 +131,7 @@ function AppRoutes() {
       <Route path="/eat" element={<FreampleEat />} />
       <Route path="/course" element={<FreampleCourse />} />
       <Route path="/com" element={<FreampleCom />} />
+      <Route path="/com/portfolio" element={<PortfolioCom />} />
       <Route path="/suivi/:token" element={<SuiviCommande />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />

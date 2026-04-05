@@ -60,7 +60,7 @@ export default function FreampleCom() {
 
   const MENU_ITEMS = [
     { label:'Nos expertises', id:'expertises' },
-    { label:'Portfolio', id:'portfolio' },
+    { label:'Portfolio', action:()=>{ setMenuOpen(false); navigate('/com/portfolio'); } },
     { label:'Tarifs & Formules', id:'tarifs' },
     { label:'Tous nos prix', id:'grille' },
     { label:'Nous contacter', id:'contact' },
@@ -258,44 +258,33 @@ export default function FreampleCom() {
         </div>
       </section>
 
-      {/* ══ PORTFOLIO ══ */}
-      {portfolio.length > 0 && (
-        <section id="portfolio" style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:960, margin:'0 auto', scrollMarginTop:20 }}>
-          <div style={{ textAlign:'center', marginBottom:48 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Portfolio</div>
-            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, letterSpacing:'-0.02em', margin:0, lineHeight:1.2 }}>
-              Nos <span style={{ fontWeight:700 }}>réalisations</span>
-            </h2>
-          </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:20 }}>
-            {portfolio.map(item => (
-              <a key={item.id} href={item.video_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', color:'inherit' }}>
-                <div style={{ overflow:'hidden', transition:'all .3s', cursor:'pointer' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.08)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                  <div style={{ height:200, background:L.noir, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
-                    {item.thumbnail_url ? (
-                      <img src={item.thumbnail_url} alt={item.titre} style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .4s' }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
-                    ) : (
-                      <span style={{ fontSize:48, opacity:0.15 }}>🎬</span>
-                    )}
-                    <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.2)' }}>
-                      <div style={{ width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>▶</div>
-                    </div>
-                  </div>
-                  <div style={{ padding:'16px 4px' }}>
-                    <div style={{ fontSize:14, fontWeight:600, color:L.text, marginBottom:4 }}>{item.titre}</div>
-                    {item.description && <div style={{ fontSize:13, color:L.textSec }}>{item.description}</div>}
-                    <div style={{ fontSize:11, color:L.gold, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', marginTop:8 }}>{item.categorie}</div>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* ══ PORTFOLIO CTA ══ */}
+      <section id="portfolio" style={{ background:L.noir, padding:'clamp(64px,10vh,100px) 32px', textAlign:'center', position:'relative', overflow:'hidden', scrollMarginTop:20 }}>
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, rgba(201,169,110,0.05) 0%, transparent 50%, rgba(201,169,110,0.03) 100%)' }} />
+        <div style={{ position:'relative', zIndex:1, maxWidth:600, margin:'0 auto' }}>
+          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:20 }}>Portfolio</div>
+          <h2 style={{ fontSize:'clamp(26px,4.5vw,44px)', fontWeight:200, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.15, margin:'0 0 16px' }}>
+            Découvrez nos<br/><span style={{ fontWeight:700 }}>réalisations</span>
+          </h2>
+          <p style={{ fontSize:15, color:'rgba(255,255,255,0.4)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
+            Montages vidéo, identités visuelles, campagnes — chaque projet raconte une histoire.
+          </p>
+          <button onClick={()=>navigate('/com/portfolio')}
+            style={{
+              padding:'16px 48px', background:'transparent', color:'#fff',
+              border:`1px solid ${L.gold}`, fontSize:13, fontWeight:600,
+              cursor:'pointer', fontFamily:L.font, letterSpacing:'0.08em', textTransform:'uppercase',
+              transition:'all .3s',
+            }}
+            onMouseEnter={e=>{ e.currentTarget.style.background=L.gold; e.currentTarget.style.color='#fff'; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#fff'; }}>
+            Explorer le portfolio
+          </button>
+        </div>
+        {/* Decorative gold lines */}
+        <div style={{ position:'absolute', top:'50%', left:0, width:60, height:1, background:`linear-gradient(90deg, transparent, ${L.gold}30)` }} />
+        <div style={{ position:'absolute', top:'50%', right:0, width:60, height:1, background:`linear-gradient(90deg, ${L.gold}30, transparent)` }} />
+      </section>
 
       {/* ══ CONTACT — Élégant ══ */}
       <section id="contact" style={{ padding:'0 32px clamp(48px,7vh,72px)', maxWidth:700, margin:'0 auto', scrollMarginTop:20 }}>
