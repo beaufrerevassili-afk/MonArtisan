@@ -7,20 +7,22 @@ const DEV_EMAIL = 'freamplecom@gmail.com';
 const NAV_PUBLIC = [
   { label:'Freample Artisans', icon:'🏗️', href:'/btp' },
   { label:'Freample Com', icon:'🎬', href:'/com' },
+  { label:'Freample Immo', icon:'🏠', href:'/immo' },
+  { label:'Freample Droit', icon:'⚖️', href:'/droit' },
+  { label:'Freample Beauté', icon:'✂️', href:'/coiffure' },
   { label:'Recrutement', icon:'💼', href:'/recrutement' },
   { label:'Espace pro', icon:'🏢', href:'/pro' },
 ];
 const NAV_DEV = [
   { label:'Freample Artisans', icon:'🏗️', href:'/btp' },
   { label:'Freample Com', icon:'🎬', href:'/com' },
-  { label:'Coiffure & Beauté', icon:'✂️', href:'/coiffure' },
   { label:'Freample Immo', icon:'🏠', href:'/immo' },
-  { label:'Freample Logement', icon:'🔑', href:'/immo/logement' },
-  { label:'Immo — Démo investisseur', icon:'📊', href:'/immo/demo' },
   { label:'Freample Droit', icon:'⚖️', href:'/droit' },
+  { label:'Freample Beauté', icon:'✂️', href:'/coiffure' },
   { label:'Recrutement', icon:'💼', href:'/recrutement' },
   { label:'Espace pro', icon:'🏢', href:'/pro' },
-  { label:'Portfolio Com', icon:'🎥', href:'/com/portfolio' },
+  { label:'Freample Logement', icon:'🔑', href:'/immo/logement' },
+  { label:'Immo Démo', icon:'📊', href:'/immo/demo' },
   { label:'Statistiques', icon:'📈', href:'/admin/stats' },
 ];
 
