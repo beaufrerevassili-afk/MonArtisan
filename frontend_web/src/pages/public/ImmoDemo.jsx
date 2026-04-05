@@ -242,33 +242,84 @@ export default function ImmoDemo() {
               <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Biens ({biens.length})</h2>
               <button onClick={()=>{setForm({type:'Appartement',sciId:activeSci||data.scis[0]?.id});setModal({type:'addBien'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter un bien</button>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:10 }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
               {biens.map(b=>{
                 const loc = getLocataire(b.locataireId);
-                const rdt = b.valeur>0 ? ((b.loyer*12)/b.valeur*100).toFixed(1) : '0';
+                const credit = (data.credits||[]).find(c=>c.bienId===b.id);
+                const mensCredit = credit?.mensualite || 0;
+                const capitalRestant = credit?.restant || 0;
+                const capitalRembourse = credit ? credit.montant - credit.restant : 0;
+                const progressCredit = credit ? ((capitalRembourse/credit.montant)*100).toFixed(0) : 0;
+                const rdtBrut = b.valeur>0 ? ((b.loyer*12)/b.valeur*100).toFixed(2) : '0';
+                const rdtNet = b.valeur>0 ? (((b.loyer-b.charges)*12)/b.valeur*100).toFixed(2) : '0';
+                const cashflowBien = b.loyer - b.charges - mensCredit;
+                const paidThisMonth = data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye');
+                const Row = ({l,v,c,bold}) => <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, padding:'3px 0' }}><span style={{ color:L.textSec }}>{l}</span><span style={{ fontWeight:bold?700:600, color:c||L.text }}>{v}</span></div>;
+
                 return <div key={b.id} style={{ ...CARD, transition:'all .15s' }}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;}}>
-                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
-                    <span style={{ fontSize:11, fontWeight:600, color:L.goldDark, background:L.goldLight, padding:'2px 8px' }}>{b.type}</span>
-                    <span style={{ fontSize:11, fontWeight:700, color:loc?L.green:L.red, background:loc?L.greenBg:L.redBg, padding:'2px 8px' }}>{loc?'Loué':'Vacant'}</span>
+                  onMouseEnter={e=>e.currentTarget.style.borderColor=L.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>
+
+                  {/* Header */}
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+                    <div>
+                      <div style={{ display:'flex', gap:6, marginBottom:6 }}>
+                        <span style={{ fontSize:11, fontWeight:600, color:L.goldDark, background:L.goldLight, padding:'2px 8px' }}>{b.type}</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:loc?L.green:L.red, background:loc?L.greenBg:L.redBg, padding:'2px 8px' }}>{loc?'Loué':'Vacant'}</span>
+                        {paidThisMonth && <span style={{ fontSize:10, fontWeight:700, color:L.green, background:L.greenBg, padding:'2px 8px' }}>✓ Loyer encaissé</span>}
+                      </div>
+                      <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>{b.adresse}</div>
+                      <div style={{ fontSize:12, color:L.textSec }}>{b.surface}m² {loc ? `· ${loc.nom}` : ''}</div>
+                    </div>
+                    <div style={{ textAlign:'right' }}>
+                      <div style={{ fontSize:22, fontWeight:200, color:cashflowBien>=0?L.green:L.red, fontFamily:L.serif }}>{cashflowBien>=0?'+':''}{cashflowBien}€</div>
+                      <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', letterSpacing:'0.05em' }}>{cashflowBien>=0?'Cashflow':'Cash low'} /mois</div>
+                    </div>
                   </div>
-                  <div style={{ fontSize:13, fontWeight:700, marginBottom:3 }}>{b.adresse}</div>
-                  <div style={{ fontSize:11, color:L.textSec, marginBottom:10 }}>{b.surface}m² · Valeur: {b.valeur.toLocaleString()}€</div>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}>
-                    <span style={{ color:L.textSec }}>Loyer</span><span style={{ fontWeight:700, color:b.loyer?L.green:L.textLight }}>{b.loyer?`${b.loyer}€/mois`:'—'}</span>
+
+                  {/* 3 colonnes : Achat | Crédit | Revenus */}
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, padding:'12px 0', borderTop:`1px solid ${L.border}`, borderBottom:`1px solid ${L.border}` }}>
+                    {/* Achat */}
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:L.gold, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Acquisition</div>
+                      <Row l="Valeur" v={`${b.valeur.toLocaleString()}€`} bold />
+                      <Row l="Prix/m²" v={b.surface>0?`${Math.round(b.valeur/b.surface)}€`:'—'} />
+                    </div>
+                    {/* Crédit */}
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:L.orange, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Crédit</div>
+                      {credit ? <>
+                        <Row l="Mensualité" v={`${mensCredit}€`} c={L.orange} bold />
+                        <Row l="Restant" v={`${(capitalRestant/1000).toFixed(0)}k€`} />
+                        <Row l="Remboursé" v={`${progressCredit}%`} c={L.green} />
+                        <div style={{ height:4, background:L.cream, borderRadius:2, marginTop:4 }}>
+                          <div style={{ height:4, background:L.green, borderRadius:2, width:`${progressCredit}%` }} />
+                        </div>
+                        <div style={{ fontSize:10, color:L.textLight, marginTop:3 }}>{credit.banque} · {credit.taux}% · {credit.duree/12}ans</div>
+                      </> : <div style={{ fontSize:11, color:L.textLight }}>Pas de crédit</div>}
+                    </div>
+                    {/* Revenus */}
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:L.green, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Revenus</div>
+                      <Row l="Loyer" v={b.loyer?`${b.loyer}€`:'—'} c={b.loyer?L.green:L.textLight} bold />
+                      <Row l="Charges" v={`-${b.charges}€`} c={L.red} />
+                      {credit && <Row l="Crédit" v={`-${mensCredit}€`} c={L.orange} />}
+                      <div style={{ height:1, background:L.border, margin:'4px 0' }} />
+                      <Row l="Net" v={`${cashflowBien>=0?'+':''}${cashflowBien}€`} c={cashflowBien>=0?L.green:L.red} bold />
+                    </div>
                   </div>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}>
-                    <span style={{ color:L.textSec }}>Charges</span><span style={{ fontWeight:600 }}>{b.charges}€/mois</span>
+
+                  {/* Rendements */}
+                  <div style={{ display:'flex', gap:16, padding:'8px 0', fontSize:11 }}>
+                    <span style={{ color:L.textSec }}>Rdt brut <strong style={{ color:L.gold }}>{rdtBrut}%</strong></span>
+                    <span style={{ color:L.textSec }}>Rdt net <strong style={{ color:L.green }}>{rdtNet}%</strong></span>
+                    <span style={{ color:L.textSec }}>Revenu annuel <strong style={{ color:cashflowBien>=0?L.green:L.red }}>{(cashflowBien*12).toLocaleString()}€</strong></span>
                   </div>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3 }}>
-                    <span style={{ color:L.textSec }}>Rendement brut</span><span style={{ fontWeight:700, color:L.gold }}>{rdt}%</span>
-                  </div>
-                  {loc && <div style={{ display:'flex', justifyContent:'space-between', fontSize:12 }}><span style={{ color:L.textSec }}>Locataire</span><span style={{ fontWeight:600 }}>{loc.nom}</span></div>}
-                  <div style={{ display:'flex', gap:4, marginTop:12, flexWrap:'wrap' }}>
-                    {loc && !data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye') &&
-                      <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser</button>}
+
+                  {/* Actions */}
+                  <div style={{ display:'flex', gap:4, flexWrap:'wrap', paddingTop:8, borderTop:`1px solid ${L.border}` }}>
+                    {loc && !paidThisMonth && <button onClick={()=>enregistrerPaiement(b.id)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.green }}>Encaisser {b.loyer}€</button>}
                     <button onClick={()=>navigate(`/btp?q=${encodeURIComponent(b.adresse)}`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:L.blue }}>🔧 Artisan</button>
-                    {!loc && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:'#8B5CF6' }}>🎬 Shooting</button>}
+                    {!loc && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 10px', background:'#8B5CF6' }}>🎬 Annonce</button>}
                     <button onClick={()=>setModal({type:'edl',data:b})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>📋 EDL</button>
                     <button onClick={()=>deleteBien(b.id)} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>✕</button>
                   </div>
