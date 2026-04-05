@@ -2086,25 +2086,25 @@ export default function ImmoDemo() {
                 </div>
 
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:8, marginBottom:8 }}>
-                  <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={f.dossierPrix??d.prix||''} onChange={e=>{
+                  <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={(f.dossierPrix??d.prix)||''} onChange={e=>{
                     const prix=Number(e.target.value);
                     const notaire=isNeuf?Math.round(prix*0.025):Math.round(prix*0.075);
                     setForm(ff=>({...ff,dossierPrix:e.target.value,dossierNotaire:String(notaire)}));
                   }} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Frais notaire (€) <span style={{color:L.gold,fontWeight:400}}>auto {isNeuf?'2.5%':'7.5%'}</span></label><input type="number" value={f.dossierNotaire??d.notaire||''} onChange={e=>setForm(ff=>({...ff,dossierNotaire:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Travaux (€)</label><input type="number" value={f.dossierTravaux??d.travaux||''} onChange={e=>setForm(ff=>({...ff,dossierTravaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Marge sécurité (%)</label><input type="number" value={f.dossierSecu??d.secu||5} onChange={e=>setForm(ff=>({...ff,dossierSecu:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Frais notaire (€) <span style={{color:L.gold,fontWeight:400}}>auto {isNeuf?'2.5%':'7.5%'}</span></label><input type="number" value={(f.dossierNotaire??d.notaire)||''} onChange={e=>setForm(ff=>({...ff,dossierNotaire:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Travaux (€)</label><input type="number" value={(f.dossierTravaux??d.travaux)||''} onChange={e=>setForm(ff=>({...ff,dossierTravaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Marge sécurité (%)</label><input type="number" value={(f.dossierSecu??d.secu)||5} onChange={e=>setForm(ff=>({...ff,dossierSecu:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:8, marginBottom:8 }}>
-                  <div><label style={LBL}>Loyer estimé (€/mois)</label><input type="number" value={f.dossierLoyer??d.loyer||''} onChange={e=>setForm(ff=>({...ff,dossierLoyer:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={f.dossierCharges??d.charges||''} onChange={e=>setForm(ff=>({...ff,dossierCharges:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Apport (€)</label><input type="number" value={f.dossierApport??d.apport||''} onChange={e=>setForm(ff=>({...ff,dossierApport:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Stratégie</label><select value={f.dossierStrategie??d.strategie||'Location nue'} onChange={e=>setForm(ff=>({...ff,dossierStrategie:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
+                  <div><label style={LBL}>Loyer estimé (€/mois)</label><input type="number" value={(f.dossierLoyer??d.loyer)||''} onChange={e=>setForm(ff=>({...ff,dossierLoyer:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={(f.dossierCharges??d.charges)||''} onChange={e=>setForm(ff=>({...ff,dossierCharges:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Apport (€)</label><input type="number" value={(f.dossierApport??d.apport)||''} onChange={e=>setForm(ff=>({...ff,dossierApport:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Stratégie</label><select value={(f.dossierStrategie??d.strategie)||'Location nue'} onChange={e=>setForm(ff=>({...ff,dossierStrategie:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
-                  <div><label style={LBL}>Taux crédit (%)</label><input type="number" value={f.dossierTaux??d.taux||2.5} step="0.1" onChange={e=>setForm(ff=>({...ff,dossierTaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={f.dossierDuree??d.duree||20} onChange={e=>setForm(ff=>({...ff,dossierDuree:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
-                  <div><label style={LBL}>Assurance (€/mois)</label><input type="number" value={f.dossierAssurance??d.assurance||35} onChange={e=>setForm(ff=>({...ff,dossierAssurance:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Taux crédit (%)</label><input type="number" value={(f.dossierTaux??d.taux)||2.5} step="0.1" onChange={e=>setForm(ff=>({...ff,dossierTaux:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Durée (ans)</label><input type="number" value={(f.dossierDuree??d.duree)||20} onChange={e=>setForm(ff=>({...ff,dossierDuree:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
+                  <div><label style={LBL}>Assurance (€/mois)</label><input type="number" value={(f.dossierAssurance??d.assurance)||35} onChange={e=>setForm(ff=>({...ff,dossierAssurance:e.target.value}))} style={{...INP,padding:'8px 10px',fontSize:12}} /></div>
                 </div>
               </div>}
 
