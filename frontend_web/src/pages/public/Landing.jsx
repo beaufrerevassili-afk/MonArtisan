@@ -404,7 +404,7 @@ export default function Landing() {
           {/* Titre + sous-titre */}
           <div style={{ marginBottom: 28 }}>
             <h1 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
-              Travaux & Dépannage
+              Freample Artisans
             </h1>
             <p style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Trouvez un artisan de confiance en quelques clics</p>
           </div>

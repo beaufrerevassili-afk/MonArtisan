@@ -6,7 +6,7 @@ import RecrutementBanner from '../../components/public/RecrutementBanner';
 import HideForClient from '../../components/public/HideForClient';
 
 const CATEGORIES = [
-  { id: 'btp',        emoji: '🏗️', label: 'Travaux & Dépannage',  desc: 'Besoin d\'un plombier, électricien ou peintre ? Comparez les pros et demandez un devis gratuit.', cta: 'Découvrir la démo', demo: true },
+  { id: 'btp',        emoji: '🏗️', label: 'Freample Artisans',  desc: 'Besoin d\'un plombier, électricien ou peintre ? Comparez les pros et demandez un devis gratuit.', cta: 'Découvrir la démo', demo: true },
   { id: 'coiffure',   emoji: '✂️',  label: 'Coiffure & Beauté',   desc: 'Coiffeurs, barbiers, instituts de beauté — consultez les disponibilités et réservez en ligne.', cta: 'Découvrir la démo', demo: true },
   { id: 'com',        emoji: '🎬', label: 'Freample Com',         desc: 'Montage vidéo pro pour TikTok, YouTube, Reels. Envoyez votre brief, on s\'occupe du reste.', cta: 'Envoyer mon brief', active: true },
   { id: 'restaurant', emoji: 'FR', label: 'Bientôt disponible',   desc: 'Nouveau service en préparation', locked: true },
