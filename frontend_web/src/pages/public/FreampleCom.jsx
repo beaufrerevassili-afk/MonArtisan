@@ -58,15 +58,13 @@ export default function FreampleCom() {
         background:L.noir, padding:'clamp(72px,12vh,120px) 32px clamp(64px,10vh,100px)',
         textAlign:'center', position:'relative', overflow:'hidden',
       }}>
-        {/* Background image */}
-        <div style={{
-          position:'absolute', inset:0,
-          backgroundImage:'url(https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1600&q=80)',
-          backgroundSize:'cover', backgroundPosition:'center',
-          opacity:0.25,
-        }} />
+        {/* Background video */}
+        <video autoPlay muted loop playsInline
+          style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.3 }}
+          src="https://videos.pexels.com/video-files/7710243/7710243-uhd_2560_1440_25fps.mp4"
+        />
         {/* Dark gradient overlay */}
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.85) 100%)' }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.8) 100%)' }} />
         {/* Subtle gold line */}
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
 
