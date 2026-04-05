@@ -71,19 +71,19 @@ export default function FreampleCom() {
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <PublicNavbar />
 
-      {/* ══ HAMBURGER — discret, toujours visible ══ */}
+      {/* ══ HAMBURGER — fixe gauche, sous la navbar ══ */}
       <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
         style={{
-          position:'fixed', top:14, right:'clamp(16px,4vw,48px)', zIndex:1100,
-          width:40, height:40, background:'rgba(255,255,255,0.12)', backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)',
-          border:'1px solid rgba(255,255,255,0.15)', borderRadius:8, cursor:'pointer',
+          position:'fixed', top:72, left:'clamp(16px,3vw,32px)', zIndex:250,
+          width:40, height:40, background:'rgba(255,255,255,0.85)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+          border:`1px solid rgba(0,0,0,0.06)`, borderRadius:10, cursor:'pointer',
           display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4,
-          transition:'all .25s',
+          boxShadow:'0 2px 8px rgba(0,0,0,0.06)', transition:'all .25s',
         }}
-        onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.25)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.3)'; }}
-        onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; }}>
-        <span style={{ width:16, height:1.5, background:'#fff', display:'block' }} />
-        <span style={{ width:16, height:1.5, background:'#fff', display:'block' }} />
+        onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,1)'; e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'; }}
+        onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.85)'; e.currentTarget.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'; }}>
+        <span style={{ width:16, height:1.5, background:L.noir, display:'block' }} />
+        <span style={{ width:16, height:1.5, background:L.noir, display:'block' }} />
       </button>
 
       {/* ══ FULLSCREEN OVERLAY MENU ══ */}
