@@ -114,15 +114,15 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:L.noir, fontFamily:L.font, display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, display:'flex', flexDirection:'column' }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
       {/* ── Navbar ── */}
-      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(24px,4vw,48px)', height:60, borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-        <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:800, color:'#fff', fontFamily:L.font, letterSpacing:'-0.04em' }}>
+      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(24px,4vw,48px)', height:60, borderBottom:`1px solid ${L.border}` }}>
+        <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:800, color:L.text, fontFamily:L.font, letterSpacing:'-0.04em' }}>
           Freample<span style={{ color:L.gold }}>.</span>
         </button>
-        <Link to={sector ? `/register?secteur=${sector}` : '/register'} style={{ fontSize:13, color:L.gold, textDecoration:'none', fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase', transition:'color .15s' }}>
+        <Link to={sector ? `/register?secteur=${sector}` : '/register'} style={{ fontSize:13, color:L.gold, textDecoration:'none', fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' }}>
           Créer un compte
         </Link>
       </nav>
@@ -136,7 +136,7 @@ export default function Login() {
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>
               {sector ? `Espace ${SECTOR_CONFIG[sector]?.label||sector}` : 'Connexion'}
             </div>
-            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', color:'#fff', letterSpacing:'-0.02em', margin:0, lineHeight:1.1 }}>
+            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', color:L.text, letterSpacing:'-0.02em', margin:0, lineHeight:1.1 }}>
               Bon <span style={{ fontWeight:700, fontStyle:'normal' }}>retour</span>
             </h1>
           </div>
@@ -144,67 +144,67 @@ export default function Login() {
           {/* Formulaire */}
           <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:18 }}>
             <div>
-              <label style={{ display:'block', marginBottom:8, fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Adresse e-mail</label>
+              <label style={{ display:'block', marginBottom:8, fontSize:12, fontWeight:600, color:L.textSec, textTransform:'uppercase', letterSpacing:'0.08em' }}>Adresse e-mail</label>
               <input type="email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} placeholder="votre@email.com" required autoComplete="email"
-                style={{ ...inp, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#fff' }}
-                onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                style={{ ...inp, background:L.white, border:`1px solid ${L.border}`, color:L.text }}
+                onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor=L.border} />
             </div>
             <div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                <label style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Mot de passe</label>
+                <label style={{ fontSize:12, fontWeight:600, color:L.textSec, textTransform:'uppercase', letterSpacing:'0.08em' }}>Mot de passe</label>
                 <Link to="/forgot-password" style={{ fontSize:12, color:L.gold, textDecoration:'none', fontWeight:500 }}>Oublié ?</Link>
               </div>
               <div style={{ position:'relative' }}>
                 <input type={showPwd?'text':'password'} value={form.motdepasse} onChange={e=>setForm({...form, motdepasse:e.target.value})} placeholder="••••••••" required autoComplete="current-password"
-                  style={{ ...inp, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'#fff', paddingRight:44 }}
-                  onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                  style={{ ...inp, background:L.white, border:`1px solid ${L.border}`, color:L.text, paddingRight:44 }}
+                  onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor=L.border} />
                 <button type="button" onClick={()=>setShowPwd(!showPwd)}
-                  style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.35)', fontSize:14 }}>
+                  style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:L.textLight, fontSize:14 }}>
                   {showPwd ? '🙈' : '👁️'}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', padding:'10px 14px', fontSize:13, color:'#FCA5A5' }}>{error}</div>
+              <div style={{ background:L.redBg, border:'1px solid rgba(220,38,38,0.3)', padding:'10px 14px', fontSize:13, color:L.red }}>{error}</div>
             )}
 
             <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'16px', background:L.white, color:L.noir, border:'none', fontSize:14, fontWeight:600, cursor:loading?'not-allowed':'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'all .25s', opacity:loading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
-              onMouseEnter={e=>{if(!loading){e.currentTarget.style.background=L.gold;e.currentTarget.style.color='#fff';}}}
-              onMouseLeave={e=>{if(!loading){e.currentTarget.style.background=L.white;e.currentTarget.style.color=L.noir;}}}>
-              {loading ? <><div style={{ width:16, height:16, border:'2px solid rgba(0,0,0,0.2)', borderTopColor:L.noir, borderRadius:'50%', animation:'spin .7s linear infinite' }}/>Connexion…</> : 'Se connecter'}
+              style={{ width:'100%', padding:'16px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:loading?'not-allowed':'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'all .25s', opacity:loading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+              onMouseEnter={e=>{if(!loading){e.currentTarget.style.background=L.gold;}}}
+              onMouseLeave={e=>{if(!loading){e.currentTarget.style.background=L.noir;}}}>
+              {loading ? <><div style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius:'50%', animation:'spin .7s linear infinite' }}/>Connexion…</> : 'Se connecter'}
             </button>
           </form>
 
           {/* Séparateur */}
           <div style={{ display:'flex', alignItems:'center', gap:14, margin:'28px 0 20px' }}>
-            <div style={{ flex:1, height:1, background:'rgba(255,255,255,0.08)' }} />
-            <span style={{ fontSize:11, color:'rgba(255,255,255,0.25)', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em' }}>
+            <div style={{ flex:1, height:1, background:L.border }} />
+            <span style={{ fontSize:11, color:L.textLight, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em' }}>
               {activeSector ? SECTOR_CONFIG[activeSector]?.label : 'Démonstration'}
             </span>
-            <div style={{ flex:1, height:1, background:'rgba(255,255,255,0.08)' }} />
+            <div style={{ flex:1, height:1, background:L.border }} />
           </div>
 
           {/* Sélecteur secteur */}
           {!sector && (
-            <div style={{ marginBottom:16, ...(pendingRole ? { background:'rgba(201,169,110,0.08)', border:`1px solid ${L.gold}40`, padding:'14px 16px' } : {}) }}>
+            <div style={{ marginBottom:16, ...(pendingRole ? { background:L.cream, border:`1px solid ${L.gold}40`, padding:'14px 16px' } : {}) }}>
               {pendingRole && (
-                <div style={{ fontSize:12, fontWeight:600, color:L.gold, marginBottom:10 }}>
+                <div style={{ fontSize:12, fontWeight:600, color:L.goldDark, marginBottom:10 }}>
                   Choisissez un secteur pour le compte {pendingRole === 'patron' ? "Chef d'entreprise" : 'Employé'}
                 </div>
               )}
               <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                 {Object.entries(SECTOR_CONFIG).map(([id, cfg]) => (
                   <button key={id} onClick={()=>handleSectorSelect(id)}
-                    style={{ padding:'7px 14px', fontSize:12, fontWeight:600, border:`1px solid ${demoSector===id ? L.gold : 'rgba(255,255,255,0.1)'}`, background:demoSector===id ? 'rgba(201,169,110,0.1)' : 'transparent', color:demoSector===id ? L.gold : 'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
-                    onMouseEnter={e=>{if(demoSector!==id){e.currentTarget.style.borderColor='rgba(255,255,255,0.25)';e.currentTarget.style.color='rgba(255,255,255,0.6)';}}}
-                    onMouseLeave={e=>{if(demoSector!==id){e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';e.currentTarget.style.color='rgba(255,255,255,0.4)';}}}>
+                    style={{ padding:'7px 14px', fontSize:12, fontWeight:600, border:`1px solid ${demoSector===id ? L.gold : L.border}`, background:demoSector===id ? L.cream : 'transparent', color:demoSector===id ? L.goldDark : L.textLight, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
+                    onMouseEnter={e=>{if(demoSector!==id){e.currentTarget.style.borderColor=L.textSec;e.currentTarget.style.color=L.text;}}}
+                    onMouseLeave={e=>{if(demoSector!==id){e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textLight;}}}>
                     {cfg.icon} {cfg.label}
                   </button>
                 ))}
               </div>
-              {pendingRole && <button onClick={()=>setPendingRole(null)} style={{ marginTop:10, fontSize:12, color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', fontFamily:L.font }}>Annuler</button>}
+              {pendingRole && <button onClick={()=>setPendingRole(null)} style={{ marginTop:10, fontSize:12, color:L.textLight, background:'none', border:'none', cursor:'pointer', fontFamily:L.font }}>Annuler</button>}
             </div>
           )}
 
@@ -212,21 +212,21 @@ export default function Login() {
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {demoAccounts.map((c, i) => (
               <button key={i} onClick={()=>remplirDemo(c)}
-                style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 16px', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', cursor:'pointer', fontFamily:L.font, width:'100%', textAlign:'left', transition:'all .2s' }}
-                onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.06)';e.currentTarget.style.borderColor='rgba(255,255,255,0.12)';}}
-                onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.03)';e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';}}>
-                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, background:'rgba(255,255,255,0.05)', flexShrink:0 }}>{c.icon}</div>
+                style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 16px', background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', fontFamily:L.font, width:'100%', textAlign:'left', transition:'all .2s' }}
+                onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.borderColor=L.gold;}}
+                onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.borderColor=L.border;}}>
+                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, background:L.cream, flexShrink:0 }}>{c.icon}</div>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#fff' }}>{c.role}</div>
-                  <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:L.text }}>{c.role}</div>
+                  <div style={{ fontSize:11, color:L.textLight, marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
                 </div>
-                {c.universal && <div style={{ fontSize:10, fontWeight:700, color:L.gold, border:`1px solid ${L.gold}40`, padding:'2px 8px', flexShrink:0, letterSpacing:'0.04em' }}>Universel</div>}
+                {c.universal && <div style={{ fontSize:10, fontWeight:700, color:L.goldDark, background:L.cream, border:`1px solid ${L.gold}40`, padding:'2px 8px', flexShrink:0, letterSpacing:'0.04em' }}>Universel</div>}
               </button>
             ))}
           </div>
 
           {/* Inscription */}
-          <p style={{ textAlign:'center', marginTop:28, fontSize:14, color:'rgba(255,255,255,0.35)' }}>
+          <p style={{ textAlign:'center', marginTop:28, fontSize:14, color:L.textLight }}>
             Pas encore de compte ?{' '}
             <Link to={sector ? `/register?secteur=${sector}` : '/register'} style={{ color:L.gold, textDecoration:'none', fontWeight:600 }}>Créer un compte</Link>
           </p>
@@ -234,8 +234,8 @@ export default function Login() {
       </div>
 
       {/* Footer */}
-      <div style={{ padding:'16px 32px', textAlign:'center', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-        <span style={{ fontSize:11, color:'rgba(255,255,255,0.15)', letterSpacing:'0.1em', textTransform:'uppercase' }}>© 2026 Freample</span>
+      <div style={{ padding:'16px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
+        <span style={{ fontSize:11, color:L.textLight, letterSpacing:'0.1em', textTransform:'uppercase' }}>© 2026 Freample</span>
       </div>
     </div>
   );
