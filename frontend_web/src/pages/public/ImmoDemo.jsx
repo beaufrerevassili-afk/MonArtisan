@@ -97,7 +97,9 @@ export default function ImmoDemo() {
   const [activeSci, setActiveSci] = useState(null);
   const [tab, setTab] = useState('dashboard');
   const [modal, setModal] = useState(null);
-  const [subFin, setSubFin] = useState('resume'); // { type:'addBien'|'addLocataire'|'quittance'|'revision'|'paiement', data }
+  const [subFin, setSubFin] = useState('resume');
+  const [search, setSearch] = useState('');
+  const [addStep, setAddStep] = useState(1); // { type:'addBien'|'addLocataire'|'quittance'|'revision'|'paiement', data }
   const [form, setForm] = useState({});
   const [toast, setToast] = useState(null);
 
@@ -127,15 +129,24 @@ export default function ImmoDemo() {
   // Scoring locataire (basé sur historique paiements)
   const getLocataireScore = (locId) => {
     const bien = data.biens.find(b=>b.locataireId===locId);
-    if(!bien) return { score:0, label:'N/A', color:L.textLight };
+    const loc = data.locataires.find(l=>l.id===locId);
+    if(!bien || !loc) return { score:0, label:'N/A', color:L.textLight, detail:'' };
     const payments = data.paiements.filter(p=>p.bienId===bien.id);
     const paid = payments.filter(p=>p.statut==='paye').length;
     const total = Math.max(payments.length, 1);
     const ratio = paid/total*100;
-    if(ratio>=95) return { score:ratio, label:'Excellent', color:L.green };
-    if(ratio>=80) return { score:ratio, label:'Bon', color:L.blue };
-    if(ratio>=60) return { score:ratio, label:'Moyen', color:L.orange };
-    return { score:ratio, label:'À risque', color:L.red };
+    // Ancienneté du bail en mois
+    const anciennete = Math.max(1, Math.floor((new Date()-new Date(loc.debut))/(1000*60*60*24*30)));
+    // Bonus ancienneté : +5 si > 12 mois, +10 si > 24 mois
+    const bonus = anciennete > 24 ? 10 : anciennete > 12 ? 5 : 0;
+    // Malus si moins de 3 paiements (pas assez de données)
+    const malus = total < 3 ? -10 : 0;
+    const finalScore = Math.min(100, Math.max(0, ratio + bonus + malus));
+    const detail = `${paid}/${total} paiements · ${anciennete} mois d'ancienneté`;
+    if(finalScore>=90) return { score:finalScore, label:'Excellent', color:L.green, detail };
+    if(finalScore>=75) return { score:finalScore, label:'Bon', color:L.blue, detail };
+    if(finalScore>=50) return { score:finalScore, label:'Moyen', color:L.orange, detail };
+    return { score:finalScore, label:'À risque', color:L.red, detail };
   };
 
   // Dépenses
@@ -410,12 +421,21 @@ export default function ImmoDemo() {
 
           {/* ═══ BIENS ═══ */}
           {tab==='biens' && <>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
               <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Biens ({biens.length})</h2>
-              <button onClick={()=>{setForm({type:'Appartement',sciId:activeSci||data.scis[0]?.id});setModal({type:'addBien'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter un bien</button>
+              <button onClick={()=>{setForm({type:'Appartement',sciId:activeSci||data.scis[0]?.id});setAddStep(1);setModal({type:'addBien'});}} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Ajouter un bien</button>
+            </div>
+            <div style={{ display:'flex', gap:8, marginBottom:16 }}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher par adresse, type, locataire..." style={{ ...INP, flex:1 }} />
+              {search && <button onClick={()=>setSearch('')} style={{ ...BTN_OUTLINE, fontSize:11, padding:'5px 12px' }}>✕</button>}
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-              {biens.map(b=>{
+              {biens.filter(b=>{
+                if(!search) return true;
+                const s=search.toLowerCase();
+                const loc=getLocataire(b.locataireId);
+                return (b.nom||'').toLowerCase().includes(s) || b.adresse.toLowerCase().includes(s) || b.type.toLowerCase().includes(s) || (loc?.nom||'').toLowerCase().includes(s) || (loc?.prenom||'').toLowerCase().includes(s);
+              }).map(b=>{
                 const loc = getLocataire(b.locataireId);
                 const credit = (data.credits||[]).find(c=>c.bienId===b.id);
                 const mensCredit = credit?.mensualite || 0;
@@ -1245,58 +1265,62 @@ export default function ImmoDemo() {
         <div style={{ background:L.white, maxWidth:480, width:'100%', maxHeight:'85vh', overflowY:'auto', padding:'28px 24px' }} onClick={e=>e.stopPropagation()}>
 
           {modal.type==='addBien' && <>
-            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Ajouter un bien</h3>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>Nom du bien</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} placeholder="Ex: Appt Liberté" /></div>
-              <div><label style={LBL}>Type</label><select value={form.type||'Appartement'} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={INP}>{[...TYPES_BIEN,'Immeuble','Colocation'].map(t=><option key={t}>{t}</option>)}</select></div>
-            </div>
-            <div style={{ marginBottom:10 }}><label style={LBL}>Adresse</label><input value={form.adresse||''} onChange={e=>setForm(f=>({...f,adresse:e.target.value}))} style={INP} placeholder="12 rue..." /></div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>Surface (m²)</label><input type="number" value={form.surface||''} onChange={e=>setForm(f=>({...f,surface:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Pièces</label><input type="number" value={form.pieces||''} onChange={e=>setForm(f=>({...f,pieces:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Date acquisition</label><input type="date" value={form.dateAcquisition||''} onChange={e=>setForm(f=>({...f,dateAcquisition:e.target.value}))} style={INP} /></div>
-            </div>
-            <div style={{ fontSize:12, fontWeight:700, color:L.gold, margin:'12px 0 8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Acquisition</div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.prixAchat||''} onChange={e=>setForm(f=>({...f,prixAchat:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Frais de notaire (€)</label><input type="number" value={form.fraisNotaire||''} onChange={e=>setForm(f=>({...f,fraisNotaire:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Travaux (€)</label><input type="number" value={form.travaux||''} onChange={e=>setForm(f=>({...f,travaux:e.target.value}))} style={INP} /></div>
-            </div>
-            {form.prixAchat && <div style={{ background:L.cream, padding:'10px 14px', marginBottom:10, fontSize:12 }}>
-              <strong>Coût total :</strong> {(Number(form.prixAchat||0)+Number(form.fraisNotaire||0)+Number(form.travaux||0)).toLocaleString()}€
-            </div>}
-            <div style={{ fontSize:12, fontWeight:700, color:L.green, margin:'12px 0 8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Revenus & Charges</div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>Loyer (€/mois)</label><input type="number" value={form.loyer||''} onChange={e=>setForm(f=>({...f,loyer:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Autres revenus (€/mois)</label><input type="number" value={form.autresRevenus||''} onChange={e=>setForm(f=>({...f,autresRevenus:e.target.value}))} style={INP} placeholder="Airbnb, parking..." /></div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={form.charges||''} onChange={e=>setForm(f=>({...f,charges:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Charges non récup.</label><input type="number" value={form.chargesNonRecup||''} onChange={e=>setForm(f=>({...f,chargesNonRecup:e.target.value}))} style={INP} /></div>
-              <div><label style={LBL}>Taxe foncière (€/an)</label><input type="number" value={form.taxeFonciere||''} onChange={e=>setForm(f=>({...f,taxeFonciere:e.target.value}))} style={INP} /></div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
-              <div><label style={LBL}>DPE</label><select value={form.dpe||''} onChange={e=>setForm(f=>({...f,dpe:e.target.value}))} style={INP}><option value="">Non renseigné</option>{['A','B','C','D','E','F','G'].map(d=><option key={d}>{d}</option>)}</select></div>
-              <div><label style={LBL}>Valeur estimée actuelle (€)</label><input type="number" value={form.valeur||''} onChange={e=>setForm(f=>({...f,valeur:e.target.value}))} style={INP} /></div>
-            </div>
-            {/* Calculs auto */}
-            {form.prixAchat && form.loyer && (()=>{
-              const cout=Number(form.prixAchat||0)+Number(form.fraisNotaire||0)+Number(form.travaux||0);
-              const revMens=Number(form.loyer||0)+Number(form.autresRevenus||0);
-              const depMens=Number(form.charges||0)+Number(form.chargesNonRecup||0)+(Number(form.taxeFonciere||0)/12);
-              const cf=revMens-depMens;
-              const rdtBrut=cout>0?(revMens*12/cout*100).toFixed(2):'0';
-              const rdtNet=cout>0?((revMens-depMens)*12/cout*100).toFixed(2):'0';
-              return <div style={{ background:L.noir, color:'#fff', padding:'16px', marginBottom:14 }}>
-                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Calculs automatiques</div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
-                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Rendement brut</div><div style={{ fontSize:18, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div></div>
-                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Rendement net</div><div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div></div>
-                  <div><div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>Cashflow</div><div style={{ fontSize:18, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
-                </div>
-              </div>;
-            })()}
-            <button onClick={addBien} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Ajouter</button>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 4px' }}>Ajouter un bien</h3>
+            <div style={{ display:'flex', gap:4, marginBottom:16 }}>{[1,2].map(i=><div key={i} style={{ flex:1, height:3, background:addStep>=i?L.gold:L.border, borderRadius:2, transition:'background .3s' }} />)}</div>
+
+            {addStep===1 && <>
+              <div style={{ fontSize:12, fontWeight:700, color:L.gold, margin:'0 0 10px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Étape 1 — Informations essentielles</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Nom du bien *</label><input value={form.nom||''} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} style={INP} placeholder="Ex: Appt Liberté" /></div>
+                <div><label style={LBL}>Type *</label><select value={form.type||'Appartement'} onChange={e=>setForm(f=>({...f,type:e.target.value}))} style={INP}>{[...TYPES_BIEN,'Immeuble','Colocation'].map(t=><option key={t}>{t}</option>)}</select></div>
+              </div>
+              <div style={{ marginBottom:10 }}><label style={LBL}>Adresse *</label><input value={form.adresse||''} onChange={e=>setForm(f=>({...f,adresse:e.target.value}))} style={INP} placeholder="12 rue..." /></div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Prix d'achat (€) *</label><input type="number" value={form.prixAchat||''} onChange={e=>setForm(f=>({...f,prixAchat:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Loyer (€/mois) *</label><input type="number" value={form.loyer||''} onChange={e=>setForm(f=>({...f,loyer:e.target.value}))} style={INP} /></div>
+              </div>
+              <button onClick={()=>{if(form.nom&&form.adresse&&form.prixAchat) setAddStep(2); else showToast('Remplissez les champs obligatoires');}} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Continuer →</button>
+            </>}
+
+            {addStep===2 && <>
+              <div style={{ fontSize:12, fontWeight:700, color:L.gold, margin:'0 0 10px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Étape 2 — Détails (optionnel)</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Surface (m²)</label><input type="number" value={form.surface||''} onChange={e=>setForm(f=>({...f,surface:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Pièces</label><input type="number" value={form.pieces||''} onChange={e=>setForm(f=>({...f,pieces:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Date acquisition</label><input type="date" value={form.dateAcquisition||''} onChange={e=>setForm(f=>({...f,dateAcquisition:e.target.value}))} style={INP} /></div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Frais notaire (€)</label><input type="number" value={form.fraisNotaire||''} onChange={e=>setForm(f=>({...f,fraisNotaire:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Travaux (€)</label><input type="number" value={form.travaux||''} onChange={e=>setForm(f=>({...f,travaux:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Valeur actuelle (€)</label><input type="number" value={form.valeur||''} onChange={e=>setForm(f=>({...f,valeur:e.target.value}))} style={INP} /></div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>Charges (€/mois)</label><input type="number" value={form.charges||''} onChange={e=>setForm(f=>({...f,charges:e.target.value}))} style={INP} /></div>
+                <div><label style={LBL}>Autres revenus</label><input type="number" value={form.autresRevenus||''} onChange={e=>setForm(f=>({...f,autresRevenus:e.target.value}))} style={INP} placeholder="Airbnb..." /></div>
+                <div><label style={LBL}>Taxe foncière (€/an)</label><input type="number" value={form.taxeFonciere||''} onChange={e=>setForm(f=>({...f,taxeFonciere:e.target.value}))} style={INP} /></div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+                <div><label style={LBL}>DPE</label><select value={form.dpe||''} onChange={e=>setForm(f=>({...f,dpe:e.target.value}))} style={INP}><option value="">—</option>{['A','B','C','D','E','F','G'].map(d=><option key={d}>{d}</option>)}</select></div>
+                <div><label style={LBL}>Charges non récup.</label><input type="number" value={form.chargesNonRecup||''} onChange={e=>setForm(f=>({...f,chargesNonRecup:e.target.value}))} style={INP} /></div>
+              </div>
+              {form.prixAchat && form.loyer && (()=>{
+                const cout=Number(form.prixAchat||0)+Number(form.fraisNotaire||0)+Number(form.travaux||0);
+                const revMens=Number(form.loyer||0)+Number(form.autresRevenus||0);
+                const depMens=Number(form.charges||0)+Number(form.chargesNonRecup||0)+(Number(form.taxeFonciere||0)/12);
+                const cf=revMens-depMens;
+                return <div style={{ background:L.noir, color:'#fff', padding:'14px', marginBottom:12 }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, fontSize:12 }}>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt brut</div><div style={{ fontSize:16, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{cout>0?(revMens*12/cout*100).toFixed(1):'0'}%</div></div>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt net</div><div style={{ fontSize:16, fontWeight:200, color:L.green, fontFamily:L.serif }}>{cout>0?((revMens-depMens)*12/cout*100).toFixed(1):'0'}%</div></div>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Cashflow</div><div style={{ fontSize:16, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
+                  </div>
+                </div>;
+              })()}
+              <div style={{ display:'flex', gap:8 }}>
+                <button onClick={()=>setAddStep(1)} style={{ ...BTN_OUTLINE, flex:1 }}>← Retour</button>
+                <button onClick={addBien} style={{ ...BTN, flex:2 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Ajouter le bien</button>
+              </div>
+            </>}
           </>}
 
           {modal.type==='addLocataire' && <>
@@ -1467,6 +1491,31 @@ export default function ImmoDemo() {
             </div>
             <button onClick={()=>{showToast('État des lieux enregistré');setModal(null);setForm({});}} style={{ ...BTN, width:'100%', marginTop:8 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Enregistrer l'EDL</button>
           </>}
+
+          {modal.type==='courrier' && modal.data && (()=>{
+            const type=modal.data.type;
+            const loc=data.locataires[0]; const bien=data.biens.find(b=>b.locataireId===loc?.id)||data.biens[0];
+            const templates={
+              augmentation:{titre:'Notification d\'augmentation de loyer',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nConformément aux dispositions de votre bail et à l'indice de référence des loyers (IRL) publié par l'INSEE, je vous informe que votre loyer sera révisé à compter du prochain terme.\n\nLoyer actuel : ${bien?.loyer||0}€\nNouveau loyer : à calculer selon IRL\n\nCette révision prendra effet à la date anniversaire de votre bail.\n\nVeuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\n\nLe bailleur`},
+              conge_vente:{titre:'Congé pour vente',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nJ'ai l'honneur de vous notifier, conformément à l'article 15 de la loi du 6 juillet 1989, mon intention de vendre le bien situé au ${bien?.adresse||''}.\n\nCe congé prend effet à l'expiration de votre bail en cours, soit le ${loc?.fin||''}.\n\nVous bénéficiez d'un droit de préemption sur ce bien aux conditions suivantes :\n- Prix de vente : à définir\n- Conditions : à définir\n\nVous disposez d'un délai de 2 mois pour exercer ce droit.\n\nLe bailleur`},
+              renouvellement:{titre:'Proposition de renouvellement de bail',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nVotre bail arrivant à échéance le ${loc?.fin||''}, je vous propose son renouvellement aux conditions suivantes :\n\nDurée : 3 ans\nLoyer mensuel : ${bien?.loyer||0}€\nCharges : ${bien?.charges||0}€/mois\n\nLes autres conditions restent inchangées.\n\nDans l'attente de votre réponse, veuillez agréer mes salutations distinguées.\n\nLe bailleur`},
+              regularisation:{titre:'Régularisation annuelle des charges',corps:`Madame, Monsieur ${loc?.prenom||''} ${loc?.nom||''},\n\nConformément à l'article 23 de la loi du 6 juillet 1989, je procède à la régularisation annuelle des charges locatives.\n\nProvisions versées : ${(bien?.charges||0)*12}€\nCharges réelles : à compléter\nSolde : à calculer\n\nLe détail des charges est à votre disposition sur demande.\n\nLe bailleur`},
+              attestation:{titre:'Attestation de loyer (CAF/APL)',corps:`Je soussigné(e), bailleur du logement situé au ${bien?.adresse||''}, certifie que :\n\nMonsieur/Madame ${loc?.prenom||''} ${loc?.nom||''} est locataire de ce logement depuis le ${loc?.debut||''}.\n\nLe montant du loyer mensuel est de ${bien?.loyer||0}€ hors charges.\nLe montant des charges mensuelles est de ${bien?.charges||0}€.\n\nCette attestation est délivrée pour servir et valoir ce que de droit.\n\nFait à __________, le ${new Date().toLocaleDateString('fr-FR')}\n\nLe bailleur\n(Signature)`},
+            };
+            const tpl=templates[type]||{titre:'Courrier',corps:''};
+            return <>
+              <div style={{ textAlign:'center', marginBottom:16 }}>
+                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:8 }}>Courrier</div>
+                <div style={{ fontSize:16, fontWeight:800 }}>{tpl.titre}</div>
+              </div>
+              <div style={{ border:`1px solid ${L.border}`, padding:'20px', marginBottom:16, fontSize:13, lineHeight:1.8, whiteSpace:'pre-wrap' }}>
+                <p style={{ textAlign:'right', color:L.textSec }}>Fait à __________, le {new Date().toLocaleDateString('fr-FR')}</p>
+                <p><strong>Objet : {tpl.titre}</strong></p>
+                {tpl.corps}
+              </div>
+              <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
+            </>;
+          })()}
 
           {modal.type==='addDepense' && <>
             <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Ajouter une dépense</h3>
