@@ -1697,25 +1697,38 @@ export default function ImmoDemo() {
 
                 {/* Bouton préparer dossier */}
                 <div style={{ ...CARD, borderLeft:`4px solid ${L.gold}`, marginBottom:16 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
                     <div>
-                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Préparer un dossier d'investissement</div>
-                      <div style={{ fontSize:12, color:L.textSec }}>Créez un dossier professionnel avec marge de sécurité, scénarios et synthèse pour votre banquier.</div>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Dossiers d'investissement</div>
+                      <div style={{ fontSize:12, color:L.textSec }}>Créez et comparez plusieurs dossiers pour vos projets.</div>
                     </div>
-                    {!data.dossierInvestissement ?
-                      <button onClick={()=>{
-                        const bienP=biens.find(b=>!b.locataireId)||biens[biens.length-1]||{};
-                        const prix=bienP.prixAchat||200000;
-                        const dossier={prix,notaire:Math.round(prix*0.075),travaux:bienP.travaux||10000,loyer:bienP.loyer||800,charges:bienP.charges||150,apport:0,secu:5,taux:2.5,duree:20,assurance:35,strategie:'Location nue',neuf:false,created:new Date().toISOString()};
-                        setData(d=>({...d,dossierInvestissement:dossier}));
-                        showToast('Dossier créé');
-                      }} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Créer le dossier</button>
-                    : <div style={{ display:'flex', gap:6 }}>
-                        <button onClick={()=>setModal({type:'dossierBancaire'})} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Modifier le dossier</button>
-                        <button onClick={()=>setModal({type:'dossierView'})} style={{ ...BTN_OUTLINE, flexShrink:0 }}>Voir le PDF</button>
-                      </div>
-                    }
+                    <button onClick={()=>{setForm({dossierNom:''});setModal({type:'nouveauDossier'});}} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Nouveau dossier</button>
                   </div>
+                  {(data.dossiers||[]).length===0 ? (
+                    <div style={{ fontSize:12, color:L.textLight, textAlign:'center', padding:16 }}>Aucun dossier — cliquez sur "+ Nouveau dossier" pour commencer</div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                      {(data.dossiers||[]).map(dos=>{
+                        const cf=dos.loyer-dos.charges-(dos.mensualite||0);
+                        return <div key={dos.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', border:`1px solid ${L.border}`, background:L.white, transition:'all .15s' }}
+                          onMouseEnter={e=>e.currentTarget.style.borderColor=L.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontSize:14, fontWeight:700 }}>{dos.nom}</div>
+                            <div style={{ fontSize:11, color:L.textSec }}>{dos.strategie} · {dos.prix?.toLocaleString()}€ · Loyer {dos.loyer}€ · Créé le {new Date(dos.created).toLocaleDateString('fr-FR')}</div>
+                          </div>
+                          <div style={{ textAlign:'right', marginRight:12 }}>
+                            <div style={{ fontSize:16, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf}€</div>
+                            <div style={{ fontSize:9, color:L.textLight }}>cashflow/mois</div>
+                          </div>
+                          <div style={{ display:'flex', gap:4 }}>
+                            <button onClick={()=>{setForm({});setModal({type:'dossierBancaire',data:dos});}} style={{ ...BTN, fontSize:10, padding:'5px 10px' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Modifier</button>
+                            <button onClick={()=>setModal({type:'dossierView',data:dos})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>PDF</button>
+                            <button onClick={()=>{setData(d=>({...d,dossiers:(d.dossiers||[]).filter(x=>x.id!==dos.id)}));showToast('Dossier supprimé');}} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>✕</button>
+                          </div>
+                        </div>;
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ fontSize:11, color:L.textLight }}>Estimation basée sur un taux d'endettement de 35% des revenus locatifs. Les critères varient selon les banques.</div>
@@ -2023,7 +2036,7 @@ export default function ImmoDemo() {
           </>}
 
           {(modal.type==='dossierBancaire'||modal.type==='dossierView') && (()=>{
-            const d=data.dossierInvestissement||{};
+            const d=modal.data||data.dossierInvestissement||{};
             const isEdit=modal.type==='dossierBancaire';
             const f=isEdit?form:{};
             const isNeuf=isEdit?(form.dossierNeuf??d.neuf??false):d.neuf;
@@ -2060,7 +2073,7 @@ export default function ImmoDemo() {
             return <>
               <div style={{ textAlign:'center', marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:6 }}>Dossier d'investissement</div>
-                <div style={{ fontSize:18, fontWeight:800 }}>Demande de financement immobilier</div>
+                <div style={{ fontSize:18, fontWeight:800 }}>{d.nom||'Demande de financement immobilier'}</div>
                 <div style={{ fontSize:11, color:L.textSec, marginTop:4 }}>Freample Immo · {new Date().toLocaleDateString('fr-FR')}</div>
               </div>
 
@@ -2069,8 +2082,11 @@ export default function ImmoDemo() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
                   <div style={{ fontWeight:700, fontSize:13 }}>Paramètres du projet</div>
                   <button onClick={()=>{
-                    setData(d=>({...d,dossierInvestissement:{prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,created:d.dossierInvestissement?.created||new Date().toISOString()}}));
-                    setModal({type:'dossierView'}); showToast('Dossier mis à jour');
+                    const t2=tauxCredit/100/12;const n2=dureeCredit*12;const emp2=coutAjuste-apport;
+                    const mens2=t2>0?Math.round(emp2*(t2*Math.pow(1+t2,n2))/(Math.pow(1+t2,n2)-1)):Math.round(emp2/n2);
+                    const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
+                    setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
+                    setModal({type:'dossierView',data:updated}); showToast('Dossier mis à jour');
                   }} style={{ ...BTN, fontSize:11 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>💾 Enregistrer & Voir le PDF</button>
                 </div>
 
@@ -2211,6 +2227,27 @@ export default function ImmoDemo() {
               <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>📄 Imprimer / Exporter PDF</button>
             </>;
           })()}
+
+          {modal.type==='nouveauDossier' && <>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 16px' }}>Nouveau dossier d'investissement</h3>
+            <div style={{ marginBottom:14 }}><label style={LBL}>Nom du dossier *</label><input value={form.dossierNom||''} onChange={e=>setForm(f=>({...f,dossierNom:e.target.value}))} style={INP} placeholder="Ex: Appartement Nice T3, Studio Lyon 7e..." /></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
+              <div><label style={LBL}>Prix estimé (€)</label><input type="number" value={form.dossierPrix||''} onChange={e=>setForm(f=>({...f,dossierPrix:e.target.value}))} style={INP} placeholder="200000" /></div>
+              <div><label style={LBL}>Loyer estimé (€/mois)</label><input type="number" value={form.dossierLoyer||''} onChange={e=>setForm(f=>({...f,dossierLoyer:e.target.value}))} style={INP} placeholder="800" /></div>
+            </div>
+            <div style={{ marginBottom:14 }}><label style={LBL}>Stratégie</label><select value={form.dossierStrategie||'Location nue'} onChange={e=>setForm(f=>({...f,dossierStrategie:e.target.value}))} style={INP}><option>Location nue</option><option>Location meublée</option><option>Patrimoniale</option><option>Colocation</option></select></div>
+            <button onClick={()=>{
+              if(!form.dossierNom){showToast('Donnez un nom au dossier');return;}
+              const prix=Number(form.dossierPrix)||200000;
+              const dos={id:genId(),nom:form.dossierNom,prix,notaire:Math.round(prix*0.075),travaux:10000,loyer:Number(form.dossierLoyer)||800,charges:150,apport:0,secu:5,taux:2.5,duree:20,assurance:35,strategie:form.dossierStrategie||'Location nue',neuf:false,created:new Date().toISOString()};
+              // Pré-calculer mensualité
+              const t=dos.taux/100/12;const n=dos.duree*12;const emprunt=dos.prix+dos.notaire+dos.travaux-dos.apport;
+              dos.mensualite=t>0?Math.round(emprunt*(t*Math.pow(1+t,n))/(Math.pow(1+t,n)-1)):Math.round(emprunt/n);
+              setData(d=>({...d,dossiers:[...(d.dossiers||[]),dos]}));
+              setModal({type:'dossierBancaire',data:dos});setForm({});
+              showToast(`Dossier "${dos.nom}" créé`);
+            }} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Créer et modifier</button>
+          </>}
 
           {modal.type==='editObjectifs' && (()=>{
             const obj=data.objectifs||{};
