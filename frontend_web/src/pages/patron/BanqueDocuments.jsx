@@ -134,7 +134,7 @@ export default function BanqueDocuments() {
       {/* Search + filter */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
-          <IconSearch size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8E8E93' }} />
+          <IconSearch size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#636363' }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -159,14 +159,14 @@ export default function BanqueDocuments() {
         {/* Column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 160px 120px 120px 180px', gap: 0, background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
           {['Document', 'Catégorie', 'Date', 'Statut', 'Actions'].map(h => (
-            <div key={h} style={{ padding: '10px 16px', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</div>
+            <div key={h} style={{ padding: '10px 16px', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</div>
           ))}
         </div>
 
         {loadingDevis && catFilter !== 'Devis' ? null : null}
 
         {filtered.length === 0 ? (
-          <div style={{ padding: '60px 24px', textAlign: 'center', color: '#8E8E93' }}>
+          <div style={{ padding: '60px 24px', textAlign: 'center', color: '#636363' }}>
             <IconDocument size={36} />
             <p style={{ marginTop: 12 }}>Aucun document trouvé</p>
           </div>
@@ -190,7 +190,7 @@ export default function BanqueDocuments() {
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14, color: '#1C1C1E' }}>{doc.nom}</div>
-                  <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2, fontFamily: 'monospace' }}>{link}</div>
+                  <div style={{ fontSize: 11, color: '#636363', marginTop: 2, fontFamily: 'monospace' }}>{link}</div>
                 </div>
               </div>
 
@@ -214,7 +214,7 @@ export default function BanqueDocuments() {
                   }}>
                     {doc.statut.charAt(0).toUpperCase() + doc.statut.slice(1)}
                   </span>
-                ) : <span style={{ fontSize: 13, color: '#8E8E93' }}>—</span>}
+                ) : <span style={{ fontSize: 13, color: '#636363' }}>—</span>}
               </div>
 
               {/* Actions */}

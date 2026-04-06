@@ -9,7 +9,7 @@ const V_BG = '#F5F3FF';
 const V_SOFT = '#EDE9FE';
 
 const CARD = { background:'#fff', borderRadius:14, padding:'20px 24px', border:'1px solid #E9E5F5', boxShadow:'0 1px 4px rgba(0,0,0,.04)' };
-const HDR = { fontSize:13, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 };
+const HDR = { fontSize:13, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 };
 const BTN = { background:V, color:'#fff', border:'none', borderRadius:10, padding:'10px 20px', fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' };
 const GHOST = { background:'transparent', color:'#6B7280', border:'1px solid #E9E5F5', borderRadius:10, padding:'9px 18px', fontWeight:600, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' };
 const OVL = { position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 };
@@ -37,7 +37,7 @@ const PROJET_STATUS = {
   revision:   { label:'Révision',   bg:'#FFF7ED', border:'#FED7AA', color:'#C2410C' },
   livre:      { label:'Livré',      bg:'#D1FAE5', border:'#86EFAC', color:'#065F46' },
   paye:       { label:'Payé',       bg:'#F0FDF4', border:'#5EEAD4', color:'#0F766E' },
-  archive:    { label:'Archivé',    bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B' },
+  archive:    { label:'Archivé',    bg:'#F3F3F3', border:'#E5E5E5', color:'#636363' },
 };
 
 // ── Données vides — les vrais projets viennent de la base via /com/projets ──
@@ -67,9 +67,9 @@ const DEMO_MESSAGES = [];
 function KpiCard({ label, value, sub, accent }) {
   return (
     <div style={{ ...CARD, flex:1, minWidth:140 }}>
-      <div style={{ fontSize:12, fontWeight:600, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>{label}</div>
+      <div style={{ fontSize:12, fontWeight:600, color:'#636363', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>{label}</div>
       <div style={{ fontSize:26, fontWeight:800, color:accent||'#1C1C1E', lineHeight:1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize:12, color:'#8B8B8B', marginTop:4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize:12, color:'#636363', marginTop:4 }}>{sub}</div>}
     </div>
   );
 }
@@ -80,7 +80,7 @@ function StatusBadge({ statut }) {
 }
 
 function FidBadge({ f }) {
-  const m = { vip:{bg:'#FEF3C7',c:'#92400E',l:'VIP'}, fidele:{bg:'#D1FAE5',c:'#065F46',l:'Fidèle'}, regulier:{bg:'#DBEAFE',c:'#1D4ED8',l:'Régulier'}, nouveau:{bg:'#F3F3F3',c:'#8B8B8B',l:'Nouveau'} };
+  const m = { vip:{bg:'#FEF3C7',c:'#92400E',l:'VIP'}, fidele:{bg:'#D1FAE5',c:'#065F46',l:'Fidèle'}, regulier:{bg:'#DBEAFE',c:'#1D4ED8',l:'Régulier'}, nouveau:{bg:'#F3F3F3',c:'#636363',l:'Nouveau'} };
   const s = m[f]||m.nouveau;
   return <span style={{ background:s.bg, color:s.c, borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{s.l}</span>;
 }
@@ -561,14 +561,14 @@ export default function DashboardCom() {
               </div>
 
               {sortedEvents.length === 0 ? (
-                <div style={{ ...CARD, padding:'20px', textAlign:'center', color:'#8B8B8B', border:'1px dashed #E9E5F5' }}>
+                <div style={{ ...CARD, padding:'20px', textAlign:'center', color:'#636363', border:'1px dashed #E9E5F5' }}>
                   <div style={{ fontSize:14 }}>Aucun événement aujourd'hui</div>
                   <button onClick={() => setTab('agenda')} style={{ ...GHOST, padding:'6px 14px', fontSize:12, marginTop:8 }}>+ Planifier</button>
                 </div>
               ) : (
                 <div style={{ ...CARD, padding:0, overflow:'hidden' }}>
                   {sortedEvents.map((evt, i) => {
-                    const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B', dot:'#8B8B8B' };
+                    const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#636363', dot:'#636363' };
                     const tc = { montage:{icon:'🎬'}, revision:{icon:'🔄'}, reunion:{icon:'📞'}, livraison:{icon:'📦'}, prospection:{icon:'🔍'}, perso:{icon:'👤'} };
                     const isPast = evt.heureFin && evt.heureFin < nowH;
                     const isCurrent = evt.heure <= nowH && (!evt.heureFin || evt.heureFin > nowH);
@@ -579,16 +579,16 @@ export default function DashboardCom() {
                         {/* Heure */}
                         <div style={{ minWidth:50, flexShrink:0 }}>
                           <div style={{ fontSize:14, fontWeight:700, color: isCurrent ? mc.color : '#1C1C1E' }}>{evt.heure}</div>
-                          {evt.heureFin && <div style={{ fontSize:11, color:'#8B8B8B' }}>{evt.heureFin}</div>}
+                          {evt.heureFin && <div style={{ fontSize:11, color:'#636363' }}>{evt.heureFin}</div>}
                         </div>
                         {/* Contenu */}
                         <div style={{ flex:1 }}>
                           <div style={{ fontSize:14, fontWeight:600, color:'#1C1C1E', display:'flex', alignItems:'center', gap:6 }}>
                             {tc[evt.type]?.icon || '📌'} {evt.titre}
-                            {isPast && <span style={{ fontSize:11, color:'#8B8B8B' }}>✓</span>}
+                            {isPast && <span style={{ fontSize:11, color:'#636363' }}>✓</span>}
                             {isCurrent && <span style={{ width:6, height:6, borderRadius:'50%', background:mc.dot, display:'inline-block', animation:'pulse 2s infinite' }} />}
                           </div>
-                          {evt.projet && <div style={{ fontSize:12, color:'#8B8B8B' }}>🔗 {evt.projet}</div>}
+                          {evt.projet && <div style={{ fontSize:12, color:'#636363' }}>🔗 {evt.projet}</div>}
                         </div>
                         {/* Badge monteur */}
                         <div style={{ padding:'3px 10px', borderRadius:999, background:mc.bg, border:`1px solid ${mc.border}`, fontSize:11, fontWeight:700, color:mc.color, flexShrink:0 }}>
@@ -616,7 +616,7 @@ export default function DashboardCom() {
                   <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
                   <span style={{ fontSize:12, fontWeight:700, color:'#D97706', background:'#FEF3C7', padding:'3px 10px', borderRadius:10 }}>Nouveau</span>
                 </div>
-                <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:8 }}>{p.client} · {p.clientEmail || ''}</div>
+                <div style={{ fontSize:13, color:'#636363', marginBottom:8 }}>{p.client} · {p.clientEmail || ''}</div>
                 {p.notes && <div style={{ fontSize:13, color:'#5B21B6', background:V_SOFT, padding:'8px 12px', borderRadius:8, marginBottom:8 }}>📝 {p.notes.slice(0,100)}{p.notes.length>100?'...':''}</div>}
                 <div style={{ display:'flex', gap:8 }}>
                   <button onClick={(e) => { e.stopPropagation(); accepterBrief(p); }} style={{ ...BTN, padding:'8px 16px', fontSize:13 }}>✅ Accepter</button>
@@ -643,7 +643,7 @@ export default function DashboardCom() {
                     <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
                     {urgence && <span style={{ fontSize:12, fontWeight:700, color:urgence==='retard'?'#DC2626':'#D97706' }}>{urgence==='retard'?'⚠️ Retard':'🔥 Urgent'}</span>}
                   </div>
-                  <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:10 }}>{p.client} · {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
+                  <div style={{ fontSize:13, color:'#636363', marginBottom:10 }}>{p.client} · {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
 
                   {/* Grande barre d'avancement */}
                   <div style={{ background:'#F0F0F0', borderRadius:6, height:10, marginBottom:8 }}>
@@ -673,7 +673,7 @@ export default function DashboardCom() {
                       <button onClick={() => startChrono(p.id)} style={{ padding:'5px 12px', background:V_SOFT, color:V, border:`1px solid ${V}40`, borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>▶ Chrono</button>
                     )}
                     {(() => { const r = getChronoRentabilite(p.id, p.montant); return r ? <span style={{ fontSize:12, color: r >= 30 ? '#059669' : r >= 15 ? '#D97706' : '#DC2626', fontWeight:600 }}>{r}€/h</span> : null; })()}
-                    {p.montant > 0 && <span style={{ fontSize:11, color:'#8B8B8B' }}>({p.montant}€ le projet)</span>}
+                    {p.montant > 0 && <span style={{ fontSize:11, color:'#636363' }}>({p.montant}€ le projet)</span>}
                   </div>
                 </div>
               );
@@ -690,7 +690,7 @@ export default function DashboardCom() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <div>
                     <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
-                    <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
+                    <div style={{ fontSize:12, color:'#636363' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); clientAAccepte(p.id); }} style={{ ...BTN, padding:'7px 14px', fontSize:12, background:'#059669' }}>Client OK → Démarrer</button>
                 </div>
@@ -708,7 +708,7 @@ export default function DashboardCom() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <div>
                     <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
-                    <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
+                    <div style={{ fontSize:12, color:'#636363' }}>{p.client} · {p.montant?p.montant+'€':'—'}</div>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); archiverProjet(p.id); }} style={{ ...GHOST, padding:'7px 14px', fontSize:12 }}>📦 Archiver</button>
                 </div>
@@ -722,7 +722,7 @@ export default function DashboardCom() {
           <div style={{ ...CARD, padding:40, textAlign:'center' }}>
             <div style={{ fontSize:48, marginBottom:12 }}>☕</div>
             <div style={{ fontSize:18, fontWeight:700, color:'#1C1C1E', marginBottom:6 }}>Rien à faire pour le moment</div>
-            <div style={{ fontSize:14, color:'#8B8B8B' }}>Les nouvelles demandes apparaîtront ici automatiquement</div>
+            <div style={{ fontSize:14, color:'#636363' }}>Les nouvelles demandes apparaîtront ici automatiquement</div>
           </div>
         )}
 
@@ -747,7 +747,7 @@ export default function DashboardCom() {
         <div style={CARD}>
           <div style={HDR}>Projets actifs</div>
           {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).length === 0 && (
-            <div style={{ padding:24, textAlign:'center', color:'#8B8B8B', fontSize:14 }}>Aucun projet en cours — les demandes apparaîtront ici</div>
+            <div style={{ padding:24, textAlign:'center', color:'#636363', fontSize:14 }}>Aucun projet en cours — les demandes apparaîtront ici</div>
           )}
           {projets.filter(p => !['livre','paye','refuse','archive'].includes(p.statut)).filter(p => !mesTaches || p.responsable).map(p => {
             const avancement = getAvancement(p);
@@ -757,7 +757,7 @@ export default function DashboardCom() {
                 <div style={{ width:40, height:40, borderRadius:10, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🎬</div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:700, fontSize:14, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.titre}</div>
-                  <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.responsable || '⚠️ À assigner'} · {p.montant?p.montant+'€':'À définir'}</div>
+                  <div style={{ fontSize:12, color:'#636363' }}>{p.responsable || '⚠️ À assigner'} · {p.montant?p.montant+'€':'À définir'}</div>
                   {/* Barre avancement */}
                   {['en_cours','revision'].includes(p.statut) && (
                     <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4 }}>
@@ -771,7 +771,7 @@ export default function DashboardCom() {
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4, flexShrink:0 }}>
                   <StatusBadge statut={p.statut} />
                   {p.dateFin && (
-                    <span style={{ fontSize:11, fontWeight:600, color: urgence==='retard'?'#DC2626':urgence==='urgent'?'#D97706':'#8B8B8B' }}>
+                    <span style={{ fontSize:11, fontWeight:600, color: urgence==='retard'?'#DC2626':urgence==='urgent'?'#D97706':'#636363' }}>
                       {urgence==='retard'?'⚠️ En retard':urgence==='urgent'?'🔥 J-'+Math.ceil((new Date(p.dateFin)-new Date())/(1000*60*60*24)):'📅 '+p.dateFin}
                     </span>
                   )}
@@ -789,7 +789,7 @@ export default function DashboardCom() {
             <button key={v} onClick={() => setProjetFilter(v)} style={{ padding:'7px 14px', borderRadius:20, border:'none', cursor:'pointer', fontWeight: projetFilter===v ? 700 : 500, background: projetFilter===v ? V : '#F3F3F3', color: projetFilter===v ? '#fff' : '#666', fontFamily:'inherit', fontSize:'0.825rem' }}>{l}</button>
           ))}
         </div>
-        {filteredProjets.length === 0 && <div style={{ ...CARD, padding:32, textAlign:'center', color:'#8B8B8B' }}>Aucun projet</div>}
+        {filteredProjets.length === 0 && <div style={{ ...CARD, padding:32, textAlign:'center', color:'#636363' }}>Aucun projet</div>}
         {filteredProjets.map(p => {
           const avancement = getAvancement(p);
           const urgence = getUrgence(p);
@@ -804,7 +804,7 @@ export default function DashboardCom() {
                   <StatusBadge statut={p.statut} />
                 </div>
               </div>
-              <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:6 }}>{p.client} · 👤 {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
+              <div style={{ fontSize:13, color:'#636363', marginBottom:6 }}>{p.client} · 👤 {p.responsable || 'À assigner'}{p.dateFin ? ` · 📅 ${p.dateFin}` : ''}</div>
               {/* Avancement */}
               {['en_cours','revision'].includes(p.statut) && (
                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
@@ -833,7 +833,7 @@ export default function DashboardCom() {
         const saveEvent = () => saveAgendaEvent(joursDates);
         const deleteEvent = (id) => deleteAgendaEvent(id);
 
-        const typeColors = { montage:{bg:'#F5F3FF',border:'#C4B5FD',color:'#5B21B6',label:'🎬 Montage'}, revision:{bg:'#FFF7ED',border:'#FED7AA',color:'#C2410C',label:'🔄 Révision'}, reunion:{bg:'#DBEAFE',border:'#93C5FD',color:'#1D4ED8',label:'📞 Réunion'}, livraison:{bg:'#D1FAE5',border:'#86EFAC',color:'#065F46',label:'📦 Livraison'}, prospection:{bg:'#FEF3C7',border:'#FDE047',color:'#713F12',label:'🔍 Prospection'}, perso:{bg:'#F3F3F3',border:'#E5E5E5',color:'#8B8B8B',label:'👤 Perso'} };
+        const typeColors = { montage:{bg:'#F5F3FF',border:'#C4B5FD',color:'#5B21B6',label:'🎬 Montage'}, revision:{bg:'#FFF7ED',border:'#FED7AA',color:'#C2410C',label:'🔄 Révision'}, reunion:{bg:'#DBEAFE',border:'#93C5FD',color:'#1D4ED8',label:'📞 Réunion'}, livraison:{bg:'#D1FAE5',border:'#86EFAC',color:'#065F46',label:'📦 Livraison'}, prospection:{bg:'#FEF3C7',border:'#FDE047',color:'#713F12',label:'🔍 Prospection'}, perso:{bg:'#F3F3F3',border:'#E5E5E5',color:'#636363',label:'👤 Perso'} };
 
         // Deadlines des projets en cours
         const deadlines = projets.filter(p => p.dateFin && ['en_cours','revision'].includes(p.statut)).map(p => ({ ...p, isDeadline:true }));
@@ -857,14 +857,14 @@ export default function DashboardCom() {
             <div style={{ padding:'10px', borderBottom:'1px solid #E9E5F5', background:'#FAFAFA' }} />
             {joursDates.map((j, i) => (
               <div key={i} style={{ padding:'10px 8px', borderBottom:'1px solid #E9E5F5', borderLeft:'1px solid #E9E5F5', textAlign:'center', background: j.isToday ? V_SOFT : '#FAFAFA' }}>
-                <div style={{ fontSize:12, fontWeight:600, color: j.isToday ? V : '#8B8B8B' }}>{j.label}</div>
+                <div style={{ fontSize:12, fontWeight:600, color: j.isToday ? V : '#636363' }}>{j.label}</div>
                 <div style={{ fontSize:18, fontWeight:800, color: j.isToday ? V : '#1C1C1E' }}>{j.num}</div>
               </div>
             ))}
 
             {/* Lignes horaires */}
             {HEURES.map(h => (<React.Fragment key={h}>
-              <div style={{ padding:'6px 8px', borderBottom:'1px solid #F0F0F0', fontSize:11, color:'#8B8B8B', textAlign:'right', minHeight:48, display:'flex', alignItems:'flex-start', justifyContent:'flex-end' }}>{h}</div>
+              <div style={{ padding:'6px 8px', borderBottom:'1px solid #F0F0F0', fontSize:11, color:'#636363', textAlign:'right', minHeight:48, display:'flex', alignItems:'flex-start', justifyContent:'flex-end' }}>{h}</div>
               {joursDates.map((j, ji) => {
                 const evts = agendaEvents.filter(e => (e.date === j.date || e.jour === ji) && e.heure === h);
                 const dls = deadlines.filter(p => p.dateFin === j.date && h === '09:00');
@@ -874,7 +874,7 @@ export default function DashboardCom() {
                     onMouseEnter={e => e.currentTarget.style.background='#FAFAFA'}
                     onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     {evts.map(evt => {
-                      const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#8B8B8B' };
+                      const mc = MONTEUR_COLORS[evt.personne] || { bg:'#F3F3F3', border:'#E5E5E5', color:'#636363' };
                       return (
                         <div key={evt.id} onClick={(e) => { e.stopPropagation(); setAgendaForm(evt); setAgendaModal(evt); }}
                           style={{ background:mc.bg, border:`1px solid ${mc.border}`, borderLeft:`3px solid ${mc.border}`, borderRadius:6, padding:'3px 6px', fontSize:11, fontWeight:600, color:mc.color, marginBottom:2, cursor:'pointer' }}>
@@ -935,7 +935,7 @@ export default function DashboardCom() {
                   <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                     {Object.entries(typeColors).map(([k,v]) => (
                       <button key={k} onClick={() => setAgendaForm(p=>({...p,type:k}))}
-                        style={{ padding:'6px 12px', borderRadius:8, border:`1.5px solid ${agendaForm.type===k?v.border:'#E9E5F5'}`, background:agendaForm.type===k?v.bg:'#fff', color:agendaForm.type===k?v.color:'#8B8B8B', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
+                        style={{ padding:'6px 12px', borderRadius:8, border:`1.5px solid ${agendaForm.type===k?v.border:'#E9E5F5'}`, background:agendaForm.type===k?v.bg:'#fff', color:agendaForm.type===k?v.color:'#636363', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
                         {v.label}
                       </button>
                     ))}
@@ -948,7 +948,7 @@ export default function DashboardCom() {
                       const mc = MONTEUR_COLORS[nom];
                       return (
                         <button key={nom} onClick={() => setAgendaForm(p=>({...p,personne:nom}))}
-                          style={{ padding:'7px 14px', borderRadius:999, border:`2px solid ${agendaForm.personne===nom?mc.border:'#E9E5F5'}`, background:agendaForm.personne===nom?mc.bg:'#fff', color:agendaForm.personne===nom?mc.color:'#8B8B8B', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+                          style={{ padding:'7px 14px', borderRadius:999, border:`2px solid ${agendaForm.personne===nom?mc.border:'#E9E5F5'}`, background:agendaForm.personne===nom?mc.bg:'#fff', color:agendaForm.personne===nom?mc.color:'#636363', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
                           {nom}
                         </button>
                       );
@@ -979,7 +979,7 @@ export default function DashboardCom() {
       {tab === 'archives' && (<div>
         <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>Projets archivés</div>
         {projets.filter(p => p.statut === 'archive').length === 0 && (
-          <div style={{ ...CARD, padding:32, textAlign:'center', color:'#8B8B8B' }}>Aucun projet archivé</div>
+          <div style={{ ...CARD, padding:32, textAlign:'center', color:'#636363' }}>Aucun projet archivé</div>
         )}
         {projets.filter(p => p.statut === 'archive').map(p => (
           <div key={p.id} onClick={() => setModalProjet(p)} style={{ ...CARD, marginBottom:10, cursor:'pointer', padding:'16px 20px', opacity:0.7 }}>
@@ -987,10 +987,10 @@ export default function DashboardCom() {
               <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
               <StatusBadge statut={p.statut} />
             </div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:4 }}>{p.client} · {p.responsable || '—'}</div>
+            <div style={{ fontSize:13, color:'#636363', marginBottom:4 }}>{p.client} · {p.responsable || '—'}</div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <span style={{ fontWeight:800, color:'#8B8B8B', fontSize:15 }}>{p.montant?p.montant+'€':'—'}</span>
-              <span style={{ fontSize:12, color:'#8B8B8B' }}>{p.dateDebut || '—'}</span>
+              <span style={{ fontWeight:800, color:'#636363', fontSize:15 }}>{p.montant?p.montant+'€':'—'}</span>
+              <span style={{ fontSize:12, color:'#636363' }}>{p.dateDebut || '—'}</span>
             </div>
           </div>
         ))}
@@ -1007,7 +1007,7 @@ export default function DashboardCom() {
             <div key={d.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 20px', borderBottom: i < devis.length-1 ? '1px solid #F0F0F0' : 'none' }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:14 }}>{d.objet}</div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{d.client} · {d.id} · {d.date}</div>
+                <div style={{ fontSize:12, color:'#636363' }}>{d.client} · {d.id} · {d.date}</div>
               </div>
               <div style={{ fontWeight:800, color:V, fontSize:15 }}>{d.montantHT}€ HT</div>
               <span style={{ fontSize:12, fontWeight:700, padding:'3px 10px', borderRadius:20, background: d.statut==='paye'?'#D1FAE5':d.statut==='accepte'?'#DBEAFE':'#FEF3C7', color: d.statut==='paye'?'#065F46':d.statut==='accepte'?'#1D4ED8':'#D97706' }}>
@@ -1031,7 +1031,7 @@ export default function DashboardCom() {
             <div key={f.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 20px', borderBottom: i < factures.length-1 ? '1px solid #F0F0F0' : 'none' }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:14 }}>{f.objet}</div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{f.client} · {f.id} · {f.dateEmission}</div>
+                <div style={{ fontSize:12, color:'#636363' }}>{f.client} · {f.id} · {f.dateEmission}</div>
               </div>
               <div style={{ fontWeight:800, color:V, fontSize:15 }}>{Math.round(f.montantHT*(1+f.tva/100))}€ TTC</div>
               <span style={{ fontSize:12, fontWeight:700, padding:'3px 10px', borderRadius:20, background: f.statut==='payee'?'#D1FAE5':'#FEF3C7', color: f.statut==='payee'?'#065F46':'#D97706' }}>
@@ -1063,7 +1063,7 @@ export default function DashboardCom() {
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:14 }}>{p.projet}</div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.client ? `${p.client} · ` : ''}{p.id} · {p.date}</div>
+                <div style={{ fontSize:12, color:'#636363' }}>{p.client ? `${p.client} · ` : ''}{p.id} · {p.date}</div>
               </div>
               <div style={{ fontWeight:800, color: p.type==='virement' ? '#1D4ED8' : V, fontSize:15 }}>{p.type==='virement' ? '-' : '+'}{p.montant}€</div>
               <span style={{ fontSize:12, fontWeight:700, padding:'3px 10px', borderRadius:20, background: p.statut==='vire'?'#DBEAFE':p.statut==='libere'?'#D1FAE5':'#FEF3C7', color: p.statut==='vire'?'#1D4ED8':p.statut==='libere'?'#065F46':'#D97706' }}>
@@ -1085,8 +1085,8 @@ export default function DashboardCom() {
             <div key={c.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 20px', borderBottom: i < filteredClients.length-1 ? '1px solid #F0F0F0' : 'none' }}>
               <div style={{ width:40, height:40, borderRadius:'50%', background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, color:V, fontSize:15 }}>{c.nom[0]}</div>
               <div style={{ flex:1 }}>
-                <div style={{ fontWeight:700, fontSize:14 }}>{c.nom} <span style={{ fontSize:12, color:'#8B8B8B', fontWeight:400 }}>· {c.type}</span></div>
-                <div style={{ fontSize:12, color:'#8B8B8B' }}>{c.projets} projets · {c.email}</div>
+                <div style={{ fontWeight:700, fontSize:14 }}>{c.nom} <span style={{ fontSize:12, color:'#636363', fontWeight:400 }}>· {c.type}</span></div>
+                <div style={{ fontSize:12, color:'#636363' }}>{c.projets} projets · {c.email}</div>
               </div>
               <div style={{ textAlign:'right' }}>
                 <div style={{ fontWeight:800, color:V, fontSize:14 }}>{c.ca}€</div>
@@ -1102,7 +1102,7 @@ export default function DashboardCom() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700 }}>Grille tarifaire</div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Ajoutez, modifiez ou supprimez des lignes — visible en temps réel sur le site</div>
+            <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>Ajoutez, modifiez ou supprimez des lignes — visible en temps réel sur le site</div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={() => { const r = resetTarifs(); setTarifs(r); api.put('/com/tarifs', { tarifs: r, packs }).catch(()=>{}); showToast('Tarifs réinitialisés'); }} style={GHOST}>↺ Réinitialiser</button>
@@ -1145,16 +1145,16 @@ export default function DashboardCom() {
                           setEditingTarif(null);
                           showToast('Prix mis à jour — visible sur le site');
                         }} style={{ ...BTN, padding:'7px 14px', fontSize:13 }}>✓</button>
-                        <button onClick={() => setEditingTarif(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#8B8B8B', fontSize:16 }}>✕</button>
+                        <button onClick={() => setEditingTarif(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#636363', fontSize:16 }}>✕</button>
                       </>
                     ) : (
                       <>
                         <span style={{ flex:1, fontSize:14 }}>{item.nom}</span>
                         <span style={{ fontSize:15, fontWeight:800, color:V, minWidth:60, textAlign:'right' }}>{item.prix}€</span>
                         <button onClick={() => { setEditingTarif({catIdx:ci, itemIdx:ji}); setEditPrix(String(item.prix)); setEditNom(item.nom); }}
-                          style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#8B8B8B', fontFamily:'inherit', transition:'all .15s' }}
+                          style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#636363', fontFamily:'inherit', transition:'all .15s' }}
                           onMouseEnter={e=>{e.currentTarget.style.borderColor=V;e.currentTarget.style.color=V;}}
-                          onMouseLeave={e=>{e.currentTarget.style.borderColor='#E9E5F5';e.currentTarget.style.color='#8B8B8B';}}>
+                          onMouseLeave={e=>{e.currentTarget.style.borderColor='#E9E5F5';e.currentTarget.style.color='#636363';}}>
                           ✎ Modifier
                         </button>
                         <button onClick={() => {
@@ -1175,7 +1175,7 @@ export default function DashboardCom() {
                 );
               })}
               {t.items.length === 0 && (
-                <div style={{ padding:'20px', textAlign:'center', fontSize:13, color:'#8B8B8B' }}>Aucun service dans cette catégorie</div>
+                <div style={{ padding:'20px', textAlign:'center', fontSize:13, color:'#636363' }}>Aucun service dans cette catégorie</div>
               )}
             </div>
           </div>
@@ -1185,7 +1185,7 @@ export default function DashboardCom() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
             <div>
               <div style={{ fontSize:16, fontWeight:700 }}>Formules (packs mensuels)</div>
-              <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Visibles sur la page publique /com</div>
+              <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>Visibles sur la page publique /com</div>
             </div>
           </div>
           {packs.map((pack, pi) => {
@@ -1196,23 +1196,23 @@ export default function DashboardCom() {
                   <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                     <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                       <div style={{ flex:'1 1 140px' }}>
-                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Nom</label>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Nom</label>
                         <input value={pack.nom} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], nom: e.target.value }; setPacks(u); }}
                           style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
                       </div>
                       <div style={{ flex:'0 0 100px' }}>
-                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Prix €/mois</label>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Prix €/mois</label>
                         <input type="number" value={pack.prix} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], prix: Number(e.target.value) }; setPacks(u); }}
                           style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', textAlign:'right', boxSizing:'border-box' }} />
                       </div>
                       <div style={{ flex:'1 1 200px' }}>
-                        <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Description courte</label>
+                        <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Description courte</label>
                         <input value={pack.desc} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], desc: e.target.value }; setPacks(u); }}
                           style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
                       </div>
                     </div>
                     <div>
-                      <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Avantages (un par ligne)</label>
+                      <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Avantages (un par ligne)</label>
                       <textarea value={pack.features.join('\n')} onChange={e => { const u = [...packs]; u[pi] = { ...u[pi], features: e.target.value.split('\n') }; setPacks(u); }}
                         rows={4} style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:13, fontFamily:'inherit', outline:'none', resize:'vertical', boxSizing:'border-box' }} />
                     </div>
@@ -1238,11 +1238,11 @@ export default function DashboardCom() {
                         <span style={{ fontSize:15, fontWeight:700 }}>{pack.nom}</span>
                         {pack.populaire && <span style={{ fontSize:10, fontWeight:700, background:V, color:'#fff', padding:'2px 8px', borderRadius:10 }}>Populaire</span>}
                       </div>
-                      <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>{pack.desc} — {pack.features.length} avantages</div>
+                      <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>{pack.desc} — {pack.features.length} avantages</div>
                     </div>
-                    <span style={{ fontSize:20, fontWeight:800, color:V }}>{pack.prix}€<span style={{ fontSize:12, fontWeight:400, color:'#8B8B8B' }}>/mois</span></span>
+                    <span style={{ fontSize:20, fontWeight:800, color:V }}>{pack.prix}€<span style={{ fontSize:12, fontWeight:400, color:'#636363' }}>/mois</span></span>
                     <button onClick={() => setEditingPack(pi)}
-                      style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#8B8B8B', fontFamily:'inherit' }}>
+                      style={{ background:'none', border:'1px solid #E9E5F5', borderRadius:8, padding:'5px 10px', cursor:'pointer', fontSize:12, color:'#636363', fontFamily:'inherit' }}>
                       ✎ Modifier
                     </button>
                   </div>
@@ -1263,7 +1263,7 @@ export default function DashboardCom() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700 }}>Portfolio</div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Ajoutez vos réalisations — visibles sur la page publique /com</div>
+            <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>Ajoutez vos réalisations — visibles sur la page publique /com</div>
           </div>
           <div style={{ fontSize:13, color:V, fontWeight:700 }}>{portfolio.length} vidéo{portfolio.length > 1 ? 's' : ''}</div>
         </div>
@@ -1273,12 +1273,12 @@ export default function DashboardCom() {
           <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>Ajouter une vidéo</div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
             <div style={{ flex:'1 1 200px' }}>
-              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Titre</label>
+              <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Titre</label>
               <input value={newVideo.titre} onChange={e => setNewVideo(p=>({...p, titre:e.target.value}))} placeholder="Ex: Montage TikTok @influenceur"
                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
             </div>
             <div style={{ flex:'0 0 160px' }}>
-              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Catégorie</label>
+              <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Catégorie</label>
               <select value={newVideo.categorie} onChange={e => setNewVideo(p=>({...p, categorie:e.target.value}))}
                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', background:'#fff', boxSizing:'border-box' }}>
                 <option>Montage vidéo</option>
@@ -1292,18 +1292,18 @@ export default function DashboardCom() {
           </div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
             <div style={{ flex:'1 1 300px' }}>
-              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Lien vidéo (YouTube, TikTok, Vimeo, Google Drive…)</label>
+              <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Lien vidéo (YouTube, TikTok, Vimeo, Google Drive…)</label>
               <input value={newVideo.video_url} onChange={e => setNewVideo(p=>({...p, video_url:e.target.value}))} placeholder="https://..."
                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
             </div>
             <div style={{ flex:'1 1 200px' }}>
-              <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>URL miniature (optionnel)</label>
+              <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>URL miniature (optionnel)</label>
               <input value={newVideo.thumbnail_url} onChange={e => setNewVideo(p=>({...p, thumbnail_url:e.target.value}))} placeholder="https://... image.jpg"
                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
             </div>
           </div>
           <div style={{ marginBottom:10 }}>
-            <label style={{ fontSize:11, fontWeight:600, color:'#8B8B8B', display:'block', marginBottom:4 }}>Description courte (optionnel)</label>
+            <label style={{ fontSize:11, fontWeight:600, color:'#636363', display:'block', marginBottom:4 }}>Description courte (optionnel)</label>
             <input value={newVideo.description} onChange={e => setNewVideo(p=>({...p, description:e.target.value}))} placeholder="Montage dynamique pour campagne été 2026"
               style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' }} />
           </div>
@@ -1321,7 +1321,7 @@ export default function DashboardCom() {
 
         {/* Liste des vidéos */}
         {portfolio.length === 0 ? (
-          <div style={{ textAlign:'center', padding:'48px 20px', color:'#8B8B8B' }}>
+          <div style={{ textAlign:'center', padding:'48px 20px', color:'#636363' }}>
             <div style={{ fontSize:40, marginBottom:12 }}>🎥</div>
             <div style={{ fontSize:15, fontWeight:600, marginBottom:4 }}>Aucune vidéo dans le portfolio</div>
             <div style={{ fontSize:13 }}>Ajoutez vos réalisations pour les afficher sur la page publique</div>
@@ -1349,7 +1349,7 @@ export default function DashboardCom() {
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8 }}>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, marginBottom:3 }}>{item.titre}</div>
-                      {item.description && <div style={{ fontSize:12, color:'#8B8B8B', marginBottom:4 }}>{item.description}</div>}
+                      {item.description && <div style={{ fontSize:12, color:'#636363', marginBottom:4 }}>{item.description}</div>}
                       <span style={{ fontSize:11, fontWeight:600, color:V, background:V_SOFT, padding:'2px 8px', borderRadius:6 }}>{item.categorie}</span>
                     </div>
                     <button onClick={() => {
@@ -1373,7 +1373,7 @@ export default function DashboardCom() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700 }}>Équipe Freample Com</div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Votre équipe interne — {equipe.length} membres</div>
+            <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>Votre équipe interne — {equipe.length} membres</div>
           </div>
         </div>
 
@@ -1404,20 +1404,20 @@ export default function DashboardCom() {
                 <div style={{ width:48, height:48, borderRadius:'50%', background:`${e.color}18`, border:`2px solid ${e.color}40`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, color:e.color, fontSize:15 }}>{e.nom.split(' ').map(n=>n[0]).join('')}</div>
                 <div>
                   <div style={{ fontWeight:700, fontSize:15 }}>{e.nom}</div>
-                  <div style={{ fontSize:13, color:'#8B8B8B' }}>{e.poste}</div>
+                  <div style={{ fontSize:13, color:'#636363' }}>{e.poste}</div>
                 </div>
               </div>
-              <div style={{ fontSize:12, color:'#8B8B8B', marginBottom:12, padding:'8px 12px', background:V_SOFT, borderRadius:8 }}>🎯 {e.specialite}</div>
+              <div style={{ fontSize:12, color:'#636363', marginBottom:12, padding:'8px 12px', background:V_SOFT, borderRadius:8 }}>🎯 {e.specialite}</div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
-                <span style={{ color:'#8B8B8B' }}>Projets actifs</span>
+                <span style={{ color:'#636363' }}>Projets actifs</span>
                 <span style={{ fontWeight:700 }}>{e.projetsActifs}</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
-                <span style={{ color:'#8B8B8B' }}>Projets réalisés</span>
+                <span style={{ color:'#636363' }}>Projets réalisés</span>
                 <span style={{ fontWeight:700 }}>{e.projetsTotal}</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:6 }}>
-                <span style={{ color:'#8B8B8B' }}>Charge</span>
+                <span style={{ color:'#636363' }}>Charge</span>
                 <span style={{ fontWeight:700, color: e.charge > 80 ? '#DC2626' : e.charge > 50 ? '#D97706' : '#16A34A' }}>{e.charge}%</span>
               </div>
               <div style={{ marginTop:10, display:'flex', alignItems:'center', gap:6 }}>
@@ -1428,7 +1428,7 @@ export default function DashboardCom() {
               {/* Projets assignés */}
               {projets.filter(p => p.responsable === e.nom && !['paye','livre'].includes(p.statut)).length > 0 && (
                 <div style={{ marginTop:12, paddingTop:12, borderTop:'1px solid #F0F0F0' }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>Projets en cours</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>Projets en cours</div>
                   {projets.filter(p => p.responsable === e.nom && !['paye','livre'].includes(p.statut)).map(p => (
                     <div key={p.id} style={{ fontSize:12, color:'#5E5E5E', marginBottom:4, display:'flex', justifyContent:'space-between' }}>
                       <span>{p.titre.length > 30 ? p.titre.slice(0,30)+'…' : p.titre}</span>
@@ -1457,7 +1457,7 @@ export default function DashboardCom() {
               <div key={r.jour} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
                 <div style={{ fontSize:12, fontWeight:700, color:V }}>{r.montant}€</div>
                 <div style={{ width:'100%', background:V, borderRadius:'6px 6px 0 0', height:`${Math.max(4,Math.round((r.montant/maxRev)*120))}px` }} />
-                <div style={{ fontSize:11, color:'#8B8B8B', fontWeight:600 }}>{r.jour}</div>
+                <div style={{ fontSize:11, color:'#636363', fontWeight:600 }}>{r.jour}</div>
               </div>
             ))}
           </div>
@@ -1467,7 +1467,7 @@ export default function DashboardCom() {
             <div style={HDR}>Meilleurs clients</div>
             {[...clients].sort((a,b)=>b.ca-a.ca).slice(0,5).map((c,i) => (
               <div key={c.id} style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-                <span style={{ fontSize:13 }}>{i+1}. {c.nom} <span style={{ color:'#8B8B8B', fontSize:11 }}>({c.type})</span></span>
+                <span style={{ fontSize:13 }}>{i+1}. {c.nom} <span style={{ color:'#636363', fontSize:11 }}>({c.type})</span></span>
                 <span style={{ fontWeight:700, color:V, fontSize:13 }}>{c.ca}€</span>
               </div>
             ))}
@@ -1489,13 +1489,13 @@ export default function DashboardCom() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700 }}>Statistiques du site</div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginTop:2 }}>Visites en temps réel sur toutes les pages Freample</div>
+            <div style={{ fontSize:13, color:'#636363', marginTop:2 }}>Visites en temps réel sur toutes les pages Freample</div>
           </div>
           <button onClick={()=>api.get('/analytics/stats').then(r=>setSiteStats(r.data)).catch(()=>{})} style={GHOST}>↻ Actualiser</button>
         </div>
 
         {!siteStats ? (
-          <div style={{ textAlign:'center', padding:40, color:'#8B8B8B' }}>Chargement des statistiques...</div>
+          <div style={{ textAlign:'center', padding:40, color:'#636363' }}>Chargement des statistiques...</div>
         ) : (
           <>
             {/* KPIs */}
@@ -1520,7 +1520,7 @@ export default function DashboardCom() {
                       <div key={d.day} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }} title={`${label}: ${d.views} visites`}>
                         <div style={{ fontSize:10, fontWeight:700, color:V }}>{d.views}</div>
                         <div style={{ width:'100%', background:V, borderRadius:'4px 4px 0 0', height:h, minWidth:4, transition:'height .3s' }} />
-                        <div style={{ fontSize:8, color:'#8B8B8B', transform:'rotate(-45deg)', whiteSpace:'nowrap' }}>{label}</div>
+                        <div style={{ fontSize:8, color:'#636363', transform:'rotate(-45deg)', whiteSpace:'nowrap' }}>{label}</div>
                       </div>
                     );
                   })}
@@ -1532,12 +1532,12 @@ export default function DashboardCom() {
             <div style={CARD}>
               <div style={HDR}>Pages les plus visitées</div>
               {(siteStats.byPage||[]).length === 0 ? (
-                <div style={{ padding:20, textAlign:'center', color:'#8B8B8B', fontSize:13 }}>Aucune donnée encore</div>
+                <div style={{ padding:20, textAlign:'center', color:'#636363', fontSize:13 }}>Aucune donnée encore</div>
               ) : (siteStats.byPage||[]).map((p,i) => (
                 <div key={p.page} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:i<siteStats.byPage.length-1?'1px solid #F0F0F0':'none' }}>
                   <div style={{ width:28, height:28, background:V_SOFT, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, fontSize:12, fontWeight:700, color:V }}>{i+1}</div>
                   <div style={{ flex:1, fontSize:14, color:'#1C1C1E', fontWeight:500 }}>{p.page}</div>
-                  <div style={{ fontSize:14, fontWeight:700, color:V }}>{p.views} <span style={{ fontSize:11, fontWeight:400, color:'#8B8B8B' }}>visites</span></div>
+                  <div style={{ fontSize:14, fontWeight:700, color:V }}>{p.views} <span style={{ fontSize:11, fontWeight:400, color:'#636363' }}>visites</span></div>
                 </div>
               ))}
             </div>
@@ -1550,11 +1550,11 @@ export default function DashboardCom() {
         <div style={OVL} onClick={() => { setModalProjet(null); setChatInput(''); }}>
           <div style={{ ...BOX, maxWidth:620 }} onClick={e => e.stopPropagation()}>
             <div style={{ fontWeight:800, fontSize:18, marginBottom:2 }}>{modalProjet.titre}</div>
-            <div style={{ color:'#8B8B8B', fontSize:14, marginBottom:16 }}>{modalProjet.type} · {modalProjet.categorie} · <StatusBadge statut={modalProjet.statut} /></div>
+            <div style={{ color:'#636363', fontSize:14, marginBottom:16 }}>{modalProjet.type} · {modalProjet.categorie} · <StatusBadge statut={modalProjet.statut} /></div>
             <div style={{ ...CARD, background:'#FAFAFA', marginBottom:16 }}>
               {[{l:'Client',v:modalProjet.client},{l:'Email',v:modalProjet.clientEmail||'—'},{l:'Téléphone',v:modalProjet.clientTel||'—'},{l:'Responsable',v:modalProjet.responsable||'À assigner'},{l:'Montant',v:modalProjet.montant?`${modalProjet.montant}€`:'À définir'},{l:'Devis',v:modalProjet.devisRef||'—'}].map(r => (
                 <div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', fontSize:14, borderBottom:'1px solid #F0F0F0' }}>
-                  <span style={{ color:'#8B8B8B' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
+                  <span style={{ color:'#636363' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
                 </div>
               ))}
             </div>
@@ -1587,7 +1587,7 @@ export default function DashboardCom() {
                       style={{ ...BTN, padding:'10px 18px', fontSize:13, display:'flex', alignItems:'center', gap:6 }}>
                       ✅ +1 fichier terminé
                     </button>
-                    <span style={{ fontSize:12, color:'#8B8B8B' }}>
+                    <span style={{ fontSize:12, color:'#636363' }}>
                       {fait >= qte ? '🎉 Tout est fait ! Prêt à livrer.' : `${qte - fait} restant${qte-fait>1?'s':''}`}
                     </span>
                   </div>
@@ -1604,7 +1604,7 @@ export default function DashboardCom() {
                     <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 0', borderBottom: i < DEMO_FILES.length-1 ? '1px solid #F0F0F0' : 'none' }}>
                       <div>
                         <div style={{ fontWeight:600, fontSize:13 }}>🎬 {f.nom}</div>
-                        <div style={{ fontSize:11, color:'#8B8B8B' }}>{f.taille} · {f.date}</div>
+                        <div style={{ fontSize:11, color:'#636363' }}>{f.taille} · {f.date}</div>
                       </div>
                     </div>
                   ))}
@@ -1629,7 +1629,7 @@ export default function DashboardCom() {
                         {m.from[0]}
                       </div>
                       <div style={{ maxWidth:'70%' }}>
-                        <div style={{ fontSize:11, color:'#8B8B8B', marginBottom:2, textAlign: m.isMe ? 'right' : 'left' }}>{m.from} · {m.time}</div>
+                        <div style={{ fontSize:11, color:'#636363', marginBottom:2, textAlign: m.isMe ? 'right' : 'left' }}>{m.from} · {m.time}</div>
                         <div style={{ background: m.isMe ? V_SOFT : '#DBEAFE', padding:'8px 12px', borderRadius: m.isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px', fontSize:13, color:'#1C1C1E' }}>
                           {m.msg}
                         </div>
@@ -1656,7 +1656,7 @@ export default function DashboardCom() {
               {/* Brief reçu → Accepter / Contre-proposition / Refuser */}
               {modalProjet.statut === 'demande' && (
                 <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.06em' }}>Répondre à la demande</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#636363', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.06em' }}>Répondre à la demande</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                     <button onClick={() => accepterBrief(modalProjet)} style={{ ...BTN, width:'100%', padding:'12px', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
                       ✅ Accepter — Envoyer un devis automatique
@@ -1689,7 +1689,7 @@ export default function DashboardCom() {
                 <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                   {!modalProjet.responsable && (
                     <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:4 }}>
-                      <span style={{ fontSize:13, color:'#8B8B8B' }}>Assigner à :</span>
+                      <span style={{ fontSize:13, color:'#636363' }}>Assigner à :</span>
                       {EQUIPE_INIT.map(e => (
                         <button key={e.id} onClick={() => assignerResponsable(modalProjet.id, e.nom)}
                           style={{ padding:'6px 12px', borderRadius:8, border:`1px solid ${V}20`, background:V_SOFT, color:V, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
@@ -1713,7 +1713,7 @@ export default function DashboardCom() {
                   <div style={{ padding:'12px 16px', background:'#D1FAE5', borderRadius:10, fontSize:13, color:'#065F46', fontWeight:600, marginBottom:8 }}>
                     ✅ Livré — en attente de validation par le client
                   </div>
-                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#8B8B8B' }}>📦 Archiver ce projet</button>
+                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#636363' }}>📦 Archiver ce projet</button>
                 </div>
               )}
 
@@ -1723,13 +1723,13 @@ export default function DashboardCom() {
                   <div style={{ padding:'12px 16px', background:'#F0FDF4', borderRadius:10, fontSize:13, color:'#0F766E', fontWeight:600, marginBottom:8 }}>
                     💰 Projet terminé et payé
                   </div>
-                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#8B8B8B' }}>📦 Archiver ce projet</button>
+                  <button onClick={() => archiverProjet(modalProjet.id)} style={{ ...GHOST, width:'100%', padding:'10px', fontSize:13, color:'#636363' }}>📦 Archiver ce projet</button>
                 </div>
               )}
 
               {/* Archivé */}
               {modalProjet.statut === 'archive' && (
-                <div style={{ padding:'12px 16px', background:'#F3F3F3', borderRadius:10, fontSize:13, color:'#8B8B8B', fontWeight:600 }}>
+                <div style={{ padding:'12px 16px', background:'#F3F3F3', borderRadius:10, fontSize:13, color:'#636363', fontWeight:600 }}>
                   📦 Projet archivé
                 </div>
               )}
@@ -1879,15 +1879,15 @@ export default function DashboardCom() {
             <div style={{ fontWeight:800, fontSize:18, marginBottom:16 }}>Demander un virement</div>
             <div style={{ ...CARD, background:'#FAFAFA', marginBottom:16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:14, borderBottom:'1px solid #F0F0F0' }}>
-                <span style={{ color:'#8B8B8B' }}>Solde libéré disponible</span>
+                <span style={{ color:'#636363' }}>Solde libéré disponible</span>
                 <span style={{ fontWeight:800, color:'#059669' }}>{paiementsLiberes}€</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:14 }}>
-                <span style={{ color:'#8B8B8B' }}>Paiements bloqués</span>
+                <span style={{ color:'#636363' }}>Paiements bloqués</span>
                 <span style={{ fontWeight:800, color:'#D97706' }}>{paiementsBloques}€</span>
               </div>
             </div>
-            <p style={{ fontSize:13, color:'#8B8B8B', marginBottom:20 }}>Le virement sera effectué sous 2-3 jours ouvrés sur votre compte bancaire enregistré.</p>
+            <p style={{ fontSize:13, color:'#636363', marginBottom:20 }}>Le virement sera effectué sous 2-3 jours ouvrés sur votre compte bancaire enregistré.</p>
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={() => {
                 const virId = `VIRT${paiements.filter(p=>p.type==='virement').length + 1}`;

@@ -38,22 +38,17 @@ export default function FreampleImmoERP() {
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.92) 100%)' }} />
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold }} />
         <div style={{ maxWidth:680, margin:'0 auto', position:'relative', zIndex:1 }}>
-          <div style={{ display:'flex', justifyContent:'center', gap:8, marginBottom:20 }}>
-            <span style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', padding:'5px 14px', border:`1px solid ${L.gold}40`, background:'rgba(201,169,110,0.1)' }}>ERP</span>
-            <span style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.2em', padding:'5px 14px', border:'1px solid rgba(255,255,255,0.1)' }}>Diagnostics</span>
-            <span style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.2em', padding:'5px 14px', border:'1px solid rgba(255,255,255,0.1)' }}>Conformité</span>
-          </div>
-          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(32px,6vw,56px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 16px' }}>
-            État des Risques &<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>Pollutions</span>
+          <h1 style={{ fontSize:'clamp(32px,6vw,56px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.03em', margin:'0 0 16px' }}>
+            État des Risques &<br/>Pollutions
           </h1>
-          <p style={{ fontSize:16, color:'rgba(255,255,255,0.4)', lineHeight:1.6, margin:'0 auto 32px', maxWidth:480, fontWeight:300 }}>
+          <p style={{ fontSize:16, color:'rgba(255,255,255,0.6)', lineHeight:1.6, margin:'0 auto 32px', maxWidth:480, fontWeight:300 }}>
             Générez vos ERP, consultez le zonage réglementaire, les PPR et les arrêtés préfectoraux pour n'importe quelle adresse en France.
           </p>
 
           {/* Barre de recherche adresse */}
           <div style={{ maxWidth:540, margin:'0 auto', display:'flex', background:L.white, overflow:'hidden' }}>
             <div style={{ flex:1, padding:'16px 20px', display:'flex', alignItems:'center', gap:10 }}>
-              <span style={{ fontSize:16, opacity:0.4 }}>📍</span>
+              <span style={{ fontSize:14, opacity:0.3, fontWeight:600 }}>@</span>
               <input value={adresse} onChange={e=>setAdresse(e.target.value)} placeholder="Entrez une adresse, une commune ou un code postal…"
                 style={{ flex:1, border:'none', outline:'none', fontSize:14, color:L.text, fontFamily:L.font, fontWeight:500, background:'none' }} />
             </div>
@@ -62,7 +57,7 @@ export default function FreampleImmoERP() {
               Analyser
             </button>
           </div>
-          <div style={{ fontSize:12, color:'rgba(255,255,255,0.25)', marginTop:12 }}>En cours de développement — fonctionnalité bientôt disponible</div>
+          <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginTop:12 }}>En cours de développement — fonctionnalité bientôt disponible</div>
         </div>
       </section>
 
@@ -70,9 +65,8 @@ export default function FreampleImmoERP() {
       <section style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px' }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
           <div ref={s1} style={{ textAlign:'center', marginBottom:52 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Documents</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,40px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 8px', lineHeight:1.12 }}>
-              Rapports <span style={{ fontWeight:700, fontStyle:'normal' }}>réglementaires</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, letterSpacing:'-0.03em', margin:'0 0 8px', lineHeight:1.12 }}>
+              Rapports réglementaires
             </h2>
             <p style={{ fontSize:15, color:L.textSec, maxWidth:500, margin:'0 auto' }}>Tous les documents obligatoires pour sécuriser vos transactions immobilières.</p>
           </div>
@@ -105,28 +99,27 @@ export default function FreampleImmoERP() {
       <section style={{ background:L.cream, padding:'clamp(64px,9vh,100px) 32px' }}>
         <div style={{ maxWidth:900, margin:'0 auto' }}>
           <div ref={s2} style={{ textAlign:'center', marginBottom:48 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Zonage</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
-              Données <span style={{ fontWeight:700, fontStyle:'normal' }}>réglementaires</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
+              Zonage & données réglementaires
             </h2>
           </div>
 
           <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:1, background:L.border }}>
             {[
-              { icon:'🗺️', title:'Plans de Prévention des Risques (PPR)', desc:'PPR Naturels (inondation, mouvement de terrain, séisme), PPR Technologiques (SEVESO), PPR Miniers. Zonage et prescriptions.' },
-              { icon:'📜', title:'Arrêtés préfectoraux', desc:'Arrêtés de catastrophe naturelle, arrêtés d\'information acquéreur-locataire (IAL), arrêtés de reconnaissance.' },
-              { icon:'🌊', title:'Zones inondables', desc:'Atlas des zones inondables, TRI (Territoires à Risques Importants), PPRI approuvés et prescrits.' },
-              { icon:'⚠️', title:'Sites SEVESO & ICPE', desc:'Installations classées, périmètres de danger, servitudes d\'utilité publique autour des sites industriels.' },
-              { icon:'☢️', title:'Radon & Pollution', desc:'Zones à potentiel radon, BASIAS (anciens sites industriels), BASOL (sites pollués), SIS.' },
-              { icon:'🔊', title:'Nuisances & Bruit', desc:'Plans d\'exposition au bruit (PEB), cartes de bruit stratégiques, classement sonore des voies.' },
-              { icon:'🏔️', title:'Risques naturels', desc:'Sismicité, avalanches, feux de forêt, cyclones, volcans, retrait-gonflement argiles.' },
-              { icon:'📐', title:'Urbanisme', desc:'PLU/PLUi, zonage (U, AU, A, N), règlement, OAP, emplacements réservés, servitudes.' },
-              { icon:'🌿', title:'Environnement', desc:'Natura 2000, ZNIEFF, zones humides, espaces boisés classés, corridors écologiques.' },
-            ].map(s => (
+              { title:'Plans de Prévention des Risques (PPR)', desc:'PPR Naturels (inondation, mouvement de terrain, séisme), PPR Technologiques (SEVESO), PPR Miniers. Zonage et prescriptions.' },
+              { title:'Arrêtés préfectoraux', desc:'Arrêtés de catastrophe naturelle, arrêtés d\'information acquéreur-locataire (IAL), arrêtés de reconnaissance.' },
+              { title:'Zones inondables', desc:'Atlas des zones inondables, TRI (Territoires à Risques Importants), PPRI approuvés et prescrits.' },
+              { title:'Sites SEVESO & ICPE', desc:'Installations classées, périmètres de danger, servitudes d\'utilité publique autour des sites industriels.' },
+              { title:'Radon & Pollution', desc:'Zones à potentiel radon, BASIAS (anciens sites industriels), BASOL (sites pollués), SIS.' },
+              { title:'Nuisances & Bruit', desc:'Plans d\'exposition au bruit (PEB), cartes de bruit stratégiques, classement sonore des voies.' },
+              { title:'Risques naturels', desc:'Sismicité, avalanches, feux de forêt, cyclones, volcans, retrait-gonflement argiles.' },
+              { title:'Urbanisme', desc:'PLU/PLUi, zonage (U, AU, A, N), règlement, OAP, emplacements réservés, servitudes.' },
+              { title:'Environnement', desc:'Natura 2000, ZNIEFF, zones humides, espaces boisés classés, corridors écologiques.' },
+            ].map((s, idx) => (
               <div key={s.title} style={{ background:L.white, padding:'28px 24px', transition:'background .2s' }}
                 onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background=L.white}>
-                <div style={{ fontSize:24, marginBottom:12 }}>{s.icon}</div>
-                <h3 style={{ fontSize:14, fontWeight:700, color:L.text, marginBottom:6 }}>{s.title}</h3>
+                <div style={{ fontSize:11, color:L.textLight, fontWeight:600, marginBottom:10 }}>{String(idx+1).padStart(2,'0')}</div>
+                <h3 style={{ fontSize:14, fontWeight:700, marginBottom:6 }}>{s.title}</h3>
                 <p style={{ fontSize:12.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
               </div>
             ))}
@@ -138,36 +131,36 @@ export default function FreampleImmoERP() {
       <section ref={r3} style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}` }}>
         <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
           <div ref={s3} style={{ marginBottom:40 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Processus</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0 }}>
-              Simple et <span style={{ fontWeight:700, fontStyle:'normal' }}>instantané</span>
+            <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, letterSpacing:'-0.03em', margin:0 }}>
+              Comment ça marche
             </h2>
           </div>
-          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:0, maxWidth:540, margin:'0 auto', textAlign:'left' }}>
             {[
-              { step:'1', icon:'📍', title:'Entrez l\'adresse', desc:'Saisissez l\'adresse du bien ou la référence cadastrale.' },
-              { step:'2', icon:'🔍', title:'Analyse automatique', desc:'Croisement avec les bases officielles : Géorisques, BRGM, IGN, préfectures.' },
-              { step:'3', icon:'📄', title:'Rapport généré', desc:'ERP conforme, zonage PPR, arrêtés — téléchargeable en PDF.' },
-              { step:'4', icon:'✅', title:'Conforme & à jour', desc:'Données mises à jour en continu. Validité réglementaire garantie.' },
-            ].map(s => (
-              <div key={s.step}>
-                <div style={{ width:48, height:48, margin:'0 auto 14px', background:L.cream, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{s.icon}</div>
-                <div style={{ fontSize:11, fontWeight:700, color:L.gold, marginBottom:6, letterSpacing:'0.1em' }}>ÉTAPE {s.step}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, color:L.text, margin:'0 0 6px' }}>{s.title}</h3>
-                <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
+              { n:'01', title:'Entrez l\'adresse', desc:'Saisissez l\'adresse du bien ou la référence cadastrale.' },
+              { n:'02', title:'Analyse automatique', desc:'Croisement avec les bases officielles : Géorisques, BRGM, IGN, préfectures.' },
+              { n:'03', title:'Rapport généré', desc:'ERP conforme, zonage PPR, arrêtés — téléchargeable en PDF.' },
+              { n:'04', title:'Conforme & à jour', desc:'Données mises à jour en continu. Validité réglementaire garantie.' },
+            ].map((s, i) => (
+              <div key={s.n} style={{ display:'flex', gap:20, alignItems:'flex-start', padding:'20px 0', borderTop: i > 0 ? `1px solid ${L.border}` : 'none' }}>
+                <span style={{ fontSize:28, fontWeight:200, color:L.textLight, fontFamily:L.serif, lineHeight:1, flexShrink:0, minWidth:40 }}>{s.n}</span>
+                <div>
+                  <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 4px' }}>{s.title}</h3>
+                  <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
+                </div>
               </div>
             ))}
-          </StaggerChildren>
+          </div>
         </div>
       </section>
 
       {/* ══ CTA ══ */}
       <section ref={r4} style={{ background:L.noir, padding:'clamp(64px,10vh,100px) 32px', textAlign:'center' }}>
         <div style={{ maxWidth:520, margin:'0 auto' }}>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4.5vw,42px)', fontWeight:300, fontStyle:'italic', color:'#fff', letterSpacing:'-0.02em', lineHeight:1.08, margin:'0 0 14px' }}>
-            Sécurisez vos <span style={{ fontWeight:700, fontStyle:'normal' }}>transactions</span>
+          <h2 style={{ fontSize:'clamp(26px,4.5vw,42px)', fontWeight:800, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 14px' }}>
+            Sécurisez vos transactions
           </h2>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', lineHeight:1.6, margin:'0 0 32px' }}>
+          <p style={{ fontSize:15, color:'rgba(255,255,255,0.55)', lineHeight:1.6, margin:'0 0 32px' }}>
             Freample Immo ERP sera disponible prochainement. Restez informé.
           </p>
           <button onClick={()=>navigate('/immo')} style={{ padding:'16px 44px', background:L.gold, color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .2s' }}

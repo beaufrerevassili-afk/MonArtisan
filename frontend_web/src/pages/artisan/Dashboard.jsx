@@ -252,7 +252,7 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
             <span style={{ ...statut, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: statut.bg, color: statut.c }}>{statut.l}</span>
             <h2 style={{ margin: '8px 0 2px', fontSize: 17, fontWeight: 800 }}>{mission.titre}</h2>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 22, marginTop: 4 }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#636363', fontSize: 22, marginTop: 4 }}>✕</button>
         </div>
 
         <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -266,12 +266,12 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
               { icon: '💰', label: 'Budget', val: mission.budget ? formatCur(mission.budget) : '—' },
             ].map(item => (
               <div key={item.label} style={{ background: '#fff', borderRadius: 12, padding: '12px 14px' }}>
-                <div style={{ fontSize: 11, color: '#8E8E93', fontWeight: 600, marginBottom: 4 }}>{item.icon} {item.label}</div>
+                <div style={{ fontSize: 11, color: '#636363', fontWeight: 600, marginBottom: 4 }}>{item.icon} {item.label}</div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1E' }}>{item.val}</div>
               </div>
             ))}
             <div style={{ background: '#fff', borderRadius: 12, padding: '12px 14px' }}>
-              <div style={{ fontSize: 11, color: '#8E8E93', fontWeight: 600, marginBottom: 6 }}>👥 Équipe</div>
+              <div style={{ fontSize: 11, color: '#636363', fontWeight: 600, marginBottom: 6 }}>👥 Équipe</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {(mission.equipe || []).map((e, i) => (
                   <div key={i} style={{ fontSize: 12, color: i===0?'#5B5BD6':'#1C1C1E', fontWeight: i===0?700:500 }}>{e}</div>
@@ -306,7 +306,7 @@ function MissionDetailPanel({ mission: missionInit, onClose, onFraisChantier, on
                 );
               })}
             </div>
-            <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 12, textAlign: 'center' }}>Appuyez sur une étape pour mettre à jour votre avancement</p>
+            <p style={{ fontSize: 11, color: '#636363', marginTop: 12, textAlign: 'center' }}>Appuyez sur une étape pour mettre à jour votre avancement</p>
 
             {/* Facture générée overlay */}
             {factureGeneree && !factureAcceptee && (
@@ -382,7 +382,7 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
         />
       )}
       {missions.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#8E8E93', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>Aucune mission pour l'instant</div>
+        <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#636363', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>Aucune mission pour l'instant</div>
       ) : missions.map((m, i) => {
         const isToday = m.dateDebut === today || m.statut === 'en_cours';
         const sc = statColor[m.statut] || statColor.planifie;
@@ -406,7 +406,7 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
                 {/* Progress bar inline */}
                 {progress > 0 && (
                   <div style={{ marginTop: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8E8E93', marginBottom: 3 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363', marginBottom: 3 }}>
                       <span>Avancement</span><span>{progress}%</span>
                     </div>
                     <div style={{ height: 5, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
@@ -417,7 +417,7 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: sc.bg, color: sc.c }}>{sc.l}</span>
-                <span style={{ fontSize: 11, color: '#8E8E93' }}>Voir détail →</span>
+                <span style={{ fontSize: 11, color: '#636363' }}>Voir détail →</span>
               </div>
             </div>
           </div>
@@ -499,8 +499,8 @@ function TabNotesFrais({ notes, setNotes, headers }) {
             {!fichier ? (
               <>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>Justificatif <span style={{ fontWeight: 400, color: '#8E8E93' }}>(optionnel)</span></div>
-                <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 4 }}>Photo ou PDF — le logiciel scannera automatiquement les informations</div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Justificatif <span style={{ fontWeight: 400, color: '#636363' }}>(optionnel)</span></div>
+                <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>Photo ou PDF — le logiciel scannera automatiquement les informations</div>
               </>
             ) : scanning ? (
               <>
@@ -518,7 +518,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontWeight: 600, color: '#34C759', fontSize: 14 }}>✓ Scan terminé</div>
                   {scanResult && <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 2 }}>Confiance : {scanResult.confidence}% · Champs remplis automatiquement</div>}
-                  <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 2 }}>{fichier.name}</div>
+                  <div style={{ fontSize: 12, color: '#636363', marginTop: 2 }}>{fichier.name}</div>
                 </div>
               </div>
             )}
@@ -558,13 +558,13 @@ function TabNotesFrais({ notes, setNotes, headers }) {
       <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
         <div style={{ padding: '13px 18px', borderBottom: '1px solid #F2F2F7', fontWeight: 700, fontSize: 15 }}>Mes notes de frais</div>
         {notes.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune note de frais soumise</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucune note de frais soumise</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                 {['Catégorie', 'Montant', 'Date', 'Description', 'Statut'].map(h => (
-                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -625,7 +625,7 @@ function PlanningMini({ onTabChange }) {
           return (
             <div key={i} style={{ minHeight: 90 }}>
               <div style={{ textAlign: 'center', marginBottom: 6 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
                 <div style={{ width: 26, height: 26, borderRadius: '50%', background: isToday ? '#5B5BD6' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 13, margin: '3px auto 0' }}>{d.getDate()}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -748,7 +748,7 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                 Chantier : {MISSIONS_DEMO.find(m => String(m.id) === String(form.missionId))?.titre?.split('—')[0]?.trim() || ''}
               </p>}
             </div>
-            <button type="button" onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 20 }}>×</button>
+            <button type="button" onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#636363', fontSize: 20 }}>×</button>
           </div>
           {/* Source toggle */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, background: '#F2F2F7', borderRadius: 10, padding: 4 }}>
@@ -821,13 +821,13 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                   <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Ex : Sacs de ciment × 20, location nacelle 1 journée…" style={inp} required />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={lbl}>Justificatif <span style={{ fontWeight: 400, color: '#8E8E93' }}>(optionnel)</span></label>
+                  <label style={lbl}>Justificatif <span style={{ fontWeight: 400, color: '#636363' }}>(optionnel)</span></label>
                   <div onClick={() => fileRef.current.click()} style={{ border: `2px dashed ${fichier ? '#34C759' : '#E5E5EA'}`, borderRadius: 10, padding: '12px 16px', cursor: 'pointer', background: fichier ? '#D1F2E020' : '#FAFAFA', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <input ref={fileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => setFichier(e.target.files[0])} />
                     <span style={{ fontSize: 20 }}>{fichier ? '✅' : '📎'}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: fichier ? '#34C759' : '#8E8E93' }}>{fichier ? fichier.name : 'Joindre la facture ou le bon de livraison'}</div>
-                      <div style={{ fontSize: 11, color: '#8E8E93' }}>PDF, image — recommandé pour le suivi de chantier</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: fichier ? '#34C759' : '#636363' }}>{fichier ? fichier.name : 'Joindre la facture ou le bon de livraison'}</div>
+                      <div style={{ fontSize: 11, color: '#636363' }}>PDF, image — recommandé pour le suivi de chantier</div>
                     </div>
                   </div>
                 </div>
@@ -844,13 +844,13 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
       <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
         <div style={{ padding: '13px 18px', borderBottom: '1px solid #F2F2F7', fontWeight: 700, fontSize: 15 }}>Mes frais chantier</div>
         {frais.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucun frais déclaré</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucun frais déclaré</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                 {['Chantier', 'Catégorie', 'Description', 'Fournisseur', 'Montant', 'Date', 'Statut'].map(h => (
-                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -860,7 +860,7 @@ function TabFraisChantier({ headers, preMission, onClearPreMission }) {
                   <td style={{ padding: '11px 14px', fontWeight: 600, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.mission}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73', textTransform: 'capitalize' }}>{f.categorie}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{f.description}</td>
-                  <td style={{ padding: '11px 14px', color: '#8E8E93' }}>{f.fournisseur || '—'}</td>
+                  <td style={{ padding: '11px 14px', color: '#636363' }}>{f.fournisseur || '—'}</td>
                   <td style={{ padding: '11px 14px', fontWeight: 700, color: '#FF9500' }}>{formatCur(f.montant)}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{formatDate(f.date)}</td>
                   <td style={{ padding: '11px 14px' }}>
@@ -931,7 +931,7 @@ function TabPlanning({ headers }) {
             return (
               <div key={i} style={{ minHeight: 120 }}>
                 <div style={{ textAlign: 'center', marginBottom: 6 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.4 }}>{JOURS[i]}</div>
                   <div style={{ width: 28, height: 28, borderRadius: '50%', background: isToday ? '#5B5BD6' : 'transparent', color: isToday ? '#fff' : '#1C1C1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: isToday ? 800 : 400, fontSize: 14, margin: '4px auto 0' }}>
                     {d.getDate()}
                   </div>
@@ -962,7 +962,7 @@ function TabPlanning({ headers }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{ev.mission}</div>
               <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 2 }}>{new Date(ev.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · {ev.heure}</div>
-              {ev.adresse && <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 2 }}>📍 {ev.adresse}</div>}
+              {ev.adresse && <div style={{ fontSize: 12, color: '#636363', marginTop: 2 }}>📍 {ev.adresse}</div>}
             </div>
             <span style={{ padding: '2px 9px', borderRadius: 10, fontSize: 10, fontWeight: 700, background: `${ev.color}18`, color: ev.color, alignSelf: 'flex-start', flexShrink: 0, textTransform: 'capitalize' }}>{ev.type}</span>
           </div>
@@ -987,7 +987,7 @@ function TabFichesPaie({ user }) {
         <thead>
           <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
             {['Période', 'Salaire brut', 'Net à payer', 'Date de paiement', 'Statut', ''].map(h => (
-              <th key={h} style={{ padding: '9px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+              <th key={h} style={{ padding: '9px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -1064,13 +1064,13 @@ function TabConges({ conges, setConges, headers }) {
       <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
         <div style={{ padding: '13px 18px', borderBottom: '1px solid #F2F2F7', fontWeight: 700, fontSize: 15 }}>Mes demandes de congés</div>
         {conges.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune demande</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucune demande</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                 {['Période', 'Jours', 'Type', 'Statut'].map(h => (
-                  <th key={h} style={{ padding: '9px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '9px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>

@@ -78,7 +78,7 @@ export default function FreampleCom(){
       <div onClick={()=>setMenuOpen(false)} style={{position:'fixed',inset:0,zIndex:1999,background:'rgba(0,0,0,0.35)',opacity:menuOpen?1:0,pointerEvents:menuOpen?'auto':'none',transition:'opacity .35s'}}/>
       <div style={{position:'fixed',top:0,left:0,bottom:0,zIndex:2000,width:'clamp(300px,85vw,400px)',background:L.white,transform:menuOpen?'translateX(0)':'translateX(-100%)',transition:'transform .4s cubic-bezier(0.25,0.46,0.45,0.94)',display:'flex',flexDirection:'column',boxShadow:menuOpen?'8px 0 32px rgba(0,0,0,0.1)':'none'}}>
         <div style={{padding:'20px 28px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${L.border}`}}>
-          <div style={{fontSize:12,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em'}}>Freample Com</div>
+          <span style={{fontSize:16,fontWeight:800,letterSpacing:'-0.04em'}}>Freample Com<span style={{color:L.gold}}>.</span></span>
           <button onClick={()=>setMenuOpen(false)} style={{background:'none',border:`1px solid ${L.border}`,width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:14,color:L.textLight,transition:'border-color .15s'}}
             onMouseEnter={e=>e.currentTarget.style.borderColor=L.noir} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>✕</button>
         </div>
@@ -106,11 +106,10 @@ export default function FreampleCom(){
         <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg, rgba(10,10,10,0.25) 0%, rgba(10,10,10,0.9) 100%)'}}/>
         <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:48,height:1,background:L.gold,zIndex:2}}/>
         <div style={{maxWidth:720,margin:'0 auto',position:'relative',zIndex:1}}>
-          <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.3em',marginBottom:28}}>Freample Com</div>
-          <h1 style={{fontFamily:L.serif,fontSize:'clamp(40px,8vw,80px)',fontWeight:300,fontStyle:'italic',color:'#fff',lineHeight:1.02,letterSpacing:'-0.02em',margin:'0 0 20px'}}>
-            L'excellence du<br/><span style={{fontWeight:700,fontStyle:'normal'}}>montage vidéo</span>
+          <h1 style={{fontFamily:L.serif,fontSize:'clamp(40px,8vw,80px)',fontWeight:500,color:'#fff',lineHeight:1.02,letterSpacing:'-0.02em',margin:'0 0 20px'}}>
+            L'excellence du<br/><span style={{fontWeight:700}}>montage vidéo</span>
           </h1>
-          <p style={{fontSize:'clamp(15px,1.8vw,18px)',color:'rgba(255,255,255,0.4)',lineHeight:1.65,margin:'0 auto 48px',maxWidth:440,fontWeight:300}}>
+          <p style={{fontSize:'clamp(15px,1.8vw,18px)',color:'rgba(255,255,255,0.6)',lineHeight:1.65,margin:'0 auto 48px',maxWidth:440,fontWeight:300}}>
             Misez sur le digital pour des résultats réels.
           </p>
           <div style={{display:'flex',gap:16,justifyContent:'center',flexWrap:'wrap'}}>
@@ -130,23 +129,21 @@ export default function FreampleCom(){
       <section id="expertises" ref={r1} style={{background:L.white,padding:'clamp(72px,10vh,110px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:900,margin:'0 auto',textAlign:'center'}}>
           <div ref={s1}>
-            <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:16}}>Nos expertises</div>
-            <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,4vw,48px)',fontWeight:300,fontStyle:'italic',letterSpacing:'-0.02em',margin:'0 0 48px',lineHeight:1.12}}>
-              Tout ce dont vos <span style={{fontWeight:700,fontStyle:'normal'}}>réseaux</span> ont besoin
+            <h2 style={{fontSize:'clamp(26px,3.5vw,42px)',fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 48px',lineHeight:1.12}}>
+              Tout ce dont vos réseaux ont besoin
             </h2>
           </div>
           <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:0,border:`1px solid ${L.border}`}}>
             {[
-              {icon:'🎬',title:'Montage vidéo',sub:'TikTok, Reels, YouTube'},
-              {icon:'🎨',title:'Direction artistique',sub:'Identité visuelle, branding'},
-              {icon:'📱',title:'Gestion réseaux',sub:'Planning, publications'},
-              {icon:'💬',title:'Sous-titres & SFX',sub:'Animés, musiques tendance'},
-              {icon:'📈',title:'Stratégie digitale',sub:'Ads, performance'},
-              {icon:'🎙️',title:'Production contenu',sub:'Scripts, voix-off'},
+              {title:'Montage vidéo',sub:'TikTok, Reels, YouTube'},
+              {title:'Direction artistique',sub:'Identité visuelle, branding'},
+              {title:'Gestion réseaux',sub:'Planning, publications'},
+              {title:'Sous-titres & SFX',sub:'Animés, musiques tendance'},
+              {title:'Stratégie digitale',sub:'Ads, performance'},
+              {title:'Production contenu',sub:'Scripts, voix-off'},
             ].map((s,i)=>(
               <div key={s.title} style={{padding:'36px 24px',textAlign:'center',borderRight:(i%3!==2)?`1px solid ${L.border}`:'none',borderBottom:i<3?`1px solid ${L.border}`:'none',transition:'background .2s'}}
                 onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <div style={{fontSize:28,marginBottom:14}}>{s.icon}</div>
                 <div style={{fontSize:14,fontWeight:700,color:L.text,marginBottom:4,letterSpacing:'-0.01em'}}>{s.title}</div>
                 <div style={{fontSize:12.5,color:L.textSec}}>{s.sub}</div>
               </div>
@@ -165,8 +162,8 @@ export default function FreampleCom(){
         <div style={{maxWidth:800,margin:'0 auto',display:'flex',justifyContent:'center',gap:'clamp(40px,8vw,100px)',flexWrap:'wrap',textAlign:'center'}}>
           {[{val:'72h',label:'Délai de livraison'},{val:'63.45€',label:'À partir de'},{val:'100%',label:'Satisfait ou refait'}].map(s=>(
             <div key={s.val}>
-              <div style={{fontFamily:L.serif,fontSize:'clamp(36px,5.5vw,56px)',fontWeight:300,color:L.gold,letterSpacing:'-0.03em',lineHeight:1}}>{s.val}</div>
-              <div style={{fontSize:11,color:L.textSec,marginTop:10,textTransform:'uppercase',letterSpacing:'0.15em',fontWeight:500}}>{s.label}</div>
+              <div style={{fontSize:'clamp(32px,5vw,48px)',fontWeight:500,fontFamily:L.serif,letterSpacing:'-0.03em',lineHeight:1}}>{s.val}</div>
+              <div style={{fontSize:12,color:L.textSec,marginTop:10}}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -180,11 +177,10 @@ export default function FreampleCom(){
       <section ref={r3} id="portfolio" style={{background:L.noir,padding:'clamp(80px,13vh,120px) 32px',textAlign:'center',position:'relative',overflow:'hidden',scrollMarginTop:20}}>
         <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:500,height:500,borderRadius:'50%',background:'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)',pointerEvents:'none'}}/>
         <div ref={s2} style={{position:'relative',zIndex:1,maxWidth:600,margin:'0 auto'}}>
-          <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.3em',marginBottom:20}}>Portfolio</div>
-          <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,5vw,54px)',fontWeight:300,fontStyle:'italic',color:'#fff',letterSpacing:'-0.02em',lineHeight:1.08,margin:'0 0 16px'}}>
-            Découvrez nos <span style={{fontWeight:700,fontStyle:'normal'}}>réalisations</span>
+          <h2 style={{fontSize:'clamp(28px,4.5vw,48px)',fontWeight:800,color:'#fff',letterSpacing:'-0.03em',lineHeight:1.08,margin:'0 0 16px'}}>
+            Nos réalisations
           </h2>
-          <p style={{fontSize:15,color:'rgba(255,255,255,0.35)',lineHeight:1.6,margin:'0 0 44px',fontWeight:300}}>Chaque projet raconte une histoire.</p>
+          <p style={{fontSize:15,color:'rgba(255,255,255,0.55)',lineHeight:1.6,margin:'0 0 44px',fontWeight:300}}>Chaque projet raconte une histoire.</p>
           <button onClick={()=>navigate('/com/portfolio')} style={{padding:'16px 52px',background:'transparent',color:'#fff',border:`1px solid ${L.gold}`,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:L.font,letterSpacing:'0.08em',textTransform:'uppercase',transition:'all .3s'}}
             onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>Explorer le portfolio</button>
         </div>
@@ -207,9 +203,8 @@ export default function FreampleCom(){
       <section ref={r4} id="contact" style={{background:L.white,scrollMarginTop:20}}>
         <div style={{display:'flex',flexWrap:'wrap',maxWidth:1200,margin:'0 auto'}}>
           <div style={{flex:'1 1 420px',padding:'clamp(52px,8vh,88px) clamp(36px,5vw,64px)',display:'flex',flexDirection:'column',justifyContent:'center'}}>
-            <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.2em',marginBottom:16}}>Conseil personnalisé</div>
-            <h2 style={{fontFamily:L.serif,fontSize:'clamp(28px,4vw,44px)',fontWeight:300,fontStyle:'italic',color:L.text,letterSpacing:'-0.02em',lineHeight:1.12,margin:'0 0 14px'}}>
-              Vous avez un projet ?<br/><span style={{fontWeight:700,fontStyle:'normal'}}>Parlons-en.</span>
+            <h2 style={{fontSize:'clamp(26px,3.5vw,40px)',fontWeight:800,letterSpacing:'-0.03em',lineHeight:1.15,margin:'0 0 14px'}}>
+              Vous avez un projet ?<br/>Parlons-en.
             </h2>
             <p style={{fontSize:14,color:L.textSec,lineHeight:1.6,margin:'0 0 32px'}}>Réponse sous 24 heures, devis gratuit et sans engagement.</p>
             <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
@@ -233,21 +228,20 @@ export default function FreampleCom(){
       <section ref={r5} id="tarifs" style={{background:L.cream,padding:'clamp(64px,10vh,100px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:960,margin:'0 auto'}}>
           <div ref={s3} style={{textAlign:'center',marginBottom:56}}>
-            <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:14}}>Tarification</div>
-            <h2 style={{fontFamily:L.serif,fontSize:'clamp(30px,4.5vw,48px)',fontWeight:300,fontStyle:'italic',letterSpacing:'-0.02em',margin:'0 0 8px',lineHeight:1.12}}>
-              Nos <span style={{fontWeight:700,fontStyle:'normal'}}>formules</span>
+            <h2 style={{fontSize:'clamp(26px,4vw,42px)',fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 8px',lineHeight:1.12}}>
+              Nos formules
             </h2>
-            <p style={{fontSize:14,color:L.textSec}}>Des formules adaptées à chaque ambition.</p>
+            <p style={{fontSize:14,color:L.textSec}}>Choisissez la formule qui correspond à votre besoin.</p>
           </div>
           <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:0}}>
             {packs.map((pack,i)=>{const isPop=pack.populaire;return(
               <div key={i} style={{background:isPop?L.noir:L.white,padding:'44px 32px',display:'flex',flexDirection:'column',border:isPop?'none':`1px solid ${L.border}`,borderRight:(!isPop&&i<packs.length-1)?'none':'',position:'relative'}}>
                 {isPop&&<div style={{position:'absolute',top:0,left:0,right:0,height:2,background:L.gold}}/>}
-                <div style={{fontSize:11,fontWeight:600,color:isPop?L.gold:L.textLight,textTransform:'uppercase',letterSpacing:'0.2em',marginBottom:20}}>{pack.nom}</div>
-                <div style={{fontFamily:L.serif,fontSize:46,fontWeight:300,color:isPop?'#fff':L.text,marginBottom:4,letterSpacing:'-0.03em'}}>
-                  {pack.prix}€<span style={{fontSize:14,fontWeight:400,color:isPop?'rgba(255,255,255,0.3)':L.textLight,fontFamily:L.font}}>/mois</span>
+                <div style={{fontSize:13,fontWeight:700,color:isPop?L.gold:L.textSec,marginBottom:20}}>{pack.nom}</div>
+                <div style={{fontFamily:L.serif,fontSize:46,fontWeight:500,color:isPop?'#fff':L.text,marginBottom:4,letterSpacing:'-0.03em'}}>
+                  {pack.prix}€<span style={{fontSize:14,fontWeight:400,color:isPop?'rgba(255,255,255,0.5)':L.textLight,fontFamily:L.font}}>/mois</span>
                 </div>
-                <div style={{fontSize:13,color:isPop?'rgba(255,255,255,0.35)':L.textSec,marginBottom:28}}>{pack.desc}</div>
+                <div style={{fontSize:13,color:isPop?'rgba(255,255,255,0.55)':L.textSec,marginBottom:28}}>{pack.desc}</div>
                 <div style={{flex:1}}/>
                 <button onClick={()=>{setBrief(p=>({...p,type:'Montage vidéo',quantite:String(i===0?4:i===1?10:20)}));setStep(1);}}
                   style={{marginTop:24,width:'100%',padding:'15px',background:isPop?L.gold:'transparent',color:isPop?'#fff':L.text,border:isPop?'none':`1px solid ${L.border}`,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:L.font,letterSpacing:'0.04em',textTransform:'uppercase',transition:'all .2s'}}
@@ -275,8 +269,7 @@ export default function FreampleCom(){
       <section ref={r6} id="grille" style={{background:L.white,padding:'clamp(56px,8vh,88px) 32px',scrollMarginTop:20}}>
         <div style={{maxWidth:640,margin:'0 auto'}}>
           <div ref={s4} style={{textAlign:'center',marginBottom:40}}>
-            <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.25em',marginBottom:12}}>Détail</div>
-            <h3 style={{fontFamily:L.serif,fontSize:30,fontWeight:300,fontStyle:'italic',margin:0,letterSpacing:'-0.02em'}}>Tous nos <span style={{fontWeight:700,fontStyle:'normal'}}>tarifs</span></h3>
+            <h3 style={{fontSize:24,fontWeight:800,margin:0,letterSpacing:'-0.02em'}}>Grille tarifaire</h3>
           </div>
           {tarifs.filter(t=>t.cat==='Montage vidéo').map(t=>(
             <div key={t.cat} style={{border:`1px solid ${L.border}`}}>
@@ -300,7 +293,7 @@ export default function FreampleCom(){
       <a href="https://wa.me/33769387193?text=Bonjour, je suis intéressé par Freample Com" target="_blank" rel="noopener noreferrer"
         style={{position:'fixed',bottom:28,right:28,width:52,height:52,background:L.noir,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 20px rgba(0,0,0,0.15)',zIndex:100,textDecoration:'none',transition:'all .25s'}}
         onMouseEnter={e=>{e.currentTarget.style.background=L.gold;e.currentTarget.style.transform='translateY(-2px)';}} onMouseLeave={e=>{e.currentTarget.style.background=L.noir;e.currentTarget.style.transform='none';}}>
-        <span style={{fontSize:24,lineHeight:1,color:'#fff'}}>💬</span>
+        <span style={{fontSize:13,fontWeight:800,lineHeight:1,color:'#fff',fontFamily:L.font}}>W</span>
       </a>
 
       {/* ══ FOOTER ══ */}
@@ -314,8 +307,8 @@ export default function FreampleCom(){
           <div style={{background:L.white,width:'100%',maxWidth:520,maxHeight:'90vh',overflowY:'auto',padding:'36px 32px'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
               <div>
-                <div style={{fontSize:11,fontWeight:600,color:L.gold,textTransform:'uppercase',letterSpacing:'0.2em',marginBottom:4}}>{step===3?'Confirmation':'Votre projet'}</div>
-                <div style={{fontFamily:L.serif,fontSize:22,fontWeight:300,fontStyle:'italic',color:L.text}}>{step===3?'Demande envoyée':`Étape ${step} sur 2`}</div>
+                <div style={{fontSize:18,fontWeight:700}}>{step===3?'Demande envoyée':'Votre projet'}</div>
+                {step<3&&<div style={{fontSize:13,color:L.textSec,marginTop:2}}>Étape {step} sur 2</div>}
               </div>
               <button onClick={()=>setStep(0)} style={{background:'none',border:`1px solid ${L.border}`,width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:14,color:L.textLight,transition:'border-color .15s'}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=L.noir} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>✕</button>
@@ -336,7 +329,7 @@ export default function FreampleCom(){
               </div>
               <div style={{marginBottom:16}}><label style={lbl}>Deadline <span style={{fontWeight:400,color:L.textLight,textTransform:'none',letterSpacing:0}}>(optionnel)</span></label><input type="date" {...f('deadline')} style={inp}/></div>
               <div style={{padding:'16px 20px',background:L.cream,border:`1px solid ${L.border}`,marginBottom:24}}>
-                <div style={{fontSize:11,color:L.gold,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.15em',marginBottom:8}}>Récapitulatif</div>
+                <div style={{fontSize:12,fontWeight:700,marginBottom:8}}>Récapitulatif</div>
                 <div style={{fontSize:13,color:L.textSec,lineHeight:1.7}}>{brief.format||'Service personnalisé'}{brief.style?` · Style: ${brief.style}`:''}{brief.quantite>1?` · ${brief.quantite} vidéos`:''}</div>
               </div>
               <div style={{display:'flex',gap:10}}>
@@ -353,11 +346,11 @@ export default function FreampleCom(){
 
             {step===3&&(<div style={{textAlign:'center',padding:'20px 0'}}>
               <div style={{width:56,height:56,margin:'0 auto 20px',border:`1px solid ${L.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>✓</div>
-              <div style={{fontFamily:L.serif,fontSize:24,fontWeight:300,fontStyle:'italic',marginBottom:8}}>Merci pour votre confiance</div>
+              <div style={{fontSize:20,fontWeight:700,marginBottom:8}}>Merci pour votre confiance</div>
               <div style={{fontSize:14,color:L.textSec,marginBottom:24}}>Nous vous répondons sous 24h à <strong>{brief.email}</strong></div>
               {suiviToken&&(
                 <div style={{padding:'20px',background:L.cream,border:`1px solid ${L.border}`,marginBottom:24}}>
-                  <div style={{fontSize:11,color:L.gold,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.15em',marginBottom:10}}>Suivi de commande</div>
+                  <div style={{fontSize:12,fontWeight:700,marginBottom:10}}>Suivi de commande</div>
                   <a href={`/suivi/${suiviToken}`} style={{display:'inline-block',padding:'12px 28px',background:L.noir,color:'#fff',fontSize:13,fontWeight:600,textDecoration:'none',letterSpacing:'0.04em',textTransform:'uppercase'}}>Suivre ma commande</a>
                   <div style={{fontSize:12,color:L.textLight,marginTop:10}}>Référence : {suiviToken}</div>
                 </div>

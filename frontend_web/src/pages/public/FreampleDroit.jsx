@@ -7,27 +7,27 @@ import { genererDocument } from '../../data/documentsJuridiques';
 import L from '../../design/luxe';
 
 const DOMAINES = [
-  { id:'immo', icon:'🏠', label:'Droit immobilier', desc:'Baux, copropriété, vices cachés, permis de construire, expulsions' },
-  { id:'entreprise', icon:'🏢', label:'Droit des sociétés', desc:'Création SCI/SAS/SARL, statuts, pactes d\'associés, cession' },
-  { id:'travail', icon:'👷', label:'Droit du travail', desc:'Contrats, licenciement, prud\'hommes, harcèlement, rupture conventionnelle' },
-  { id:'famille', icon:'👨‍👩‍👧', label:'Droit de la famille', desc:'Divorce, garde, succession, donation, testament' },
-  { id:'fiscal', icon:'💰', label:'Droit fiscal', desc:'Optimisation, contrôle fiscal, redressement, TVA, impôt sur les sociétés' },
-  { id:'commercial', icon:'📋', label:'Droit commercial', desc:'CGV, litiges fournisseurs, recouvrement de créances, concurrence' },
+  { id:'immo', label:'Droit immobilier', desc:'Baux, copropriété, vices cachés, permis de construire, expulsions' },
+  { id:'entreprise', label:'Droit des sociétés', desc:'Création SCI/SAS/SARL, statuts, pactes d\'associés, cession' },
+  { id:'travail', label:'Droit du travail', desc:'Contrats, licenciement, prud\'hommes, harcèlement, rupture conventionnelle' },
+  { id:'famille', label:'Droit de la famille', desc:'Divorce, garde, succession, donation, testament' },
+  { id:'fiscal', label:'Droit fiscal', desc:'Optimisation, contrôle fiscal, redressement, TVA, impôt sur les sociétés' },
+  { id:'commercial', label:'Droit commercial', desc:'CGV, litiges fournisseurs, recouvrement de créances, concurrence' },
 ];
 
 const DOCUMENTS = [
-  { id:'statuts_sci', icon:'🏛️', label:'Statuts de SCI', cat:'Société', temps:'10 min', prix:'Gratuit', desc:'Statuts complets conformes, clause d\'agrément, objet social, apports.', lien:'/immo' },
-  { id:'statuts_sas', icon:'🏢', label:'Statuts de SAS/SASU', cat:'Société', temps:'15 min', prix:'Gratuit', desc:'Statuts avec répartition des pouvoirs, clauses personnalisables.' },
-  { id:'bail_habitation', icon:'📝', label:'Bail d\'habitation', cat:'Immobilier', temps:'8 min', prix:'Gratuit', desc:'Bail conforme loi ELAN/ALUR, meublé ou vide, clauses obligatoires.', lien:'/immo' },
-  { id:'bail_commercial', icon:'🏪', label:'Bail commercial', cat:'Immobilier', temps:'12 min', prix:'Gratuit', desc:'Bail 3-6-9, clauses de révision, destination, cession.' },
-  { id:'contrat_travail', icon:'👷', label:'Contrat de travail', cat:'RH', temps:'10 min', prix:'Gratuit', desc:'CDI, CDD, temps partiel. Clauses de non-concurrence, période d\'essai.' },
-  { id:'cgv', icon:'📋', label:'CGV / CGU', cat:'Commercial', temps:'8 min', prix:'Gratuit', desc:'Conditions générales de vente ou d\'utilisation conformes RGPD.' },
-  { id:'mise_demeure', icon:'⚠️', label:'Mise en demeure', cat:'Contentieux', temps:'3 min', prix:'Gratuit', desc:'Lettre de relance formelle avant procédure judiciaire.', lien:'/immo' },
-  { id:'pv_ag', icon:'📊', label:'PV d\'Assemblée Générale', cat:'Société', temps:'5 min', prix:'Gratuit', desc:'PV d\'AG ordinaire ou extraordinaire, résolutions, votes.' },
-  { id:'rupture_conv', icon:'🤝', label:'Rupture conventionnelle', cat:'RH', temps:'8 min', prix:'Gratuit', desc:'Convention de rupture, indemnités, formulaire Cerfa.' },
-  { id:'donation', icon:'🎁', label:'Acte de donation', cat:'Famille', temps:'10 min', prix:'Gratuit', desc:'Donation de parts sociales, immobilière, avec ou sans réserve d\'usufruit.' },
-  { id:'cession_parts', icon:'🔄', label:'Cession de parts', cat:'Société', temps:'10 min', prix:'Gratuit', desc:'Acte de cession, agrément, enregistrement, fiscalité.' },
-  { id:'nda', icon:'🔒', label:'Accord de confidentialité', cat:'Commercial', temps:'5 min', prix:'Gratuit', desc:'NDA bilatéral ou unilatéral, périmètre, durée, sanctions.' },
+  { id:'statuts_sci', label:'Statuts de SCI', cat:'Société', temps:'10 min', prix:'Gratuit', desc:'Statuts complets conformes, clause d\'agrément, objet social, apports.', lien:'/immo' },
+  { id:'statuts_sas', label:'Statuts de SAS/SASU', cat:'Société', temps:'15 min', prix:'Gratuit', desc:'Statuts avec répartition des pouvoirs, clauses personnalisables.' },
+  { id:'bail_habitation', label:'Bail d\'habitation', cat:'Immobilier', temps:'8 min', prix:'Gratuit', desc:'Bail conforme loi ELAN/ALUR, meublé ou vide, clauses obligatoires.', lien:'/immo' },
+  { id:'bail_commercial', label:'Bail commercial', cat:'Immobilier', temps:'12 min', prix:'Gratuit', desc:'Bail 3-6-9, clauses de révision, destination, cession.' },
+  { id:'contrat_travail', label:'Contrat de travail', cat:'RH', temps:'10 min', prix:'Gratuit', desc:'CDI, CDD, temps partiel. Clauses de non-concurrence, période d\'essai.' },
+  { id:'cgv', label:'CGV / CGU', cat:'Commercial', temps:'8 min', prix:'Gratuit', desc:'Conditions générales de vente ou d\'utilisation conformes RGPD.' },
+  { id:'mise_demeure', label:'Mise en demeure', cat:'Contentieux', temps:'3 min', prix:'Gratuit', desc:'Lettre de relance formelle avant procédure judiciaire.', lien:'/immo' },
+  { id:'pv_ag', label:'PV d\'Assemblée Générale', cat:'Société', temps:'5 min', prix:'Gratuit', desc:'PV d\'AG ordinaire ou extraordinaire, résolutions, votes.' },
+  { id:'rupture_conv', label:'Rupture conventionnelle', cat:'RH', temps:'8 min', prix:'Gratuit', desc:'Convention de rupture, indemnités, formulaire Cerfa.' },
+  { id:'donation', label:'Acte de donation', cat:'Famille', temps:'10 min', prix:'Gratuit', desc:'Donation de parts sociales, immobilière, avec ou sans réserve d\'usufruit.' },
+  { id:'cession_parts', label:'Cession de parts', cat:'Société', temps:'10 min', prix:'Gratuit', desc:'Acte de cession, agrément, enregistrement, fiscalité.' },
+  { id:'nda', label:'Accord de confidentialité', cat:'Commercial', temps:'5 min', prix:'Gratuit', desc:'NDA bilatéral ou unilatéral, périmètre, durée, sanctions.' },
 ];
 
 const AVOCATS = [
@@ -88,11 +88,11 @@ export default function FreampleDroit() {
           <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
             <div ref={s1}>
               <div style={{ display:'inline-flex', padding:'6px 18px', background:'rgba(201,169,110,0.12)', border:`1px solid ${L.gold}40`, fontSize:11, fontWeight:600, color:L.gold, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:20 }}>En cours de développement</div>
-              <h1 style={{ fontFamily:L.serif, fontSize:'clamp(36px,7vw,68px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.02, letterSpacing:'-0.02em', margin:'0 0 16px' }}>
-                Le droit, <span style={{ fontWeight:700, fontStyle:'normal' }}>simplifié</span>
+              <h1 style={{ fontSize:'clamp(36px,7vw,68px)', fontWeight:800, color:'#fff', lineHeight:1.02, letterSpacing:'-0.03em', margin:'0 0 16px' }}>
+                Le droit, simplifié.
               </h1>
             </div>
-            <p ref={r1} style={{ fontSize:16, color:'rgba(255,255,255,0.4)', lineHeight:1.6, margin:'0 auto 36px', maxWidth:480, fontWeight:300 }}>
+            <p ref={r1} style={{ fontSize:16, color:'rgba(255,255,255,0.6)', lineHeight:1.6, margin:'0 auto 36px', maxWidth:480, fontWeight:300 }}>
               Générez vos documents juridiques en ligne. Consultez un avocat en visio. Protégez votre entreprise et votre patrimoine.
             </p>
             <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
@@ -111,9 +111,8 @@ export default function FreampleDroit() {
         {/* Domaines */}
         <section style={{ padding:'clamp(56px,8vh,88px) 32px', maxWidth:1000, margin:'0 auto' }}>
           <div ref={s2} style={{ textAlign:'center', marginBottom:48 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Domaines</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', margin:0 }}>
-              Tous les domaines du <span style={{ fontWeight:700, fontStyle:'normal' }}>droit</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:0 }}>
+              Tous les domaines du droit
             </h2>
           </div>
           <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
@@ -121,8 +120,7 @@ export default function FreampleDroit() {
               <div key={d.id} onClick={()=>{setAvocatFilter(d.label.split(' ').pop());setTab('avocats');}}
                 style={{ background:L.white, padding:'32px 24px', cursor:'pointer', transition:'background .2s' }}
                 onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background=L.white}>
-                <div style={{ fontSize:28, marginBottom:14 }}>{d.icon}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, color:L.text, marginBottom:6 }}>{d.label}</h3>
+                <h3 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>{d.label}</h3>
                 <p style={{ fontSize:13, color:L.textSec, lineHeight:1.6, margin:0 }}>{d.desc}</p>
               </div>
             ))}
@@ -132,35 +130,35 @@ export default function FreampleDroit() {
         {/* Comment ça marche */}
         <section style={{ background:L.white, borderTop:`1px solid ${L.border}`, padding:'clamp(56px,8vh,88px) 32px' }}>
           <div ref={s3} style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, fontStyle:'italic', margin:'0 0 40px' }}>
-              Simple, rapide, <span style={{ fontWeight:700, fontStyle:'normal' }}>fiable</span>
+            <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, margin:'0 0 40px', letterSpacing:'-0.03em' }}>
+              Comment ça marche
             </h2>
-            <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:0, textAlign:'left', maxWidth:520, margin:'0 auto' }}>
               {[
-                { step:'1', icon:'📝', title:'Choisissez', desc:'Sélectionnez le document ou le domaine juridique qui vous concerne.' },
-                { step:'2', icon:'✍️', title:'Répondez', desc:'Remplissez un questionnaire simple. Pas de jargon, que des questions claires.' },
-                { step:'3', icon:'📄', title:'Obtenez', desc:'Votre document est généré instantanément, conforme et prêt à signer.' },
-                { step:'4', icon:'⚖️', title:'Consultez', desc:'Besoin d\'un avis ? Un avocat spécialisé vous répond sous 48h.' },
-              ].map(s => (
-                <div key={s.step}>
-                  <div style={{ width:48, height:48, margin:'0 auto 14px', background:L.cream, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{s.icon}</div>
-                  <div style={{ fontSize:11, fontWeight:700, color:L.gold, marginBottom:6, letterSpacing:'0.1em' }}>ÉTAPE {s.step}</div>
-                  <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 6px' }}>{s.title}</h3>
-                  <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
+                { n:'01', title:'Choisissez', desc:'Sélectionnez le document ou le domaine juridique qui vous concerne.' },
+                { n:'02', title:'Répondez', desc:'Remplissez un questionnaire simple. Pas de jargon, que des questions claires.' },
+                { n:'03', title:'Obtenez', desc:'Votre document est généré instantanément, conforme et prêt à signer.' },
+                { n:'04', title:'Consultez', desc:'Besoin d\'un avis ? Un avocat spécialisé vous répond sous 48h.' },
+              ].map((s, i) => (
+                <div key={s.n} style={{ display:'flex', gap:20, alignItems:'flex-start', padding:'20px 0', borderTop: i > 0 ? `1px solid ${L.border}` : 'none' }}>
+                  <span style={{ fontSize:28, fontWeight:200, color:L.textLight, fontFamily:L.serif, lineHeight:1, flexShrink:0, minWidth:40 }}>{s.n}</span>
+                  <div>
+                    <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 4px' }}>{s.title}</h3>
+                    <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
+                  </div>
                 </div>
               ))}
-            </StaggerChildren>
+            </div>
           </div>
         </section>
 
         {/* Lien écosystème */}
         <section style={{ background:L.noir, padding:'clamp(56px,8vh,80px) 32px', textAlign:'center' }}>
           <div style={{ maxWidth:600, margin:'0 auto' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Écosystème Freample</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(22px,3.5vw,32px)', fontWeight:300, fontStyle:'italic', color:'#fff', margin:'0 0 12px' }}>
-              Connecté à vos <span style={{ fontWeight:700, fontStyle:'normal' }}>autres services</span>
+            <h2 style={{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:800, color:'#fff', letterSpacing:'-0.03em', margin:'0 0 12px' }}>
+              Connecté à vos autres services
             </h2>
-            <p style={{ fontSize:14, color:'rgba(255,255,255,0.4)', lineHeight:1.6, marginBottom:28 }}>
+            <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.6, marginBottom:28 }}>
               Impayé sur Freample Immo → mise en demeure auto. Création de SCI → statuts générés. Litige artisan → avocat spécialisé.
             </p>
             <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
@@ -178,8 +176,8 @@ export default function FreampleDroit() {
       {tab==='documents' && <>
         <section style={{ maxWidth:1000, margin:'0 auto', padding:'clamp(28px,4vh,48px) clamp(20px,3vw,40px)' }}>
           <div style={{ textAlign:'center', marginBottom:24 }}>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, fontStyle:'italic', margin:'0 0 8px' }}>
-              Générer un <span style={{ fontWeight:700, fontStyle:'normal' }}>document juridique</span>
+            <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, margin:'0 0 8px', letterSpacing:'-0.02em' }}>
+              Générer un document juridique
             </h2>
             <p style={{ fontSize:14, color:L.textSec }}>Répondez à quelques questions, obtenez votre document conforme instantanément.</p>
           </div>
@@ -201,12 +199,9 @@ export default function FreampleDroit() {
                 style={{ background:L.white, border:`1px solid ${L.border}`, padding:'20px', cursor:'pointer', transition:'all .2s' }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
-                  <span style={{ fontSize:28 }}>{d.icon}</span>
-                  <div style={{ display:'flex', gap:4 }}>
-                    <span style={{ fontSize:10, fontWeight:600, color:L.green, background:L.greenBg, padding:'2px 8px' }}>{d.prix}</span>
-                    <span style={{ fontSize:10, fontWeight:600, color:L.blue, background:L.blueBg, padding:'2px 8px' }}>{d.temps}</span>
-                  </div>
+                <div style={{ display:'flex', justifyContent:'flex-end', gap:4, marginBottom:10 }}>
+                  <span style={{ fontSize:10, fontWeight:600, color:L.green, background:L.greenBg, padding:'2px 8px' }}>{d.prix}</span>
+                  <span style={{ fontSize:10, fontWeight:600, color:L.blue, background:L.blueBg, padding:'2px 8px' }}>{d.temps}</span>
                 </div>
                 <h3 style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>{d.label}</h3>
                 <div style={{ fontSize:11, color:L.gold, fontWeight:600, marginBottom:6 }}>{d.cat}</div>
@@ -224,8 +219,8 @@ export default function FreampleDroit() {
       {tab==='avocats' && <>
         <section style={{ maxWidth:900, margin:'0 auto', padding:'clamp(28px,4vh,48px) clamp(20px,3vw,40px)' }}>
           <div style={{ textAlign:'center', marginBottom:24 }}>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, fontStyle:'italic', margin:'0 0 8px' }}>
-              Consulter un <span style={{ fontWeight:700, fontStyle:'normal' }}>avocat</span>
+            <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, margin:'0 0 8px', letterSpacing:'-0.02em' }}>
+              Consulter un avocat
             </h2>
             <p style={{ fontSize:14, color:L.textSec }}>Consultation en visio ou en cabinet. Réponse sous 48h.</p>
           </div>
@@ -250,7 +245,7 @@ export default function FreampleDroit() {
                   <div>
                     <div style={{ fontSize:14, fontWeight:700 }}>{a.nom}</div>
                     <div style={{ fontSize:12, color:L.gold, fontWeight:600 }}>{a.specialite}</div>
-                    <div style={{ fontSize:11, color:L.textSec }}>📍 {a.ville}</div>
+                    <div style={{ fontSize:11, color:L.textSec }}>{a.ville}</div>
                   </div>
                 </div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:12 }}>
@@ -285,8 +280,7 @@ export default function FreampleDroit() {
           <div style={{ background:L.white, width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:'28px 24px' }} onClick={e=>e.stopPropagation()}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:6 }}>Générateur</div>
-                <h3 style={{ fontSize:18, fontWeight:800, margin:0 }}>{selectedDoc.icon} {selectedDoc.label}</h3>
+                <h3 style={{ fontSize:18, fontWeight:800, margin:0 }}>{selectedDoc.label}</h3>
               </div>
               <button onClick={()=>{setSelectedDoc(null);setDocForm({});setDocGenere(null);}} style={{ background:'none', border:`1px solid ${L.border}`, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:L.textLight }}>✕</button>
             </div>
@@ -294,7 +288,7 @@ export default function FreampleDroit() {
             <p style={{ fontSize:13, color:L.textSec, marginBottom:16, lineHeight:1.5 }}>{selectedDoc.desc}</p>
 
             {/* Questionnaire dynamique */}
-            <div style={{ fontSize:12, fontWeight:700, color:L.gold, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:10 }}>Remplissez le questionnaire</div>
+            <div style={{ fontSize:13, fontWeight:700, marginBottom:10 }}>Remplissez le questionnaire</div>
             {selectedDoc.cat==='Société' && <>
               <div style={{ marginBottom:10 }}><label style={{ fontSize:11, fontWeight:600, color:L.textSec, display:'block', marginBottom:4 }}>Dénomination sociale</label><input value={docForm.denomination||''} onChange={e=>setDocForm(f=>({...f,denomination:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:`1px solid ${L.border}`, fontSize:13, fontFamily:L.font, outline:'none', boxSizing:'border-box' }} placeholder="Ex: SCI Riviera" /></div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>

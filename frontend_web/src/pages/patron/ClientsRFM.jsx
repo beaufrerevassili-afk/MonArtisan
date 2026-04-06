@@ -201,14 +201,14 @@ export default function ClientsRFM() {
             style={{ background: filtreSegment === k.key ? k.color : '#fff', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: 'pointer', border: `2px solid ${filtreSegment === k.key ? k.color : 'transparent'}`, transition: 'all 0.15s' }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: filtreSegment === k.key ? '#fff' : k.color }}>{k.count}</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: filtreSegment === k.key ? 'rgba(255,255,255,0.85)' : '#1C1C1E', marginTop: 3 }}>{k.label}</div>
-            <div style={{ fontSize: 11, color: filtreSegment === k.key ? 'rgba(255,255,255,0.65)' : '#8E8E93', marginTop: 4 }}>{formatCur(k.ca)}</div>
+            <div style={{ fontSize: 11, color: filtreSegment === k.key ? 'rgba(255,255,255,0.65)' : '#636363', marginTop: 4 }}>{formatCur(k.ca)}</div>
           </div>
         ))}
       </div>
 
       {/* Legend */}
       <div style={{ background: '#fff', borderRadius: 14, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Légende des scores RFM</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Légende des scores RFM</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           {[
             { label: 'R — Récence', desc: '5 = < 30 j · 4 = < 60 j · 3 = < 4 mois · 2 = < 1 an · 1 = > 1 an', color: '#5B5BD6' },
@@ -220,7 +220,7 @@ export default function ClientsRFM() {
                 <ScoreDots score={5} color={d.color} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: d.color }}>{d.label}</span>
               </div>
-              <div style={{ fontSize: 11, color: '#8E8E93', lineHeight: 1.5 }}>{d.desc}</div>
+              <div style={{ fontSize: 11, color: '#636363', lineHeight: 1.5 }}>{d.desc}</div>
             </div>
           ))}
         </div>
@@ -231,7 +231,7 @@ export default function ClientsRFM() {
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un client…"
           style={{ flex: 1, minWidth: 200, padding: '8px 14px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 14, outline: 'none' }} />
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#8E8E93', fontWeight: 600 }}>Trier :</span>
+          <span style={{ fontSize: 12, color: '#636363', fontWeight: 600 }}>Trier :</span>
           {[['rfm', 'Score RFM'], ['recency', 'Récence'], ['frequency', 'Fréquence'], ['monetary', 'Montant'], ['nom', 'Nom']].map(([k, l]) => (
             <button key={k} onClick={() => setTri(k)} style={{ padding: '5px 12px', border: 'none', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 600, background: tri === k ? '#1C1C1E' : '#F2F2F7', color: tri === k ? '#fff' : '#6E6E73', transition: 'all 0.15s' }}>{l}</button>
           ))}
@@ -245,12 +245,12 @@ export default function ClientsRFM() {
           {/* Table header */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 80px 80px 80px 90px 100px 120px', padding: '10px 16px', borderBottom: '2px solid #F2F2F7', background: '#FAFAFA' }}>
             {['Client', 'R', 'F', 'M', 'Score', 'CA total', 'Segment'].map(h => (
-              <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</div>
+              <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</div>
             ))}
           </div>
 
           {clients.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucun client pour ce filtre</div>
+            <div style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucun client pour ce filtre</div>
           ) : clients.map((c, i) => {
             const seg = SEGMENTS[c.segment];
             const rfmTotal = c.r + c.f + c.m;
@@ -268,7 +268,7 @@ export default function ClientsRFM() {
                   </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1E' }}>{c.nom}</div>
-                    <div style={{ fontSize: 11, color: '#8E8E93' }}>{c.nbCommandes} cmd{c.nbCommandes > 1 ? 's' : ''} · dernier : {c.daysSince}j</div>
+                    <div style={{ fontSize: 11, color: '#636363' }}>{c.nbCommandes} cmd{c.nbCommandes > 1 ? 's' : ''} · dernier : {c.daysSince}j</div>
                   </div>
                 </div>
 
@@ -351,7 +351,7 @@ function ClientDetail({ client: c, onClose }) {
 
         {/* RFM scores */}
         <div style={{ background: '#FAFAFA', borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Score RFM</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Score RFM</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
             {[
               { label: 'Récence', score: c.r, color: '#5B5BD6', detail: `${c.daysSince} jours` },
@@ -361,7 +361,7 @@ function ClientDetail({ client: c, onClose }) {
               <div key={d.label} style={{ textAlign: 'center', background: '#fff', borderRadius: 10, padding: '10px 8px', border: `2px solid ${d.color}20` }}>
                 <div style={{ fontSize: 24, fontWeight: 900, color: d.color, lineHeight: 1 }}>{d.score}</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: d.color, marginTop: 2 }}>{d.label}</div>
-                <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 3 }}>{d.detail}</div>
+                <div style={{ fontSize: 10, color: '#636363', marginTop: 3 }}>{d.detail}</div>
                 <div style={{ display: 'flex', gap: 2, justifyContent: 'center', marginTop: 6 }}>
                   {[1,2,3,4,5].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: i <= d.score ? d.color : '#E5E5EA' }} />)}
                 </div>
@@ -388,19 +388,19 @@ function ClientDetail({ client: c, onClose }) {
 
         {/* Historique */}
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Historique des commandes</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Historique des commandes</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(c.historique || []).map((h, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#FAFAFA', borderRadius: 10, fontSize: 13 }}>
                 <div>
                   <div style={{ fontWeight: 600, color: '#1C1C1E' }}>{h.desc}</div>
-                  <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>{formatDate(h.date)}</div>
+                  <div style={{ fontSize: 11, color: '#636363', marginTop: 2 }}>{formatDate(h.date)}</div>
                 </div>
                 <div style={{ fontWeight: 700, color: '#1C1C1E' }}>{formatCur(h.montant)}</div>
               </div>
             ))}
             {(!c.historique || c.historique.length === 0) && (
-              <div style={{ textAlign: 'center', padding: 20, color: '#8E8E93', fontSize: 13 }}>Aucun historique disponible</div>
+              <div style={{ textAlign: 'center', padding: 20, color: '#636363', fontSize: 13 }}>Aucun historique disponible</div>
             )}
           </div>
         </div>

@@ -40,10 +40,10 @@ export default function FreampleImmo() {
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold }} />
         <div style={{ maxWidth:720, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div style={{ display:'inline-flex', padding:'6px 18px', background:'rgba(201,169,110,0.12)', border:`1px solid ${L.gold}40`, fontSize:11, fontWeight:600, color:L.gold, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:24 }}>En cours de développement</div>
-          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(38px,7vw,72px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.02, letterSpacing:'-0.02em', margin:'0 0 16px' }}>
+          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(38px,7vw,72px)', fontWeight:500, fontStyle:'italic', color:'#fff', lineHeight:1.02, letterSpacing:'-0.02em', margin:'0 0 16px' }}>
             Freample <span style={{ fontWeight:700, fontStyle:'normal' }}>Immo</span>
           </h1>
-          <p style={{ fontSize:'clamp(15px,1.8vw,18px)', color:'rgba(255,255,255,0.45)', lineHeight:1.65, margin:'0 auto 0', maxWidth:480, fontWeight:300 }}>
+          <p style={{ fontSize:'clamp(15px,1.8vw,18px)', color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:'0 auto 0', maxWidth:480, fontWeight:300 }}>
             Gestion de patrimoine immobilier, SCI et diagnostics réglementaires.
           </p>
         </div>
@@ -55,8 +55,7 @@ export default function FreampleImmo() {
          ══════════════════════════════════════════════════════ */}
       <section style={{ background:L.white, padding:'clamp(80px,12vh,120px) 32px', textAlign:'center' }}>
         <div ref={s1} style={{ maxWidth:700, margin:'0 auto' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>Gestion privée</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, color:L.text, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
+          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(32px,5.5vw,56px)', fontWeight:700, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.05 }}>
             Multi-SCI
           </h2>
           <p style={{ fontSize:17, color:L.textSec, lineHeight:1.6, margin:'0 auto 20px', maxWidth:480 }}>
@@ -99,33 +98,32 @@ export default function FreampleImmo() {
       <section ref={r5} id="sci-details" style={{ background:L.bg, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}` }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:48 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>Toutes les fonctionnalités</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', margin:0 }}>
-              Un outil <span style={{ fontWeight:700, fontStyle:'normal' }}>complet</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:0, letterSpacing:'-0.03em' }}>
+              Toutes les fonctionnalités
             </h2>
           </div>
           <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
             {[
-              { icon:'🏢', title:'Multi-SCI', desc:'Basculez d\'une SCI à l\'autre en un clic. Vision consolidée ou par structure.' },
-              { icon:'🏠', title:'Parc immobilier', desc:'Fiches détaillées par bien : photos, surface, charges, historique travaux.' },
-              { icon:'👥', title:'Gestion locataires', desc:'Dossiers, baux, cautions, EDL d\'entrée et sortie numériques.' },
-              { icon:'💰', title:'Loyers & Quittances', desc:'Suivi des loyers, quittances auto, relances impayés, historique paiements.' },
-              { icon:'📊', title:'Comptabilité SCI', desc:'Plan comptable, journal des écritures, bilan, compte de résultat, export.' },
-              { icon:'📄', title:'Déclarations fiscales', desc:'Aide 2072 (IR), 2065 (IS), revenus fonciers 2044.' },
-              { icon:'🔧', title:'Travaux & Charges', desc:'Suivi par bien, ventilation des charges, appels de fonds copropriété.' },
-              { icon:'📋', title:'GED Documents', desc:'Baux, avenants, diagnostics, PV d\'AG, statuts, courriers type.' },
-              { icon:'📈', title:'Rentabilité', desc:'Rendement brut/net, cashflow, plus-value latente, valorisation patrimoine.' },
-              { icon:'🏗️', title:'Simulation investissement', desc:'Calcul de rentabilité, simulation prêt, effort d\'épargne, défiscalisation.' },
-              { icon:'⚖️', title:'AG & Décisions', desc:'Convocations, PV, vote des résolutions, registre des décisions.' },
-              { icon:'🔔', title:'Alertes & Rappels', desc:'Fin de bail, révision loyer, assurance, contrôle technique, diagnostics.' },
-              { icon:'🤝', title:'Espace associés', desc:'Chaque associé accède à ses SCI, parts, revenus, documents.' },
-              { icon:'📱', title:'Application mobile', desc:'Gestion en mobilité, photos, signature électronique, notifications.' },
-              { icon:'🗺️', title:'ERP & Zonage', desc:'État des risques, PPR, arrêtés, pollution des sols. Intégré.' },
-            ].map(f => (
+              { title:'Multi-SCI', desc:'Basculez d\'une SCI à l\'autre en un clic. Vision consolidée ou par structure.' },
+              { title:'Parc immobilier', desc:'Fiches détaillées par bien : photos, surface, charges, historique travaux.' },
+              { title:'Gestion locataires', desc:'Dossiers, baux, cautions, EDL d\'entrée et sortie numériques.' },
+              { title:'Loyers & Quittances', desc:'Suivi des loyers, quittances auto, relances impayés, historique paiements.' },
+              { title:'Comptabilité SCI', desc:'Plan comptable, journal des écritures, bilan, compte de résultat, export.' },
+              { title:'Déclarations fiscales', desc:'Aide 2072 (IR), 2065 (IS), revenus fonciers 2044.' },
+              { title:'Travaux & Charges', desc:'Suivi par bien, ventilation des charges, appels de fonds copropriété.' },
+              { title:'GED Documents', desc:'Baux, avenants, diagnostics, PV d\'AG, statuts, courriers type.' },
+              { title:'Rentabilité', desc:'Rendement brut/net, cashflow, plus-value latente, valorisation patrimoine.' },
+              { title:'Simulation investissement', desc:'Calcul de rentabilité, simulation prêt, effort d\'épargne, défiscalisation.' },
+              { title:'AG & Décisions', desc:'Convocations, PV, vote des résolutions, registre des décisions.' },
+              { title:'Alertes & Rappels', desc:'Fin de bail, révision loyer, assurance, contrôle technique, diagnostics.' },
+              { title:'Espace associés', desc:'Chaque associé accède à ses SCI, parts, revenus, documents.' },
+              { title:'Application mobile', desc:'Gestion en mobilité, photos, signature électronique, notifications.' },
+              { title:'ERP & Zonage', desc:'État des risques, PPR, arrêtés, pollution des sols. Intégré.' },
+            ].map((f, idx) => (
               <div key={f.title} style={{ background:L.white, padding:'28px 24px', transition:'background .2s' }}
                 onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background=L.white}>
-                <div style={{ fontSize:26, marginBottom:12 }}>{f.icon}</div>
-                <h3 style={{ fontSize:14, fontWeight:700, color:L.text, marginBottom:6 }}>{f.title}</h3>
+                <div style={{ fontSize:11, color:L.textLight, fontWeight:600, marginBottom:10 }}>{String(idx+1).padStart(2,'0')}</div>
+                <h3 style={{ fontSize:14, fontWeight:700, marginBottom:6 }}>{f.title}</h3>
                 <p style={{ fontSize:12.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{f.desc}</p>
               </div>
             ))}
@@ -138,19 +136,13 @@ export default function FreampleImmo() {
          ══════════════════════════════════════════════════════ */}
       <section ref={r6} style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}` }}>
         <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,38px)', fontWeight:300, fontStyle:'italic', margin:'0 0 40px' }}>
-            Pour les <span style={{ fontWeight:700, fontStyle:'normal' }}>investisseurs</span>
+          <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:'0 0 40px', letterSpacing:'-0.03em' }}>
+            Pour qui ?
           </h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:28 }}>
-            {[
-              { icon:'🏛️', title:'Gérants de SCI' },
-              { icon:'🏠', title:'Propriétaires bailleurs' },
-              { icon:'💼', title:'Investisseurs' },
-              { icon:'📋', title:'Gestionnaires de parc' },
-            ].map(s => (
-              <div key={s.title}>
-                <div style={{ fontSize:32, marginBottom:10 }}>{s.icon}</div>
-                <div style={{ fontSize:14, fontWeight:700, color:L.text }}>{s.title}</div>
+          <div style={{ display:'flex', gap:0, borderTop:`1px solid ${L.border}`, borderBottom:`1px solid ${L.border}` }}>
+            {['Gérants de SCI','Propriétaires bailleurs','Investisseurs','Gestionnaires de parc'].map((s, i) => (
+              <div key={s} style={{ flex:1, padding:'20px 16px', textAlign:'center', borderRight: i < 3 ? `1px solid ${L.border}` : 'none' }}>
+                <div style={{ fontSize:14, fontWeight:600 }}>{s}</div>
               </div>
             ))}
           </div>

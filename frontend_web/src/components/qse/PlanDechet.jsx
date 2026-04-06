@@ -261,7 +261,7 @@ export default function PlanDechet({ onRetour }) {
             </div>
           ))}
         </div>
-        <p style={{ fontSize:11, color:'#8E8E93', marginTop:12, textAlign:'center' }}>
+        <p style={{ fontSize:11, color:'#636363', marginTop:12, textAlign:'center' }}>
           Ce document est à conserver 5 ans sur le chantier et au siège social · Réf. légale : Art. R541-43 Code Environnement
         </p>
       </div>

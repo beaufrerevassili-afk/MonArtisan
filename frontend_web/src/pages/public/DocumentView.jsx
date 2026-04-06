@@ -54,7 +54,7 @@ function DevisView({ id }) {
   const totalTVA = (devis.lignes || []).reduce((s, l) => s + (Number(l.quantite) * Number(l.prixUnitaire) * Number(l.tva) / 100), 0);
 
   return (
-    <DocWrapper title={`Devis ${devis.numero}`} badge={devis.statut} badgeColors={{ brouillon: '#8E8E93', 'envoyé': '#856404', 'signé': '#1A7F43', 'refusé': '#C0392B' }}>
+    <DocWrapper title={`Devis ${devis.numero}`} badge={devis.statut} badgeColors={{ brouillon: '#636363', 'envoyé': '#856404', 'signé': '#1A7F43', 'refusé': '#C0392B' }}>
       {/* Company + Doc header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
         <div>
@@ -313,7 +313,7 @@ function ContratView({ id }) {
           <div style={{ borderTop: '1px solid #1C1C1E', paddingTop: 6, fontSize: 12, color: '#6E6E73' }}>Signature précédée de la mention manuscrite</div>
         </div>
       </div>
-      <div style={{ marginTop: 24, fontSize: 12, color: '#8E8E93', textAlign: 'center' }}>
+      <div style={{ marginTop: 24, fontSize: 12, color: '#636363', textAlign: 'center' }}>
         Fait à Lyon en deux exemplaires originaux, le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
       </div>
     </DocWrapper>
@@ -356,7 +356,7 @@ function QSEDocView({ id }) {
         • Lors de toute décision d'aménagement important modifiant les conditions de travail<br />
         • Lorsqu'une information sur les risques ou les éléments d'exposition aux facteurs de pénibilité est recueillie</p>
       </ClauseSection>
-      <div style={{ marginTop: 32, borderTop: '2px solid #F2F2F7', paddingTop: 20, fontSize: 12, color: '#8E8E93', textAlign: 'center' }}>
+      <div style={{ marginTop: 32, borderTop: '2px solid #F2F2F7', paddingTop: 20, fontSize: 12, color: '#636363', textAlign: 'center' }}>
         Document établi par Bernard Martin BTP · {new Date().toLocaleDateString('fr-FR')} · Consultez l'onglet DUERP pour le tableau complet des risques
       </div>
     </DocWrapper>
@@ -382,7 +382,7 @@ function DocWrapper({ title, children, badge, badgeColors = {} }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Bernard Martin BTP</div>
           <div style={{ width: 1, height: 16, background: '#3C3C43' }} />
-          <div style={{ fontSize: 13, color: '#8E8E93', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+          <div style={{ fontSize: 13, color: '#636363', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
           {badge && <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: (badgeColors[badge] || '#5B5BD6') + '30', color: badgeColors[badge] || '#5B5BD6' }}>{badge}</span>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -430,7 +430,7 @@ function ErrorBlock({ msg }) {
   );
 }
 
-const sectionLabel = { fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 };
+const sectionLabel = { fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 };
 const tableStyle = { width: '100%', borderCollapse: 'collapse', fontSize: 13, borderRadius: 8, overflow: 'hidden' };
 
 /* ─── Router entry point ─── */

@@ -177,7 +177,7 @@ export default function Messagerie() {
       {/* Header */}
       <div style={{ marginBottom: 20, flexShrink: 0 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text, #0E0E1A)' }}>Messagerie</h1>
-        <p style={{ marginTop: 4, color: 'var(--text-secondary, #6B6B6B)', fontSize: '0.875rem' }}>
+        <p style={{ marginTop: 4, color: 'var(--text-secondary, #4A4A4A)', fontSize: '0.875rem' }}>
           Échangez en temps réel avec vos artisans
         </p>
       </div>
@@ -198,7 +198,7 @@ export default function Messagerie() {
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </div>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary, #8E8E93)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
+          <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary, #636363)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>
             Conversations{searchQuery ? ` (${conversations.filter(c => c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).length})` : ''}
           </p>
           {conversations.filter(c => !searchQuery || c.artisan?.toLowerCase().includes(searchQuery.toLowerCase()) || c.mission?.toLowerCase().includes(searchQuery.toLowerCase())).map(c => {
@@ -232,7 +232,7 @@ export default function Messagerie() {
                   <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.artisan}
                   </p>
-                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #6B6B6B)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #4A4A4A)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.titre}
                   </p>
                   <p style={{ fontSize: '0.625rem', color: 'var(--text-tertiary, #9CA3AF)', marginTop: 1 }}>
@@ -249,7 +249,7 @@ export default function Messagerie() {
             background: 'rgba(91,91,214,0.08)', border: '1px solid rgba(91,91,214,0.2)',
             borderRadius: 12,
           }}>
-            <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #6B6B6B)', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary, #4A4A4A)', lineHeight: 1.5 }}>
               💡 Ouvrez un onglet artisan en parallèle pour tester la messagerie en temps réel.
             </p>
           </div>
@@ -285,7 +285,7 @@ export default function Messagerie() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 600, color: 'var(--text, #fff)', fontSize: '0.9375rem' }}>{conv?.artisan}</p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary, #6B6B6B)' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary, #4A4A4A)' }}>
                 {isOnline ? (
                   <span style={{ color: '#34D399' }}>En ligne</span>
                 ) : (
@@ -307,7 +307,7 @@ export default function Messagerie() {
                 }}>
                   <IconMessage size={24} color="#818CF8" />
                 </div>
-                <p style={{ color: 'var(--text-secondary, #6B6B6B)', fontSize: '0.875rem' }}>Démarrez la conversation</p>
+                <p style={{ color: 'var(--text-secondary, #4A4A4A)', fontSize: '0.875rem' }}>Démarrez la conversation</p>
               </div>
             ) : (
               messages.map((msg, idx) => {

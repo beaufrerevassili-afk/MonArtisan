@@ -63,7 +63,7 @@ const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
 
 const LazySpinner = () => (
   <div style={{ display:'flex', justifyContent:'center', alignItems:'center', minHeight:'100vh' }}>
-    <div style={{ width:32, height:32, border:'3px solid #E8E6E1', borderTopColor:'#C9A96E', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
+    <div style={{ width:32, height:32, border:'3px solid #E8E6E1', borderTopColor:'#A68B4B', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
     <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
   </div>
 );

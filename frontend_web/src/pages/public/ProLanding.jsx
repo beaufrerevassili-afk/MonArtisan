@@ -68,11 +68,11 @@ export default function ProLanding() {
       <div style={{ position:'fixed', inset:0, zIndex:2000, background:L.noir, opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .4s', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center' }}>
         <button onClick={()=>setMenuOpen(false)} style={{ position:'absolute', top:20, right:28, background:'none', border:'none', cursor:'pointer', color:'#fff', fontSize:28, fontWeight:200, transition:'color .2s' }}
           onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>✕</button>
-        <div style={{ position:'absolute', top:24, left:28, fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em' }}>Freample Pro</div>
+        <div style={{ position:'absolute', top:24, left:28, fontSize:14, fontWeight:800, color:'#fff', letterSpacing:'-0.03em' }}>Freample Pro<span style={{color:L.gold}}>.</span></div>
         <nav style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
           {MENU.map((item,i)=>(
             <button key={item.label} onClick={()=>item.action?item.action():scrollTo(item.id)}
-              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:L.serif, fontSize:'clamp(24px,4.5vw,44px)', fontWeight:300, fontStyle:'italic', color:'#fff', padding:'10px 0', opacity:menuOpen?1:0, transform:menuOpen?'translateY(0)':'translateY(20px)', transition:`opacity .4s ${0.1+i*0.05}s, transform .4s ${0.1+i*0.05}s, color .2s` }}
+              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:L.serif, fontSize:'clamp(24px,4.5vw,44px)', fontWeight:500, fontStyle:'italic', color:'#fff', padding:'10px 0', opacity:menuOpen?1:0, transform:menuOpen?'translateY(0)':'translateY(20px)', transition:`opacity .4s ${0.1+i*0.05}s, transform .4s ${0.1+i*0.05}s, color .2s` }}
               onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>{item.label}</button>
           ))}
         </nav>
@@ -85,12 +85,11 @@ export default function ProLanding() {
         <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
         <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div ref={s1}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.35em', marginBottom:24 }}>Espace professionnel</div>
-            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(34px,6.5vw,64px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 18px' }}>
-              Votre activité,<br/><span style={{ fontWeight:700, fontStyle:'normal' }}>simplifiée</span>
+            <h1 style={{ fontSize:'clamp(34px,6.5vw,64px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.03em', margin:'0 0 18px' }}>
+              Votre activité,<br/>simplifiée.
             </h1>
           </div>
-          <p style={{ fontSize:'clamp(15px,1.8vw,17px)', color:'rgba(255,255,255,0.4)', lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300 }}>
+          <p style={{ fontSize:'clamp(15px,1.8vw,17px)', color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300 }}>
             Agenda, devis, factures, clients, équipe — tout votre business dans une seule plateforme.
           </p>
           <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
@@ -112,8 +111,8 @@ export default function ProLanding() {
         <div style={{ maxWidth:800, margin:'0 auto', display:'flex', justifyContent:'center', gap:'clamp(32px,6vw,80px)', flexWrap:'wrap', textAlign:'center' }}>
           {[{val:'5 min',label:'Inscription'},{val:'0€',label:'Abonnement'},{val:'24/7',label:'Accessible'}].map(s=>(
             <div key={s.val}>
-              <div style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,42px)', fontWeight:300, color:L.gold, letterSpacing:'-0.03em', lineHeight:1 }}>{s.val}</div>
-              <div style={{ fontSize:11, color:L.textSec, marginTop:8, textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:500 }}>{s.label}</div>
+              <div style={{ fontSize:'clamp(28px,4vw,42px)', fontWeight:500, fontFamily:L.serif, letterSpacing:'-0.03em', lineHeight:1 }}>{s.val}</div>
+              <div style={{ fontSize:12, color:L.textSec, marginTop:8 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -123,27 +122,26 @@ export default function ProLanding() {
       <section ref={r1} id="fonctionnalites" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
           <div ref={s2} style={{ textAlign:'center', marginBottom:52 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Tout-en-un</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
-              Tout ce dont vous avez <span style={{ fontWeight:700, fontStyle:'normal' }}>besoin</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
+              Tout ce dont vous avez besoin
             </h2>
           </div>
           <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
             {[
-              { icon:'📅', title:'Agenda intelligent', desc:'Gérez vos rendez-vous, planifiez vos interventions et recevez des rappels automatiques.' },
-              { icon:'📝', title:'Devis & Factures', desc:'Créez des devis professionnels en 2 clics. Transformez-les en factures et suivez les paiements.' },
-              { icon:'👥', title:'Gestion clients (CRM)', desc:'Historique complet de chaque client, segmentation RFM, relances automatiques.' },
-              { icon:'👷', title:'Gestion d\'équipe', desc:'Assignez des missions, suivez le temps de travail et gérez les plannings.' },
-              { icon:'💰', title:'Finance & Trésorerie', desc:'Suivi des entrées/sorties, tableau de bord financier, export comptable.' },
-              { icon:'📊', title:'Rapports & Analytics', desc:'Chiffre d\'affaires, rentabilité par projet, performance de l\'équipe en temps réel.' },
-              { icon:'📦', title:'Gestion de stock', desc:'Suivi des matériaux, alertes de réapprovisionnement, valorisation en temps réel.' },
-              { icon:'⭐', title:'Réputation en ligne', desc:'Collectez les avis clients, suivez votre e-réputation, répondez aux feedbacks.' },
-              { icon:'⚖️', title:'Conformité & Juridique', desc:'Rappels d\'échéances légales, URSSAF, assurances, documents obligatoires.' },
-            ].map(f=>(
+              { title:'Agenda intelligent', desc:'Gérez vos rendez-vous, planifiez vos interventions et recevez des rappels automatiques.' },
+              { title:'Devis & Factures', desc:'Créez des devis professionnels en 2 clics. Transformez-les en factures et suivez les paiements.' },
+              { title:'Gestion clients (CRM)', desc:'Historique complet de chaque client, segmentation RFM, relances automatiques.' },
+              { title:'Gestion d\'équipe', desc:'Assignez des missions, suivez le temps de travail et gérez les plannings.' },
+              { title:'Finance & Trésorerie', desc:'Suivi des entrées/sorties, tableau de bord financier, export comptable.' },
+              { title:'Rapports & Analytics', desc:'Chiffre d\'affaires, rentabilité par projet, performance de l\'équipe en temps réel.' },
+              { title:'Gestion de stock', desc:'Suivi des matériaux, alertes de réapprovisionnement, valorisation en temps réel.' },
+              { title:'Réputation en ligne', desc:'Collectez les avis clients, suivez votre e-réputation, répondez aux feedbacks.' },
+              { title:'Conformité & Juridique', desc:'Rappels d\'échéances légales, URSSAF, assurances, documents obligatoires.' },
+            ].map((f, idx)=>(
               <div key={f.title} style={{ background:L.white, padding:'32px 28px', transition:'background .2s' }}
                 onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background=L.white}>
-                <div style={{ fontSize:28, marginBottom:14 }}>{f.icon}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, color:L.text, marginBottom:6 }}>{f.title}</h3>
+                <div style={{ fontSize:11, color:L.textLight, fontWeight:600, marginBottom:10 }}>{String(idx+1).padStart(2,'0')}</div>
+                <h3 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>{f.title}</h3>
                 <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{f.desc}</p>
               </div>
             ))}
@@ -158,21 +156,19 @@ export default function ProLanding() {
       <section ref={r2} id="secteurs" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
         <div style={{ maxWidth:900, margin:'0 auto' }}>
           <div ref={s3} style={{ textAlign:'center', marginBottom:48 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Multi-secteurs</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
-              Adapté à votre <span style={{ fontWeight:700, fontStyle:'normal' }}>métier</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
+              Adapté à votre métier
             </h2>
           </div>
           <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
             {[
-              { icon:'🏗️', title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers, devis et suivi client.' },
-              { icon:'🎬', title:'Communication & Création', desc:'Gestion des projets vidéo, montage, suivi client et facturation.' },
+              { title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers, devis et suivi client.' },
+              { title:'Communication & Création', desc:'Gestion des projets vidéo, montage, suivi client et facturation.' },
             ].map(s=>(
               <div key={s.title} style={{ background:L.cream, padding:'32px 24px', border:`1px solid ${L.border}`, transition:'all .2s' }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.transform='translateY(-2px)';}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.transform='none';}}>
-                <div style={{ fontSize:32, marginBottom:14 }}>{s.icon}</div>
-                <h3 style={{ fontSize:16, fontWeight:700, color:L.text, marginBottom:6 }}>{s.title}</h3>
+                <h3 style={{ fontSize:16, fontWeight:700, marginBottom:6 }}>{s.title}</h3>
                 <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
               </div>
             ))}
@@ -184,9 +180,8 @@ export default function ProLanding() {
       <section ref={r4} id="tarifs-pro" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
         <div style={{ maxWidth:700, margin:'0 auto' }}>
           <div ref={s4} style={{ textAlign:'center', marginBottom:44 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>Commissions</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,42px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.12 }}>
-              Pas d'abonnement, <span style={{ fontWeight:700, fontStyle:'normal' }}>pas de surprise</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.12 }}>
+              Pas d'abonnement, pas de surprise.
             </h2>
             <p style={{ fontSize:15, color:L.textSec }}>La commission est prélevée sur le client, pas sur vous. Vous recevez 100% de votre prestation.</p>
           </div>
@@ -229,9 +224,8 @@ export default function ProLanding() {
       <section ref={r5} id="faq" style={{ background:L.bg, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
         <div style={{ maxWidth:650, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:40 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:14 }}>FAQ</div>
-            <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,36px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:0, lineHeight:1.12 }}>
-              Questions <span style={{ fontWeight:700, fontStyle:'normal' }}>fréquentes</span>
+            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
+              Questions fréquentes
             </h2>
           </div>
           {[
@@ -253,10 +247,10 @@ export default function ProLanding() {
       <section ref={r6} style={{ background:L.noir, padding:'clamp(72px,12vh,110px) 32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)', pointerEvents:'none' }} />
         <div style={{ position:'relative', zIndex:1, maxWidth:520, margin:'0 auto' }}>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(28px,5vw,48px)', fontWeight:300, fontStyle:'italic', color:'#fff', letterSpacing:'-0.02em', lineHeight:1.08, margin:'0 0 14px' }}>
-            Prêt à <span style={{ fontWeight:700, fontStyle:'normal' }}>développer</span><br/>votre activité ?
+          <h2 style={{ fontSize:'clamp(28px,5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 14px' }}>
+            Prêt à développer<br/>votre activité ?
           </h2>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.35)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
+          <p style={{ fontSize:15, color:'rgba(255,255,255,0.55)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
             Inscription gratuite, aucun abonnement, commencez dès maintenant.
           </p>
           <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 48px', background:L.gold, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}

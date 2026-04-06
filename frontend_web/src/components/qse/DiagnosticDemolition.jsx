@@ -283,7 +283,7 @@ export default function DiagnosticDemolition({ onRetour }) {
             </div>
           ))}
         </div>
-        <p style={{ fontSize:11, color:'#8E8E93', marginTop:12, textAlign:'center' }}>
+        <p style={{ fontSize:11, color:'#636363', marginTop:12, textAlign:'center' }}>
           Ce rapport est à annexer au PPSPS et au PGCSPS · Conservation obligatoire 10 ans · Art. L4111-6 Code du Travail
         </p>
       </div>

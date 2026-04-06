@@ -263,7 +263,7 @@ export default function PPSPS({ onRetour }) {
             <thead>
               <tr style={{ background: '#F8F9FA' }}>
                 {['Phase / Lot de travaux', 'Date début', 'Date fin', 'Entreprises concernées', 'Risques co-activité', ''].map(h => (
-                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', whiteSpace: 'nowrap', borderBottom: '2px solid #E5E5EA' }}>{h}</th>
+                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', whiteSpace: 'nowrap', borderBottom: '2px solid #E5E5EA' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -500,7 +500,7 @@ export default function PPSPS({ onRetour }) {
         ].map((ref, i) => (
           <div key={i} style={{ fontSize: 11, color: '#6E6E73', marginBottom: 3 }}>• {ref}</div>
         ))}
-        <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 10 }}>
+        <div style={{ fontSize: 10, color: '#636363', marginTop: 10 }}>
           {entreprise.nom} — SIRET : {entreprise.siret} · {entreprise.adresse} · Document généré le {new Date().toLocaleDateString('fr-FR')}
         </div>
       </div>

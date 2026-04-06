@@ -95,11 +95,11 @@ export default function FreampleLogement() {
         <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
           <div ref={s1}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>Freample Logement</div>
-            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,52px)', fontWeight:300, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 12px' }}>
+            <h1 style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,52px)', fontWeight:500, fontStyle:'italic', color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 12px' }}>
               Trouvez votre <span style={{ fontWeight:700, fontStyle:'normal' }}>logement</span>
             </h1>
           </div>
-          <p ref={r1} style={{ fontSize:15, color:'rgba(255,255,255,0.4)', marginBottom:28 }}>Annonces vérifiées, propriétaires Freample Immo. Candidatez en ligne.</p>
+          <p ref={r1} style={{ fontSize:15, color:'rgba(255,255,255,0.6)', marginBottom:28 }}>Annonces vérifiées, propriétaires Freample Immo. Candidatez en ligne.</p>
 
           {/* Barre recherche */}
           <div style={{ background:L.white, maxWidth:600, margin:'0 auto', overflow:'hidden' }}>
@@ -134,7 +134,7 @@ export default function FreampleLogement() {
         {filtered.length === 0 ? (
           <div style={{ textAlign:'center', padding:'60px 20px' }}>
             <div style={{ fontSize:40, opacity:0.2, marginBottom:12 }}>🏠</div>
-            <div style={{ fontSize:16, fontWeight:300, fontFamily:L.serif, fontStyle:'italic' }}>
+            <div style={{ fontSize:16, fontWeight:500, fontFamily:L.serif, fontStyle:'italic' }}>
               {annonces.length===0 ? 'Aucune annonce publiée' : 'Aucun logement ne correspond'}
             </div>
             <div style={{ fontSize:13, color:L.textSec, marginTop:6 }}>
@@ -180,7 +180,7 @@ export default function FreampleLogement() {
       <section style={{ background:L.cream, borderTop:`1px solid ${L.border}`, padding:'clamp(40px,6vh,64px) 32px', textAlign:'center' }}>
         <div style={{ maxWidth:500, margin:'0 auto' }}>
           <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:10 }}>Propriétaire</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(22px,3.5vw,32px)', fontWeight:300, fontStyle:'italic', margin:'0 0 10px' }}>
+          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(22px,3.5vw,32px)', fontWeight:500, fontStyle:'italic', margin:'0 0 10px' }}>
             Publiez votre <span style={{ fontWeight:700, fontStyle:'normal' }}>annonce</span>
           </h2>
           <p style={{ fontSize:14, color:L.textSec, marginBottom:24 }}>Gérez votre bien sur Freample Immo → publiez en 1 clic sur Freample Logement → recevez des candidatures.</p>

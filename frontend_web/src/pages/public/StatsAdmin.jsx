@@ -61,7 +61,7 @@ export default function StatsAdmin() {
 
         {/* ══ HEADER ══ */}
         <div style={{ marginBottom:36 }}>
-          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 6px', lineHeight:1.1 }}>
+          <h1 style={{ fontFamily:L.serif, fontSize:'clamp(28px,4vw,40px)', fontWeight:500, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 6px', lineHeight:1.1 }}>
             Statistiques <span style={{ fontWeight:700, fontStyle:'normal' }}>Freample</span>
           </h1>
           <p style={{ fontSize:14, color:L.textSec, margin:0 }}>Visites en temps réel · Mise à jour automatique toutes les 30s</p>
@@ -181,7 +181,7 @@ export default function StatsAdmin() {
                 <div style={{ background:L.noir, padding:'28px', flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center' }}>
                   <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:10 }}>Temps réel</div>
                   <div style={{ fontFamily:L.serif, fontSize:48, fontWeight:200, color:'#fff', letterSpacing:'-0.03em' }}>{stats.today}</div>
-                  <div style={{ fontSize:13, color:'rgba(255,255,255,0.4)', marginTop:4 }}>visites aujourd'hui</div>
+                  <div style={{ fontSize:13, color:'rgba(255,255,255,0.6)', marginTop:4 }}>visites aujourd'hui</div>
                   <div style={{ width:6, height:6, borderRadius:'50%', background:L.green, marginTop:12, boxShadow:`0 0 8px ${L.green}` }} />
                 </div>
               </div>

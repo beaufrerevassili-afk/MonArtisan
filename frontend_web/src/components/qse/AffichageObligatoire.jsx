@@ -157,7 +157,7 @@ function PosterPreview({ affiche, nomEntreprise, logoUrl }) {
         )}
       </div>
       {/* Footer */}
-      <div style={{ background: '#F8F9FA', borderTop: `1px solid ${bg}30`, padding: '8px 16px', fontSize: 10, color: '#8E8E93', display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ background: '#F8F9FA', borderTop: `1px solid ${bg}30`, padding: '8px 16px', fontSize: 10, color: '#636363', display: 'flex', justifyContent: 'space-between' }}>
         <span>{nomEntreprise || 'Votre entreprise'}</span>
         <span>Freample.fr · Document réglementaire gratuit</span>
       </div>
@@ -220,7 +220,7 @@ function BanqueAffiches() {
             {logoUrl && (
               <>
                 <img src={logoUrl} alt="logo" style={{ height: 36, borderRadius: 6, border: '1px solid #E5E5EA' }} />
-                <button type="button" onClick={() => setLogoUrl('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 16 }}>✕</button>
+                <button type="button" onClick={() => setLogoUrl('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#636363', fontSize: 16 }}>✕</button>
               </>
             )}
             <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogo} />
@@ -262,7 +262,7 @@ function BanqueAffiches() {
               <button onClick={() => { const s=selected.titre; window.open(`mailto:?subject=${encodeURIComponent('Affiche : '+s)}&body=${encodeURIComponent('Veuillez trouver en pièce jointe l\'affiche réglementaire : '+s)}`, '_blank'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: '#fff', color: '#1C1C1E', border: '1px solid #E5E5EA', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                 ✉️ E-mail
               </button>
-              <button onClick={() => setSelectedId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8E8E93', fontSize: 20 }}>✕</button>
+              <button onClick={() => setSelectedId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#636363', fontSize: 20 }}>✕</button>
             </div>
           </div>
           <div ref={printRef} style={{ maxWidth: 480, margin: '0 auto' }}>
@@ -291,7 +291,7 @@ function CheckCard({ item, checked, onToggle, onEmplacementChange, emplacement }
           <div style={{ fontSize: 11, color: '#5B5BD6', fontWeight: 600, marginBottom: 3 }}>{item.ref}</div>
           <div style={{ fontSize: 12, color: '#6E6E73', marginBottom: 6, lineHeight: 1.4 }}>{item.desc}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-            <span style={{ color: '#8E8E93', fontWeight: 600 }}>📍 Emplacement suggéré :</span>
+            <span style={{ color: '#636363', fontWeight: 600 }}>📍 Emplacement suggéré :</span>
             <span style={{ color: '#6E6E73' }}>{item.emplacement}</span>
           </div>
           {checked && (
@@ -423,7 +423,7 @@ export default function AffichageObligatoire({ onRetour }) {
       <div style={{ background: '#fff', borderRadius: 14, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,.08)', marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
               Score de conformité affichage obligatoire
             </div>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
@@ -445,7 +445,7 @@ export default function AffichageObligatoire({ onRetour }) {
             <div style={{ height: 12, background: '#F2F2F7', borderRadius: 6, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${conformite}%`, background: conformite >= 80 ? '#34C759' : conformite >= 50 ? '#FF9500' : '#FF3B30', borderRadius: 6, transition: 'width .5s' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8E8E93', marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363', marginTop: 4 }}>
               <span>0%</span>
               <span style={{ color: '#FF9500' }}>Minimum acceptable : 80%</span>
               <span>100%</span>
@@ -593,7 +593,7 @@ export default function AffichageObligatoire({ onRetour }) {
                 <span>•</span>
                 <div>
                   <strong>{a.titre}</strong>
-                  <span style={{ color: '#8E8E93' }}> — {a.ref}</span>
+                  <span style={{ color: '#636363' }}> — {a.ref}</span>
                 </div>
               </div>
             ))}
@@ -602,7 +602,7 @@ export default function AffichageObligatoire({ onRetour }) {
                 <span>•</span>
                 <div>
                   <strong>{a.titre}</strong>
-                  <span style={{ color: '#8E8E93' }}> — {a.ref}</span>
+                  <span style={{ color: '#636363' }}> — {a.ref}</span>
                 </div>
               </div>
             ))}
@@ -624,7 +624,7 @@ export default function AffichageObligatoire({ onRetour }) {
         ].map((ref, i) => (
           <div key={i} style={{ fontSize: 11, color: '#6E6E73', marginBottom: 3 }}>• {ref}</div>
         ))}
-        <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 10 }}>
+        <div style={{ fontSize: 10, color: '#636363', marginTop: 10 }}>
           {entrepriseInfo.nom} — SIRET : {entrepriseInfo.siret} · Document généré le {new Date().toLocaleDateString('fr-FR')}
         </div>
       </div>

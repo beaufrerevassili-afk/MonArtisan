@@ -6,7 +6,7 @@ const V = '#8B5CF6';
 const BG = '#F5F3FF';
 
 const CARD = { background:'#fff', borderRadius:14, padding:'20px 24px', border:'1px solid #E9E5F5', boxShadow:'0 1px 4px rgba(0,0,0,.04)' };
-const HDR = { fontSize:13, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 };
+const HDR = { fontSize:13, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 };
 const BTN = { background:V, color:'#fff', border:'none', borderRadius:10, padding:'10px 20px', fontWeight:700, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' };
 const GHOST = { background:'transparent', color:'#6B7280', border:'1px solid #E9E5F5', borderRadius:10, padding:'9px 18px', fontWeight:600, cursor:'pointer', fontFamily:'inherit', fontSize:'0.875rem' };
 const OVL = { position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 };
@@ -41,9 +41,9 @@ const GAINS_SEMAINE = [
 function KpiCard({ label, value, sub, accent }) {
   return (
     <div style={{ ...CARD, flex:1, minWidth:140 }}>
-      <div style={{ fontSize:12, fontWeight:600, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>{label}</div>
+      <div style={{ fontSize:12, fontWeight:600, color:'#636363', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>{label}</div>
       <div style={{ fontSize:26, fontWeight:800, color:accent||'#1C1C1E', lineHeight:1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize:12, color:'#8B8B8B', marginTop:4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize:12, color:'#636363', marginTop:4 }}>{sub}</div>}
     </div>
   );
 }
@@ -83,7 +83,7 @@ export default function DashboardMonteur() {
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:12 }}>
         <div>
           <div style={{ fontSize:22, fontWeight:800 }}>🎬 Freample Com — Monteur</div>
-          <div style={{ fontSize:14, color:'#8B8B8B', marginTop:2 }}>Bonjour, {user?.nom || 'Monteur'}</div>
+          <div style={{ fontSize:14, color:'#636363', marginTop:2 }}>Bonjour, {user?.nom || 'Monteur'}</div>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', background:'#D1FAE5', borderRadius:999, fontSize:13, fontWeight:600, color:'#065F46' }}>
           <span style={{ width:8, height:8, borderRadius:'50%', background:'#16A34A' }} /> Disponible
@@ -116,11 +116,11 @@ export default function DashboardMonteur() {
                 </div>
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:700, fontSize:14 }}>{p.titre}</div>
-                  <div style={{ fontSize:12, color:'#8B8B8B' }}>{p.type} · {p.fichiers} fichier{p.fichiers>1?'s':''} · {p.revisions} révision{p.revisions>1?'s':''}</div>
+                  <div style={{ fontSize:12, color:'#636363' }}>{p.type} · {p.fichiers} fichier{p.fichiers>1?'s':''} · {p.revisions} révision{p.revisions>1?'s':''}</div>
                 </div>
                 <div style={{ textAlign:'right', flexShrink:0 }}>
                   <Badge statut={p.statut} />
-                  <div style={{ fontSize:11, color: daysLeft<=2?'#DC2626':'#8B8B8B', fontWeight:600, marginTop:4 }}>
+                  <div style={{ fontSize:11, color: daysLeft<=2?'#DC2626':'#636363', fontWeight:600, marginTop:4 }}>
                     {daysLeft<=0?'⚠ En retard':daysLeft===1?'⚠ Demain':`J-${daysLeft}`}
                   </div>
                 </div>
@@ -138,9 +138,9 @@ export default function DashboardMonteur() {
               <div style={{ fontWeight:700, fontSize:15 }}>{p.titre}</div>
               <Badge statut={p.statut} />
             </div>
-            <div style={{ fontSize:13, color:'#8B8B8B', marginBottom:4 }}>{p.client} · {p.type} · Deadline: {p.deadline}</div>
+            <div style={{ fontSize:13, color:'#636363', marginBottom:4 }}>{p.client} · {p.type} · Deadline: {p.deadline}</div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <div style={{ fontSize:12, color:'#8B8B8B' }}>📁 {p.fichiers} fichiers · 🔄 {p.revisions} révisions</div>
+              <div style={{ fontSize:12, color:'#636363' }}>📁 {p.fichiers} fichiers · 🔄 {p.revisions} révisions</div>
               <div style={{ fontWeight:800, color:V }}>{p.montant}€</div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function DashboardMonteur() {
               <div key={g.jour} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
                 <div style={{ fontSize:12, fontWeight:700, color:V }}>{g.montant>0?`${g.montant}€`:'—'}</div>
                 <div style={{ width:'100%', background:g.montant>0?V:'#E9E5F5', borderRadius:'6px 6px 0 0', height:`${Math.max(4,Math.round((g.montant/maxG)*120))}px` }} />
-                <div style={{ fontSize:11, color:'#8B8B8B', fontWeight:600 }}>{g.jour}</div>
+                <div style={{ fontSize:11, color:'#636363', fontWeight:600 }}>{g.jour}</div>
               </div>
             ))}
           </div>
@@ -211,7 +211,7 @@ export default function DashboardMonteur() {
                 <span style={{ color:'#F59E0B' }}>{'★'.repeat(a.note)}{'☆'.repeat(5-a.note)}</span>
               </div>
               <div style={{ fontSize:13, color:'#5E5E5E' }}>"{a.commentaire}"</div>
-              <div style={{ fontSize:12, color:'#8B8B8B', marginTop:4 }}>{a.date}</div>
+              <div style={{ fontSize:12, color:'#636363', marginTop:4 }}>{a.date}</div>
             </div>
           ))}
         </div>
@@ -222,12 +222,12 @@ export default function DashboardMonteur() {
         <div style={{ ...CARD, textAlign:'center', padding:32 }}>
           <div style={{ width:72, height:72, borderRadius:'50%', background:'#EDE9FE', margin:'0 auto 16px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, fontWeight:800, color:V }}>{(user?.nom||'M')[0]}</div>
           <div style={{ fontSize:20, fontWeight:800 }}>{user?.nom || 'Monteur'}</div>
-          <div style={{ fontSize:14, color:'#8B8B8B', marginTop:4 }}>{user?.email}</div>
-          <div style={{ fontSize:13, color:'#8B8B8B', marginTop:8 }}>🎬 Monteur vidéo · TikTok, YouTube, Reels</div>
+          <div style={{ fontSize:14, color:'#636363', marginTop:4 }}>{user?.email}</div>
+          <div style={{ fontSize:13, color:'#636363', marginTop:8 }}>🎬 Monteur vidéo · TikTok, YouTube, Reels</div>
           <div style={{ marginTop:20, display:'flex', justifyContent:'center', gap:24 }}>
-            <div><div style={{ fontSize:22, fontWeight:800, color:V }}>{projets.length}</div><div style={{ fontSize:12, color:'#8B8B8B' }}>Projets</div></div>
-            <div><div style={{ fontSize:22, fontWeight:800, color:'#F59E0B' }}>{noteAvg}</div><div style={{ fontSize:12, color:'#8B8B8B' }}>Note</div></div>
-            <div><div style={{ fontSize:22, fontWeight:800 }}>{gainsTotal}€</div><div style={{ fontSize:12, color:'#8B8B8B' }}>Gains livrés</div></div>
+            <div><div style={{ fontSize:22, fontWeight:800, color:V }}>{projets.length}</div><div style={{ fontSize:12, color:'#636363' }}>Projets</div></div>
+            <div><div style={{ fontSize:22, fontWeight:800, color:'#F59E0B' }}>{noteAvg}</div><div style={{ fontSize:12, color:'#636363' }}>Note</div></div>
+            <div><div style={{ fontSize:22, fontWeight:800 }}>{gainsTotal}€</div><div style={{ fontSize:12, color:'#636363' }}>Gains livrés</div></div>
           </div>
         </div>
       </div>)}
@@ -237,28 +237,28 @@ export default function DashboardMonteur() {
         <div style={OVL} onClick={()=>setModalProjet(null)}>
           <div style={BOX} onClick={e=>e.stopPropagation()}>
             <div style={{ fontWeight:800, fontSize:18, marginBottom:2 }}>{modalProjet.titre}</div>
-            <div style={{ color:'#8B8B8B', fontSize:14, marginBottom:16 }}>{modalProjet.type} · <Badge statut={modalProjet.statut} /></div>
+            <div style={{ color:'#636363', fontSize:14, marginBottom:16 }}>{modalProjet.type} · <Badge statut={modalProjet.statut} /></div>
             <div style={{ ...CARD, background:'#FAFAFA', marginBottom:16 }}>
               {[{l:'Client',v:modalProjet.client},{l:'Fichiers à livrer',v:`${modalProjet.fichiers} fichier(s)`},{l:'Révisions',v:modalProjet.revisions},{l:'Deadline',v:modalProjet.deadline},{l:'Rémunération',v:`${modalProjet.montant}€`}].map(r=>(
                 <div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', fontSize:14, borderBottom:'1px solid #F0F0F0' }}>
-                  <span style={{ color:'#8B8B8B' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
+                  <span style={{ color:'#636363' }}>{r.l}</span><span style={{ fontWeight:600 }}>{r.v}</span>
                 </div>
               ))}
             </div>
             {modalProjet.notes&&<div style={{ padding:'12px 14px', background:'#EDE9FE', borderRadius:10, marginBottom:16, fontSize:13, color:'#5B21B6' }}>📝 Brief : {modalProjet.notes}</div>}
             {/* Fichiers */}
             <div style={{ marginBottom:16 }}>
-              <div style={{ fontSize:12, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Fichiers livrés</div>
+              <div style={{ fontSize:12, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Fichiers livrés</div>
               {['en_cours','revision','livre'].includes(modalProjet.statut) ? (
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                   {(modalProjet.statut==='livre'?[{nom:'montage_v2_final.mp4',taille:'52 Mo',date:'2026-04-05'},{nom:'montage_v1.mp4',taille:'48 Mo',date:'2026-04-03'}]:[]).map((f,i)=>(
                     <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'#F5F3FF', borderRadius:8, fontSize:13 }}>
-                      <span>📄</span><span style={{ flex:1, fontWeight:600 }}>{f.nom}</span><span style={{ color:'#8B8B8B', fontSize:12 }}>{f.taille} · {f.date}</span>
+                      <span>📄</span><span style={{ flex:1, fontWeight:600 }}>{f.nom}</span><span style={{ color:'#636363', fontSize:12 }}>{f.taille} · {f.date}</span>
                     </div>
                   ))}
                   <button onClick={()=>showToast('Fichier ajouté')} style={{ ...GHOST, padding:'10px', fontSize:13, marginTop:4 }}>📎 Ajouter un fichier</button>
                 </div>
-              ) : <div style={{ fontSize:13, color:'#8B8B8B' }}>Aucun fichier pour le moment</div>}
+              ) : <div style={{ fontSize:13, color:'#636363' }}>Aucun fichier pour le moment</div>}
             </div>
             <div style={{ display:'flex', gap:10 }}>
               {modalProjet.statut==='a_faire'&&<button onClick={()=>{commencer(modalProjet.id);setModalProjet(null);}} style={{ ...BTN, flex:1, padding:'12px' }}>▶️ Commencer le projet</button>}

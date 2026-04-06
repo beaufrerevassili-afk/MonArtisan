@@ -56,7 +56,7 @@ function TableauControle({ titre, lignes, setLignes, colonnes, nouvelleLigne }) 
               </tr>
             ))}
             {lignes.length === 0 && (
-              <tr><td colSpan={colonnes.length + 1} style={{ padding: '12px', textAlign: 'center', color: '#8E8E93', fontSize: 12 }}>Aucune entrée — cliquez "Ajouter"</td></tr>
+              <tr><td colSpan={colonnes.length + 1} style={{ padding: '12px', textAlign: 'center', color: '#636363', fontSize: 12 }}>Aucune entrée — cliquez "Ajouter"</td></tr>
             )}
           </tbody>
         </table>
@@ -254,7 +254,7 @@ export default function RegistreIncendie({ onRetour }) {
                   ))}
                   <td style={{ padding: '4px 6px' }}>
                     <select value={item.conforme || 'Oui'} onChange={e => setSsi(prev => prev.map((x, j) => j === i ? { ...x, conforme: e.target.value } : x))}
-                      style={{ ...sel, fontSize: 12, padding: '5px 8px', color: item.conforme === 'Non conforme' ? '#C0392B' : item.conforme === 'N/A' ? '#8E8E93' : '#1A7F43', fontWeight: 600 }}>
+                      style={{ ...sel, fontSize: 12, padding: '5px 8px', color: item.conforme === 'Non conforme' ? '#C0392B' : item.conforme === 'N/A' ? '#636363' : '#1A7F43', fontWeight: 600 }}>
                       {['Oui', 'Non conforme', 'N/A', 'À vérifier'].map(o => <option key={o}>{o}</option>)}
                     </select>
                   </td>

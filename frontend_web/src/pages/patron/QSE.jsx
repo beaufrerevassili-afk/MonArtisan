@@ -282,7 +282,7 @@ export default function QSE() {
               </thead>
               <tbody>
                 {risquesFiltres.length===0 ? (
-                  <tr><td colSpan={13} style={{ padding:40, textAlign:'center', color:'#8E8E93' }}>Aucun risque pour cette unité</td></tr>
+                  <tr><td colSpan={13} style={{ padding:40, textAlign:'center', color:'#636363' }}>Aucun risque pour cette unité</td></tr>
                 ) : [...risquesFiltres].sort((a,b)=>crit(b.P,b.G)-crit(a.P,a.G)).map((r,i) => {
                   const c=crit(r.P,r.G); const cc=critColor(c);
                   const isEditing = editId===r.id;
@@ -437,7 +437,7 @@ export default function QSE() {
                 <>
                   <div style={{ fontSize:30, marginBottom:6 }}>📎</div>
                   <div style={{ fontWeight:600, fontSize:14 }}>Joindre la photo ou le PDF de l'habilitation</div>
-                  <div style={{ fontSize:12, color:'#8E8E93', marginTop:4 }}>Le logiciel détectera automatiquement les informations du document</div>
+                  <div style={{ fontSize:12, color:'#636363', marginTop:4 }}>Le logiciel détectera automatiquement les informations du document</div>
                   <div style={{ fontSize:12, color:'#FF3B30', marginTop:4, fontWeight:600 }}>* Document obligatoire</div>
                 </>
               ) : scanning ? (
@@ -448,7 +448,7 @@ export default function QSE() {
                   <div style={{ textAlign:'left' }}>
                     <div style={{ fontWeight:700, color:'#34C759', fontSize:14 }}>✓ Document analysé avec succès</div>
                     {scanResult && <div style={{ fontSize:12, color:'#6E6E73', marginTop:2 }}>Confiance : {scanResult.confidence}% · Champs pré-remplis</div>}
-                    <div style={{ fontSize:12, color:'#8E8E93', marginTop:2 }}>{fichier.name}</div>
+                    <div style={{ fontSize:12, color:'#636363', marginTop:2 }}>{fichier.name}</div>
                   </div>
                 </div>
               )}
@@ -505,13 +505,13 @@ export default function QSE() {
             <thead>
               <tr style={{ background:'#FAFAFA', borderBottom:'1px solid #F2F2F7' }}>
                 {['Employé','Habilitation','Type/Niveau','Organisme','Obtenue','Expiration','Statut','Document',''].map(h=>(
-                  <th key={h} style={{ padding:'9px 14px', textAlign:'left', fontSize:11, fontWeight:600, color:'#8E8E93', textTransform:'uppercase', letterSpacing:.5, whiteSpace:'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding:'9px 14px', textAlign:'left', fontSize:11, fontWeight:600, color:'#636363', textTransform:'uppercase', letterSpacing:.5, whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {habilitations.length===0 ? (
-                <tr><td colSpan={9} style={{ padding:40, textAlign:'center', color:'#8E8E93' }}>Aucune habilitation enregistrée</td></tr>
+                <tr><td colSpan={9} style={{ padding:40, textAlign:'center', color:'#636363' }}>Aucune habilitation enregistrée</td></tr>
               ) : habilitations.map((h,i) => {
                 const emp = employes.find(e=>e.id===h.employeId);
                 return (
@@ -733,14 +733,14 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             <thead>
               <tr style={{ background:'#FAFAFA', borderBottom:'1px solid #F2F2F7' }}>
                 {['Produit','Fournisseur','Catégorie','Risques','EPI','Réception','Expiration','Fichier','Statut'].map(h=>(
-                  <th key={h} style={{ padding:'9px 12px', textAlign:'left', fontSize:10, fontWeight:700, color:'#8E8E93', textTransform:'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding:'9px 12px', textAlign:'left', fontSize:10, fontWeight:700, color:'#636363', textTransform:'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {fds.map(f=>(
                 <tr key={f.id} style={{ borderBottom:'1px solid #F2F2F7', background:f.statut==='expire'?'#FFF5F5':'#fff' }}>
-                  <td style={{ padding:'10px 12px', fontWeight:700 }}>{f.produit}<div style={{ fontSize:11, color:'#8E8E93' }}>Réf. {f.ref}</div></td>
+                  <td style={{ padding:'10px 12px', fontWeight:700 }}>{f.produit}<div style={{ fontSize:11, color:'#636363' }}>Réf. {f.ref}</div></td>
                   <td style={{ padding:'10px 12px', color:'#6E6E73' }}>{f.fournisseur}</td>
                   <td style={{ padding:'10px 12px' }}><span style={{ background:'#F2F2F7', borderRadius:8, padding:'2px 8px', fontSize:11, fontWeight:600 }}>{f.categorie}</span></td>
                   <td style={{ padding:'10px 12px', fontSize:12, color:'#6E6E73', maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{f.risques}</td>
@@ -764,7 +764,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             </tbody>
           </table>
         </div>
-        <div style={{ fontSize:11, color:'#8E8E93', padding:'4px 0' }}>Règlement (CE) n°1907/2006 REACH — Annexe II — Les FDS doivent être mises à jour et remises aux utilisateurs. Art. R4411-73 CT.</div>
+        <div style={{ fontSize:11, color:'#636363', padding:'4px 0' }}>Règlement (CE) n°1907/2006 REACH — Annexe II — Les FDS doivent être mises à jour et remises aux utilisateurs. Art. R4411-73 CT.</div>
       </div>
     );
 
@@ -974,7 +974,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             <thead>
               <tr style={{ background:'#FAFAFA', borderBottom:'1px solid #F2F2F7' }}>
                 {['Date','Heure','Salarié','Qualification','Lieu / Commune','Nature accident','Siège lésion','Gravité','Arrêt','Jours','Reprise','Cerfa CPAM'].map(h=>(
-                  <th key={h} style={{ padding:'8px 12px', textAlign:'left', fontSize:10, fontWeight:700, color:'#8E8E93', textTransform:'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding:'8px 12px', textAlign:'left', fontSize:10, fontWeight:700, color:'#636363', textTransform:'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1085,7 +1085,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   </div>
                 </div>
                 <div style={{ height:50, borderBottom:'1px solid #E5E5EA' }}></div>
-                <div style={{ fontSize:11, color:'#8E8E93', marginTop:8 }}>Signature de {s.role || '___'}</div>
+                <div style={{ fontSize:11, color:'#636363', marginTop:8 }}>Signature de {s.role || '___'}</div>
               </div>
             ))}
           </div>
@@ -1169,7 +1169,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   <h3 style={{ margin:0, fontSize:16, fontWeight:700 }}>{created[editing] ? 'Modifier' : 'Créer'} — {doc?.nom}</h3>
                   <p style={{ margin:'4px 0 0', fontSize:12, color:'#6E6E73' }}>Remplissez les informations ci-dessous — le document sera généré automatiquement.</p>
                 </div>
-                <button onClick={()=>setEditing(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#8E8E93' }}>✕</button>
+                <button onClick={()=>setEditing(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#636363' }}>✕</button>
               </div>
               <form onSubmit={handleSave}>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
@@ -1207,7 +1207,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 {/* Doc header */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, paddingBottom:16, borderBottom:'3px solid #1C1C1E' }}>
                   <div>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#8E8E93', textTransform:'uppercase', letterSpacing:0.8, marginBottom:6 }}>Bernard Martin BTP · SIRET : {data?.contenu?.siret || '123 456 789 00012'}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:0.8, marginBottom:6 }}>Bernard Martin BTP · SIRET : {data?.contenu?.siret || '123 456 789 00012'}</div>
                     <div style={{ fontSize:20, fontWeight:800, color:'#1C1C1E' }}>{doc?.nom}</div>
                     <div style={{ fontSize:13, color:'#6E6E73', marginTop:4 }}>{doc?.freq} · MAJ : {data?.dateMAJ || new Date().toLocaleDateString('fr-FR')}</div>
                   </div>
@@ -1224,7 +1224,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                     <button onClick={()=>window.print()} style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 13px', background:'#fff', color:'#1C1C1E', border:'1px solid #E5E5EA', borderRadius:9, cursor:'pointer', fontSize:12, fontWeight:600 }} title="Imprimer">
                       🖨️ Imprimer
                     </button>
-                    <button onClick={()=>setViewDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#8E8E93', paddingLeft:4 }}>✕</button>
+                    <button onClick={()=>setViewDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#636363', paddingLeft:4 }}>✕</button>
                   </div>
                 </div>
 
@@ -1246,7 +1246,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, marginBottom:24, paddingTop:20, borderTop:'1px solid #E5E5EA' }}>
                   {['Responsable QSE', 'Dirigeant'].map(r => (
                     <div key={r} style={{ border:'1px dashed #C7C7CC', borderRadius:10, padding:'16px 18px', minHeight:80 }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#8E8E93', marginBottom:8 }}>Signature {r}</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#636363', marginBottom:8 }}>Signature {r}</div>
                       <div style={{ fontSize:12, color:'#C7C7CC' }}>___________________________</div>
                       <div style={{ fontSize:11, color:'#C7C7CC', marginTop:8 }}>Date : ___/___/______</div>
                     </div>
@@ -1257,7 +1257,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 <div style={{ background:'#F8F9FA', borderRadius:10, padding:'14px 16px', borderTop:'3px solid #1C1C1E' }}>
                   <div style={{ fontSize:11, fontWeight:800, color:'#3C3C43', textTransform:'uppercase', letterSpacing:0.6, marginBottom:8 }}>Références légales</div>
                   {mentions.map((m, i) => <div key={i} style={{ fontSize:11, color:'#6E6E73', marginBottom:3 }}>• {m}</div>)}
-                  <div style={{ fontSize:10, color:'#8E8E93', marginTop:10 }}>
+                  <div style={{ fontSize:10, color:'#636363', marginTop:10 }}>
                     Bernard Martin BTP — SIRET : {data?.contenu?.siret || '123 456 789 00012'} · {data?.contenu?.adresse || '12 rue des Artisans, 75011 Paris'} · Document généré le {new Date().toLocaleDateString('fr-FR')}
                   </div>
                 </div>
@@ -1277,7 +1277,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 <thead>
                   <tr style={{ background:'#FAFAFA', borderBottom:'1px solid #F2F2F7' }}>
                     {['Document','Obligatoire','Fréquence','Dernière MAJ','Actions'].map(h=>(
-                      <th key={h} style={{ padding:'8px 14px', textAlign:'left', fontSize:11, fontWeight:600, color:'#8E8E93', textTransform:'uppercase' }}>{h}</th>
+                      <th key={h} style={{ padding:'8px 14px', textAlign:'left', fontSize:11, fontWeight:600, color:'#636363', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1404,8 +1404,8 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
               </span>
             </div>
             <div style={{ display:'flex', gap:20, flexWrap:'wrap', marginBottom:12 }}>
-              {plan.entreprises?.length>0 && <div><div style={{ fontSize:11, fontWeight:700, color:'#8E8E93', textTransform:'uppercase', marginBottom:5 }}>Entreprises</div><div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>{plan.entreprises.map((e,i)=><span key={i} style={{ fontSize:12, padding:'3px 10px', background:'#F2F2F7', borderRadius:8 }}>{e}</span>)}</div></div>}
-              {plan.risques?.length>0 && <div><div style={{ fontSize:11, fontWeight:700, color:'#8E8E93', textTransform:'uppercase', marginBottom:5 }}>Risques</div><div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>{plan.risques.map((r,i)=><span key={i} style={{ fontSize:12, padding:'3px 10px', background:'#FFF3E0', color:'#856404', borderRadius:8 }}>{r}</span>)}</div></div>}
+              {plan.entreprises?.length>0 && <div><div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', marginBottom:5 }}>Entreprises</div><div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>{plan.entreprises.map((e,i)=><span key={i} style={{ fontSize:12, padding:'3px 10px', background:'#F2F2F7', borderRadius:8 }}>{e}</span>)}</div></div>}
+              {plan.risques?.length>0 && <div><div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', marginBottom:5 }}>Risques</div><div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>{plan.risques.map((r,i)=><span key={i} style={{ fontSize:12, padding:'3px 10px', background:'#FFF3E0', color:'#856404', borderRadius:8 }}>{r}</span>)}</div></div>}
             </div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={()=>{ setForm({chantier:plan.chantier,date:plan.date,entreprises:plan.entreprises?.join(', ')||'',risques:plan.risques?.join(', ')||'',mesures:''}); setShowModal(true); }} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconRefresh size={12}/> Modifier</button>
@@ -1436,7 +1436,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
           }}>{t}</button>
         ))}
       </div>
-      {loading ? <div style={{ padding:60, textAlign:'center', color:'#8E8E93' }}>Chargement…</div> : tabContent[tab]}
+      {loading ? <div style={{ padding:60, textAlign:'center', color:'#636363' }}>Chargement…</div> : tabContent[tab]}
     </div>
   );
 }

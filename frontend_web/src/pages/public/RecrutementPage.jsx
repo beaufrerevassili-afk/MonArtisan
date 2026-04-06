@@ -309,29 +309,29 @@ export default function RecrutementPage() {
         <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&q=80)', backgroundSize:'cover', backgroundPosition:'center', opacity:0.15 }} />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.92) 100%)' }} />
         <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1, textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:'#C9A96E', textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:600, color:'#A68B4B', textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:16 }}>
             {filtered.length} offre{filtered.length>1?'s':''} disponible{filtered.length>1?'s':''}
           </div>
-          <h1 ref={sTitle} style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(28px,5vw,48px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', margin:'0 0 24px', lineHeight:1.08 }}>
+          <h1 ref={sTitle} style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(28px,5vw,48px)', fontWeight:500, fontStyle:'italic', letterSpacing:'-0.02em', color:'#fff', margin:'0 0 24px', lineHeight:1.08 }}>
             Trouvez votre <span style={{ fontWeight:700, fontStyle:'normal' }}>prochain emploi</span>
           </h1>
 
           {/* Barre de recherche — HelloWork style */}
           <div ref={rSearch} style={{ display:'flex', background:'#fff', overflow:'hidden', maxWidth:600, margin:'0 auto' }}>
             <div style={{ flex:1, padding:'14px 20px', display:'flex', alignItems:'center', gap:10 }}>
-              <span style={{ color:'#A0A0A0', fontSize:16 }}>🔍</span>
+              <span style={{ color:'#757575', fontSize:16 }}>🔍</span>
               <input value={quoi} onChange={e=>setQuoi(e.target.value)} placeholder="Plombier, électricien, peintre…"
                 style={{ background:'none', border:'none', outline:'none', fontSize:14, color:'#1A1A1A', fontFamily:DS.font, fontWeight:500, flex:1 }} />
             </div>
             <div style={{ width:1, background:'#E8E6E1', margin:'10px 0' }} />
             <div style={{ padding:'14px 20px', display:'flex', alignItems:'center', gap:10, minWidth:140 }}>
-              <span style={{ color:'#A0A0A0', fontSize:14 }}>📍</span>
+              <span style={{ color:'#757575', fontSize:14 }}>📍</span>
               <input value={ou} onChange={e=>setOu(e.target.value)} placeholder="Ville…"
                 style={{ background:'none', border:'none', outline:'none', fontSize:14, color:'#1A1A1A', fontFamily:DS.font, fontWeight:500, width:'100%' }} />
             </div>
             <button
               style={{ flexShrink:0, background:'#0A0A0A', border:'none', cursor:'pointer', padding:'0 28px', fontWeight:600, color:'#fff', fontSize:13, transition:'background .2s', letterSpacing:'0.04em', textTransform:'uppercase' }}
-              onMouseEnter={e=>e.currentTarget.style.background='#C9A96E'} onMouseLeave={e=>e.currentTarget.style.background='#0A0A0A'}>
+              onMouseEnter={e=>e.currentTarget.style.background='#A68B4B'} onMouseLeave={e=>e.currentTarget.style.background='#0A0A0A'}>
               Rechercher
             </button>
           </div>
@@ -340,7 +340,7 @@ export default function RecrutementPage() {
           <div style={{ display:'flex', justifyContent:'center', gap:8, marginTop:18, flexWrap:'wrap' }}>
             {CONTRATS.map(c => (
               <button key={c} onClick={() => setContrat(c)}
-                style={{ padding:'7px 18px', border:`1px solid ${contrat===c?'#C9A96E':'rgba(255,255,255,0.15)'}`, background:contrat===c?'rgba(201,169,110,0.15)':'transparent', color:contrat===c?'#C9A96E':'rgba(255,255,255,0.5)', fontSize:12, fontWeight:600, cursor:'pointer', transition:'all .2s', fontFamily:DS.font }}>
+                style={{ padding:'7px 18px', border:`1px solid ${contrat===c?'#A68B4B':'rgba(255,255,255,0.15)'}`, background:contrat===c?'rgba(201,169,110,0.15)':'transparent', color:contrat===c?'#A68B4B':'rgba(255,255,255,0.5)', fontSize:12, fontWeight:600, cursor:'pointer', transition:'all .2s', fontFamily:DS.font }}>
                 {c}
               </button>
             ))}
@@ -348,7 +348,7 @@ export default function RecrutementPage() {
 
           <button onClick={() => navigate('/register?role=patron&secteur=btp')}
             style={{ marginTop:20, background:'none', border:'none', cursor:'pointer', fontSize:12, color:'rgba(255,255,255,0.35)', fontFamily:DS.font, letterSpacing:'0.04em', transition:'color .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.color='#C9A96E'} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
+            onMouseEnter={e=>e.currentTarget.style.color='#A68B4B'} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
             Vous recrutez ? Publier une offre gratuitement →
           </button>
         </div>
@@ -357,7 +357,7 @@ export default function RecrutementPage() {
       {/* Compteur résultats */}
       <div style={{ padding:'12px clamp(20px,5vw,56px)', borderBottom:'1px solid #E8E6E1', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
         <span style={{ fontSize:13, fontWeight:600, color:'#1A1A1A' }}>{filtered.length} résultat{filtered.length>1?'s':''}</span>
-        <span style={{ fontSize:12, color:'#A0A0A0' }}>BTP & Artisanat</span>
+        <span style={{ fontSize:12, color:'#757575' }}>BTP & Artisanat</span>
         <span style={{ marginLeft:'auto', fontSize:'0.8rem', color:DS.subtle, flexShrink:0 }}>
           {filtered.length} offre{filtered.length!==1?'s':''}
         </span>
@@ -368,10 +368,10 @@ export default function RecrutementPage() {
         {filtered.length === 0 ? (
           <div style={{ padding:'80px 40px', textAlign:'center' }}>
             <div style={{ fontSize:48, marginBottom:16, opacity:0.2 }}>📋</div>
-            <div style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:22, fontWeight:300, fontStyle:'italic', color:'#1A1A1A', marginBottom:6 }}>Aucune offre trouvée</div>
-            <div style={{ fontSize:14, color:'#A0A0A0', marginBottom:20 }}>Essayez d'autres critères de recherche</div>
+            <div style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:22, fontWeight:500, fontStyle:'italic', color:'#1A1A1A', marginBottom:6 }}>Aucune offre trouvée</div>
+            <div style={{ fontSize:14, color:'#757575', marginBottom:20 }}>Essayez d'autres critères de recherche</div>
             <button onClick={() => { setQuoi(''); setOu(''); setContrat('Tous'); setSecteur('tous'); }}
-              style={{ background:'none', border:'1px solid #E8E6E1', padding:'10px 24px', color:'#6B6B6B', cursor:'pointer', fontSize:13, fontFamily:DS.font, letterSpacing:'0.03em' }}>
+              style={{ background:'none', border:'1px solid #E8E6E1', padding:'10px 24px', color:'#4A4A4A', cursor:'pointer', fontSize:13, fontFamily:DS.font, letterSpacing:'0.03em' }}>
               Réinitialiser
             </button>
           </div>
@@ -383,24 +383,24 @@ export default function RecrutementPage() {
               return (
                 <div key={o.id} onClick={()=>setSelected(o)}
                   style={{ background:'#fff', border:'1px solid #E8E6E1', padding:'24px', cursor:'pointer', transition:'all .25s', position:'relative' }}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor='#C9A96E';e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.06)';}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor='#A68B4B';e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.06)';}}
                   onMouseLeave={e=>{e.currentTarget.style.borderColor='#E8E6E1';e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
                   {o.urgent && <div style={{ position:'absolute', top:12, right:12, fontSize:10, fontWeight:700, color:'#DC2626', background:'#FEF2F2', border:'1px solid #FECACA', padding:'2px 8px' }}>Urgent</div>}
                   <div style={{ display:'flex', gap:14, alignItems:'flex-start', marginBottom:16 }}>
-                    <div style={{ width:44, height:44, background:'#F5F2EC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:'#8B7240', flexShrink:0 }}>{initials}</div>
+                    <div style={{ width:44, height:44, background:'#F5F2EC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:'#7A6232', flexShrink:0 }}>{initials}</div>
                     <div>
                       <div style={{ fontSize:16, fontWeight:700, color:'#1A1A1A', letterSpacing:'-0.02em', marginBottom:3 }}>{o.poste}</div>
-                      <div style={{ fontSize:13, color:'#6B6B6B' }}>{o.entreprise} · 📍 {o.localisation}</div>
+                      <div style={{ fontSize:13, color:'#4A4A4A' }}>{o.entreprise} · 📍 {o.localisation}</div>
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:14 }}>
                     {o.type_contrat && <span style={{ fontSize:11, fontWeight:600, color:'#1A1A1A', background:'#F5F2EC', padding:'4px 10px' }}>{o.type_contrat}</span>}
-                    {o.salaire && <span style={{ fontSize:11, color:'#6B6B6B', background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'4px 10px' }}>{o.salaire}</span>}
+                    {o.salaire && <span style={{ fontSize:11, color:'#4A4A4A', background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'4px 10px' }}>{o.salaire}</span>}
                   </div>
-                  <div style={{ fontSize:13, color:'#6B6B6B', lineHeight:1.55, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{o.description}</div>
+                  <div style={{ fontSize:13, color:'#4A4A4A', lineHeight:1.55, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{o.description}</div>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:16, paddingTop:14, borderTop:'1px solid #F0EDE8' }}>
-                    <span style={{ fontSize:12, color:'#A0A0A0' }}>{daysAgo===0?'Aujourd\'hui':daysAgo===1?'Hier':`Il y a ${daysAgo}j`}</span>
-                    <span style={{ fontSize:12, fontWeight:600, color:'#C9A96E', letterSpacing:'0.04em', textTransform:'uppercase' }}>Voir l'offre →</span>
+                    <span style={{ fontSize:12, color:'#757575' }}>{daysAgo===0?'Aujourd\'hui':daysAgo===1?'Hier':`Il y a ${daysAgo}j`}</span>
+                    <span style={{ fontSize:12, fontWeight:600, color:'#A68B4B', letterSpacing:'0.04em', textTransform:'uppercase' }}>Voir l'offre →</span>
                   </div>
                 </div>
               );
@@ -418,13 +418,13 @@ export default function RecrutementPage() {
             {/* Header */}
             <div style={{ padding:'28px 32px 0', position:'relative' }}>
               <button onClick={()=>setSelected(null)}
-                style={{ position:'absolute', top:16, right:16, background:'none', border:'1px solid #E8E6E1', width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:'#A0A0A0', transition:'border-color .15s' }}
+                style={{ position:'absolute', top:16, right:16, background:'none', border:'1px solid #E8E6E1', width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:'#757575', transition:'border-color .15s' }}
                 onMouseEnter={e=>e.currentTarget.style.borderColor='#1A1A1A'} onMouseLeave={e=>e.currentTarget.style.borderColor='#E8E6E1'}>✕</button>
-              <div style={{ fontSize:11, fontWeight:600, color:'#C9A96E', textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:12 }}>Offre d'emploi</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,32px)', fontWeight:300, fontStyle:'italic', color:'#1A1A1A', letterSpacing:'-0.02em', margin:'0 0 6px', lineHeight:1.1 }}>
+              <div style={{ fontSize:11, fontWeight:600, color:'#A68B4B', textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:12 }}>Offre d'emploi</div>
+              <h2 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,32px)', fontWeight:500, fontStyle:'italic', color:'#1A1A1A', letterSpacing:'-0.02em', margin:'0 0 6px', lineHeight:1.1 }}>
                 {selected.poste}
               </h2>
-              <div style={{ fontSize:14, color:'#6B6B6B', marginBottom:20 }}>{selected.entreprise} · 📍 {selected.localisation}</div>
+              <div style={{ fontSize:14, color:'#4A4A4A', marginBottom:20 }}>{selected.entreprise} · 📍 {selected.localisation}</div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:24 }}>
                 {[selected.type_contrat, selected.salaire].filter(Boolean).map(v => (
                   <span key={v} style={{ fontSize:12, fontWeight:600, color:'#1A1A1A', background:'#F5F2EC', padding:'6px 14px' }}>{v}</span>
@@ -434,19 +434,19 @@ export default function RecrutementPage() {
             </div>
 
             {/* Séparateur */}
-            <div style={{ display:'flex', alignItems:'center', margin:'0 32px' }}><div style={{ flex:1, height:1, background:'#E8E6E1' }}/><div style={{ width:6, height:6, borderRadius:'50%', background:'#C9A96E', margin:'0 16px' }}/><div style={{ flex:1, height:1, background:'#E8E6E1' }}/></div>
+            <div style={{ display:'flex', alignItems:'center', margin:'0 32px' }}><div style={{ flex:1, height:1, background:'#E8E6E1' }}/><div style={{ width:6, height:6, borderRadius:'50%', background:'#A68B4B', margin:'0 16px' }}/><div style={{ flex:1, height:1, background:'#E8E6E1' }}/></div>
 
             {/* Contenu */}
             <div style={{ padding:'24px 32px 32px' }}>
               {selected.description && (
                 <div style={{ marginBottom:24 }}>
-                  <div style={{ fontSize:11, fontWeight:600, color:'#A0A0A0', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Description du poste</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Description du poste</div>
                   <div style={{ fontSize:14, color:'#1A1A1A', lineHeight:1.75 }}>{selected.description}</div>
                 </div>
               )}
               {selected.competences && (
                 <div style={{ marginBottom:24 }}>
-                  <div style={{ fontSize:11, fontWeight:600, color:'#A0A0A0', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Compétences recherchées</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Compétences recherchées</div>
                   <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                     {selected.competences.split(',').filter(Boolean).map(c => (
                       <span key={c} style={{ fontSize:12, color:'#1A1A1A', background:'#F5F2EC', border:'1px solid #E8E6E1', padding:'5px 12px' }}>{c.trim()}</span>
@@ -457,10 +457,10 @@ export default function RecrutementPage() {
 
               {/* Infos pratiques */}
               <div style={{ background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'20px 24px', marginBottom:28 }}>
-                <div style={{ fontSize:11, fontWeight:600, color:'#A0A0A0', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:14 }}>Informations</div>
+                <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:14 }}>Informations</div>
                 {[{l:'Entreprise',v:selected.entreprise},{l:'Localisation',v:selected.localisation},{l:'Type de contrat',v:selected.type_contrat},{l:'Rémunération',v:selected.salaire||'Non précisé'}].map(({l,v})=>v&&(
                   <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #F0EDE8', fontSize:14 }}>
-                    <span style={{ color:'#A0A0A0' }}>{l}</span>
+                    <span style={{ color:'#757575' }}>{l}</span>
                     <span style={{ color:'#1A1A1A', fontWeight:600 }}>{v}</span>
                   </div>
                 ))}
@@ -469,7 +469,7 @@ export default function RecrutementPage() {
               {/* CTA Postuler */}
               <button onClick={()=>setPostulating(true)}
                 style={{ width:'100%', padding:'16px', background:'#0A0A0A', border:'none', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:DS.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
-                onMouseEnter={e=>e.currentTarget.style.background='#C9A96E'} onMouseLeave={e=>e.currentTarget.style.background='#0A0A0A'}>
+                onMouseEnter={e=>e.currentTarget.style.background='#A68B4B'} onMouseLeave={e=>e.currentTarget.style.background='#0A0A0A'}>
                 Postuler à cette offre
               </button>
             </div>
@@ -478,7 +478,7 @@ export default function RecrutementPage() {
       )}
 
       {postulating && selected && <ModalCandidature offre={selected} onClose={() => setPostulating(false)} />}
-      <style>{`input::placeholder{color:#A0A0A0;} textarea::placeholder{color:#A0A0A0;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#E8E6E1;border-radius:2px;}`}</style>
+      <style>{`input::placeholder{color:#757575;} textarea::placeholder{color:#757575;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#E8E6E1;border-radius:2px;}`}</style>
     </div>
   );
 }

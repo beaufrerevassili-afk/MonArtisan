@@ -668,7 +668,7 @@ export default function Landing() {
                 </h2>
                 <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: '#9898B8' }}>{annonces.length} offre{annonces.length > 1 ? 's' : ''} disponible{annonces.length > 1 ? 's' : ''}</p>
               </div>
-              <button onClick={() => setOffresModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#8E8E93', lineHeight: 1 }}>×</button>
+              <button onClick={() => setOffresModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#636363', lineHeight: 1 }}>×</button>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {annonces.length === 0 && (
@@ -737,7 +737,7 @@ export default function Landing() {
                     {annonceModal.experience && <span>🎯 {annonceModal.experience}</span>}
                   </div>
                 </div>
-                <button onClick={() => setAnnonceModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#8E8E93', flexShrink: 0 }}>×</button>
+                <button onClick={() => setAnnonceModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#636363', flexShrink: 0 }}>×</button>
               </div>
             </div>
 

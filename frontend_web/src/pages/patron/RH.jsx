@@ -259,7 +259,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
           >
             <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1 }}>{Number(k.val).toLocaleString('fr-FR')}{k.suffix}</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1E', margin: '6px 0 2px' }}>{k.label}</div>
-            <div style={{ fontSize: 11, color: '#8E8E93' }}>{k.sub}</div>
+            <div style={{ fontSize: 11, color: '#636363' }}>{k.sub}</div>
             <div style={{ marginTop: 10, fontSize: 10, color: k.color, fontWeight: 600 }}>Voir détail →</div>
           </div>
         ))}
@@ -278,7 +278,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
             <div key={r.label} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
                 <span style={{ fontWeight: 600, color: '#3C3C43' }}>{r.label}</span>
-                <span style={{ color: '#8E8E93' }}>{r.count} / {r.total}</span>
+                <span style={{ color: '#636363' }}>{r.count} / {r.total}</span>
               </div>
               <div style={{ height: 6, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${r.total > 0 ? (r.count / r.total) * 100 : 0}%`, background: r.color, borderRadius: 3, transition: 'width 0.5s' }} />
@@ -296,7 +296,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, marginTop: 5, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, color: '#1C1C1E', lineHeight: 1.4 }}>{a.text}</div>
-                  <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 2 }}>{new Date(a.date).toLocaleDateString('fr-FR')}</div>
+                  <div style={{ fontSize: 10, color: '#636363', marginTop: 2 }}>{new Date(a.date).toLocaleDateString('fr-FR')}</div>
                 </div>
               </div>
             ))}
@@ -328,7 +328,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
 /* ── Recrutement ── */
 const PIPELINE_STAGES = ['nouvelle', 'examinée', 'entretien', 'retenue', 'rejetée'];
 const PIPELINE_LABELS = { nouvelle:'Nouvelle', examinée:'CV examiné', entretien:'Entretien prévu', retenue:'Retenue', rejetée:'Rejetée' };
-const PIPELINE_COLORS = { nouvelle:'#8E8E93', examinée:'#5B5BD6', entretien:'#FF9500', retenue:'#34C759', rejetée:'#C0392B' };
+const PIPELINE_COLORS = { nouvelle:'#636363', examinée:'#5B5BD6', entretien:'#FF9500', retenue:'#34C759', rejetée:'#C0392B' };
 const CONTRATS = ['CDI','CDD','Intérim','Alternance','Stage','Freelance'];
 const POSTES_BTP = ['Maçon','Plombier','Électricien','Charpentier','Menuisier','Carreleur','Peintre','Chef de chantier','Conducteur de travaux','Grutier','Coffreur','Étancheur','Autre'];
 
@@ -440,7 +440,7 @@ function RecrutementView() {
               <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>Nouvelle annonce de recrutement</h2>
               <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6E6E73' }}>Elle sera visible sur la page d'accueil dans la section "Ils recrutent"</p>
             </div>
-            <button onClick={() => setView('annonces')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#8E8E93' }}>×</button>
+            <button onClick={() => setView('annonces')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#636363' }}>×</button>
           </div>
           <form onSubmit={creerAnnonce}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -522,7 +522,7 @@ function RecrutementView() {
             <div style={{ background: '#fff', borderRadius: 14, padding: 60, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
               <p style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1E', marginBottom: 8 }}>Aucune annonce publiée</p>
-              <p style={{ color: '#8E8E93', marginBottom: 20, fontSize: 14 }}>Publiez votre première offre d'emploi, elle apparaîtra sur la page d'accueil.</p>
+              <p style={{ color: '#636363', marginBottom: 20, fontSize: 14 }}>Publiez votre première offre d'emploi, elle apparaîtra sur la page d'accueil.</p>
               <button onClick={() => setView('create')} style={{ padding: '10px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
                 <IconPlus size={14} /> Publier une annonce
               </button>
@@ -592,7 +592,7 @@ function RecrutementView() {
                         onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.12)'; }}
                         onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.07)'; }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', marginBottom: 1 }}>{c.prenom} {c.nom}</div>
-                        <div style={{ fontSize: 11, color: '#8E8E93', marginBottom: 4 }}>{c.email}</div>
+                        <div style={{ fontSize: 11, color: '#636363', marginBottom: 4 }}>{c.email}</div>
                         {c.telephone && <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>📞 {c.telephone}</div>}
                         <div style={{ fontSize: 10, color: '#5B5BD6', fontWeight: 600, marginTop: 4 }}>Cliquer pour voir le profil →</div>
                       </div>
@@ -626,7 +626,7 @@ function RecrutementView() {
                 <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Coordonnées</p>
                 <p style={{ margin: '4px 0', fontSize: 13, color: '#1C1C1E' }}>📧 <a href={`mailto:${candDetail.email}`} style={{ color: '#5B5BD6', textDecoration: 'none' }}>{candDetail.email}</a></p>
                 {candDetail.telephone && <p style={{ margin: '4px 0', fontSize: 13, color: '#1C1C1E' }}>📞 <a href={`tel:${candDetail.telephone}`} style={{ color: '#5B5BD6', textDecoration: 'none' }}>{candDetail.telephone}</a></p>}
-                <p style={{ margin: '8px 0 0', fontSize: 11, color: '#8E8E93' }}>Candidature reçue le {new Date(candDetail.creeLe).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' })}</p>
+                <p style={{ margin: '8px 0 0', fontSize: 11, color: '#636363' }}>Candidature reçue le {new Date(candDetail.creeLe).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' })}</p>
               </div>
 
               {/* Lettre de motivation */}
@@ -677,12 +677,12 @@ function RecrutementView() {
                         await avancerCandidature(candDetail.id, statut);
                         setCandDetail(d => ({ ...d, statut }));
                       }}
-                      style={{ padding: '11px 16px', background: candDetail.statut === statut ? '#F2F2F7' : bg, color: candDetail.statut === statut ? '#8E8E93' : color, border: `1px solid ${candDetail.statut === statut ? '#E5E5EA' : border}`, borderRadius: 10, cursor: candDetail.statut === statut ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left', transition: 'all 0.15s' }}>
+                      style={{ padding: '11px 16px', background: candDetail.statut === statut ? '#F2F2F7' : bg, color: candDetail.statut === statut ? '#636363' : color, border: `1px solid ${candDetail.statut === statut ? '#E5E5EA' : border}`, borderRadius: 10, cursor: candDetail.statut === statut ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left', transition: 'all 0.15s' }}>
                       {label}{candDetail.statut === statut ? ' ✓ (actuel)' : ''}
                     </button>
                   ))}
                 </div>
-                <p style={{ margin: '12px 0 0', fontSize: 11, color: '#8E8E93' }}>
+                <p style={{ margin: '12px 0 0', fontSize: 11, color: '#636363' }}>
                   💡 Le candidat reçoit un email de notification à chaque changement de statut.
                 </p>
               </div>
@@ -733,7 +733,7 @@ function FormationView() {
         <div style={{ height: 8, borderRadius: 4, background: '#F2F2F7', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${totalBudget > 0 ? Math.min(100, (coutRealise/totalBudget)*100) : 0}%`, background: '#34C759', borderRadius: 4, transition: 'width 0.5s' }} />
         </div>
-        <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 6 }}>Obligation légale : 0,55% de la masse salariale en formation professionnelle (Art. L6331-1)</div>
+        <div style={{ fontSize: 11, color: '#636363', marginTop: 6 }}>Obligation légale : 0,55% de la masse salariale en formation professionnelle (Art. L6331-1)</div>
       </div>
 
       {showForm && (
@@ -763,7 +763,7 @@ function FormationView() {
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
               {['Formation','Salarié','Organisme','Dates','Coût','Oblig.','Statut'].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -839,7 +839,7 @@ function EmployesView({ employes: initEmployes }) {
 
   const Section = ({ title }) => (
     <div style={{ gridColumn: '1/-1', paddingTop: 10, borderTop: '1px solid #F2F2F7', marginTop: 4 }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.6 }}>{title}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.6 }}>{title}</span>
     </div>
   );
 
@@ -858,13 +858,13 @@ function EmployesView({ employes: initEmployes }) {
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
               {['Employé', 'Poste', 'Contrat', 'Salaire brut', 'Entrée', 'Statut', 'Contact', ''].map(h => (
-                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {employes.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucun employé — cliquez sur "Ajouter" pour commencer</td></tr>
+              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucun employé — cliquez sur "Ajouter" pour commencer</td></tr>
             ) : employes.map(e => (
               <tr key={e.id} style={{ borderBottom: '1px solid #F2F2F7', cursor: 'pointer' }} onClick={() => openEdit(e)}>
                 <td style={{ padding: '12px 16px' }}>
@@ -874,13 +874,13 @@ function EmployesView({ employes: initEmployes }) {
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 14 }}>{e.prenom} {e.nom}</div>
-                      <div style={{ fontSize: 12, color: '#8E8E93' }}>{e.email || '—'}</div>
+                      <div style={{ fontSize: 12, color: '#636363' }}>{e.email || '—'}</div>
                     </div>
                   </div>
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{e.poste}</div>
-                  {e.qualification && <div style={{ fontSize: 11, color: '#8E8E93' }}>{e.qualification}</div>}
+                  {e.qualification && <div style={{ fontSize: 11, color: '#636363' }}>{e.qualification}</div>}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   <span style={{ padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.typeContrat === 'CDI' ? '#D1F2E0' : e.typeContrat === 'CDD' ? '#E3F2FD' : '#FFF3CD', color: e.typeContrat === 'CDI' ? '#1A7F43' : e.typeContrat === 'CDD' ? '#1565C0' : '#856404' }}>
@@ -914,7 +914,7 @@ function EmployesView({ employes: initEmployes }) {
           <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 740, maxHeight: '90vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{modal === 'add' ? 'Nouvel employé' : `Modifier — ${form.prenom} ${form.nom}`}</h2>
-              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#8E8E93' }}>✕</button>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#636363' }}>✕</button>
             </div>
 
             {/* Option recruter un compte existant */}
@@ -1181,8 +1181,8 @@ function PlanningLocalisationView({ employes: initEmployes }) {
                     <div style={{ fontWeight: 700, fontSize: 14, color: '#1C1C1E' }}>{emp.nom}</div>
                     <div style={{ fontSize: 12, color: '#6E6E73' }}>{emp.poste}</div>
                     <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: enChantier ? '#34C759' : '#8E8E93', flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 600, color: enChantier ? '#34C759' : '#8E8E93' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: enChantier ? '#34C759' : '#636363', flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: enChantier ? '#34C759' : '#636363' }}>
                         {enChantier ? 'En chantier' : (slot ? `Prévu ${slot.debut}h–${slot.fin}h` : 'Non planifié aujourd\'hui')}
                       </span>
                     </div>
@@ -1363,7 +1363,7 @@ function CongesView() {
             ))}
           </select>
         </div>
-        <span style={{ fontSize: 12, color: '#8E8E93', marginLeft: 'auto' }}>{congesFiltres.length} résultat(s)</span>
+        <span style={{ fontSize: 12, color: '#636363', marginLeft: 'auto' }}>{congesFiltres.length} résultat(s)</span>
       </div>
 
       {/* Tableau */}
@@ -1372,13 +1372,13 @@ function CongesView() {
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
               {['Employé', 'Période', 'Jours', 'Type', 'Motif', 'Statut', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {congesFiltres.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune demande de congé</td></tr>
+              <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucune demande de congé</td></tr>
             ) : congesFiltres.map(c => (
               <tr key={c.id} style={{ borderBottom: '1px solid #F2F2F7' }}>
                 <td style={{ padding: '12px 16px', fontWeight: 600 }}>{nomEmploye(c.employeId)}</td>
@@ -1439,13 +1439,13 @@ function NotesFraisView() {
         <thead>
           <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
             {['Employé', 'Montant', 'Catégorie', 'Statut', 'Actions'].map(h => (
-              <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+              <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {notes.length === 0 ? (
-            <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucune note de frais</td></tr>
+            <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucune note de frais</td></tr>
           ) : notes.map(n => (
             <tr key={n.id} style={{ borderBottom: '1px solid #F2F2F7' }}>
               <td style={{ padding: '12px 16px' }}>Employé #{n.employeId}</td>
@@ -1596,7 +1596,7 @@ function PaieView({ employes }) {
                 ].map(t => (
                   <button key={t.key} type="button" onClick={() => { setTypePrime(t.key); setPaid(false); }} style={{ flex: 1, padding: '10px 12px', border: `2px solid ${typePrime === t.key ? t.color : '#E5E5EA'}`, borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, textAlign: 'left', background: typePrime === t.key ? `${t.color}10` : '#fff', transition: 'all 0.15s' }}>
                     <div style={{ color: typePrime === t.key ? t.color : '#1C1C1E', marginBottom: 2 }}>{t.label}</div>
-                    <div style={{ fontSize: 11, color: '#8E8E93', fontWeight: 400 }}>{t.desc}</div>
+                    <div style={{ fontSize: 11, color: '#636363', fontWeight: 400 }}>{t.desc}</div>
                   </button>
                 ))}
               </div>
@@ -1635,16 +1635,16 @@ function PaieView({ employes }) {
             )}
           </div>
           {loadingNotes ? (
-            <div style={{ textAlign: 'center', color: '#8E8E93', padding: 20, fontSize: 13 }}>Chargement...</div>
+            <div style={{ textAlign: 'center', color: '#636363', padding: 20, fontSize: 13 }}>Chargement...</div>
           ) : notesEmploye.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#8E8E93', padding: 20, fontSize: 13 }}>Aucune note de frais approuvée en attente pour cet employé.</div>
+            <div style={{ textAlign: 'center', color: '#636363', padding: 20, fontSize: 13 }}>Aucune note de frais approuvée en attente pour cet employé.</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #F2F2F7' }}>
                   <th style={{ padding: '8px 12px', textAlign: 'left', width: 36 }}></th>
                   {['Date', 'Catégorie', 'Description', 'Montant'].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Montant' ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93' }}>{h}</th>
+                    <th key={h} style={{ padding: '8px 12px', textAlign: h === 'Montant' ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#636363' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -1669,7 +1669,7 @@ function PaieView({ employes }) {
               <tfoot>
                 <tr style={{ borderTop: '2px solid #E5E5EA', background: '#F8F9FA' }}>
                   <td colSpan={4} style={{ padding: '9px 12px', fontWeight: 700, fontSize: 13 }}>Total frais inclus dans la paie</td>
-                  <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: fraisTotal > 0 ? '#5B5BD6' : '#8E8E93' }}>{formatCur(fraisTotal)}</td>
+                  <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: fraisTotal > 0 ? '#5B5BD6' : '#636363' }}>{formatCur(fraisTotal)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1716,7 +1716,7 @@ function PaieView({ employes }) {
             {/* Employee info */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
               <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Employé</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Employé</div>
                 {employe ? (
                   <>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{employe.prenom} {employe.nom}</div>
@@ -1728,7 +1728,7 @@ function PaieView({ employes }) {
                 )}
               </div>
               <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Synthèse</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Synthèse</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
                   <span>Salaire de base</span><span style={{ fontWeight: 600 }}>{formatCur(brutBase || brut)}</span>
                 </div>
@@ -1775,7 +1775,7 @@ function PaieView({ employes }) {
                 <thead>
                   <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                     {['Libellé', 'Base de calcul', 'Taux salarié', 'Montant salarié'].map(h => (
-                      <th key={h} style={{ padding: '7px 10px', textAlign: h.includes('Montant') || h.includes('Taux') ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93' }}>{h}</th>
+                      <th key={h} style={{ padding: '7px 10px', textAlign: h.includes('Montant') || h.includes('Taux') ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#636363' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1831,7 +1831,7 @@ function PaieView({ employes }) {
                 <thead>
                   <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                     {['Libellé', 'Base', 'Taux patronal', 'Montant patronal'].map(h => (
-                      <th key={h} style={{ padding: '7px 10px', textAlign: h.includes('Montant') || h.includes('Taux') ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93' }}>{h}</th>
+                      <th key={h} style={{ padding: '7px 10px', textAlign: h.includes('Montant') || h.includes('Taux') ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#636363' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1865,7 +1865,7 @@ function PaieView({ employes }) {
             </details>
 
             {/* Footer */}
-            <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8E8E93' }}>
+            <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363' }}>
               <span>Bulletin de paie établi par Bernard Martin BTP · Période : {periodeLabel}</span>
               <span>Net imposable : {formatCur(result.netImposable)}</span>
             </div>
@@ -1886,7 +1886,7 @@ function PaieView({ employes }) {
       )}
 
       {!result && (
-        <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#8E8E93', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#636363', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <IconUser size={40} />
           <p style={{ marginTop: 12 }}>Sélectionnez un employé et saisissez le salaire brut pour calculer la fiche de paie.</p>
         </div>
@@ -1895,7 +1895,7 @@ function PaieView({ employes }) {
       {/* Guide méthodologique */}
       <div className="no-print" style={{ marginTop: 20, background: '#fff', borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #F2F2F7' }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#1C1C1E' }}>Cycle de paie mensuel — Guide DSN</h3>
-        <p style={{ fontSize: 12, color: '#8E8E93', marginBottom: 16 }}>Obligations légales du patron chaque mois</p>
+        <p style={{ fontSize: 12, color: '#636363', marginBottom: 16 }}>Obligations légales du patron chaque mois</p>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 24, overflowX: 'auto', paddingBottom: 4 }}>
           {[
@@ -1909,7 +1909,7 @@ function PaieView({ employes }) {
               <div style={{ flex: '0 0 auto', width: 120, textAlign: 'center' }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: s.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, margin: '0 auto 8px' }}>{s.n}</div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', marginBottom: 4, lineHeight: 1.3 }}>{s.label}</div>
-                <div style={{ fontSize: 10, color: '#8E8E93', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{s.sub}</div>
+                <div style={{ fontSize: 10, color: '#636363', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{s.sub}</div>
               </div>
               {i < arr.length - 1 && (
                 <div style={{ flex: '0 0 24px', display: 'flex', alignItems: 'flex-start', paddingTop: 10, color: '#C7C7CC', fontSize: 20, fontWeight: 300 }}>→</div>
@@ -1927,7 +1927,7 @@ function PaieView({ employes }) {
             <div key={c.label} style={{ background: `${c.color}0D`, border: `1px solid ${c.color}30`, borderRadius: 10, padding: '12px 14px' }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: c.color, lineHeight: 1 }}>{c.ratio}</div>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#1C1C1E', margin: '5px 0 3px' }}>{c.label}</div>
-              <div style={{ fontSize: 11, color: '#8E8E93' }}>{c.desc}</div>
+              <div style={{ fontSize: 11, color: '#636363' }}>{c.desc}</div>
             </div>
           ))}
         </div>
@@ -1994,7 +1994,7 @@ function MasseSalarialeView({ employes = [] }) {
           { label: 'Coût total employeur', val: totalCout, color: '#FF3B30' },
         ].map(k => (
           <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{k.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{k.label}</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{formatCur(k.val)}</div>
             <div style={{ fontSize: 11, color: '#C7C7CC', marginTop: 4 }}>Cumul {annee}</div>
           </div>
@@ -2019,7 +2019,7 @@ function MasseSalarialeView({ employes = [] }) {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', color: '#8E8E93', padding: 40 }}>Chargement...</div>
+          <div style={{ textAlign: 'center', color: '#636363', padding: 40 }}>Chargement...</div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 200, paddingBottom: 28, position: 'relative' }}>
             {/* Y-axis grid */}
@@ -2039,7 +2039,7 @@ function MasseSalarialeView({ employes = [] }) {
                     <div title={`Charges: ${formatCur(m.totalChargesPatronales)}`} style={{ width: 10, height: chargesH, background: '#FF9500', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
                     <div title={`Frais: ${formatCur(m.totalFrais)}`} style={{ width: 10, height: fraisH, background: '#34C759', borderRadius: '3px 3px 0 0', opacity: 0.9 }} />
                   </div>
-                  <div style={{ fontSize: 9, color: '#8E8E93', textAlign: 'center', position: 'absolute', bottom: 0 }}>{MOIS[i]?.slice(0, 3)}</div>
+                  <div style={{ fontSize: 9, color: '#636363', textAlign: 'center', position: 'absolute', bottom: 0 }}>{MOIS[i]?.slice(0, 3)}</div>
                 </div>
               );
             })}
@@ -2050,23 +2050,23 @@ function MasseSalarialeView({ employes = [] }) {
       {/* Qui coûte le plus */}
       <div style={{ background: '#fff', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
         <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700 }}>Coût employeur par salarié</h3>
-        <p style={{ margin: '0 0 16px', fontSize: 12, color: '#8E8E93' }}>Salaire brut + charges patronales (~42%) — du plus au moins coûteux</p>
+        <p style={{ margin: '0 0 16px', fontSize: 12, color: '#636363' }}>Salaire brut + charges patronales (~42%) — du plus au moins coûteux</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[...costData].sort((a,b) => b.cout - a.cout).map((e, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: i===0?'#FF9500':i===1?'#8E8E93':i===2?'#CD7F32':'#F2F2F7', color: i<3?'#fff':'#6E6E73', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{i+1}</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: i===0?'#FF9500':i===1?'#636363':i===2?'#CD7F32':'#F2F2F7', color: i<3?'#fff':'#6E6E73', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{i+1}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{e.nom}</span>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#FF3B30' }}>{formatCur(e.cout)}<span style={{ fontSize: 10, fontWeight: 400, color: '#8E8E93' }}>/mois</span></div>
-                    <div style={{ fontSize: 11, color: '#8E8E93' }}>Brut : {formatCur(e.brut)}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#FF3B30' }}>{formatCur(e.cout)}<span style={{ fontSize: 10, fontWeight: 400, color: '#636363' }}>/mois</span></div>
+                    <div style={{ fontSize: 11, color: '#636363' }}>Brut : {formatCur(e.brut)}</div>
                   </div>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${(e.cout/maxCout)*100}%`, background: i===0?'#FF9500':i===1?'#5B5BD6':'#34C759', borderRadius: 3, transition: 'width 0.6s' }}/>
                 </div>
-                <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 2 }}>{e.poste}</div>
+                <div style={{ fontSize: 10, color: '#636363', marginTop: 2 }}>{e.poste}</div>
               </div>
             </div>
           ))}
@@ -2086,7 +2086,7 @@ function MasseSalarialeView({ employes = [] }) {
           <thead>
             <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #F2F2F7' }}>
               {['Mois', 'Nbre salariés', 'Masse brute', 'Charges patronales', 'Frais remboursés', 'Coût employeur'].map(h => (
-                <th key={h} style={{ padding: '9px 14px', textAlign: h === 'Mois' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: '#8E8E93' }}>{h}</th>
+                <th key={h} style={{ padding: '9px 14px', textAlign: h === 'Mois' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: '#636363' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -2178,13 +2178,13 @@ function ZonesTrajetView({ employes = [] }) {
       <div style={{ background: '#fff', borderRadius: 14, padding: 22, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Barème zones de trajet — CCN BTP (Ouvriers)</h3>
-          <span style={{ fontSize: 12, color: '#8E8E93', background: '#F2F2F7', padding: '4px 10px', borderRadius: 20 }}>Mise à jour 2025 · Art. 8.10 CCN</span>
+          <span style={{ fontSize: 12, color: '#636363', background: '#F2F2F7', padding: '4px 10px', borderRadius: 20 }}>Mise à jour 2025 · Art. 8.10 CCN</span>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#F8F9FA' }}>
               {['Zone', 'Distance domicile–chantier', 'Indemnité / jour travaillé', '22 jours/mois', 'Notes'].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.3 }}>{h}</th>
+                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.3 }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -2202,19 +2202,19 @@ function ZonesTrajetView({ employes = [] }) {
                 <td style={{ padding: '12px 14px' }}>
                   {z.jourSemaine > 0
                     ? <span style={{ fontWeight: 700, color: '#34C759' }}>{z.jourSemaine.toFixed(2)} €</span>
-                    : <span style={{ color: '#8E8E93' }}>—</span>}
+                    : <span style={{ color: '#636363' }}>—</span>}
                 </td>
                 <td style={{ padding: '12px 14px' }}>
                   {z.jourSemaine > 0
                     ? <span style={{ fontWeight: 600 }}>{(z.jourSemaine * 22).toFixed(2)} €</span>
-                    : <span style={{ color: '#8E8E93' }}>—</span>}
+                    : <span style={{ color: '#636363' }}>—</span>}
                 </td>
                 <td style={{ padding: '12px 14px', fontSize: 12, color: '#6E6E73' }}>{z.note}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p style={{ fontSize: 12, color: '#8E8E93', marginTop: 12, marginBottom: 0 }}>
+        <p style={{ fontSize: 12, color: '#636363', marginTop: 12, marginBottom: 0 }}>
           Cliquez sur une zone pour la sélectionner dans le calculateur ci-dessous. Les montants sont exonérés de cotisations sociales dans la limite légale (URSSAF).
         </p>
       </div>
@@ -2281,7 +2281,7 @@ function ZonesTrajetView({ employes = [] }) {
           </div>
         )}
         {!zone && (
-          <div style={{ textAlign: 'center', color: '#8E8E93', padding: '20px 0', fontSize: 14 }}>
+          <div style={{ textAlign: 'center', color: '#636363', padding: '20px 0', fontSize: 14 }}>
             Sélectionnez une zone pour calculer les indemnités
           </div>
         )}
@@ -2295,7 +2295,7 @@ function ZonesTrajetView({ employes = [] }) {
             <thead>
               <tr style={{ background: '#F8F9FA' }}>
                 {['Salarié', 'Poste', 'Zone actuelle', 'Indemnité mensuelle', 'Statut'].map(h => (
-                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>

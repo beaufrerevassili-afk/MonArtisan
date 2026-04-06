@@ -163,7 +163,7 @@ export default function DevisFormulaire({ clientNom = '', missionTitre = '', onS
         {/* Column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '3fr 60px 70px 90px 60px 60px 70px 28px', gap: 6, marginBottom: 6, padding: '0 2px' }}>
           {['Description', 'Qté', 'Unité', 'P.U. HT (€)', 'TVA %', 'Rem. %', 'Total HT', ''].map(h => (
-            <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{h}</div>
+            <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.4 }}>{h}</div>
           ))}
         </div>
 

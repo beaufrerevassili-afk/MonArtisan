@@ -48,7 +48,7 @@ const DEMO_FINANCE = {
     { label: 'Plomberie',   pct: 22, color: '#34C759', ca: 31_416 },
     { label: 'Électricité', pct: 18, color: '#FF9500', ca: 25_704 },
     { label: 'Peinture',    pct: 14, color: '#AF52DE', ca: 19_992 },
-    { label: 'Autres',      pct: 8,  color: '#8E8E93', ca: 11_424 },
+    { label: 'Autres',      pct: 8,  color: '#636363', ca: 11_424 },
   ],
   topClients: [
     { nom: 'SCI Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Paris 11e' },
@@ -630,14 +630,14 @@ function FacturesView({ factures, setFac }) {
           {/* Client + dates */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, marginBottom: 28 }}>
             <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 18px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Facturé à</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Facturé à</div>
               <div style={{ fontWeight: 700, fontSize: 14 }}>{form.clientNom || '—'}</div>
               <div style={{ fontSize: 13, color: '#6E6E73' }}>{form.clientAdresse}</div>
               <div style={{ fontSize: 13, color: '#6E6E73' }}>{form.clientVille}</div>
-              {form.clientSiret && <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 4 }}>SIRET : {form.clientSiret}</div>}
+              {form.clientSiret && <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>SIRET : {form.clientSiret}</div>}
             </div>
             <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 18px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Informations</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Informations</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}><span style={{ color: '#6E6E73' }}>Date d'émission</span><span style={{ fontWeight: 600 }}>{new Date(form.dateEmission).toLocaleDateString('fr-FR')}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span style={{ color: '#6E6E73' }}>Échéance</span><span style={{ fontWeight: 600, color: '#FF3B30' }}>{form.dateEcheance ? new Date(form.dateEcheance).toLocaleDateString('fr-FR') : 'À réception'}</span></div>
             </div>
@@ -691,7 +691,7 @@ function FacturesView({ factures, setFac }) {
           </div>
 
           {/* Mentions légales */}
-          <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#8E8E93', lineHeight: 1.6 }}>
+          <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#636363', lineHeight: 1.6 }}>
             <div style={{ fontWeight: 700, fontSize: 11, color: '#6E6E73', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Mentions légales</div>
             {MENTIONS_LEGALES.map((m, i) => <div key={i} style={{ marginBottom: 3 }}>• {m}</div>)}
             <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Paris B 123 456 789 · Siège social : 12 rue des Artisans, 75011 Paris · N° TVA intracommunautaire : FR12 123456789</div>
@@ -711,7 +711,7 @@ function FacturesView({ factures, setFac }) {
 
         {/* Client */}
         <div className="card" style={{ padding: 22 }}>
-          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>Client</h3>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>Client</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div><label className="label">Nom / Raison sociale *</label><input className="input" required value={form.clientNom} onChange={e => setForm(p => ({ ...p, clientNom: e.target.value }))} placeholder="Nom du client" /></div>
             <div><label className="label">SIRET client</label><input className="input" value={form.clientSiret} onChange={e => setForm(p => ({ ...p, clientSiret: e.target.value }))} placeholder="123 456 789 00012" /></div>
@@ -724,12 +724,12 @@ function FacturesView({ factures, setFac }) {
 
         {/* Lignes */}
         <div className="card" style={{ padding: 22 }}>
-          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>Prestations</h3>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>Prestations</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #F2F2F7' }}>
                 {['Désignation', 'Qté', 'Unité', 'P.U. HT (€)', 'TVA %', 'Total HT', ''].map(h => (
-                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8E8E93' }}>{h}</th>
+                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#636363' }}>{h}</th>
                 ))}
               </tr>
             </thead>

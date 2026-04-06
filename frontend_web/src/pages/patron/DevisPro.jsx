@@ -369,7 +369,7 @@ export default function DevisPro() {
       <div className="stats-grid" style={{ gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Total', value: stats.total || 0, color: '#5B5BD6', fmt: v => v },
-          { label: 'Brouillons', value: stats.brouillons || 0, color: '#8E8E93', fmt: v => v },
+          { label: 'Brouillons', value: stats.brouillons || 0, color: '#636363', fmt: v => v },
           { label: 'Envoyés', value: stats.envoyes || 0, color: '#FF9500', fmt: v => v },
           { label: 'Signés', value: stats.signes || 0, color: '#34C759', fmt: v => v },
           { label: 'CA signé', value: stats.caTotal || 0, color: '#5B5BD6', fmt: v => formatCurrency(v) },
@@ -384,7 +384,7 @@ export default function DevisPro() {
       {/* Search */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
-          <IconSearch size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8E8E93' }} />
+          <IconSearch size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#636363' }} />
           <input value={searchDevis} onChange={e => setSearchDevis(e.target.value)} placeholder="Rechercher un devis, client…"
             style={{ width: '100%', paddingLeft: 36, padding: '9px 12px 9px 36px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)' }} />
         </div>
@@ -608,7 +608,7 @@ export default function DevisPro() {
                     <button onClick={addMOLigne} style={{ padding: '6px 14px', background: '#F2F2F7', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                       + Ajouter un employé
                     </button>
-                    <button onClick={addMOAsLigne} disabled={totalMO <= 0} style={{ padding: '6px 14px', background: totalMO > 0 ? '#5B5BD6' : '#E5E5EA', color: totalMO > 0 ? '#fff' : '#8E8E93', border: 'none', borderRadius: 8, cursor: totalMO > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
+                    <button onClick={addMOAsLigne} disabled={totalMO <= 0} style={{ padding: '6px 14px', background: totalMO > 0 ? '#5B5BD6' : '#E5E5EA', color: totalMO > 0 ? '#fff' : '#636363', border: 'none', borderRadius: 8, cursor: totalMO > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
                       + Ajouter comme ligne de devis ({totalMO.toFixed(2)} €)
                     </button>
                   </div>
@@ -652,10 +652,10 @@ export default function DevisPro() {
                   <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center' }}>
                     <span style={{ fontSize: 13, color: '#6E6E73' }}>Total estimé :</span>
                     <span style={{ fontWeight: 800, fontSize: 15, color: '#1A7F43' }}>{totalTrajet.toFixed(2)} €</span>
-                    <button onClick={addTrajetAsLigne} disabled={totalTrajet <= 0} style={{ padding: '6px 14px', background: totalTrajet > 0 ? '#34C759' : '#E5E5EA', color: totalTrajet > 0 ? '#fff' : '#8E8E93', border: 'none', borderRadius: 8, cursor: totalTrajet > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
+                    <button onClick={addTrajetAsLigne} disabled={totalTrajet <= 0} style={{ padding: '6px 14px', background: totalTrajet > 0 ? '#34C759' : '#E5E5EA', color: totalTrajet > 0 ? '#fff' : '#636363', border: 'none', borderRadius: 8, cursor: totalTrajet > 0 ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}>
                       + Ajouter comme ligne de devis
                     </button>
-                    <span style={{ fontSize: 11, color: '#8E8E93', marginLeft: 'auto' }}>Art. R3261-1 CT · Exonéré cotisations sociales</span>
+                    <span style={{ fontSize: 11, color: '#636363', marginLeft: 'auto' }}>Art. R3261-1 CT · Exonéré cotisations sociales</span>
                   </div>
                 </div>
 
@@ -679,12 +679,12 @@ export default function DevisPro() {
                     <div style={{ padding: '12px 16px', borderBottom: '1px solid #F2F2F7', fontWeight: 700, fontSize: 14 }}>Gabarits prestations BTP</div>
                     {TEMPLATES.map(cat => (
                       <div key={cat.cat}>
-                        <div style={{ padding: '8px 16px', fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', background: '#FAFAFA' }}>{cat.cat}</div>
+                        <div style={{ padding: '8px 16px', fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', background: '#FAFAFA' }}>{cat.cat}</div>
                         {cat.items.map((item, i) => (
                           <button key={i} onClick={() => addLine(item)} style={{ width: '100%', textAlign: 'left', padding: '9px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F8F8F8' }}
                             onMouseEnter={e => e.currentTarget.style.background = '#F0F8FF'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                             <div style={{ fontWeight: 600, color: '#1C1C1E' }}>{item.description}</div>
-                            <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>{item.prixUnitaire} €/{item.unite} · TVA {item.tva}%</div>
+                            <div style={{ fontSize: 11, color: '#636363', marginTop: 2 }}>{item.prixUnitaire} €/{item.unite} · TVA {item.tva}%</div>
                           </button>
                         ))}
                       </div>
@@ -697,7 +697,7 @@ export default function DevisPro() {
             {/* Lines header */}
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 70px 80px 110px 70px 70px 90px 32px', gap: 8, marginBottom: 8 }}>
               {['Description / Désignation', 'Qté', 'Unité', 'P.U. HT', 'TVA %', 'Remise', 'Total HT', ''].map(h => (
-                <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.4 }}>{h}</div>
+                <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.4 }}>{h}</div>
               ))}
             </div>
 
@@ -716,7 +716,7 @@ export default function DevisPro() {
                   </select>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <input type="number" min="0" max="100" value={l.remise} onChange={e => updateLine(i, 'remise', Number(e.target.value))} style={{ padding: '8px 4px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, outline: 'none', width: '100%', textAlign: 'right' }} />
-                    <span style={{ fontSize: 11, color: '#8E8E93' }}>%</span>
+                    <span style={{ fontSize: 11, color: '#636363' }}>%</span>
                   </div>
                   <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{c.ht.toFixed(2)} €</div>
                   <button onClick={() => removeLine(i)} disabled={form.lignes.length === 1} style={{ background: 'none', border: 'none', cursor: form.lignes.length === 1 ? 'default' : 'pointer', color: form.lignes.length === 1 ? '#C7C7CC' : '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -911,7 +911,7 @@ export default function DevisPro() {
           {/* Client + Chantier */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
             <div style={{ background: '#F8F9FA', borderRadius: 12, padding: '16px 20px' }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Adressé à</div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Adressé à</div>
               <div style={{ fontWeight: 800, fontSize: 16, color: '#1C1C1E', marginBottom: 4 }}>{d.client?.nom || '—'}</div>
               {d.client?.siret && <div style={{ fontSize: 12, color: '#6E6E73' }}>SIRET : {d.client.siret}</div>}
               {d.client?.adresse && <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 2 }}>{d.client.adresse}{d.client.cp || d.client.ville ? `, ${d.client.cp || ''} ${d.client.ville || ''}` : ''}</div>}
@@ -919,7 +919,7 @@ export default function DevisPro() {
               {d.client?.telephone && <div style={{ fontSize: 12, color: '#6E6E73' }}>{d.client.telephone}</div>}
             </div>
             <div style={{ background: '#F8F9FA', borderRadius: 12, padding: '16px 20px' }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Chantier</div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Chantier</div>
               <div style={{ fontWeight: 700, fontSize: 14, color: '#1C1C1E', marginBottom: 4 }}>{d.objet}</div>
               {d.chantier?.adresse && <div style={{ fontSize: 12, color: '#6E6E73' }}>📍 {d.chantier.adresse}{d.chantier.cp ? `, ${d.chantier.cp} ${d.chantier.ville}` : ''}</div>}
               {(d.dateDebut || d.dateFin) && (
@@ -967,11 +967,11 @@ export default function DevisPro() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 28, marginBottom: 28, alignItems: 'start' }}>
             {/* Échéancier */}
             <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '16px 18px' }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Échéancier de paiement</div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Échéancier de paiement</div>
               {echeancier.map((e, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontSize: 12 }}>
                   <span style={{ color: '#3C3C43' }}>{e.label}</span>
-                  <span style={{ fontWeight: 700, color: '#5B5BD6' }}>{formatCurrency((t.totalTTC || 0) * e.pct / 100)} <span style={{ fontWeight: 400, color: '#8E8E93' }}>({e.pct}%)</span></span>
+                  <span style={{ fontWeight: 700, color: '#5B5BD6' }}>{formatCurrency((t.totalTTC || 0) * e.pct / 100)} <span style={{ fontWeight: 400, color: '#636363' }}>({e.pct}%)</span></span>
                 </div>
               ))}
             </div>
@@ -1002,7 +1002,7 @@ export default function DevisPro() {
 
           {/* Conditions */}
           <div style={{ borderTop: '2px solid #F2F2F7', paddingTop: 22, marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Conditions générales</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>Conditions générales</div>
             <pre style={{ fontSize: 11, color: '#6E6E73', whiteSpace: 'pre-wrap', fontFamily: 'inherit', lineHeight: 1.7, margin: 0 }}>{d.conditions || CONDITIONS_DEFAULT}</pre>
           </div>
 
@@ -1027,14 +1027,14 @@ export default function DevisPro() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
               <div style={{ border: '1px solid #C7C7CC', borderRadius: 10, padding: '18px 20px' }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Signature client</div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Signature client</div>
                 <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>Lu et approuvé — Bon pour accord</div>
                 <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>Date : ___________________</div>
                 <div style={{ height: 50 }} />
                 <div style={{ fontSize: 11, color: '#6E6E73' }}>Signature et cachet :</div>
               </div>
               <div style={{ border: '1px solid #C7C7CC', borderRadius: 10, padding: '18px 20px' }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Signature entreprise</div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Signature entreprise</div>
                 <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>{ent.nom}</div>
                 <div style={{ fontSize: 11, color: '#6E6E73', marginBottom: 4 }}>Date : ___________________</div>
                 <div style={{ height: 50 }} />
@@ -1044,7 +1044,7 @@ export default function DevisPro() {
           )}
 
           {/* Footer */}
-          <div style={{ marginTop: 28, paddingTop: 16, borderTop: '1px solid #F2F2F7', fontSize: 10, color: '#8E8E93', textAlign: 'center', lineHeight: 1.8 }}>
+          <div style={{ marginTop: 28, paddingTop: 16, borderTop: '1px solid #F2F2F7', fontSize: 10, color: '#636363', textAlign: 'center', lineHeight: 1.8 }}>
             {ent.nom} — SIRET {ent.siret} — TVA {ent.tva} — {ent.adresse}, {ent.cp} {ent.ville}<br />
             Ce devis a été établi conformément aux dispositions légales en vigueur. Garantie décennale art. 1792 C. civ. — RC Pro selon loi Spinetta n°78-12.
           </div>

@@ -1,34 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useAuth } from '../../context/AuthContext';
-import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
+import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 import L from '../../design/luxe';
 
 const DEV_EMAIL = 'freamplecom@gmail.com';
 
 const SECTORS_PUBLIC = [
-  { id:'btp', label:'Freample Artisans', icon:'🏗️', href:'/btp' },
-  { id:'com', label:'Freample Com', icon:'🎬', href:'/com' },
-  { id:'immo', label:'Freample Immo', icon:'🏠', href:'/immo' },
-  { id:'logement', label:'Freample Logement', icon:'🔑', href:'/immo/logement' },
-  { id:'droit', label:'Freample Droit', icon:'⚖️', href:'/droit' },
-  { id:'coiffure', label:'Freample Beauté', icon:'✂️', href:'/coiffure' },
-  { id:'recrutement', label:'Recrutement', icon:'💼', href:'/recrutement' },
-  { id:'pro', label:'Espace pro', icon:'🏢', href:'/pro' },
+  { id:'btp', label:'Freample Artisans', href:'/btp' },
+  { id:'com', label:'Freample Com', href:'/com' },
+  { id:'immo', label:'Freample Immo', href:'/immo' },
+  { id:'logement', label:'Freample Logement', href:'/immo/logement' },
+  { id:'droit', label:'Freample Droit', href:'/droit' },
+  { id:'coiffure', label:'Freample Beauté', href:'/coiffure' },
+  { id:'recrutement', label:'Recrutement', href:'/recrutement' },
+  { id:'pro', label:'Espace pro', href:'/pro' },
 ];
 const SECTORS_DEV = [
-  { id:'btp', label:'Freample Artisans', icon:'🏗️', href:'/btp' },
-  { id:'com', label:'Freample Com', icon:'🎬', href:'/com' },
-  { id:'immo', label:'Freample Immo', icon:'🏠', href:'/immo' },
-  { id:'logement', label:'Freample Logement', icon:'🔑', href:'/immo/logement' },
-  { id:'droit', label:'Freample Droit', icon:'⚖️', href:'/droit' },
-  { id:'coiffure', label:'Freample Beauté', icon:'✂️', href:'/coiffure' },
-  { id:'recrutement', label:'Recrutement', icon:'💼', href:'/recrutement' },
-  { id:'pro', label:'Espace pro', icon:'🏢', href:'/pro' },
-  { id:'immoDemo', label:'Immo Démo', icon:'📊', href:'/immo/demo' },
-  { id:'stats', label:'Statistiques', icon:'📈', href:'/admin/stats' },
+  ...SECTORS_PUBLIC,
+  { id:'immoDemo', label:'Immo Démo', href:'/immo/demo' },
+  { id:'stats', label:'Statistiques', href:'/admin/stats' },
 ];
 
 
@@ -42,18 +35,38 @@ export default function SecteurSelect() {
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => { setMounted(true); document.title = 'Freample — Artisans certifiés & montage vidéo professionnel en France'; }, []);
 
-  const s1=useScaleIn();
-  const r1=useFadeUp(), r2=useFadeUp(0.1), r3=useFadeUp();
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const start = window.scrollY;
+    const end = el.getBoundingClientRect().top + start - 120;
+    const duration = 1200;
+    let t0 = null;
+    const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+    const step = ts => {
+      if (!t0) t0 = ts;
+      const p = Math.min((ts - t0) / duration, 1);
+      window.scrollTo(0, start + (end - start) * ease(p));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const s1 = useScaleIn();
+  const r1 = useFadeUp(), r2 = useFadeUp(0.1), r3 = useFadeUp();
+  const a1 = useFadeUp(), a2 = useFadeUp(0.1), a3 = useFadeUp(0.15);
 
   return (
     <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, color:L.text }}>
       <RecrutementBanner />
-      <PublicNavbar onMenuOpen={()=>setMenuOpen(true)} />
+      <PublicNavbar onMenuOpen={()=>setMenuOpen(true)} navLinks={[
+        { id:'qui-nous-sommes', label:'Qui nous sommes', onClick:()=>scrollTo('qui-nous-sommes') },
+        { id:'nos-objectifs', label:'Nos objectifs', onClick:()=>scrollTo('nos-objectifs') },
+        { id:'notre-gouvernance', label:'Notre gouvernance', onClick:()=>scrollTo('notre-gouvernance') },
+      ]} />
 
-      {/* ══ SIDEBAR MENU — Gucci style ══ */}
-      {/* Overlay */}
+      {/* Sidebar */}
       <div onClick={()=>setMenuOpen(false)} style={{ position:'fixed', inset:0, zIndex:1999, background:'rgba(0,0,0,0.35)', opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .35s' }} />
-      {/* Panel */}
       <div style={{
         position:'fixed', top:0, left:0, bottom:0, zIndex:2000,
         width:'clamp(300px,85vw,400px)', background:L.white,
@@ -61,9 +74,8 @@ export default function SecteurSelect() {
         transition:'transform .4s cubic-bezier(0.25,0.46,0.45,0.94)',
         display:'flex', flexDirection:'column', boxShadow:menuOpen?'8px 0 32px rgba(0,0,0,0.1)':'none',
       }}>
-        {/* Header */}
         <div style={{ padding:'20px 28px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:`1px solid ${L.border}` }}>
-          <div style={{ fontSize:12, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em' }}>Freample</div>
+          <span style={{ fontSize:16, fontWeight:800, letterSpacing:'-0.04em' }}>Freample<span style={{ color:L.gold }}>.</span></span>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             {isDev && <span style={{ fontSize:10, fontWeight:700, color:'#22C55E', background:'rgba(34,197,94,0.08)', padding:'3px 10px', borderRadius:4 }}>Dev</span>}
             <button onClick={()=>setMenuOpen(false)} style={{ background:'none', border:`1px solid ${L.border}`, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, color:L.textLight, transition:'border-color .15s' }}
@@ -71,20 +83,17 @@ export default function SecteurSelect() {
           </div>
         </div>
 
-        {/* Menu items */}
         <nav style={{ flex:1, overflowY:'auto', padding:'12px 0' }}>
-          {menuItems.map((item,i)=>(
+          {menuItems.map((item) => (
             <button key={item.id} onClick={()=>{setMenuOpen(false);navigate(item.href);}}
-              style={{ width:'100%', background:'none', border:'none', cursor:'pointer', fontFamily:L.font, textAlign:'left', padding:'14px 28px', display:'flex', alignItems:'center', gap:14, transition:'background .15s, color .15s', color:L.text }}
+              style={{ width:'100%', background:'none', border:'none', cursor:'pointer', fontFamily:L.font, textAlign:'left', padding:'14px 28px', fontSize:15, fontWeight:600, letterSpacing:'-0.01em', transition:'background .15s, color .15s', color:L.text }}
               onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.color=L.gold;}}
               onMouseLeave={e=>{e.currentTarget.style.background='none';e.currentTarget.style.color=L.text;}}>
-              <span style={{ fontSize:18, width:28, textAlign:'center', opacity:0.7 }}>{item.icon}</span>
-              <span style={{ fontSize:15, fontWeight:600, letterSpacing:'-0.01em' }}>{item.label}</span>
+              {item.label}
             </button>
           ))}
         </nav>
 
-        {/* Footer */}
         <div style={{ padding:'16px 28px', borderTop:`1px solid ${L.border}`, display:'flex', gap:20 }}>
           <a href="https://wa.me/33769387193" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:L.textLight, textDecoration:'none', transition:'color .15s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>WhatsApp</a>
           <a href="mailto:freamplecom@gmail.com" style={{ fontSize:11, color:L.textLight, textDecoration:'none', transition:'color .15s' }} onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>Contact</a>
@@ -92,17 +101,15 @@ export default function SecteurSelect() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          HERO — Direct, une phrase, un CTA
-         ═══════════════════════════════════════════════ */}
+      {/* Hero */}
       <section style={{
         padding:'clamp(52px,9vh,88px) clamp(20px,4vw,40px) clamp(40px,6vh,64px)',
         textAlign:'center', maxWidth:700, margin:'0 auto',
         opacity:mounted?1:0, transform:mounted?'none':'translateY(12px)',
         transition:'opacity .6s, transform .6s',
       }}>
-        <h1 ref={s1} style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,50px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.08, color:L.text }}>
-          Trouvez un artisan de <span style={{ fontWeight:700, fontStyle:'normal' }}>confiance</span>
+        <h1 ref={s1} style={{ fontFamily:L.serif, fontSize:'clamp(30px,5.5vw,50px)', fontWeight:500, letterSpacing:'-0.02em', margin:'0 0 12px', lineHeight:1.08 }}>
+          Trouvez un artisan de <span style={{ fontWeight:700 }}>confiance</span>
         </h1>
         <p style={{ fontSize:16, color:L.textSec, lineHeight:1.6, margin:'0 0 32px', maxWidth:480, marginLeft:'auto', marginRight:'auto' }}>
           Plombier, électricien, peintre, menuisier — décrivez votre besoin et recevez des devis gratuits sous 24h.
@@ -113,12 +120,10 @@ export default function SecteurSelect() {
         </button>
       </section>
 
-      {/* ═══════════════════════════════════════════════
-          SERVICES — Artisans (principal) + Com (secondaire)
-         ═══════════════════════════════════════════════ */}
+      {/* Services */}
       <section ref={r1} style={{ maxWidth:960, margin:'0 auto', padding:'0 clamp(20px,4vw,40px) clamp(48px,7vh,72px)' }}>
 
-        {/* Freample Artisans — grande carte */}
+        {/* Artisans — large card */}
         <div onClick={()=>navigate('/btp')} style={{ background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', marginBottom:16, display:'flex', flexWrap:'wrap', overflow:'hidden', transition:'all .25s' }}
           onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.boxShadow='0 8px 28px rgba(0,0,0,0.06)';}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.boxShadow='none';}}>
@@ -126,68 +131,150 @@ export default function SecteurSelect() {
             <div style={{ position:'absolute', top:16, left:16, background:L.gold, color:'#fff', fontSize:10, fontWeight:700, padding:'5px 14px', letterSpacing:'0.1em', textTransform:'uppercase' }}>Service principal</div>
           </div>
           <div style={{ flex:'1 1 360px', padding:'clamp(28px,4vh,44px) clamp(24px,3vw,40px)', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-            <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:10 }}>Artisans & Travaux</div>
-            <h2 style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:800, color:L.text, letterSpacing:'-0.03em', margin:'0 0 10px' }}>Freample Artisans</h2>
+            <h2 style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:800, letterSpacing:'-0.03em', margin:'0 0 10px' }}>Freample Artisans</h2>
             <p style={{ fontSize:14, color:L.textSec, lineHeight:1.6, margin:'0 0 20px' }}>
               Trouvez un artisan certifié près de chez vous, comparez les professionnels et demandez un devis gratuit en quelques clics.
             </p>
-            <div style={{ display:'flex', gap:16, flexWrap:'wrap', fontSize:12, color:L.textLight, marginBottom:20 }}>
-              <span>🛡️ Artisans vérifiés</span><span>⚡ Devis sous 24h</span><span>💳 Paiement sécurisé</span>
+            <div style={{ display:'flex', gap:16, flexWrap:'wrap', fontSize:12, color:L.textSec, marginBottom:20 }}>
+              <span>Artisans vérifiés</span><span>·</span><span>Devis sous 24h</span><span>·</span><span>Paiement sécurisé</span>
             </div>
             <div style={{ fontSize:14, fontWeight:700, color:L.gold }}>Trouver un artisan →</div>
           </div>
         </div>
 
-        {/* Freample Com — carte compacte */}
+        {/* Com — compact */}
         <div onClick={()=>navigate('/com')} style={{ background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', display:'flex', alignItems:'center', padding:'clamp(20px,3vh,28px) clamp(20px,3vw,28px)', gap:20, transition:'all .25s' }}
           onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.boxShadow='none';}}>
-          <div style={{ width:52, height:52, background:L.cream, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>🎬</div>
+          <div style={{ width:48, height:48, background:L.noir, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:'#fff', flexShrink:0, letterSpacing:'-0.03em' }}>FC</div>
           <div style={{ flex:1 }}>
-            <h3 style={{ fontSize:16, fontWeight:700, color:L.text, margin:'0 0 4px' }}>Freample Com</h3>
+            <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 4px' }}>Freample Com</h3>
             <p style={{ fontSize:13, color:L.textSec, margin:0, lineHeight:1.5 }}>Montage vidéo pro pour TikTok, YouTube, Reels — livré en 72h, à partir de 63,45€.</p>
           </div>
           <span style={{ fontSize:13, fontWeight:600, color:L.gold, flexShrink:0 }}>Voir →</span>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════
-          COMMENT ÇA MARCHE — 3 étapes
-         ═══════════════════════════════════════════════ */}
+      {/* Comment ça marche */}
       <section ref={r2} style={{ background:L.white, borderTop:`1px solid ${L.border}`, borderBottom:`1px solid ${L.border}`, padding:'clamp(48px,7vh,72px) clamp(20px,4vw,40px)' }}>
-        <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-          <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:12 }}>Comment ça marche</div>
-          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(24px,3.5vw,36px)', fontWeight:300, fontStyle:'italic', margin:'0 0 40px', letterSpacing:'-0.02em' }}>
-            Simple, rapide, <span style={{ fontWeight:700, fontStyle:'normal' }}>efficace</span>
+        <div style={{ maxWidth:800, margin:'0 auto' }}>
+          <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, textAlign:'center', margin:'0 0 48px', letterSpacing:'-0.03em' }}>
+            Comment ça marche
           </h2>
-          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:32 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
             {[
-              { step:'1', icon:'📝', title:'Décrivez votre besoin', desc:'Quel métier, quelle ville, quel type de travaux. En 2 minutes.' },
-              { step:'2', icon:'📩', title:'Recevez des devis', desc:'Des artisans vérifiés vous répondent sous 24h avec un devis gratuit.' },
-              { step:'3', icon:'✅', title:'Choisissez le meilleur', desc:'Comparez les prix, les avis et choisissez en toute confiance.' },
-            ].map(s => (
-              <div key={s.step} style={{ textAlign:'center' }}>
-                <div style={{ width:48, height:48, margin:'0 auto 16px', background:L.cream, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{s.icon}</div>
-                <div style={{ fontSize:11, fontWeight:700, color:L.gold, marginBottom:6, letterSpacing:'0.1em' }}>ÉTAPE {s.step}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, color:L.text, margin:'0 0 6px' }}>{s.title}</h3>
-                <p style={{ fontSize:13, color:L.textSec, lineHeight:1.55, margin:0 }}>{s.desc}</p>
+              { n:'01', title:'Décrivez votre besoin', desc:'Quel métier, quelle ville, quel type de travaux. En 2 minutes, pas plus.' },
+              { n:'02', title:'Recevez des devis', desc:'Des artisans vérifiés vous répondent sous 24h avec un devis détaillé et gratuit.' },
+              { n:'03', title:'Choisissez le meilleur', desc:'Comparez les prix, les avis, et lancez les travaux en toute confiance.' },
+            ].map((s, i) => (
+              <div key={s.n} style={{ display:'flex', gap:'clamp(16px,3vw,32px)', alignItems:'flex-start', padding:'28px 0', borderTop: i > 0 ? `1px solid ${L.border}` : 'none' }}>
+                <span style={{ fontSize:32, fontWeight:200, color:L.textLight, fontFamily:L.serif, lineHeight:1, flexShrink:0, minWidth:48 }}>{s.n}</span>
+                <div>
+                  <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 6px' }}>{s.title}</h3>
+                  <p style={{ fontSize:14, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
+                </div>
               </div>
             ))}
-          </StaggerChildren>
+          </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════
-          FOOTER
-         ═══════════════════════════════════════════════ */}
-      <footer ref={r3} style={{ padding:'28px 32px', textAlign:'center', background:L.bg }}>
+      {/* Qui nous sommes */}
+      <section id="qui-nous-sommes" ref={a1} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
+        <div style={{ maxWidth:720, margin:'0 auto' }}>
+          <h2 style={{ fontFamily:L.serif, fontSize:'clamp(26px,4vw,40px)', fontWeight:700, margin:'0 0 20px', letterSpacing:'-0.02em', lineHeight:1.15 }}>
+            Qui nous sommes
+          </h2>
+          <p style={{ fontSize:16, color:L.textSec, lineHeight:1.75, margin:'0 0 28px' }}>
+            Freample est une startup French Tech. On est partis d'un constat simple : trouver un bon artisan, monter une vidéo pro, gérer un bien immobilier ou rédiger un document juridique, c'est encore trop compliqué en France. Trop d'intermédiaires, trop de frictions, trop de prix opaques.
+          </p>
+          <p style={{ fontSize:16, color:L.textSec, lineHeight:1.75, margin:'0 0 28px' }}>
+            On a construit Freample pour regrouper ces services dans un seul endroit, avec une interface claire et des tarifs honnêtes. Pas de jargon, pas de surprises.
+          </p>
+          <div style={{ borderLeft:`3px solid ${L.gold}`, paddingLeft:20, marginTop:32 }}>
+            <p style={{ fontSize:15, fontStyle:'italic', color:L.text, lineHeight:1.7, margin:0 }}>
+              On croit que la technologie doit simplifier la vie des gens, pas la complexifier. Chaque fonctionnalité qu'on développe doit faire gagner du temps — sinon on ne la livre pas.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Nos objectifs */}
+      <section id="nos-objectifs" ref={a2} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)', background:L.white, borderTop:`1px solid ${L.border}`, borderBottom:`1px solid ${L.border}` }}>
+        <div style={{ maxWidth:720, margin:'0 auto' }}>
+          <p style={{ fontSize:12, fontWeight:600, color:L.gold, letterSpacing:'0.15em', textTransform:'uppercase', margin:'0 0 16px' }}>Nos objectifs</p>
+          <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:'0 0 16px', letterSpacing:'-0.03em' }}>
+            Rendre la gestion d'entreprise simple.
+          </h2>
+          <p style={{ fontSize:15, color:L.textSec, lineHeight:1.7, margin:'0 0 40px', maxWidth:560 }}>
+            Simplifier chaque interaction entre les clients et les professionnels. Supprimer les frictions. Rendre chaque service accessible en quelques clics.
+          </p>
+
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1px', background:L.border }}>
+            {[
+              { title:'Simplicité', desc:'Zéro jargon. Chaque parcours est pensé pour être compris en 30 secondes.' },
+              { title:'Rapidité', desc:'Devis en 24h, montage en 72h, documents juridiques en quelques minutes.' },
+              { title:'Accessibilité', desc:'Des services premium à des tarifs justes, pour les particuliers comme les entreprises.' },
+              { title:'Écosystème', desc:'Artisans, communication, immobilier, droit — tout est connecté dans une seule plateforme.' },
+            ].map((o, i) => (
+              <div key={o.title} style={{ background:L.white, padding:'clamp(20px,3vw,32px)' }}>
+                <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 8px' }}>{o.title}</h3>
+                <p style={{ fontSize:13, color:L.textSec, lineHeight:1.6, margin:0 }}>{o.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Notre gouvernance */}
+      <section id="notre-gouvernance" ref={a3} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
+        <div style={{ maxWidth:720, margin:'0 auto' }}>
+          <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:'0 0 16px', letterSpacing:'-0.03em' }}>
+            Des services quasi-gratuits, par design.
+          </h2>
+          <p style={{ fontSize:15, color:L.textSec, lineHeight:1.7, margin:'0 0 36px' }}>
+            Chez Freample, on ne dépend pas de nos utilisateurs pour financer la boîte. Notre modèle repose sur des investissements immobiliers et boursiers qui génèrent les revenus nécessaires au fonctionnement de la plateforme. Résultat : on peut casser les prix de tous nos services.
+          </p>
+
+          <div style={{ background:L.noir, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,36px)', color:'#fff', marginBottom:24 }}>
+            <div style={{ marginBottom:28 }}>
+              <h3 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.02em' }}>Immobilier locatif</h3>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:0 }}>
+                Les revenus locatifs financent le développement et l'exploitation de la plateforme. Ça nous permet de réduire les marges sur chaque service proposé.
+              </p>
+            </div>
+            <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:28 }}>
+              <h3 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.02em' }}>Marchés financiers</h3>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:0 }}>
+                Une part de nos fonds est investie sur les marchés. Les plus-values générées servent à maintenir des tarifs parmi les plus bas du marché.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display:'flex', gap:0, borderTop:`1px solid ${L.border}` }}>
+            {[
+              { val:'0 %', label:'Commission artisan' },
+              { val:'~0 €', label:'Objectif tarifaire' },
+              { val:'100 %', label:'Indépendance financière' },
+            ].map((m, i) => (
+              <div key={m.label} style={{ flex:1, padding:'20px 0', textAlign:'center', borderRight: i < 2 ? `1px solid ${L.border}` : 'none' }}>
+                <div style={{ fontSize:24, fontWeight:500, fontFamily:L.serif, letterSpacing:'-0.02em' }}>{m.val}</div>
+                <div style={{ fontSize:11, color:L.textSec, marginTop:4 }}>{m.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer ref={r3} style={{ padding:'28px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
         <nav style={{ display:'flex', justifyContent:'center', gap:24, marginBottom:14, flexWrap:'wrap' }}>
           {[{label:'Artisans',href:'/btp'},{label:'Montage vidéo',href:'/com'},{label:'Recrutement',href:'/recrutement'},{label:'Espace pro',href:'/pro'},{label:'CGU',href:'/cgu'}].map(l=>(
             <a key={l.label} href={l.href} style={{ fontSize:12, color:L.textSec, textDecoration:'none', transition:'color .15s' }}
               onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textSec}>{l.label}</a>
           ))}
         </nav>
-        <p style={{ fontSize:11, color:L.textLight, letterSpacing:'0.08em', textTransform:'uppercase', margin:0 }}>© 2026 Freample · Tous droits réservés</p>
+        <p style={{ fontSize:11, color:L.textLight, margin:0 }}>© 2026 Freample · Tous droits réservés</p>
       </footer>
     </div>
   );

@@ -53,7 +53,7 @@ const TYPES = {
   chantier: { label: 'Chantier',     color: '#34C759', bg: '#ECFDF5',  dot: '#34C759' },
   echeance: { label: 'Échéance',     color: '#FF9500', bg: '#FFFBEB',  dot: '#FF9500' },
   ct:       { label: 'CT Véhicule',  color: '#FF3B30', bg: '#FFF1F0',  dot: '#FF3B30' },
-  autre:    { label: 'Autre',        color: '#8E8E93', bg: '#F2F2F7',  dot: '#8E8E93' },
+  autre:    { label: 'Autre',        color: '#636363', bg: '#F2F2F7',  dot: '#636363' },
 };
 
 /* ── Demo events ───────────────────────────────────────── */

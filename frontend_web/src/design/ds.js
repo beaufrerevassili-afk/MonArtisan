@@ -19,8 +19,8 @@ export const DS = {
   // Texte
   ink:        '#0A0A0A',
   ink2:       '#2C2C2C',
-  muted:      '#6B6B6B',
-  subtle:     '#A0A0A0',
+  muted:      '#333333',
+  subtle:     '#555555',
 
   // Bordures
   border:     '#E8E6E1',
@@ -33,9 +33,9 @@ export const DS = {
   accentMuted:'rgba(79,70,229,0.08)',
 
   // Or — touche LVMH/premium
-  gold:       '#C9A96E',
+  gold:       '#A68B4B',
   goldLight:  '#F9F4E8',
-  goldDark:   '#A07840',
+  goldDark:   '#7A6232',
 
   // Sémantique
   green:      '#16A34A',

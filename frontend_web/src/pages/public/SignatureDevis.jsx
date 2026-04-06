@@ -159,7 +159,7 @@ export default function SignatureDevis() {
 
           {/* Client */}
           <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '14px 18px', marginBottom: 24, maxWidth: 300 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Adressé à</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Adressé à</div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>{d.client?.nom}</div>
             {d.client?.adresse && <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 2 }}>{d.client.adresse}</div>}
             {d.client?.email && <div style={{ fontSize: 13, color: '#6E6E73' }}>{d.client.email}</div>}
@@ -167,7 +167,7 @@ export default function SignatureDevis() {
 
           {/* Objet */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Objet</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Objet</div>
             <div style={{ fontSize: 15, fontWeight: 600 }}>{d.objet}</div>
           </div>
 
@@ -217,7 +217,7 @@ export default function SignatureDevis() {
 
           {/* Conditions */}
           <div style={{ borderTop: '2px solid #F2F2F7', paddingTop: 20, marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Conditions générales</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Conditions générales</div>
             <pre style={{ fontSize: 11, color: '#6E6E73', whiteSpace: 'pre-wrap', fontFamily: 'inherit', lineHeight: 1.6, margin: 0 }}>
               {d.conditions}
             </pre>
@@ -301,7 +301,7 @@ export default function SignatureDevis() {
               {submitting ? 'Signature en cours…' : '✓ Signer et accepter le devis'}
             </button>
 
-            <p style={{ textAlign: 'center', fontSize: 12, color: '#8E8E93', marginTop: 12 }}>
+            <p style={{ textAlign: 'center', fontSize: 12, color: '#636363', marginTop: 12 }}>
               Signature sécurisée · Les deux parties reçoivent une copie du devis signé
             </p>
           </div>

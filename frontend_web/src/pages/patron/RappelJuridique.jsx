@@ -353,7 +353,7 @@ export default function RappelJuridique() {
       </Section>
 
       {/* ── 10. Mentions légales entreprise ── */}
-      <Section icon="🏢" title="Mentions légales & immatriculation" subtitle="Obligations d'identification de l'entreprise" color="#8E8E93">
+      <Section icon="🏢" title="Mentions légales & immatriculation" subtitle="Obligations d'identification de l'entreprise" color="#636363">
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           <Item niveau="obligatoire">Mentions obligatoires sur tout document commercial : raison sociale, forme juridique, capital, siège social, numéro SIREN, RCS + ville, numéro TVA intracommunautaire</Item>
           <Item niveau="obligatoire">

@@ -48,7 +48,7 @@ export default function SuiviCommande() {
         {loading && (
           <div style={{ textAlign:'center', padding:60 }}>
             <div style={{ fontSize:32, marginBottom:12 }}>⏳</div>
-            <div style={{ fontSize:16, color:'#8B8B8B' }}>Chargement de votre commande...</div>
+            <div style={{ fontSize:16, color:'#636363' }}>Chargement de votre commande...</div>
           </div>
         )}
 
@@ -56,7 +56,7 @@ export default function SuiviCommande() {
           <div style={{ textAlign:'center', padding:60 }}>
             <div style={{ fontSize:48, marginBottom:16 }}>🔍</div>
             <div style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>{error}</div>
-            <div style={{ fontSize:14, color:'#8B8B8B' }}>Code de suivi : {token}</div>
+            <div style={{ fontSize:14, color:'#636363' }}>Code de suivi : {token}</div>
           </div>
         )}
 
@@ -66,12 +66,12 @@ export default function SuiviCommande() {
             <div style={{ background:'#fff', borderRadius:16, padding:'28px 24px', border:'1px solid #E9E5F5', marginBottom:20, boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
               <div style={{ fontSize:12, fontWeight:600, color:V, textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>🎬 Freample Com</div>
               <h1 style={{ fontSize:22, fontWeight:800, color:'#1C1C1E', margin:'0 0 6px', letterSpacing:'-0.02em' }}>{data.titre}</h1>
-              <div style={{ fontSize:14, color:'#8B8B8B' }}>Commandé par {data.client}{data.dateCommande ? ` · ${new Date(data.dateCommande).toLocaleDateString('fr-FR')}` : ''}</div>
+              <div style={{ fontSize:14, color:'#636363' }}>Commandé par {data.client}{data.dateCommande ? ` · ${new Date(data.dateCommande).toLocaleDateString('fr-FR')}` : ''}</div>
             </div>
 
             {/* Statut actuel */}
             <div style={{ background:'#fff', borderRadius:16, padding:'24px', border:'1px solid #E9E5F5', marginBottom:20, boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:16 }}>Statut de votre commande</div>
+              <div style={{ fontSize:13, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:16 }}>Statut de votre commande</div>
 
               {/* Progress steps */}
               <div style={{ display:'flex', marginBottom:20 }}>
@@ -87,14 +87,14 @@ export default function SuiviCommande() {
                       {/* Circle */}
                       <div style={{
                         width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
-                        background: isDone ? V : '#F3F3F3', color: isDone ? '#fff' : '#8B8B8B',
+                        background: isDone ? V : '#F3F3F3', color: isDone ? '#fff' : '#636363',
                         fontSize:14, fontWeight:700, zIndex:1, position:'relative',
                         border: isCurrent ? `3px solid ${V}40` : 'none',
                         boxShadow: isCurrent ? `0 0 0 6px ${V}15` : 'none',
                       }}>
                         {step.icon}
                       </div>
-                      <div style={{ fontSize:11, fontWeight: isCurrent ? 700 : 500, color: isDone ? V : '#8B8B8B', marginTop:6, textAlign:'center' }}>
+                      <div style={{ fontSize:11, fontWeight: isCurrent ? 700 : 500, color: isDone ? V : '#636363', marginTop:6, textAlign:'center' }}>
                         {step.label}
                       </div>
                     </div>
@@ -115,7 +115,7 @@ export default function SuiviCommande() {
             {/* Avancement */}
             {data.avancement > 0 && data.statut !== 'brief_recu' && data.statut !== 'devis_envoye' && (
               <div style={{ background:'#fff', borderRadius:16, padding:'24px', border:'1px solid #E9E5F5', marginBottom:20, boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
-                <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Avancement</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Avancement</div>
                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
                   <span style={{ fontSize:14, color:'#1C1C1E' }}>{data.fichiersFaits}/{data.quantite} fichier{data.quantite > 1 ? 's' : ''} terminé{data.fichiersFaits > 1 ? 's' : ''}</span>
                   <span style={{ fontSize:16, fontWeight:800, color: data.avancement >= 100 ? '#059669' : V }}>{data.avancement}%</span>
@@ -133,7 +133,7 @@ export default function SuiviCommande() {
 
             {/* Détails */}
             <div style={{ background:'#fff', borderRadius:16, padding:'24px', border:'1px solid #E9E5F5', marginBottom:20, boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'#8B8B8B', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Détails</div>
+              <div style={{ fontSize:13, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Détails</div>
               {[
                 { l:'Service', v:data.titre },
                 { l:'Quantité', v:`${data.quantite} fichier${data.quantite > 1 ? 's' : ''}` },
@@ -142,7 +142,7 @@ export default function SuiviCommande() {
                 data.deadline ? { l:'Deadline', v:new Date(data.deadline).toLocaleDateString('fr-FR') } : null,
               ].filter(Boolean).map(r => (
                 <div key={r.l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #F0F0F0', fontSize:14 }}>
-                  <span style={{ color:'#8B8B8B' }}>{r.l}</span>
+                  <span style={{ color:'#636363' }}>{r.l}</span>
                   <span style={{ fontWeight:600, color:'#1C1C1E' }}>{r.v}</span>
                 </div>
               ))}
@@ -150,7 +150,7 @@ export default function SuiviCommande() {
 
             {/* Contact */}
             <div style={{ background:'#fff', borderRadius:16, padding:'20px 24px', border:'1px solid #E9E5F5', textAlign:'center', boxShadow:'0 1px 4px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize:14, color:'#8B8B8B', marginBottom:12 }}>Une question sur votre commande ?</div>
+              <div style={{ fontSize:14, color:'#636363', marginBottom:12 }}>Une question sur votre commande ?</div>
               <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
                 <a href="https://wa.me/33769387193?text=Bonjour, j'ai une question sur ma commande (code: ${token})" target="_blank" rel="noopener noreferrer"
                   style={{ padding:'10px 20px', background:'#25D366', color:'#fff', border:'none', borderRadius:10, fontSize:14, fontWeight:700, textDecoration:'none' }}>
@@ -164,7 +164,7 @@ export default function SuiviCommande() {
             </div>
 
             {/* Auto-refresh indicator */}
-            <div style={{ textAlign:'center', marginTop:16, fontSize:12, color:'#8B8B8B' }}>
+            <div style={{ textAlign:'center', marginTop:16, fontSize:12, color:'#636363' }}>
               🔄 Cette page se met à jour automatiquement
             </div>
           </>

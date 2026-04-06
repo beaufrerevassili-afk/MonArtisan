@@ -363,7 +363,7 @@ export default function PermisFeu({ onRetour }) {
           ].map(({ key, title, subtitle }) => (
             <div key={key} style={{ border: '1px solid #E5E5EA', borderRadius: 12, padding: '16px 18px' }}>
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{title}</div>
-              <div style={{ fontSize: 11, color: '#8E8E93', marginBottom: 12 }}>{subtitle}</div>
+              <div style={{ fontSize: 11, color: '#636363', marginBottom: 12 }}>{subtitle}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Field label="Nom Prénom">
                   <input value={signatures[key].nom} onChange={e => setSignatures(p => ({ ...p, [key]: { ...p[key], nom: e.target.value } }))} placeholder="Nom Prénom" style={{ ...inp, fontSize: 13 }} />
@@ -399,7 +399,7 @@ export default function PermisFeu({ onRetour }) {
         ].map((ref, i) => (
           <div key={i} style={{ fontSize: 11, color: '#6E6E73', marginBottom: 3 }}>• {ref}</div>
         ))}
-        <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 10 }}>
+        <div style={{ fontSize: 10, color: '#636363', marginTop: 10 }}>
           Bernard Martin BTP — SIRET : {identification.siret} · Document généré le {new Date().toLocaleDateString('fr-FR')}
         </div>
       </div>

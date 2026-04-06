@@ -79,7 +79,7 @@ export default function PortfolioCom() {
           <h1 ref={sHero} style={{ fontSize:'clamp(32px,6vw,60px)', fontWeight:200, color:L.noir, letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 16px' }}>
             Chaque projet,<br/>sa <span style={{ fontWeight:700, fontStyle:'italic' }}>vision</span>.
           </h1>
-          <p ref={rDesc} style={{ fontSize:16, color:L.textSec, maxWidth:440, margin:'0 auto', lineHeight:1.6, fontWeight:300 }}>
+          <p ref={rDesc} style={{ fontSize:16, color:L.textSec, maxWidth:440, margin:'0 auto', lineHeight:1.6, fontWeight:500 }}>
             Explorez nos réalisations et imaginez ce que nous pouvons créer ensemble.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function PortfolioCom() {
         ) : filtered.length === 0 ? (
           <div style={{ textAlign:'center', padding:'80px 0' }}>
             <div style={{ fontSize:56, marginBottom:20, opacity:0.2 }}>🎬</div>
-            <div style={{ fontSize:20, fontWeight:300, color:L.noir, marginBottom:8 }}>
+            <div style={{ fontSize:20, fontWeight:500, color:L.noir, marginBottom:8 }}>
               {portfolio.length === 0 ? 'Le portfolio arrive bientôt' : 'Aucun projet dans cette catégorie'}
             </div>
             <div style={{ fontSize:14, color:L.textSec, maxWidth:400, margin:'0 auto', lineHeight:1.6 }}>
@@ -234,7 +234,7 @@ export default function PortfolioCom() {
             </div>
             {/* Info */}
             <div style={{ fontSize:11, color:L.gold, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:10 }}>{selected.categorie}</div>
-            <h3 style={{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:300, color:'#fff', letterSpacing:'-0.02em', margin:'0 0 8px' }}>{selected.titre}</h3>
+            <h3 style={{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:500, color:'#fff', letterSpacing:'-0.02em', margin:'0 0 8px' }}>{selected.titre}</h3>
             {selected.description && (
               <p style={{ fontSize:15, color:'rgba(255,255,255,0.5)', lineHeight:1.6, maxWidth:500, margin:'0 auto 28px' }}>{selected.description}</p>
             )}
@@ -245,7 +245,7 @@ export default function PortfolioCom() {
                 fontSize:13, fontWeight:600, textDecoration:'none', letterSpacing:'0.06em',
                 textTransform:'uppercase', transition:'background .2s',
               }}
-              onMouseEnter={e=>e.currentTarget.style.background='#8B7240'}
+              onMouseEnter={e=>e.currentTarget.style.background='#7A6232'}
               onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
               ▶ Voir la vidéo
             </a>
@@ -254,7 +254,7 @@ export default function PortfolioCom() {
           <button onClick={()=>setSelected(null)}
             style={{
               position:'absolute', top:24, right:32, background:'none', border:'none',
-              color:'rgba(255,255,255,0.4)', fontSize:24, cursor:'pointer', fontWeight:200,
+              color:'rgba(255,255,255,0.6)', fontSize:24, cursor:'pointer', fontWeight:200,
               transition:'color .2s',
             }}
             onMouseEnter={e=>e.currentTarget.style.color=L.gold}

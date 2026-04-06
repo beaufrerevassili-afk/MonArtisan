@@ -81,7 +81,7 @@ export default function Stock() {
   const f = k => ({ value: form[k], onChange: e => setForm(p => ({ ...p, [k]: e.target.value })) });
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200, color: '#8E8E93', fontSize: 14 }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200, color: '#636363', fontSize: 14 }}>
       Chargement du stock…
     </div>
   );
@@ -144,7 +144,7 @@ export default function Stock() {
       {tab === 'alertes' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {alertes.length === 0 ? (
-            <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#8E8E93', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#636363', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
               <div style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1E', marginBottom: 6 }}>Tous les stocks sont OK</div>
               <div style={{ fontSize: 14 }}>Aucun article en dessous du seuil critique défini.</div>
@@ -176,7 +176,7 @@ export default function Stock() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 14 }}>{a.designation}</div>
-                        <div style={{ fontSize: 12, color: '#8E8E93' }}>{a.ref} · {a.categorie} · {a.fournisseur || 'Fournisseur inconnu'}</div>
+                        <div style={{ fontSize: 12, color: '#636363' }}>{a.ref} · {a.categorie} · {a.fournisseur || 'Fournisseur inconnu'}</div>
                         <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#F2F2F7', overflow: 'hidden' }}>
                             <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: critique ? '#FF3B30' : '#FF9500', transition: 'width 0.3s' }} />
@@ -225,13 +225,13 @@ export default function Stock() {
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
               {['Réf.', 'Désignation', 'Catégorie', 'Qté', 'Unité', 'Seuil alerte', 'Valeur unit.', 'Valeur totale', 'Fournisseur', 'Statut', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Qté' || h === 'Valeur unit.' || h === 'Valeur totale' ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Qté' || h === 'Valeur unit.' || h === 'Valeur totale' ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={11} style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>Aucun article trouvé</td></tr>
+              <tr><td colSpan={11} style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucun article trouvé</td></tr>
             ) : filtered.map((a, i) => {
               const isAlerte = a.quantite <= a.seuilAlerte;
               return (
@@ -244,8 +244,8 @@ export default function Stock() {
                     <span style={{ padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, background: '#F2F2F7', color: '#6E6E73' }}>{a.categorie}</span>
                   </td>
                   <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: isAlerte ? '#C0392B' : '#1C1C1E' }}>{a.quantite}</td>
-                  <td style={{ padding: '11px 14px', color: '#8E8E93' }}>{a.unite}</td>
-                  <td style={{ padding: '11px 14px', textAlign: 'right', color: '#8E8E93' }}>{a.seuilAlerte}</td>
+                  <td style={{ padding: '11px 14px', color: '#636363' }}>{a.unite}</td>
+                  <td style={{ padding: '11px 14px', textAlign: 'right', color: '#636363' }}>{a.seuilAlerte}</td>
                   <td style={{ padding: '11px 14px', textAlign: 'right' }}>{formatCur(a.valeurUnitaire)}</td>
                   <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700 }}>{formatCur(a.quantite * a.valeurUnitaire)}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73', fontSize: 12 }}>{a.fournisseur || '—'}</td>
@@ -281,7 +281,7 @@ export default function Stock() {
           <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 620, maxHeight: '90vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{modal === 'add' ? 'Nouvel article' : `Modifier — ${form.designation}`}</h2>
-              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#8E8E93' }}>✕</button>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#636363' }}>✕</button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="grid-2">

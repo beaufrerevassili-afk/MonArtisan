@@ -623,7 +623,7 @@ export default function DashboardClient() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                           <span style={{ fontWeight: 700, fontSize: 15, color: '#1D1D1F' }}>{d.artisan}</span>
                           {d.statut === 'accepte' && <span style={{ fontSize: 11, fontWeight: 700, background: '#D1F2E0', color: '#1A7F43', padding: '1px 9px', borderRadius: 20 }}>✓ Accepté</span>}
-                          {d.statut === 'refuse' && <span style={{ fontSize: 11, fontWeight: 700, background: '#F2F2F7', color: '#8E8E93', padding: '1px 9px', borderRadius: 20 }}>Refusé</span>}
+                          {d.statut === 'refuse' && <span style={{ fontSize: 11, fontWeight: 700, background: '#F2F2F7', color: '#636363', padding: '1px 9px', borderRadius: 20 }}>Refusé</span>}
                           {isPrix && d.statut === 'en_attente' && <span style={{ fontSize: 11, fontWeight: 700, background: '#D1F2E0', color: '#1A7F43', padding: '1px 9px', borderRadius: 20 }}>💰 Meilleur prix</span>}
                           {isRapide && !isPrix && d.statut === 'en_attente' && <span style={{ fontSize: 11, fontWeight: 700, background: '#EBF5FF', color: '#5B5BD6', padding: '1px 9px', borderRadius: 20 }}>⚡ Plus rapide</span>}
                         </div>
@@ -638,7 +638,7 @@ export default function DashboardClient() {
                       {/* Price + delay */}
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
                         <div style={{ fontSize: 22, fontWeight: 800, color: '#1D1D1F', letterSpacing: '-0.03em' }}>{d.ttc.toLocaleString('fr-FR')} €</div>
-                        <div style={{ fontSize: 11, color: '#8E8E93' }}>TTC (HT {d.ht.toLocaleString('fr-FR')} €)</div>
+                        <div style={{ fontSize: 11, color: '#636363' }}>TTC (HT {d.ht.toLocaleString('fr-FR')} €)</div>
                         <div style={{ fontSize: 12, fontWeight: 600, color: d.color, marginTop: 4 }}>⏱ Délai : {d.delai}</div>
                       </div>
                     </div>
@@ -656,7 +656,7 @@ export default function DashboardClient() {
                             ✓ Accepter ce devis
                           </button>
                           <button onClick={() => setDevisRecus(prev => prev.map(x => x.id === d.id ? { ...x, statut: 'refuse' } : x))}
-                            style={{ padding: '8px 14px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#8E8E93' }}>
+                            style={{ padding: '8px 14px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#636363' }}>
                             Refuser
                           </button>
                         </>
@@ -670,7 +670,7 @@ export default function DashboardClient() {
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Détail des prestations</div>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
-                          <tr style={{ color: '#8E8E93', fontSize: 11, fontWeight: 700 }}>
+                          <tr style={{ color: '#636363', fontSize: 11, fontWeight: 700 }}>
                             <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 700 }}>Description</th>
                             <th style={{ textAlign: 'center', paddingBottom: 8, fontWeight: 700, width: 50 }}>Qté</th>
                             <th style={{ textAlign: 'right', paddingBottom: 8, fontWeight: 700, width: 90 }}>P.U. HT</th>
@@ -780,7 +780,7 @@ export default function DashboardClient() {
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Détail des prestations</div>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
-                          <tr style={{ color: '#8E8E93', fontSize: 11, fontWeight: 700 }}>
+                          <tr style={{ color: '#636363', fontSize: 11, fontWeight: 700 }}>
                             <th style={{ textAlign: 'left', paddingBottom: 8 }}>Description</th>
                             <th style={{ textAlign: 'center', paddingBottom: 8, width: 50 }}>Qté</th>
                             <th style={{ textAlign: 'right', paddingBottom: 8, width: 80 }}>P.U. HT</th>
@@ -876,7 +876,7 @@ function BarChart({ data }) {
             <rect x={x} y={y} width={barW} height={barH} rx={4}
               fill={isLast ? DS.accent : DS.accentLight || '#C7C7FF'} />
             <text x={x + barW / 2} y={H + 18} textAnchor="middle"
-              fontSize={10} fill={isLast ? DS.ink : '#8E8E93'} fontWeight={isLast ? 600 : 400}>
+              fontSize={10} fill={isLast ? DS.ink : '#636363'} fontWeight={isLast ? 600 : 400}>
               {d.mois}
             </text>
             {isLast && (
@@ -917,7 +917,7 @@ function DonutChart({ segments }) {
         <text x={55} y={51} textAnchor="middle" fontSize={12} fontWeight={700} fill="#1D1D1F">
           {(total / 1000).toFixed(1)}k€
         </text>
-        <text x={55} y={65} textAnchor="middle" fontSize={10} fill="#8E8E93">total</text>
+        <text x={55} y={65} textAnchor="middle" fontSize={10} fill="#636363">total</text>
       </svg>
       <div style={{ flex: 1, minWidth: 140 }}>
         {segments.map((seg, i) => (

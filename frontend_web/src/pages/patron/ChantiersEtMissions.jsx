@@ -164,7 +164,7 @@ export default function ChantiersEtMissions() {
             { label: 'En cours', value: en_cours.length, color: '#0C5460', icon: '⚙️' },
             { label: 'Terminés', value: termines.length, color: '#1A7F43', icon: '✅' },
             { label: 'Alertes budget', value: alertesBudget.length, color: '#C0392B', icon: '⚠️' },
-            { label: 'Alertes flotte', value: alertesVehicules.length, color: alertesVehicules.length > 0 ? '#FF9500' : '#8E8E93', icon: '🚐' },
+            { label: 'Alertes flotte', value: alertesVehicules.length, color: alertesVehicules.length > 0 ? '#FF9500' : '#636363', icon: '🚐' },
           ].map(k => (
             <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize: 22, marginBottom: 8 }}>{k.icon}</div>
@@ -259,7 +259,7 @@ export default function ChantiersEtMissions() {
           {/* Card grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
             {filtered.length === 0 ? (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 60, color: '#8E8E93', background: '#fff', borderRadius: 14 }}>
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 60, color: '#636363', background: '#fff', borderRadius: 14 }}>
                 Aucun élément pour ce filtre
               </div>
             ) : filtered.map(m => (
@@ -418,7 +418,7 @@ export default function ChantiersEtMissions() {
 
     const item = items.find(c => String(c.id) === String(itemId));
     const CATS = ['matériaux', 'main-d\'oeuvre', 'équipement', 'sous-traitance', 'carburant', 'divers'];
-    const CAT_COLORS = { 'matériaux': '#5B5BD6', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#8E8E93' };
+    const CAT_COLORS = { 'matériaux': '#5B5BD6', 'main-d\'oeuvre': '#34C759', 'équipement': '#FF9500', 'sous-traitance': '#AF52DE', 'carburant': '#FF3B30', 'divers': '#636363' };
 
     useEffect(() => {
       if (!itemId) return;
@@ -433,7 +433,7 @@ export default function ChantiersEtMissions() {
     const caVal = Number(caDevis) || 0;
     const margeEuros = caVal - totalDepenses;
     const margePct = caVal > 0 ? (margeEuros / caVal) * 100 : null;
-    const margeColor = margePct === null ? '#8E8E93' : margePct >= 25 ? '#34C759' : margePct >= 10 ? '#FF9500' : '#FF3B30';
+    const margeColor = margePct === null ? '#636363' : margePct >= 25 ? '#34C759' : margePct >= 10 ? '#FF9500' : '#FF3B30';
 
     async function handleAdd(e) {
       e.preventDefault();
@@ -526,11 +526,11 @@ export default function ChantiersEtMissions() {
               {Object.entries(parCategorie).sort((a, b) => b[1] - a[1]).map(([cat, mt]) => (
                 <div key={cat}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
-                    <span style={{ fontWeight: 600, color: CAT_COLORS[cat] || '#8E8E93' }}>{cat}</span>
-                    <span style={{ fontWeight: 700 }}>{formatCur(mt)} <span style={{ color: '#8E8E93', fontWeight: 400 }}>({totalDepenses > 0 ? ((mt / totalDepenses) * 100).toFixed(0) : 0}%)</span></span>
+                    <span style={{ fontWeight: 600, color: CAT_COLORS[cat] || '#636363' }}>{cat}</span>
+                    <span style={{ fontWeight: 700 }}>{formatCur(mt)} <span style={{ color: '#636363', fontWeight: 400 }}>({totalDepenses > 0 ? ((mt / totalDepenses) * 100).toFixed(0) : 0}%)</span></span>
                   </div>
                   <div style={{ background: '#F2F2F7', borderRadius: 6, height: 7, overflow: 'hidden' }}>
-                    <div style={{ width: `${totalDepenses > 0 ? (mt / totalDepenses) * 100 : 0}%`, height: '100%', background: CAT_COLORS[cat] || '#8E8E93', borderRadius: 6, transition: 'width 0.5s' }} />
+                    <div style={{ width: `${totalDepenses > 0 ? (mt / totalDepenses) * 100 : 0}%`, height: '100%', background: CAT_COLORS[cat] || '#636363', borderRadius: 6, transition: 'width 0.5s' }} />
                   </div>
                 </div>
               ))}
@@ -544,17 +544,17 @@ export default function ChantiersEtMissions() {
             <thead>
               <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
                 {['Date', 'Catégorie', 'Description', 'Fournisseur', 'Montant'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {depenses.length === 0 ? (
-                <tr><td colSpan={5} style={{ padding: 30, textAlign: 'center', color: '#8E8E93' }}>Aucune dépense</td></tr>
+                <tr><td colSpan={5} style={{ padding: 30, textAlign: 'center', color: '#636363' }}>Aucune dépense</td></tr>
               ) : depenses.map((d, i) => (
                 <tr key={d.id || i} style={{ borderBottom: '1px solid #F2F2F7', background: i % 2 === 0 ? '#fff' : '#FAFAFA' }}>
                   <td style={{ padding: '10px 14px', color: '#6E6E73' }}>{formatDate(d.date)}</td>
-                  <td style={{ padding: '10px 14px' }}><span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: `${CAT_COLORS[d.categorie] || '#8E8E93'}18`, color: CAT_COLORS[d.categorie] || '#8E8E93' }}>{d.categorie}</span></td>
+                  <td style={{ padding: '10px 14px' }}><span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: `${CAT_COLORS[d.categorie] || '#636363'}18`, color: CAT_COLORS[d.categorie] || '#636363' }}>{d.categorie}</span></td>
                   <td style={{ padding: '10px 14px', fontWeight: 500 }}>{d.description}</td>
                   <td style={{ padding: '10px 14px', color: '#6E6E73' }}>{d.fournisseur || '—'}</td>
                   <td style={{ padding: '10px 14px', fontWeight: 700, textAlign: 'right' }}>{formatCur(d.montant)}</td>
@@ -590,7 +590,7 @@ export default function ChantiersEtMissions() {
     const totalMargePct = totalCA > 0 ? (totalMarge / totalCA) * 100 : null;
 
     function margeColor(pct) {
-      if (pct === null) return '#8E8E93';
+      if (pct === null) return '#636363';
       if (pct >= 25) return '#34C759';
       if (pct >= 10) return '#FF9500';
       return '#FF3B30';
@@ -770,7 +770,7 @@ export default function ChantiersEtMissions() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#8E8E93' }}>Chargement…</div>
+        <div style={{ textAlign: 'center', padding: 60, color: '#636363' }}>Chargement…</div>
       ) : tabContent[tab]}
     </div>
   );
@@ -816,12 +816,12 @@ function ItemCard({ item, onClick, isSelected }) {
       {item.budgetPrevu && (
         <div style={{ display: 'grid', gridTemplateColumns: item.budgetReel ? '1fr 1fr' : '1fr', gap: 8, background: '#FAFAFA', borderRadius: 8, padding: '8px 10px', marginBottom: 10, fontSize: 12 }}>
           <div>
-            <div style={{ color: '#8E8E93', fontSize: 11 }}>Budget prévu</div>
+            <div style={{ color: '#636363', fontSize: 11 }}>Budget prévu</div>
             <div style={{ fontWeight: 600 }}>{formatCur(item.budgetPrevu)}</div>
           </div>
           {item.budgetReel && (
             <div>
-              <div style={{ color: '#8E8E93', fontSize: 11 }}>Réel {ecart !== 0 && <span style={{ color: ecart > 10 ? '#C0392B' : '#856404' }}>({ecart > 0 ? '+' : ''}{ecart.toFixed(0)}%)</span>}</div>
+              <div style={{ color: '#636363', fontSize: 11 }}>Réel {ecart !== 0 && <span style={{ color: ecart > 10 ? '#C0392B' : '#856404' }}>({ecart > 0 ? '+' : ''}{ecart.toFixed(0)}%)</span>}</div>
               <div style={{ fontWeight: 600, color: ecart > 10 ? '#C0392B' : ecart > 0 ? '#856404' : '#1A7F43' }}>{formatCur(item.budgetReel)}</div>
             </div>
           )}
@@ -829,7 +829,7 @@ function ItemCard({ item, onClick, isSelected }) {
       )}
 
       {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8E8E93', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363', alignItems: 'center' }}>
         <span>{formatDate(item.dateDebut)}{item.dateFin ? ` → ${formatDate(item.dateFin)}` : ''}</span>
         <div style={{ display: 'flex', gap: 6 }}>
           {item.equipe?.length > 0 && <span>👥 {item.equipe.length}</span>}
@@ -901,7 +901,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
       {/* Panel tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid #F2F2F7', background: '#FAFAFA' }}>
         {[{ key: 'infos', label: 'Détails' }, { key: 'equipe', label: 'Équipe' }, { key: 'vehicule', label: 'Véhicule' }, { key: 'notes', label: 'Notes' }, { key: 'messages', label: '💬' }].map(t => (
-          <button key={t.key} onClick={() => setPanelTab(t.key)} style={{ flex: 1, padding: '10px 0', border: 'none', borderBottom: panelTab === t.key ? '2px solid #5B5BD6' : '2px solid transparent', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: panelTab === t.key ? '#5B5BD6' : '#8E8E93', transition: 'all 0.15s' }}>
+          <button key={t.key} onClick={() => setPanelTab(t.key)} style={{ flex: 1, padding: '10px 0', border: 'none', borderBottom: panelTab === t.key ? '2px solid #5B5BD6' : '2px solid transparent', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: panelTab === t.key ? '#5B5BD6' : '#636363', transition: 'all 0.15s' }}>
             {t.label}
           </button>
         ))}
@@ -921,7 +921,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 { label: 'Fin prévue', value: formatDate(item.dateFin) },
               ].map(f => (
                 <div key={f.label} style={{ background: '#F8F9FA', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>{f.label}</div>
+                  <div style={{ fontSize: 10, color: '#636363', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>{f.label}</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1E' }}>{f.value}</div>
                 </div>
               ))}
@@ -929,7 +929,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
 
             {item.description && (
               <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Description</div>
+                <div style={{ fontSize: 10, color: '#636363', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Description</div>
                 <div style={{ fontSize: 13, color: '#3C3C43', lineHeight: 1.6 }}>{item.description}</div>
               </div>
             )}
@@ -938,7 +938,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
             {['en_cours', 'assignee'].includes(item.statut) && (
               <div style={{ background: '#F8F9FA', borderRadius: 10, padding: '12px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Avancement</div>
+                  <div style={{ fontSize: 10, color: '#636363', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Avancement</div>
                   <span style={{ fontSize: 14, fontWeight: 800, color: progressColor(avancement) }}>{avancement}%</span>
                 </div>
                 <input type="range" min={0} max={100} step={5} value={avancement} onChange={e => setAvancement(Number(e.target.value))} style={{ width: '100%', marginBottom: 6 }} />
@@ -1051,11 +1051,11 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                   <div style={{ fontSize: 12, color: '#6E6E73' }}>{v.immatriculation} · {v.type} · {v.capacite}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
                     <div style={{ background: '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12 }}>
-                      <div style={{ color: '#8E8E93', fontWeight: 600, fontSize: 10, marginBottom: 3 }}>KILOMÉTRAGE</div>
+                      <div style={{ color: '#636363', fontWeight: 600, fontSize: 10, marginBottom: 3 }}>KILOMÉTRAGE</div>
                       <div style={{ fontWeight: 700 }}>{v.kilometrage?.toLocaleString('fr-FR')} km</div>
                     </div>
                     <div style={{ background: vidangeAlert(v.vidange, v.kilometrage) ? '#FFF3CD' : '#fff', borderRadius: 8, padding: '8px 10px', fontSize: 12 }}>
-                      <div style={{ color: '#8E8E93', fontWeight: 600, fontSize: 10, marginBottom: 3 }}>PROCHAINE VIDANGE</div>
+                      <div style={{ color: '#636363', fontWeight: 600, fontSize: 10, marginBottom: 3 }}>PROCHAINE VIDANGE</div>
                       <div style={{ fontWeight: 700, color: vidangeAlert(v.vidange, v.kilometrage) ? '#856404' : '#1C1C1E' }}>{v.vidange?.prochainKm?.toLocaleString('fr-FR')} km</div>
                     </div>
                   </div>
@@ -1093,7 +1093,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 </div>
               ))}
               {messages.length === 0 && (
-                <p style={{ textAlign: 'center', color: '#8E8E93', fontSize: 13, marginTop: 40 }}>Aucun message — commencez la conversation</p>
+                <p style={{ textAlign: 'center', color: '#636363', fontSize: 13, marginTop: 40 }}>Aucun message — commencez la conversation</p>
               )}
             </div>
             <form
@@ -1145,7 +1145,7 @@ function EditModal({ item, onClose, onSave, headers }) {
       <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 28 }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Modifier</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#8E8E93' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#636363' }}>✕</button>
         </div>
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -1318,7 +1318,7 @@ function FlotteView() {
           { label: 'Total véhicules', value: vehicules.length, color: '#5B5BD6' },
           { label: 'En mission', value: vehicules.filter(v => v.statut === 'en_mission').length, color: '#1565C0' },
           { label: 'Disponibles', value: vehicules.filter(v => v.statut === 'disponible').length, color: '#1A7F43' },
-          { label: 'Alertes maintenance', value: alertes.length, color: alertes.length > 0 ? '#C0392B' : '#8E8E93' },
+          { label: 'Alertes maintenance', value: alertes.length, color: alertes.length > 0 ? '#C0392B' : '#636363' },
         ].map(k => (
           <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: k.color }}>{k.value}</div>
@@ -1381,29 +1381,29 @@ function FlotteView() {
               <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 {/* Kilométrage */}
                 <div style={{ background: '#FAFAFA', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: '#8E8E93', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Kilométrage</div>
+                  <div style={{ fontSize: 9, color: '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Kilométrage</div>
                   <div style={{ fontWeight: 800, fontSize: 14 }}>{v.kilometrage?.toLocaleString('fr-FR')}</div>
-                  <div style={{ fontSize: 9, color: '#8E8E93', marginTop: 2 }}>km</div>
+                  <div style={{ fontSize: 9, color: '#636363', marginTop: 2 }}>km</div>
                 </div>
 
                 {/* Vidange */}
                 <div style={{ background: hasVidangeWarn ? '#FFF3CD' : '#FAFAFA', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: hasVidangeWarn ? '#856404' : '#8E8E93', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Vidange</div>
+                  <div style={{ fontSize: 9, color: hasVidangeWarn ? '#856404' : '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Vidange</div>
                   <div style={{ fontWeight: 800, fontSize: 11, color: hasVidangeWarn ? '#856404' : '#1C1C1E' }}>
                     {v.vidange?.prochainKm?.toLocaleString('fr-FR')} km
                   </div>
-                  <div style={{ fontSize: 9, color: hasVidangeWarn ? '#856404' : '#8E8E93', marginTop: 2 }}>
+                  <div style={{ fontSize: 9, color: hasVidangeWarn ? '#856404' : '#636363', marginTop: 2 }}>
                     {hasVidangeWarn ? `⚠ dans ${(v.vidange.prochainKm - v.kilometrage).toLocaleString('fr-FR')} km` : `dans ${(v.vidange?.prochainKm - v.kilometrage).toLocaleString('fr-FR')} km`}
                   </div>
                 </div>
 
                 {/* CT */}
                 <div style={{ background: hasCtAlert ? '#FFE5E5' : hasCtWarn ? '#FFF3CD' : '#FAFAFA', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: hasCtAlert ? '#C0392B' : hasCtWarn ? '#856404' : '#8E8E93', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Contrôle Technique</div>
+                  <div style={{ fontSize: 9, color: hasCtAlert ? '#C0392B' : hasCtWarn ? '#856404' : '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Contrôle Technique</div>
                   <div style={{ fontWeight: 800, fontSize: 11, color: hasCtAlert ? '#C0392B' : hasCtWarn ? '#856404' : '#1C1C1E' }}>
                     {formatDate(v.controleTechnique?.prochaineDate)}
                   </div>
-                  <div style={{ fontSize: 9, color: hasCtAlert ? '#C0392B' : hasCtWarn ? '#856404' : '#8E8E93', marginTop: 2 }}>
+                  <div style={{ fontSize: 9, color: hasCtAlert ? '#C0392B' : hasCtWarn ? '#856404' : '#636363', marginTop: 2 }}>
                     {hasCtAlert ? '⛔ Expiré' : hasCtWarn ? '⚠ Bientôt' : 'Valide'}
                   </div>
                 </div>
@@ -1411,7 +1411,7 @@ function FlotteView() {
 
               {/* Assurance & actions */}
               <div style={{ padding: '0 18px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: 11, color: '#8E8E93' }}>
+                <div style={{ fontSize: 11, color: '#636363' }}>
                   Assurance : {formatDate(v.assurance?.expiration)}
                   {v.assurance?.expiration && new Date(v.assurance.expiration) < new Date(Date.now() + 60 * 86400000) && (
                     <span style={{ color: '#856404', fontWeight: 700 }}> ⚠</span>
