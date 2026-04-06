@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { API_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { IconMissions, IconCheck, IconX, IconChevronRight, IconMapPin, IconCalendar, IconTeam, IconPlus, IconUser } from '../../components/ui/Icons';
 import DevisFormulaire from '../../components/DevisFormulaire';
@@ -267,10 +267,10 @@ function MissionDetailPanel({ mission, onClose, onUpdate, onStatut, onCancel }) 
 
   useEffect(() => {
     // Fetch employees (fallback to demo)
-    fetch(import.meta.env.VITE_API_URL + '/rh/employes', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+    fetch(API_URL + '/rh/employes', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       .then(r => r.json()).then(d => setEmployes(d.employes || EMPLOYES_DEMO)).catch(() => setEmployes(EMPLOYES_DEMO));
     // Fetch vehicles (fallback to demo)
-    fetch(import.meta.env.VITE_API_URL + '/rh/vehicules', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+    fetch(API_URL + '/rh/vehicules', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       .then(r => r.json()).then(d => setVehicules(d.vehicules || VEHICULES_DEMO)).catch(() => setVehicules(VEHICULES_DEMO));
   }, []);
 

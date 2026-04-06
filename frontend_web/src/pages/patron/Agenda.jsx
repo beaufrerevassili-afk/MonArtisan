@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
+import api, { API_URL } from '../../services/api';
 
 /* ── Helpers ───────────────────────────────────────────── */
 const TODAY = new Date();
@@ -166,7 +166,7 @@ export default function Agenda() {
 
   /* Load agenda events from API, then merge real chantiers/missions */
   useEffect(() => {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const API_BASE = API_URL;
     const headers = { Authorization: `Bearer ${token}` };
 
     // Load custom agenda events first

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { IconDocument, IconDownload, IconSearch, IconFilter, IconUser, IconShield, IconTeam } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 const BASE_URL = window.location.origin;
 
 /* ── Static demo documents (non-devis) ── */
@@ -61,7 +60,7 @@ export default function BanqueDocuments() {
   const [copied, setCopied] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/patron/devis-pro`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_URL}/patron/devis-pro`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => setDevis((d.devis || []).map(dv => ({
         id: dv.id,

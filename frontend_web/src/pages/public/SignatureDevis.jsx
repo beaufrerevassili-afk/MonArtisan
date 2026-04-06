@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { IconCheck, IconX, IconDownload, IconDocument } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const PRINT_STYLE = `
 @media print {
@@ -50,7 +49,7 @@ export default function SignatureDevis() {
   useEffect(() => {
     async function load() {
       try {
-        const r = await fetch(`${API}/patron/devis-pro/${id}`);
+        const r = await fetch(`${API_URL}/patron/devis-pro/${id}`);
         if (!r.ok) throw new Error('Devis introuvable');
         const d = await r.json();
         setDevis(d);
@@ -70,7 +69,7 @@ export default function SignatureDevis() {
     setError('');
     setSubmitting(true);
     try {
-      const r = await fetch(`${API}/patron/devis-pro/${id}/signer`, {
+      const r = await fetch(`${API_URL}/patron/devis-pro/${id}/signer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nomSignataire, token: sigToken }),

@@ -5,8 +5,7 @@ import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 const CONTRATS = ['Tous', 'CDI', 'CDD', 'Alternance', 'Stage', 'Freelance', 'Intérim'];
 
 const SECTEURS = [
@@ -46,7 +45,7 @@ function ModalCandidature({ offre, onClose }) {
 
   const envoyer = async () => {
     setLoading(true);
-    try { await axios.post(`${API}/recrutement/annonces/${offre.id}/candidatures`, { ...form, cvFichier: cvFile ? cvFile.name : null }); } catch (_) {}
+    try { await axios.post(`${API_URL}/recrutement/annonces/${offre.id}/candidatures`, { ...form, cvFichier: cvFile ? cvFile.name : null }); } catch (_) {}
     setLoading(false); setStep(3);
   };
 
@@ -286,7 +285,7 @@ export default function RecrutementPage() {
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
-    axios.get(`${API}/recrutement/annonces?limit=50`).then(r=>{ if(r.data?.annonces?.length) setOffres(r.data.annonces); }).catch(()=>{});
+    axios.get(`${API_URL}/recrutement/annonces?limit=50`).then(r=>{ if(r.data?.annonces?.length) setOffres(r.data.annonces); }).catch(()=>{});
   }, []);
 
   const filtered = offres.filter(o => {

@@ -1,5 +1,6 @@
 import React, { Component, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { API_URL } from './services/api';
 import Landing from './pages/public/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -120,8 +121,7 @@ function usePageTracker() {
   const loc = typeof window !== 'undefined' ? window.location : null;
   React.useEffect(() => {
     if (!loc) return;
-    const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    fetch(`${API}/analytics/visit`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ page:loc.pathname }) }).catch(()=>{});
+    fetch(`${API_URL}/analytics/visit`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ page:loc.pathname }) }).catch(()=>{});
   }, [loc?.pathname]);
 }
 

@@ -6,9 +6,7 @@ import {
   IconClock, IconAlert, IconCalendar, IconUser,
   IconMessage, IconSend,
 } from '../../components/ui/Icons';
-import api from '../../services/api';
-
-const API = api.defaults.baseURL;
+import api, { API_URL } from '../../services/api';
 
 const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin',
               'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -72,9 +70,9 @@ export default function ArtisanDashboard() {
   const mesConges = conges;
 
   useEffect(() => {
-    fetch(`${API}/rh/notes-frais`, { headers })
+    fetch(`${API_URL}/rh/notes-frais`, { headers })
       .then(r => r.json()).then(d => setNotesFrais(d.notesFrais || [])).catch(() => {});
-    fetch(`${API}/rh/conges`, { headers })
+    fetch(`${API_URL}/rh/conges`, { headers })
       .then(r => r.json()).then(d => setConges(d.conges || [])).catch(() => {});
   }, []);
 
@@ -120,7 +118,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
   const [missionDuJour, setMissionDuJour] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/missions`, { headers })
+    fetch(`${API_URL}/missions`, { headers })
       .then(r => r.json()).then(d => {
         const today = new Date().toISOString().split('T')[0];
         const missions = d.missions || d || [];
@@ -364,7 +362,7 @@ function TabMissions({ headers, onAddFrais, onAddFraisChantier }) {
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    fetch(`${API}/missions`, { headers })
+    fetch(`${API_URL}/missions`, { headers })
       .then(r => r.json()).then(d => setMissions(d.missions || d || []))
       .catch(() => setMissions(MISSIONS_DEMO_ARTISAN));
   }, []);
@@ -464,7 +462,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
     // Justificatif optionnel
     setSaving(true);
     try {
-      const r = await fetch(`${API}/rh/notes-frais`, {
+      const r = await fetch(`${API_URL}/rh/notes-frais`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ employeId: 1, ...form, montant: parseFloat(form.montant), justificatifNom: fichier.name }),
@@ -1023,7 +1021,7 @@ function TabConges({ conges, setConges, headers }) {
     e.preventDefault();
     setSaving(true);
     try {
-      const r = await fetch(`${API}/rh/conges`, {
+      const r = await fetch(`${API_URL}/rh/conges`, {
         method: 'POST', headers,
         body: JSON.stringify({ ...form, employeId: 1 }),
       });

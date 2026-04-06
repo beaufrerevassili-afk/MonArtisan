@@ -8,8 +8,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconMapPin, IconStar, IconShield, IconCheck, IconChevronDown, IconX, IconUser } from '../../components/ui/Icons';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const METIERS = ['Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture', 'Maçonnerie', 'Chauffage', 'Serrurerie', 'Jardinage'];
 const DISPONIBILITES = [
@@ -291,7 +290,7 @@ export default function Landing() {
   const resultsRef = useRef(null);
 
   useEffect(() => {
-    axios.get(`${API}/recrutement/annonces`).then(r => setAnnonces(r.data.annonces || [])).catch(() => {});
+    axios.get(`${API_URL}/recrutement/annonces`).then(r => setAnnonces(r.data.annonces || [])).catch(() => {});
   }, []);
 
   async function postuler(e) {
@@ -299,7 +298,7 @@ export default function Landing() {
     if (!annonceModal) return;
     setCandidatureStatus('sending');
     try {
-      await axios.post(`${API}/recrutement/annonces/${annonceModal.id}/candidatures`, candidatureForm);
+      await axios.post(`${API_URL}/recrutement/annonces/${annonceModal.id}/candidatures`, candidatureForm);
       setCandidatureStatus('ok');
     } catch (err) {
       setCandidatureStatus(err.response?.data?.erreur || 'error');
@@ -328,7 +327,7 @@ export default function Landing() {
     setLoading(true);
     setSearched(true);
     try {
-      const { data } = await axios.get(`${API}/public/artisans`, {
+      const { data } = await axios.get(`${API_URL}/public/artisans`, {
         params: { q: query || undefined, metier: metier || undefined, ville: ville || undefined, disponibilite: disponibilite || undefined, noteMin: noteMin || undefined },
       });
       setArtisans(data.artisans);

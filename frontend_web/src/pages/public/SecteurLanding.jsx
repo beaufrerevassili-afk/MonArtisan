@@ -4,8 +4,7 @@ import axios from 'axios';
 import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 // ─── Config par secteur ────────────────────────────────────────────────────────
 const SECTEUR_CONFIG = {
@@ -58,7 +57,7 @@ function ModalReservation({ pro, cfg, onClose }) {
   async function confirmer() {
     if (!form.nom || !form.prenom || !form.email || !form.telephone) return;
     setLoading(true);
-    try { await axios.post(`${API}/reservations`, { pro_id:pro.id, secteur:cfg?.emoji, service:service.nom, prix:service.prix, creneau, ...form }); } catch (_) {}
+    try { await axios.post(`${API_URL}/reservations`, { pro_id:pro.id, secteur:cfg?.emoji, service:service.nom, prix:service.prix, creneau, ...form }); } catch (_) {}
     setLoading(false); setDone(true);
   }
 

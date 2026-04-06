@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const PRINT_STYLE = `
   @media print {
@@ -41,7 +40,7 @@ function DevisView({ id }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API}/patron/devis-pro/${id}`)
+    fetch(`${API_URL}/patron/devis-pro/${id}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setDevis)
       .catch(() => setError('Devis introuvable.'));

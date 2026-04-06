@@ -11,8 +11,7 @@ import AffichageObligatoire from '../../components/qse/AffichageObligatoire';
 import PlanDechet from '../../components/qse/PlanDechet';
 import DiagnosticDemolition from '../../components/qse/DiagnosticDemolition';
 import { genererDUERP, genererPlanPrevention } from '../../utils/qsePDF';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 /* ── DUERP data ── */
 const UNITES_TRAVAIL = ['Tous les postes','Maçonnerie / gros œuvre','Plomberie / sanitaire','Électricité','Peinture / finition','Bureau / encadrement'];
@@ -138,8 +137,8 @@ export default function QSE() {
   useEffect(() => {
     Promise.all([
       api.get('/qse/tableau-de-bord'),
-      fetch(`${API}/rh/habilitations`, { headers: authHeaders }).then(r=>r.json()),
-      fetch(`${API}/rh/employes`, { headers: authHeaders }).then(r=>r.json()),
+      fetch(`${API_URL}/rh/habilitations`, { headers: authHeaders }).then(r=>r.json()),
+      fetch(`${API_URL}/rh/employes`, { headers: authHeaders }).then(r=>r.json()),
     ]).then(([t, h, e]) => {
       setTdb(t.data);
       setHabilitations(h.habilitations || []);
@@ -148,7 +147,7 @@ export default function QSE() {
   }, []);
 
   async function reloadHabilitations() {
-    const r = await fetch(`${API}/rh/habilitations`, { headers: authHeaders });
+    const r = await fetch(`${API_URL}/rh/habilitations`, { headers: authHeaders });
     const d = await r.json();
     setHabilitations(d.habilitations || []);
   }
@@ -397,7 +396,7 @@ export default function QSE() {
       if(!form.nom || !form.dateExpiration) { alert('Nom et date d\'expiration obligatoires'); return; }
       setSaving(true);
       try {
-        const r = await fetch(`${API}/rh/habilitations`, {
+        const r = await fetch(`${API_URL}/rh/habilitations`, {
           method:'POST', headers:authHeaders,
           body: JSON.stringify({...form, employeId:parseInt(form.employeId), documentNom:fichier?.name||form.documentNom }),
         });
@@ -411,7 +410,7 @@ export default function QSE() {
     }
 
     async function deleteHab(id) {
-      await fetch(`${API}/rh/habilitations/${id}`, { method:'DELETE', headers:authHeaders });
+      await fetch(`${API_URL}/rh/habilitations/${id}`, { method:'DELETE', headers:authHeaders });
       await reloadHabilitations();
     }
 

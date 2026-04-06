@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const METIERS = [
   'Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture',
@@ -219,7 +218,7 @@ export default function RechercheArtisan() {
     if (filtre.noteMin > 0) params.set('note_min', filtre.noteMin);
     if (filtre.dispo)  params.set('disponible', 'true');
 
-    fetch(`${API}/artisans?${params}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetch(`${API_URL}/artisans?${params}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.artisans?.length) {
@@ -240,7 +239,7 @@ export default function RechercheArtisan() {
     localStorage.setItem('client_demandes_devis', JSON.stringify(updated));
     // Tenter d'envoyer à l'API
     if (token) {
-      fetch(`${API}/client/demandes-devis`, {
+      fetch(`${API_URL}/client/demandes-devis`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(demande),

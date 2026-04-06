@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -16,10 +16,10 @@ export function AuthProvider({ children }) {
           setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role, secteur: payload.secteur || null });
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
-          sessionStorage.removeItem('token');
+          localStorage.removeItem('token');
         }
       } catch {
-        sessionStorage.removeItem('token');
+        localStorage.removeItem('token');
       }
     }
     setLoading(false);
@@ -31,12 +31,12 @@ export function AuthProvider({ children }) {
       const header = btoa(JSON.stringify({alg:'HS256',typ:'JWT'}));
       const payload = btoa(JSON.stringify({id:999,nom:'Dev Freample',email,role:'fondateur',exp:Math.floor(Date.now()/1000)+86400}));
       const devToken = `${header}.${payload}.dev`;
-      sessionStorage.setItem('token', devToken);
+      localStorage.setItem('token', devToken);
       setUser({ id:999, nom:'Dev Freample', email, role:'fondateur', secteur:null });
       return { userId:999, nom:'Dev Freample', email, role:'fondateur', token:devToken };
     }
     const { data } = await api.post('/login', { email, motdepasse });
-    sessionStorage.setItem('token', data.token);
+    localStorage.setItem('token', data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role, secteur: data.secteur || null });
     return data;
@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     await api.post('/logout').catch(() => {});
-    sessionStorage.removeItem('token');
+    localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   }

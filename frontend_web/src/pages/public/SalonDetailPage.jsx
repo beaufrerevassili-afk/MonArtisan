@@ -4,8 +4,7 @@ import axios from 'axios';
 import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 // ─── Données salons ───────────────────────────────────────────────────────────
 const SALONS = {
@@ -142,7 +141,7 @@ function BookingWidget({ salon, onClose }) {
     setLoading(true);
     let bookingId = `RDV-${Date.now().toString(36).toUpperCase()}`;
     try {
-      const res = await axios.post(`${API}/reservations`, {
+      const res = await axios.post(`${API_URL}/reservations`, {
         pro_id:salon.id, secteur:'coiffure',
         service:service.nom, prix:service.prix,
         creneau:`${creneau.date} ${creneau.heure}${staff?` — avec ${staff.nom}`:''}`,

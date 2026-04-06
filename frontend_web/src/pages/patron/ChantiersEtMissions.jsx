@@ -5,8 +5,7 @@ import {
   IconBuilding, IconCalendar, IconAlert, IconCheck, IconPlus, IconX,
   IconRefresh, IconDocument, IconUser, IconTrendUp,
 } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 /* ── Helpers ── */
 function formatDate(iso) {
@@ -123,8 +122,8 @@ export default function ChantiersEtMissions() {
     setLoading(true);
     try {
       const [rm, rc] = await Promise.all([
-        fetch(`${API}/patron/missions`, { headers }),
-        fetch(`${API}/patron/chantiers`, { headers }),
+        fetch(`${API_URL}/patron/missions`, { headers }),
+        fetch(`${API_URL}/patron/chantiers`, { headers }),
       ]);
       const dm = await rm.json();
       const dc = await rc.json();
@@ -140,7 +139,7 @@ export default function ChantiersEtMissions() {
   useEffect(() => { fetchItems(); }, []);
 
   async function changerStatut(id, statut) {
-    try { await fetch(`${API}/patron/missions/${id}/statut`, { method: 'PUT', headers, body: JSON.stringify({ statut }) }); } catch {}
+    try { await fetch(`${API_URL}/patron/missions/${id}/statut`, { method: 'PUT', headers, body: JSON.stringify({ statut }) }); } catch {}
     setItems(prev => prev.map(m => m.id === id ? { ...m, statut } : m));
     setSelectedItem(prev => prev?.id === id ? { ...prev, statut } : prev);
   }
@@ -422,7 +421,7 @@ export default function ChantiersEtMissions() {
 
     useEffect(() => {
       if (!itemId) return;
-      fetch(`${API}/patron/chantiers/${itemId}/depenses`, { headers })
+      fetch(`${API_URL}/patron/chantiers/${itemId}/depenses`, { headers })
         .then(r => r.json()).then(d => setDepenses(d.depenses || DEMO_DEPENSES)).catch(() => setDepenses(DEMO_DEPENSES));
       const it = items.find(x => String(x.id) === String(itemId));
       if (it?.caDevis) setCaDevis(String(it.caDevis));
@@ -439,7 +438,7 @@ export default function ChantiersEtMissions() {
       e.preventDefault();
       setSaving(true);
       try {
-        await fetch(`${API}/patron/chantiers/${itemId}/depenses`, { method: 'POST', headers, body: JSON.stringify(form) });
+        await fetch(`${API_URL}/patron/chantiers/${itemId}/depenses`, { method: 'POST', headers, body: JSON.stringify(form) });
       } catch {}
       setDepenses(prev => [{ ...form, id: Date.now(), montant: Number(form.montant) }, ...prev]);
       setShowForm(false);
@@ -677,7 +676,7 @@ export default function ChantiersEtMissions() {
       e.preventDefault();
       setSaving(true);
       try {
-        await fetch(`${API}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(form) });
+        await fetch(`${API_URL}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(form) });
       } catch {}
       await fetchItems();
       setSaving(false);
@@ -876,7 +875,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
     setSaving(true);
     const vehicule = DEMO_VEHICULES.find(v => String(v.id) === String(vehiculeId)) || null;
     const payload = { equipe: getEquipeNoms(), vehicule, notes, avancement };
-    try { await fetch(`${API}/patron/missions/${item.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) }); } catch {}
+    try { await fetch(`${API_URL}/patron/missions/${item.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) }); } catch {}
     await onUpdate();
     setSaving(false);
   }
@@ -1133,7 +1132,7 @@ function EditModal({ item, onClose, onSave, headers }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch(`${API}/patron/chantiers/${ef.id}`, { method: 'PUT', headers, body: JSON.stringify(ef) });
+      await fetch(`${API_URL}/patron/chantiers/${ef.id}`, { method: 'PUT', headers, body: JSON.stringify(ef) });
     } catch {}
     await onSave();
     setSaving(false);

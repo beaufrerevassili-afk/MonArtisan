@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { IconCheck, IconStar, IconDownload, IconDocument } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const TRAVAUX_DEMO = [
   { id: 1, titre: 'Installation prise électrique salon', artisan: 'Eric Leroy',          specialite: 'Électricité', date: '2024-03-22', montant: 216,  facture: 'FAC-2024-102', devis: 'DEV-2024-102' },
@@ -151,7 +150,7 @@ export default function TravauxPasses() {
   // Charger les vrais travaux depuis l'API si dispo
   useEffect(() => {
     if (!token) return;
-    fetch(`${API}/client/travaux`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_URL}/client/travaux`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.travaux?.length) setTravaux(data.travaux); })
       .catch(() => {});
@@ -160,7 +159,7 @@ export default function TravauxPasses() {
   function handleSaveAvis(avis) {
     setAvisMap(prev => ({ ...prev, [avis.travailId]: avis }));
     if (token) {
-      fetch(`${API}/client/avis`, {
+      fetch(`${API_URL}/client/avis`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(avis),

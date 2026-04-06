@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { IconStar, IconCheck, IconDocument } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 // Travaux de référence (viendraient de l'API en production)
 const TRAVAUX_DEMO = [
@@ -276,7 +275,7 @@ export default function Avis() {
   // Tenter de charger les travaux depuis l'API
   useEffect(() => {
     if (!token) return;
-    fetch(`${API}/client/travaux`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_URL}/client/travaux`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.travaux?.length) setTravaux(data.travaux); })
       .catch(() => {});

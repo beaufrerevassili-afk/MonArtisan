@@ -5,8 +5,7 @@ import {
   IconPlus, IconX, IconDownload, IconSend, IconEye,
   IconDocument, IconCheck, IconClock, IconBuilding, IconUser, IconCalendar, IconSearch
 } from '../../components/ui/Icons';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../../services/api';
 
 const TVA_RATES = [0, 5.5, 10, 20];
 const VALIDITE_OPTIONS = [15, 30, 45, 60, 90];
@@ -251,7 +250,7 @@ export default function DevisPro() {
   async function fetchDevis() {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/patron/devis-pro`, { headers });
+      const r = await fetch(`${API_URL}/patron/devis-pro`, { headers });
       const d = await r.json();
       setDevis(d.devis || []);
       setStats(d.stats || calcStats(d.devis || []));
@@ -296,7 +295,7 @@ export default function DevisPro() {
     const numero = `DVS-${new Date().getFullYear()}-${String(devis.length + 1).padStart(3, '0')}`;
     const payload = { ...form, numero, ...totals, creeLe: new Date().toISOString(), statut: 'brouillon' };
     try {
-      const r = await fetch(`${API}/patron/devis-pro`, { method: 'POST', headers, body: JSON.stringify(payload) });
+      const r = await fetch(`${API_URL}/patron/devis-pro`, { method: 'POST', headers, body: JSON.stringify(payload) });
       const d = await r.json();
       await fetchDevis();
       setSelectedDevis({ ...payload, id: d.id || Date.now() });
@@ -311,7 +310,7 @@ export default function DevisPro() {
   async function handleEnvoyer(id) {
     setSending(true);
     try {
-      const r = await fetch(`${API}/patron/devis-pro/${id}/envoyer`, { method: 'PUT', headers });
+      const r = await fetch(`${API_URL}/patron/devis-pro/${id}/envoyer`, { method: 'PUT', headers });
       const d = await r.json();
       setSelectedDevis(prev => ({ ...prev, statut: 'envoyé', ...(d.devis || {}) }));
       await fetchDevis();
@@ -323,7 +322,7 @@ export default function DevisPro() {
 
   async function openPreview(devisItem) {
     try {
-      const r = await fetch(`${API}/patron/devis-pro/${devisItem.id}`, { headers });
+      const r = await fetch(`${API_URL}/patron/devis-pro/${devisItem.id}`, { headers });
       const d = await r.json();
       setSelectedDevis(d);
     } catch (e) { setSelectedDevis(devisItem); }
