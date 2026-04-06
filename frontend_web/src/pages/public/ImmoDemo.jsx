@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import L from '../../design/luxe';
+import CRMModule from '../../components/immo/CRMModule';
+import ProspectionModule from '../../components/immo/ProspectionModule';
+import PigeModule from '../../components/immo/PigeModule';
+import EstimationModule from '../../components/immo/EstimationModule';
+import MandatsModule from '../../components/immo/MandatsModule';
+import MultidiffusionModule from '../../components/immo/MultidiffusionModule';
+import AcquereursModule from '../../components/immo/AcquereursModule';
+import VisitesModule from '../../components/immo/VisitesModule';
+import VentesModule from '../../components/immo/VentesModule';
+import ContratsModule from '../../components/immo/ContratsModule';
+import CampagnesModule from '../../components/immo/CampagnesModule';
+import AutomationsModule from '../../components/immo/AutomationsModule';
+import AgendaImmoModule from '../../components/immo/AgendaImmoModule';
+import ClesModule from '../../components/immo/ClesModule';
+import SiteWebModule from '../../components/immo/SiteWebModule';
+import ParametresModule from '../../components/immo/ParametresModule';
 
 const STORAGE_KEY = 'freample_immo_data';
 const TYPES_BIEN = ['Appartement','Studio','Maison','Local commercial','Parking','Cave','Terrain'];
@@ -160,14 +176,30 @@ export default function ImmoDemo() {
 
   const TABS = [
     { id:'dashboard', label:'Tableau de bord', icon:'📊' },
-    { id:'biens', label:'Biens', icon:'🏠' },
+    { id:'crm', label:'CRM / Contacts', icon:'📇' },
+    { id:'prospection', label:'Prospection', icon:'🚪' },
+    { id:'pige', label:'Pige immobilière', icon:'📡' },
+    { id:'estimations_tab', label:'Estimations', icon:'📐' },
+    { id:'mandats_tab', label:'Mandats', icon:'📝' },
+    { id:'multidiffusion', label:'Multidiffusion', icon:'📡' },
+    { id:'acquereurs', label:'Acquéreurs', icon:'🤝' },
+    { id:'visites_tab', label:'Visites', icon:'🏠' },
+    { id:'ventes_tab', label:'Ventes', icon:'💎' },
+    { id:'biens', label:'Biens', icon:'🏘️' },
     { id:'gestion', label:'Locataires & Loyers', icon:'👥' },
     { id:'finances', label:'Finances', icon:'💰' },
+    { id:'contrats_tab', label:'Contrats (56)', icon:'📄' },
+    { id:'campagnes_tab', label:'Campagnes', icon:'📣' },
+    { id:'automations_tab', label:'Automatisations', icon:'⚡' },
+    { id:'agenda_tab', label:'Agenda', icon:'📅' },
+    { id:'cles_tab', label:'Clés', icon:'🔑' },
     { id:'outils', label:'Outils & Conformité', icon:'🧮' },
     { id:'annonces', label:'Annonces & Candidatures', icon:'📢' },
     { id:'courriers', label:'Courriers', icon:'✉️' },
     { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
     { id:'alertes', label:'Alertes', icon:'🔔' },
+    { id:'siteweb_tab', label:'Site web', icon:'🌐' },
+    { id:'parametres_tab', label:'Paramètres', icon:'⚙️' },
   ];
 
   // ── ACTIONS ──
@@ -1092,9 +1124,9 @@ export default function ImmoDemo() {
                   return <div style={{ background:L.noir, color:'#fff', padding:'16px', marginTop:10 }}>
                     <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Résultat de la simulation</div>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:12 }}>
-                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt brut</div><div style={{ fontSize:18, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div></div>
-                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt net</div><div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div></div>
-                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Cashflow</div><div style={{ fontSize:18, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Rdt brut</div><div style={{ fontSize:18, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{rdtBrut}%</div></div>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Rdt net</div><div style={{ fontSize:18, fontWeight:200, color:L.green, fontFamily:L.serif }}>{rdtNet}%</div></div>
+                      <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Cashflow</div><div style={{ fontSize:18, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
                     </div>
                     <div style={{ fontSize:12, lineHeight:1.8 }}>
                       <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{color:'rgba(255,255,255,0.5)'}}>Emprunt</span><span>{emprunt.toLocaleString()}€</span></div>
@@ -1485,7 +1517,7 @@ export default function ImmoDemo() {
                 </div>
                 <div style={{ background:L.noir, color:'#fff', padding:'16px 20px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <div><div style={{ fontSize:11, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em' }}>Horizon</div><div style={{ fontSize:20, fontWeight:200, fontFamily:L.serif }}>{new Date(obj.horizon).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</div></div>
-                  <div style={{ textAlign:'right' }}><div style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>Temps restant</div><div style={{ fontSize:20, fontWeight:200, fontFamily:L.serif, color:joursRestants<365?L.orange:L.gold }}>{Math.round(joursRestants/365*10)/10} ans</div></div>
+                  <div style={{ textAlign:'right' }}><div style={{ fontSize:11, color:'rgba(255,255,255,0.6)' }}>Temps restant</div><div style={{ fontSize:20, fontWeight:200, fontFamily:L.serif, color:joursRestants<365?L.orange:L.gold }}>{Math.round(joursRestants/365*10)/10} ans</div></div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
                   {[
@@ -1680,7 +1712,7 @@ export default function ImmoDemo() {
                     <div>
                       <div style={{ fontSize:11, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Score bancabilité</div>
                       <div style={{ fontSize:16, fontWeight:600 }}>{scoreLabel}</div>
-                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', marginTop:2 }}>Endettement (30%) + Reste à vivre (20%) + Cashflow (20%) + LTV (15%) + Expérience (15%)</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)', marginTop:2 }}>Endettement (30%) + Reste à vivre (20%) + Cashflow (20%) + LTV (15%) + Expérience (15%)</div>
                     </div>
                   </div>;
                 })()}
@@ -1959,6 +1991,24 @@ export default function ImmoDemo() {
               </div>
             </div>
           </>}
+
+          {/* ═══ MODULES INTÉGRÉS ═══ */}
+          {tab==='crm' && <CRMModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='prospection' && <ProspectionModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='pige' && <PigeModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='estimations_tab' && <EstimationModule data={data} setData={setData} showToast={showToast} genId={genId} biens={biens} />}
+          {tab==='mandats_tab' && <MandatsModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='multidiffusion' && <MultidiffusionModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='acquereurs' && <AcquereursModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='visites_tab' && <VisitesModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='ventes_tab' && <VentesModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='contrats_tab' && <ContratsModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='campagnes_tab' && <CampagnesModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='automations_tab' && <AutomationsModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='agenda_tab' && <AgendaImmoModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='cles_tab' && <ClesModule data={data} setData={setData} showToast={showToast} genId={genId} />}
+          {tab==='siteweb_tab' && <SiteWebModule data={data} setData={setData} showToast={showToast} />}
+          {tab==='parametres_tab' && <ParametresModule data={data} setData={setData} showToast={showToast} genId={genId} />}
         </div>
       </div>
 
@@ -2012,9 +2062,9 @@ export default function ImmoDemo() {
                 const cf=revMens-depMens;
                 return <div style={{ background:L.noir, color:'#fff', padding:'14px', marginBottom:12 }}>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, fontSize:12 }}>
-                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt brut</div><div style={{ fontSize:16, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{cout>0?(revMens*12/cout*100).toFixed(1):'0'}%</div></div>
-                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Rdt net</div><div style={{ fontSize:16, fontWeight:200, color:L.green, fontFamily:L.serif }}>{cout>0?((revMens-depMens)*12/cout*100).toFixed(1):'0'}%</div></div>
-                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>Cashflow</div><div style={{ fontSize:16, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Rdt brut</div><div style={{ fontSize:16, fontWeight:200, color:L.gold, fontFamily:L.serif }}>{cout>0?(revMens*12/cout*100).toFixed(1):'0'}%</div></div>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Rdt net</div><div style={{ fontSize:16, fontWeight:200, color:L.green, fontFamily:L.serif }}>{cout>0?((revMens-depMens)*12/cout*100).toFixed(1):'0'}%</div></div>
+                    <div><div style={{ fontSize:9, color:'rgba(255,255,255,0.6)' }}>Cashflow</div><div style={{ fontSize:16, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf.toFixed(0)}€</div></div>
                   </div>
                 </div>;
               })()}
