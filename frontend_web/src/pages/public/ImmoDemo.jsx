@@ -174,33 +174,47 @@ export default function ImmoDemo() {
   // Associés
   const associes = activeSci ? (data.associes||[]).filter(a=>a.sciId===activeSci) : (data.associes||[]);
 
-  const TABS = [
-    { id:'dashboard', label:'Tableau de bord', icon:'📊' },
-    { id:'crm', label:'CRM / Contacts', icon:'📇' },
-    { id:'prospection', label:'Prospection', icon:'🚪' },
-    { id:'pige', label:'Pige immobilière', icon:'📡' },
-    { id:'estimations_tab', label:'Estimations', icon:'📐' },
-    { id:'mandats_tab', label:'Mandats', icon:'📝' },
-    { id:'multidiffusion', label:'Multidiffusion', icon:'📡' },
-    { id:'acquereurs', label:'Acquéreurs', icon:'🤝' },
-    { id:'visites_tab', label:'Visites', icon:'🏠' },
-    { id:'ventes_tab', label:'Ventes', icon:'💎' },
-    { id:'biens', label:'Biens', icon:'🏘️' },
-    { id:'gestion', label:'Locataires & Loyers', icon:'👥' },
-    { id:'finances', label:'Finances', icon:'💰' },
-    { id:'contrats_tab', label:'Contrats (56)', icon:'📄' },
-    { id:'campagnes_tab', label:'Campagnes', icon:'📣' },
-    { id:'automations_tab', label:'Automatisations', icon:'⚡' },
-    { id:'agenda_tab', label:'Agenda', icon:'📅' },
-    { id:'cles_tab', label:'Clés', icon:'🔑' },
-    { id:'outils', label:'Outils & Conformité', icon:'🧮' },
-    { id:'annonces', label:'Annonces & Candidatures', icon:'📢' },
-    { id:'courriers', label:'Courriers', icon:'✉️' },
-    { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
-    { id:'alertes', label:'Alertes', icon:'🔔' },
-    { id:'siteweb_tab', label:'Site web', icon:'🌐' },
-    { id:'parametres_tab', label:'Paramètres', icon:'⚙️' },
+  const SECTIONS = [
+    { id:'general', label:'Général', icon:'📊', items:[
+      { id:'dashboard', label:'Tableau de bord', icon:'📊' },
+      { id:'alertes', label:'Alertes', icon:'🔔' },
+      { id:'agenda_tab', label:'Agenda', icon:'📅' },
+    ]},
+    { id:'commercial', label:'Transaction', icon:'💼', items:[
+      { id:'crm', label:'CRM / Contacts', icon:'📇' },
+      { id:'prospection', label:'Prospection', icon:'🚪' },
+      { id:'pige', label:'Pige immobilière', icon:'📡' },
+      { id:'estimations_tab', label:'Estimations', icon:'📐' },
+      { id:'mandats_tab', label:'Mandats', icon:'📝' },
+      { id:'acquereurs', label:'Acquéreurs', icon:'🤝' },
+      { id:'visites_tab', label:'Visites', icon:'🏠' },
+      { id:'ventes_tab', label:'Ventes', icon:'💎' },
+    ]},
+    { id:'patrimoine', label:'Patrimoine', icon:'🏘️', items:[
+      { id:'biens', label:'Biens', icon:'🏘️' },
+      { id:'gestion', label:'Locataires & Loyers', icon:'👥' },
+      { id:'annonces', label:'Annonces', icon:'📢' },
+      { id:'cles_tab', label:'Clés', icon:'🔑' },
+    ]},
+    { id:'finance', label:'Finances & Compta', icon:'💰', items:[
+      { id:'finances', label:'Trésorerie', icon:'💰' },
+      { id:'outils', label:'Simulateurs', icon:'🧮' },
+      { id:'strategie', label:'Stratégie', icon:'🎯' },
+    ]},
+    { id:'communication', label:'Communication', icon:'📣', items:[
+      { id:'contrats_tab', label:'Contrats', icon:'📄' },
+      { id:'courriers', label:'Courriers', icon:'✉️' },
+      { id:'campagnes_tab', label:'Campagnes', icon:'📣' },
+      { id:'multidiffusion', label:'Multidiffusion', icon:'📡' },
+      { id:'siteweb_tab', label:'Site web', icon:'🌐' },
+    ]},
+    { id:'outils_section', label:'Outils', icon:'⚙️', items:[
+      { id:'automations_tab', label:'Automatisations', icon:'⚡' },
+      { id:'parametres_tab', label:'Paramètres', icon:'⚙️' },
+    ]},
   ];
+  const [openSections, setOpenSections] = useState(['general','commercial']);
+  const toggleSection = (id) => setOpenSections(prev => prev.includes(id) ? prev.filter(s=>s!==id) : [...prev, id]);
 
   // ── ACTIONS ──
   const addBien = () => {
@@ -278,13 +292,24 @@ export default function ImmoDemo() {
               </button>;
             })}
           </div>
-          <div style={{ padding:'6px 0' }}>
-            {TABS.map(t=>(
-              <button key={t.id} onClick={()=>setTab(t.id)} style={{ width:'100%', padding:'9px 14px', background:tab===t.id?L.cream:'transparent', border:'none', display:'flex', alignItems:'center', gap:8, fontSize:12, fontWeight:tab===t.id?700:500, color:tab===t.id?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, borderLeft:tab===t.id?`3px solid ${L.gold}`:'3px solid transparent' }}>
-                <span style={{ fontSize:14 }}>{t.icon}</span>{t.label}
-                {t.id==='alertes' && impayes.length>0 && <span style={{ marginLeft:'auto', background:L.red, color:'#fff', fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:10 }}>{impayes.length}</span>}
-              </button>
-            ))}
+          <div style={{ padding:'4px 0' }}>
+            {SECTIONS.map(section=>{
+              const isOpen = openSections.includes(section.id);
+              const hasActiveTab = section.items.some(t=>t.id===tab);
+              return <div key={section.id}>
+                <button onClick={()=>toggleSection(section.id)} style={{ width:'100%', padding:'10px 14px', background:hasActiveTab?`${L.gold}08`:'transparent', border:'none', display:'flex', alignItems:'center', gap:8, fontSize:12, fontWeight:700, color:hasActiveTab?L.gold:L.text, cursor:'pointer', fontFamily:L.font, borderBottom:`1px solid ${L.border}`, transition:'all .15s' }}>
+                  <span style={{ fontSize:13 }}>{section.icon}</span>
+                  <span style={{ flex:1, textAlign:'left' }}>{section.label}</span>
+                  <span style={{ fontSize:10, color:L.textLight, transition:'transform .2s', transform:isOpen?'rotate(90deg)':'rotate(0deg)' }}>▸</span>
+                </button>
+                {isOpen && section.items.map(t=>(
+                  <button key={t.id} onClick={()=>setTab(t.id)} style={{ width:'100%', padding:'7px 14px 7px 36px', background:tab===t.id?L.cream:'transparent', border:'none', display:'flex', alignItems:'center', gap:6, fontSize:11, fontWeight:tab===t.id?700:400, color:tab===t.id?L.gold:L.textSec, cursor:'pointer', fontFamily:L.font, borderLeft:tab===t.id?`3px solid ${L.gold}`:'3px solid transparent', transition:'all .1s' }}>
+                    <span style={{ fontSize:12 }}>{t.icon}</span>{t.label}
+                    {t.id==='alertes' && impayes.length>0 && <span style={{ marginLeft:'auto', background:L.red, color:'#fff', fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:10 }}>{impayes.length}</span>}
+                  </button>
+                ))}
+              </div>;
+            })}
           </div>
         </div>
 
