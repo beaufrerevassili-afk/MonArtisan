@@ -11,7 +11,7 @@ const METIERS = [
 
 // Données démo utilisées quand le backend n'est pas dispo
 const ARTISANS_DEMO = [
-  { id: 1, nom: 'Eric Leroy',      specialite: 'Électricité', ville: 'Paris 11e',  note: 4.9, nbAvis: 87, disponible: true,  verifie: true,  tarif: '55–90 €/h', description: 'Électricien certifié RGE, spécialisé dans les installations résidentielles et tertiaires. Devis gratuit sous 24h.' },
+  { id: 1, nom: 'Eric Leroy',      specialite: 'Électricité', ville: 'Paris 11e',  note: 4.9, nbAvis: 87, disponible: true,  verifie: true,  tarif: '55–90 €/h', description: 'Électricien certifié RGE, spécialisé dans les installations résidentielles et tertiaires. Intervention résidentielle et tertiaire.' },
   { id: 2, nom: 'Carlos Garcia',   specialite: 'Plomberie',   ville: 'Paris 15e',  note: 4.7, nbAvis: 54, disponible: true,  verifie: true,  tarif: '60–95 €/h', description: 'Plombier chauffagiste avec 12 ans d\'expérience. Urgences acceptées. Interventions 7j/7.' },
   { id: 3, nom: 'Sophie Martin',   specialite: 'Peinture',    ville: 'Levallois',  note: 5.0, nbAvis: 31, disponible: false, verifie: true,  tarif: '40–60 €/h', description: 'Peintre décorateur intérieur/extérieur. Finitions soignées garanties. Spécialiste enduits décoratifs.' },
   { id: 4, nom: 'Jean-Paul Moreau',specialite: 'Menuiserie',  ville: 'Paris 18e',  note: 4.8, nbAvis: 62, disponible: true,  verifie: true,  tarif: '65–100 €/h', description: 'Menuisier ébéniste. Fabrication sur mesure, pose fenêtres, portes, parquets. Certifié RGE.' },
@@ -135,7 +135,7 @@ function ModalDevis({ artisan, onClose, onSubmit }) {
         </div>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Demande envoyée !</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.5 }}>
-          {artisan.nom} recevra votre demande de devis et vous contactera sous 24h.
+          {artisan.nom} recevra votre demande de devis et vous contactera rapidement.
         </p>
         <button className="btn-primary" style={{ marginTop: 20, width: '100%', justifyContent: 'center' }} onClick={onClose}>Fermer</button>
       </div>

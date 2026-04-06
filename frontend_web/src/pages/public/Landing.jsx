@@ -225,7 +225,7 @@ function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
         <p style={{ color: '#4A4A6A', fontSize: '0.9375rem', lineHeight: 1.55, marginBottom: 24 }}>
           {isLoggedIn
             ? 'Accédez à votre espace pour envoyer votre demande.'
-            : 'Créez votre compte gratuit pour recevoir votre devis sous 24h.'}
+            : 'Créez votre compte gratuit pour contacter cet artisan.'}
         </p>
 
         {/* Artisan mini card */}
@@ -509,8 +509,8 @@ export default function Landing() {
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {[
                 { icon: '🛡️', label: 'Vérifiés' },
-                { icon: '⚡', label: 'Devis 24h' },
                 { icon: '⭐', label: 'Avis certifiés' },
+                { icon: '💳', label: 'Paiement sécurisé' },
               ].map(s => (
                 <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: DS.muted, fontWeight: 600 }}>
                   <span style={{ fontSize: 13 }}>{s.icon}</span> {s.label}
@@ -526,7 +526,7 @@ export default function Landing() {
         <div style={{ background: DS.ink, borderRadius: 16, padding: 'clamp(20px,3vh,28px) clamp(20px,3vw,32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 'clamp(1rem,2.5vw,1.25rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 4 }}>Besoin d'un artisan ? Décrivez votre projet.</div>
-            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.65)' }}>Recevez jusqu'à 3 devis gratuits sous 24h, sans engagement.</div>
+            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.65)' }}>Comparez les artisans vérifiés et choisissez le meilleur, sans engagement.</div>
           </div>
           <button onClick={() => navigate('/register?role=client')}
             style={{ padding: '12px 28px', background: '#fff', color: DS.ink, border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font, transition: 'opacity .15s', flexShrink: 0 }}
@@ -608,7 +608,7 @@ export default function Landing() {
           <div className="reveal" style={{ marginTop: 72, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
             {[
               { icon: '🛡️', gradient: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', title: 'Artisans vérifiés', desc: 'Identité, Kbis et qualifications contrôlés' },
-              { icon: '⚡',  gradient: 'linear-gradient(135deg, #F59E0B, #EF4444)', title: 'Réponse rapide',   desc: 'Devis reçu en moins de 24h en moyenne' },
+              { icon: '⚡',  gradient: 'linear-gradient(135deg, #F59E0B, #EF4444)', title: 'Réponse rapide',   desc: 'Artisans réactifs, disponibles près de chez vous' },
               { icon: '💳', gradient: 'linear-gradient(135deg, #0891B2, #059669)', title: 'Paiement sécurisé', desc: 'Transaction protégée, sans surprise' },
               { icon: '⭐', gradient: 'linear-gradient(135deg, #DB2777, #7C3AED)', title: 'Avis certifiés',   desc: 'Seuls les vrais clients peuvent noter' },
             ].map(f => (
