@@ -114,16 +114,47 @@ function genererFormulaire(formulaireId, salarie, champs) {
   return txt;
 }
 
+// Champs obligatoires par formulaire
+const CHAMPS_REQUIS = {
+  at_declaration: ['dateAccident','heureAccident','lieuAccident','activite','circonstances','natureLesion','siegeLesion','arret','soinsSurPlace','transport','medecin'],
+  at_feuille: ['dateAccident','natureLesion'],
+  mp_declaration: ['tableauMP','designation','dateConstatation','travaux','dureeExposition','agents'],
+  inaptitude: ['dateInaptitude','medecinTravail','atOrigine'],
+  reprise_ipp: ['dateReprise','tauxIPP'],
+  attestation_activite: [],
+};
+
+const LABELS_CHAMPS = {
+  dateAccident:'Date accident', heureAccident:'Heure', lieuAccident:'Lieu', activite:'Activité',
+  circonstances:'Circonstances', natureLesion:'Nature lésions', siegeLesion:'Siège lésions',
+  arret:'Arrêt de travail', soinsSurPlace:'Soins sur place', transport:'Transport urgences',
+  medecin:'Médecin', temoins:'Témoins', dateArret:'Date arrêt', dureeArret:'Durée arrêt',
+  tableauMP:'N° tableau MP', designation:'Désignation', dateConstatation:'Date constatation',
+  dateCessation:'Date cessation', travaux:'Nature travaux', dureeExposition:'Durée exposition',
+  agents:'Produits/agents', dateInaptitude:'Date inaptitude', medecinTravail:'Médecin travail',
+  atOrigine:'AT/MP origine', dateReprise:'Date reprise', tauxIPP:'Taux IPP',
+  posteReprise:'Poste repris', amenagement:'Aménagement',
+};
+
 export default function FormulairesAMELI() {
   const [selectedForm, setSelectedForm] = useState(null);
   const [selectedSalarie, setSelectedSalarie] = useState('');
   const [champs, setChamps] = useState({});
   const [preview, setPreview] = useState('');
+  const [erreurs, setErreurs] = useState([]);
 
   const salarie = SALARIES.find(s => s.id === Number(selectedSalarie));
 
+  const valider = () => {
+    if (!selectedForm || !salarie) return ['Sélectionnez un salarié'];
+    const requis = CHAMPS_REQUIS[selectedForm] || [];
+    return requis.filter(champ => !champs[champ] || champs[champ].trim() === '').map(champ => LABELS_CHAMPS[champ] || champ);
+  };
+
   const genererPreview = () => {
-    if (!selectedForm || !salarie) return;
+    const manquants = valider();
+    setErreurs(manquants);
+    if (manquants.length > 0) { setPreview(''); return; }
     const txt = genererFormulaire(selectedForm, salarie, champs);
     setPreview(txt);
   };
@@ -179,7 +210,7 @@ export default function FormulairesAMELI() {
           {/* Formulaire gauche */}
           <div style={CARD}>
             <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>1. Sélectionner le salarié</div>
-            <select value={selectedSalarie} onChange={e => { setSelectedSalarie(e.target.value); setPreview(''); }} style={{ ...INP, marginBottom:12 }}>
+            <select value={selectedSalarie} onChange={e => { setSelectedSalarie(e.target.value); setPreview(''); setErreurs([]); setChamps(c=>({...c, arret:'NON', soinsSurPlace:'NON', transport:'NON'})); }} style={{ ...INP, marginBottom:12 }}>
               <option value="">— Choisir un salarié —</option>
               {SALARIES.map(s => <option key={s.id} value={s.id}>{s.prenom} {s.nom} — {s.poste}</option>)}
             </select>
@@ -249,6 +280,12 @@ export default function FormulairesAMELI() {
 
               {/* Attestation n'a pas de champs supplémentaires */}
 
+              {erreurs.length > 0 && (
+                <div style={{ background:'#FEF2F2', border:'1px solid #DC262625', borderRadius:8, padding:'10px 14px', marginTop:8, fontSize:11 }}>
+                  <strong style={{ color:'#DC2626' }}>Champs obligatoires manquants :</strong>
+                  <div style={{ color:'#DC2626', marginTop:4 }}>{erreurs.join(' · ')}</div>
+                </div>
+              )}
               <button onClick={genererPreview} style={{ ...BTN, width:'100%', padding:12, marginTop:8 }}>Générer le document</button>
             </>}
           </div>
