@@ -6,6 +6,11 @@ import {
   IconRefresh, IconDocument, IconUser, IconTrendUp,
 } from '../../components/ui/Icons';
 import { API_URL } from '../../services/api';
+import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
+import { calculerIndemniteTrajet } from '../../utils/calculPaie';
+
+// Adresse dépôt — en prod, viendrait du profil entreprise
+const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '24 rue de la Liberté, Nice';
 
 /* ── Helpers ── */
 function formatDate(iso) {
@@ -671,12 +676,29 @@ export default function ChantiersEtMissions() {
     const [form, setForm] = useState({ titre: '', client: '', adresse: '', budgetPrevu: '', dateDebut: '', dateFin: '', statut: 'en_attente', description: '' });
     const [saving, setSaving] = useState(false);
     const [done, setDone] = useState(false);
+    const [distanceInfo, setDistanceInfo] = useState(null);
+    const [calcDistance, setCalcDistance] = useState(false);
+
+    // Calcul automatique de la distance quand l'adresse change
+    async function calculerDistance(adresse) {
+      if (!adresse || adresse.length < 8) { setDistanceInfo(null); return; }
+      setCalcDistance(true);
+      const result = await calculerDistanceEntreAdresses(ADRESSE_DEPOT, adresse);
+      if (result) {
+        const trajet = calculerIndemniteTrajet(result.distanceKm);
+        setDistanceInfo({ km: result.distanceKm, depart: result.depart, arrivee: result.arrivee, ...trajet });
+      } else {
+        setDistanceInfo({ km: null, erreur: 'Adresse non trouvée' });
+      }
+      setCalcDistance(false);
+    }
 
     async function handleSubmit(e) {
       e.preventDefault();
       setSaving(true);
+      const payload = { ...form, distanceDepot: distanceInfo?.km || null };
       try {
-        await fetch(`${API_URL}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(form) });
+        await fetch(`${API_URL}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(payload) });
       } catch {}
       await fetchItems();
       setSaving(false);
@@ -697,7 +719,25 @@ export default function ChantiersEtMissions() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Titre *</label><input value={form.titre} onChange={e => setForm(p => ({ ...p, titre: e.target.value }))} placeholder="Rénovation appartement Dupont" required style={inp} /></div>
           <div><label style={lbl}>Client</label><input value={form.client} onChange={e => setForm(p => ({ ...p, client: e.target.value }))} placeholder="Jean Dupont" style={inp} /></div>
-          <div><label style={lbl}>Adresse</label><input value={form.adresse} onChange={e => setForm(p => ({ ...p, adresse: e.target.value }))} placeholder="12 rue des Fleurs, Lyon" style={inp} /></div>
+          <div>
+            <label style={lbl}>Adresse du chantier</label>
+            <div style={{ display:'flex', gap:6 }}>
+              <input value={form.adresse} onChange={e => setForm(p => ({ ...p, adresse: e.target.value }))} onBlur={() => calculerDistance(form.adresse)} placeholder="12 rue des Fleurs, Nice" style={{ ...inp, flex:1 }} />
+              <button type="button" onClick={() => calculerDistance(form.adresse)} disabled={calcDistance} style={{ padding:'8px 14px', border:'none', borderRadius:8, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontSize:11, fontWeight:600, whiteSpace:'nowrap', opacity:calcDistance?0.5:1 }}>{calcDistance ? '...' : 'Calculer'}</button>
+            </div>
+            {distanceInfo && distanceInfo.km !== null && (
+              <div style={{ marginTop:6, padding:'8px 12px', background:'#F0FDF4', border:'1px solid #16A34A25', borderRadius:8, fontSize:11, display:'flex', gap:12, alignItems:'center', flexWrap:'wrap' }}>
+                <span><strong>{distanceInfo.km} km</strong> depuis le dépôt</span>
+                <span style={{ color:'#555' }}>Zone : {distanceInfo.zone}</span>
+                <span style={{ fontWeight:700, color:'#2563EB' }}>Indemnité : {distanceInfo.indemnite}€/jour</span>
+                {distanceInfo.grandDeplacement && <span style={{ fontWeight:700, color:'#DC2626' }}>Grand déplacement</span>}
+                <span style={{ fontSize:10, color:'#888' }}>via api-adresse.data.gouv.fr</span>
+              </div>
+            )}
+            {distanceInfo && distanceInfo.erreur && (
+              <div style={{ marginTop:6, padding:'6px 12px', background:'#FEF2F2', border:'1px solid #DC262625', borderRadius:8, fontSize:11, color:'#DC2626' }}>{distanceInfo.erreur}</div>
+            )}
+          </div>
           <div><label style={lbl}>Budget prévu (€)</label><input type="number" value={form.budgetPrevu} onChange={e => setForm(p => ({ ...p, budgetPrevu: e.target.value }))} style={inp} /></div>
           <div>
             <label style={lbl}>Statut initial</label>
