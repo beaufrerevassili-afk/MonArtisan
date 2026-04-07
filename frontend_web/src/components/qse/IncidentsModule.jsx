@@ -39,6 +39,115 @@ export default function IncidentsModule() {
   };
   const toggleAction = (incId, idx) => setIncidents(prev => prev.map(i => i.id === incId ? { ...i, actions: i.actions.map((a, j) => j === idx ? { ...a, fait: !a.fait } : a) } : i));
 
+  // Génération fiche CPAM (Cerfa S6200)
+  const genererFicheCPAM = (inc) => {
+    const date = new Date().toLocaleDateString('fr-FR');
+    let txt = '';
+    txt += `╔══════════════════════════════════════════════════════════════╗\n`;
+    txt += `║     DÉCLARATION D'ACCIDENT DU TRAVAIL OU DE TRAJET        ║\n`;
+    txt += `║     Cerfa n° S6200 — Art. L441-2 du Code Sécu. Sociale   ║\n`;
+    txt += `╚══════════════════════════════════════════════════════════════╝\n\n`;
+    txt += `À ADRESSER À LA CPAM DANS LES 48 HEURES\n`;
+    txt += `${'─'.repeat(60)}\n\n`;
+
+    txt += `1. EMPLOYEUR\n${'─'.repeat(40)}\n`;
+    txt += `Nom / Raison sociale : Freample Artisans BTP\n`;
+    txt += `SIRET              : 123 456 789 000 12\n`;
+    txt += `Adresse            : 24 rue de la Liberté, Nice\n`;
+    txt += `Code risque AT/MP  : 452BB\n`;
+    txt += `N° Adhérent        : _______________\n\n`;
+
+    txt += `2. VICTIME\n${'─'.repeat(40)}\n`;
+    txt += `Nom et prénom      : ${inc.victime || '[À COMPLÉTER]'}\n`;
+    txt += `N° Sécurité Sociale: [À COMPLÉTER]\n`;
+    txt += `Date de naissance  : [À COMPLÉTER]\n`;
+    txt += `Nationalité        : Française\n`;
+    txt += `Qualification      : [À COMPLÉTER]\n`;
+    txt += `Ancienneté poste   : [À COMPLÉTER]\n`;
+    txt += `Date d'embauche    : [À COMPLÉTER]\n\n`;
+
+    txt += `3. ACCIDENT\n${'─'.repeat(40)}\n`;
+    txt += `Date de l'accident : ${inc.date}\n`;
+    txt += `Heure              : [À COMPLÉTER]\n`;
+    txt += `Lieu précis        : ${inc.chantier}\n`;
+    txt += `\n`;
+    txt += `L'accident s'est-il produit :\n`;
+    txt += `  [${inc.type === 'Accident du travail' ? 'X' : ' '}] Sur le lieu de travail habituel\n`;
+    txt += `  [ ] Sur un lieu de travail occasionnel\n`;
+    txt += `  [ ] Lors d'un trajet domicile-travail\n`;
+    txt += `  [ ] Lors d'un déplacement professionnel\n\n`;
+
+    txt += `4. CIRCONSTANCES DÉTAILLÉES DE L'ACCIDENT\n${'─'.repeat(40)}\n`;
+    txt += `Activité de la victime au moment de l'accident :\n`;
+    txt += `${inc.description || '[À COMPLÉTER]'}\n\n`;
+    txt += `Nature de l'accident (chute, choc, coupure...) :\n`;
+    txt += `${inc.type}\n\n`;
+    txt += `Objet / substance ayant causé la blessure :\n`;
+    txt += `[À COMPLÉTER]\n\n`;
+    txt += `Conditions météorologiques :\n`;
+    txt += `[À COMPLÉTER]\n\n`;
+
+    txt += `5. SIÈGE ET NATURE DES LÉSIONS\n${'─'.repeat(40)}\n`;
+    txt += `Nature des lésions : ${inc.type} — ${inc.gravite}\n`;
+    txt += `Siège des lésions  : [À COMPLÉTER]\n\n`;
+
+    txt += `6. TÉMOINS\n${'─'.repeat(40)}\n`;
+    txt += `Témoin 1 : ${inc.temoin || 'Aucun témoin'}\n`;
+    txt += `Adresse  : [À COMPLÉTER]\n`;
+    txt += `Témoin 2 : [À COMPLÉTER]\n\n`;
+
+    txt += `7. TIERS RESPONSABLE\n${'─'.repeat(40)}\n`;
+    txt += `Un tiers est-il à l'origine de l'accident ?\n`;
+    txt += `  [ ] Oui   [X] Non\n`;
+    txt += `Si oui, nom et adresse du tiers : _______________\n\n`;
+
+    txt += `8. ARRÊT DE TRAVAIL\n${'─'.repeat(40)}\n`;
+    txt += `Arrêt de travail prescrit : ${inc.arretTravail ? 'OUI' : 'NON'}\n`;
+    if (inc.arretTravail) {
+      txt += `Date du premier jour d'arrêt : ${inc.date}\n`;
+      txt += `Durée prévisible            : ${inc.joursArret} jours\n`;
+    }
+    txt += `\nLa victime a-t-elle cessé le travail le jour de l'accident ?\n`;
+    txt += `  [${inc.arretTravail ? 'X' : ' '}] Oui   [${!inc.arretTravail ? 'X' : ' '}] Non\n\n`;
+
+    txt += `9. PREMIERS SOINS\n${'─'.repeat(40)}\n`;
+    txt += `Premiers soins donnés sur place : [ ] Oui  [ ] Non\n`;
+    txt += `La victime a-t-elle été transportée :\n`;
+    txt += `  [ ] À l'hôpital / clinique : _______________\n`;
+    txt += `  [ ] À son domicile\n`;
+    txt += `  [ ] Chez un médecin : _______________\n\n`;
+
+    txt += `10. FEUILLE D'ACCIDENT\n${'─'.repeat(40)}\n`;
+    txt += `Une feuille d'accident du travail (Cerfa S6201)\n`;
+    txt += `a été remise à la victime le : ${inc.date}\n\n`;
+
+    txt += `${'═'.repeat(60)}\n`;
+    txt += `ENGAGEMENT DE L'EMPLOYEUR\n\n`;
+    txt += `Je soussigné(e), en qualité d'employeur, déclare que les\n`;
+    txt += `informations ci-dessus sont exactes et complètes.\n\n`;
+    txt += `Fait à Nice, le ${date}\n\n`;
+    txt += `Signature et cachet de l'employeur :\n\n\n`;
+    txt += `_________________________________\n\n`;
+
+    txt += `${'═'.repeat(60)}\n`;
+    txt += `RAPPELS IMPORTANTS\n`;
+    txt += `${'─'.repeat(40)}\n`;
+    txt += `• Délai de déclaration : 48 heures (Art. L441-2 CSS)\n`;
+    txt += `• Amende : jusqu'à 750€ par infraction (Art. R471-3 CSS)\n`;
+    txt += `• Remettre la feuille d'accident S6201 à la victime le jour même\n`;
+    txt += `• Inscrire l'accident au registre des accidents bénins\n`;
+    txt += `  (si pas d'arrêt et pas de soins médicaux)\n`;
+    txt += `• Conserver ce document 5 ans minimum\n`;
+    txt += `• En cas d'accident mortel : prévenir l'inspection du travail\n`;
+    txt += `  immédiatement (Art. L4131-1 Code du travail)\n`;
+
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Declaration_AT_CPAM_${(inc.victime || 'incident').replace(/\s/g, '_')}_${inc.date}.txt`;
+    a.click();
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -77,6 +186,7 @@ export default function IncidentsModule() {
             </div>
             <div style={{ fontSize: 12, color: '#555' }}>{inc.chantier} · {inc.victime || 'Pas de victime'} · {inc.date} {inc.arretTravail ? `· ${inc.joursArret}j arrêt` : ''}</div>
           </div>
+          <button onClick={e => { e.stopPropagation(); genererFicheCPAM(inc); }} style={{ ...BTN, fontSize: 10, padding: '5px 12px', background: '#DC2626', flexShrink: 0 }}>Fiche CPAM</button>
         </div>
       ))}
 
@@ -95,6 +205,7 @@ export default function IncidentsModule() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 4 }}>
+                <button onClick={() => genererFicheCPAM(inc)} style={{ ...BTN, fontSize: 10, padding: '5px 12px', background: '#DC2626' }}>Fiche CPAM</button>
                 {inc.statut === 'ouvert' && <button onClick={() => updateStatut(inc.id, 'en_analyse')} style={{ ...BTN, fontSize: 10, padding: '5px 12px', background: '#D97706' }}>Analyser</button>}
                 {inc.statut === 'en_analyse' && <button onClick={() => updateStatut(inc.id, 'action_en_cours')} style={{ ...BTN, fontSize: 10, padding: '5px 12px', background: '#2563EB' }}>Actions</button>}
                 {inc.statut === 'action_en_cours' && <button onClick={() => updateStatut(inc.id, 'cloture')} style={{ ...BTN, fontSize: 10, padding: '5px 12px', background: '#16A34A' }}>Clôturer</button>}
