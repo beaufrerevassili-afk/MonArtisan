@@ -4,6 +4,10 @@ import {
   IconTeam, IconDocument, IconAlert, IconPlus, IconCheck, IconX,
   IconDownload, IconUser, IconCalendar,
 } from '../../components/ui/Icons';
+import PointageModule from '../../components/rh/PointageModule';
+import EntretiensModule from '../../components/rh/EntretiensModule';
+import OnboardingModule from '../../components/rh/OnboardingModule';
+import ContratsBTPModule from '../../components/rh/ContratsBTPModule';
 
 /* ── French payroll cotisations config ── */
 const COTISATIONS_SALARIALES = [
@@ -126,10 +130,12 @@ function RHLegalBanner() {
   );
 }
 
-const TABS_LABELS = ['Tableau de bord', 'Employés', 'Planning & Localisation', 'Congés', 'Notes de frais', 'Paie', 'Masse salariale', 'Recrutement', 'Formation', 'Zones trajet'];
+const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning & Localisation', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Paie', 'Masse salariale', 'Contrats BTP', 'Recrutement', 'Formation', 'Zones trajet'];
+const RH_ONGLET_MAP = { pointage:'Pointage', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement', paie:'Paie' };
 
 export default function RH() {
-  const [tab, setTab] = useState('Tableau de bord');
+  const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
+  const [tab, setTab] = useState(RH_ONGLET_MAP[urlOnglet] || 'Tableau de bord');
   const [employes, setEmployes] = useState([]);
   const [tdb, setTdb] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -221,6 +227,10 @@ export default function RH() {
       {tab === 'Recrutement'      && <RecrutementView />}
       {tab === 'Formation'        && <FormationView />}
       {tab === 'Zones trajet'     && <ZonesTrajetView employes={employes} />}
+      {tab === 'Pointage'         && <PointageModule employes={employes} />}
+      {tab === 'Entretiens'       && <EntretiensModule employes={employes} />}
+      {tab === 'Onboarding'       && <OnboardingModule employes={employes} />}
+      {tab === 'Contrats BTP'     && <ContratsBTPModule />}
     </div>
   );
 }

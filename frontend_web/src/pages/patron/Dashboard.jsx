@@ -7,6 +7,7 @@ import {
   IconTrendUp, IconDocument, IconBuilding, IconClock,
 } from '../../components/ui/Icons';
 import DevisFormulaire from '../../components/DevisFormulaire';
+import AlertesInterModules from '../../components/rh/AlertesInterModules';
 
 const SALARIES_DEMO = [
   { id: 's1', nom: 'Jean Martin',    poste: 'Maçon' },
@@ -164,6 +165,9 @@ export default function DashboardPatron() {
           </span>
         </div>
       )}
+
+      {/* Alertes inter-modules */}
+      <AlertesInterModules />
 
       {/* Alertes critiques */}
       {alertesHigh.length > 0 && (
