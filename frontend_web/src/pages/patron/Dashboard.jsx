@@ -471,150 +471,43 @@ export default function DashboardPatron() {
         </div>
       </div>
 
-      {/* Chantiers + Pipeline */}
+      {/* Raccourcis rapides + Stock */}
       <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
 
-        {/* Chantiers actifs */}
-        <div className="card" style={{ padding: 0, overflow:'hidden' }}>
-          <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border-light)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <h2>Chantiers actifs</h2>
-            <span className="badge badge-blue">{chantierActifs.length} en cours</span>
-          </div>
-          <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap: 16 }}>
-            {chantierActifs.slice(0, 4).map(c => {
-              const ecart = c.budgetReel > 0 ? Math.round((c.budgetReel / c.budgetPrevu - 1) * 100) : 0;
-              return (
-                <div key={c.id}>
-                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom: 6 }}>
-                    <div style={{ minWidth: 0, marginRight: 10 }}>
-                      <p style={{ fontWeight: 500, fontSize:'0.875rem', color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.nom}</p>
-                      <p style={{ fontSize:'0.75rem', color:'var(--text-tertiary)', marginTop: 1 }}>{c.chef} · fin {c.dateFin}</p>
-                    </div>
-                    <span style={{ fontWeight: 700, fontSize:'0.9375rem', color: c.avancement >= 80 ? 'var(--success)' : c.avancement < 30 ? 'var(--warning)' : 'var(--primary)', flexShrink: 0 }}>
-                      {c.avancement}%
-                    </span>
-                  </div>
-                  <div style={{ height: 6, borderRadius: 3, background:'var(--bg)', overflow:'hidden', marginBottom: 5 }}>
-                    <div style={{ height:'100%', borderRadius: 3, width:`${c.avancement}%`, background: c.avancement >= 80 ? 'var(--success)' : c.avancement < 30 ? 'var(--warning)' : 'var(--primary)', transition:'width 0.4s' }} />
-                  </div>
-                  <div style={{ display:'flex', gap: 10, fontSize:'0.6875rem', color:'var(--text-tertiary)' }}>
-                    <span>Budget : {c.budgetPrevu.toLocaleString('fr-FR')} €</span>
-                    {c.budgetReel > 0 && <span style={{ color: ecart > 5 ? 'var(--danger)' : ecart > 0 ? 'var(--warning)' : 'inherit' }}>Réel : {c.budgetReel.toLocaleString('fr-FR')} € {ecart !== 0 ? `(${ecart > 0 ? '+' : ''}${ecart}%)` : ''}</span>}
-                  </div>
-                  {c.alertes?.length > 0 && (
-                    <p style={{ fontSize:'0.6875rem', color:'var(--danger)', marginTop: 3, display:'flex', alignItems:'center', gap: 3 }}>
-                      <IconAlert size={10} color="var(--danger)" /> {c.alertes[0]}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-            {chantierActifs.length === 0 && <p style={{ color:'var(--text-tertiary)', fontSize:'0.875rem', textAlign:'center', padding:'8px 0' }}>Aucun chantier actif</p>}
-          </div>
-        </div>
-
-        {/* Pipeline commercial */}
-        <div className="card" style={{ padding: 0, overflow:'hidden' }}>
-          <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border-light)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <h2>Pipeline commercial</h2>
-            <span style={{ fontSize:'0.8125rem', color:'var(--text-secondary)', fontWeight: 500 }}>Conv. {pipeline?.stats?.taux_conversion || 50}%</span>
-          </div>
-          <div style={{ padding:'16px 20px', display:'flex', flexDirection:'column', gap: 14 }}>
+        {/* Raccourcis */}
+        <div className="card" style={{ padding:'20px' }}>
+          <h2 style={{ marginBottom: 14 }}>Accès rapide</h2>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8 }}>
             {[
-              { label:'Prospects',      count: pipeline?.stats?.nb_prospects || 3,     ca: pipeline?.stats?.ca_potentiel || 45500, color:'var(--primary-light)', pct:'100%' },
-              { label:'Devis envoyés',  count: pipeline?.stats?.nb_devis_envoyes || 1, ca: 4868,                                   color:'#FFE0A0',              pct:'60%'  },
-              { label:'Devis signés',   count: pipeline?.stats?.nb_signes || 1,        ca: pipeline?.stats?.ca_signe || 12100,    color:'var(--success-light)', pct:'30%'  },
-            ].map(({ label, count, ca, color, pct }) => (
-              <div key={label}>
-                <div style={{ display:'flex', justifyContent:'space-between', marginBottom: 5 }}>
-                  <span style={{ fontSize:'0.8125rem', fontWeight: 500, color:'var(--text)' }}>{label}</span>
-                  <span style={{ fontSize:'0.8125rem', color:'var(--text-secondary)' }}>{count} · {ca.toLocaleString('fr-FR')} €</span>
-                </div>
-                <div style={{ height: 8, background:'var(--bg)', borderRadius: 4, overflow:'hidden' }}>
-                  <div style={{ height:'100%', width: pct, background: color, borderRadius: 4 }} />
-                </div>
-              </div>
-            ))}
-
-            {(pipeline?.pipeline?.devisEnvoyes || []).length > 0 && (
-              <div style={{ marginTop: 4, paddingTop: 12, borderTop:'1px solid var(--border-light)' }}>
-                <p style={{ fontSize:'0.75rem', fontWeight: 600, color:'var(--text-tertiary)', marginBottom: 8 }}>Relances à faire</p>
-                {pipeline.pipeline.devisEnvoyes.map(d => (
-                  <div key={d.id} style={{ display:'flex', justifyContent:'space-between', padding:'4px 0', fontSize:'0.8125rem' }}>
-                    <span style={{ color:'var(--text-secondary)' }}>{d.nom}</span>
-                    <span style={{ color: d.joursRestants < 7 ? 'var(--danger)' : 'var(--warning)', fontWeight: 500 }}>J-{d.joursRestants}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Factures impayées + Échéances */}
-      <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
-
-        {/* Factures */}
-        <div className="card" style={{ padding: 0, overflow:'hidden' }}>
-          <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border-light)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <h2>Factures impayées</h2>
-            <span className="badge badge-yellow">{nbImpayees}</span>
-          </div>
-          <div>
-            {[
-              { client:'M. Moreau',    facture:'FAC-098', montant: 4200,  retard: 45, s:'high'   },
-              { client:'SCI Les Pins', facture:'FAC-102', montant: 8500,  retard: 32, s:'high'   },
-              { client:'M. Petit',     facture:'FAC-089', montant: 1850,  retard: 18, s:'medium' },
-              { client:'Dupuis SA',    facture:'FAC-076', montant: 12400, retard: 8,  s:'low'    },
-            ].map((f, i) => (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap: 12, padding:'9px 20px', borderBottom: i < 3 ? '1px solid var(--border-light)' : 'none' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize:'0.8125rem', fontWeight: 500, color:'var(--text)' }}>{f.client}</p>
-                  <p style={{ fontSize:'0.75rem', color:'var(--text-tertiary)' }}>{f.facture}</p>
-                </div>
-                <div style={{ textAlign:'right', flexShrink: 0 }}>
-                  <p style={{ fontWeight: 600, fontSize:'0.875rem' }}>{f.montant.toLocaleString('fr-FR')} €</p>
-                  <p style={{ fontSize:'0.6875rem', color: f.s === 'high' ? 'var(--danger)' : f.s === 'medium' ? 'var(--warning)' : 'var(--text-tertiary)' }}>+{f.retard}j</p>
-                </div>
+              { label:'Chantiers en cours', count:`${chantierActifs.length}`, path:'/patron/missions', color:'var(--primary)' },
+              { label:'Pipeline commercial', count:`${pipeline?.stats?.nb_prospects || 3} prospects`, path:'/patron/clients-rfm', color:'var(--success)' },
+              { label:'Factures impayées', count:`${nbImpayees}`, path:'/patron/finance?onglet=facturation', color:'var(--danger)' },
+              { label:'Échéances fiscales', count:`${ECHEANCES.length}`, path:'/patron/finance?onglet=urssaf', color:'var(--warning)' },
+            ].map(r => (
+              <div key={r.label} onClick={() => navigate(r.path)} style={{ padding:'12px 14px', background:'var(--bg)', borderRadius: 10, cursor:'pointer', border:'1px solid var(--border-light)', transition:'all .15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = r.color}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-light)'}>
+                <div style={{ fontSize:'0.8125rem', fontWeight: 600, color:'var(--text)' }}>{r.label}</div>
+                <div style={{ fontSize:'1.125rem', fontWeight: 700, color: r.color, marginTop: 2 }}>{r.count}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Échéances + Stock */}
-        <div style={{ display:'flex', flexDirection:'column', gap: 16 }}>
-          <div className="card" style={{ padding: 0, overflow:'hidden' }}>
-            <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border-light)' }}>
-              <h2>Échéances fiscales</h2>
-            </div>
-            <div>
-              {ECHEANCES.map((e, i) => (
-                <div key={i} style={{ display:'flex', alignItems:'center', gap: 12, padding:'9px 20px', borderBottom: i < ECHEANCES.length - 1 ? '1px solid var(--border-light)' : 'none' }}>
-                  <div style={{ width: 8, height: 8, borderRadius:'50%', flexShrink: 0, background: e.severity === 'high' ? 'var(--danger)' : e.severity === 'medium' ? 'var(--warning)' : 'var(--primary)' }} />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize:'0.8125rem', color:'var(--text)' }}>{e.label}</p>
-                    <p style={{ fontSize:'0.75rem', color:'var(--text-tertiary)' }}>{e.date}</p>
-                  </div>
-                  <span style={{ fontWeight: 600, fontSize:'0.875rem', flexShrink: 0 }}>{e.montant.toLocaleString('fr-FR')} €</span>
-                </div>
-              ))}
-            </div>
+        {/* Alertes stock */}
+        <div className="card" style={{ padding:'14px 20px', cursor:'pointer' }} onClick={() => navigate('/patron/stock')}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 10 }}>
+            <p style={{ fontWeight: 600, fontSize:'0.875rem', margin: 0 }}>Alertes stock</p>
+            <span style={{ fontSize:'0.75rem', color:'var(--primary)', fontWeight: 600 }}>Voir le stock →</span>
           </div>
-
-          <div className="card" style={{ padding:'14px 20px', cursor:'pointer' }} onClick={() => navigate('/patron/stock')}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 10 }}>
-              <p style={{ fontWeight: 600, fontSize:'0.875rem', margin: 0 }}>Alertes stock</p>
-              <span style={{ fontSize:'0.75rem', color:'var(--primary)', fontWeight: 600 }}>Voir le stock →</span>
+          {STOCK_ALERTS.map((s, i) => (
+            <div key={i} style={{ display:'flex', justifyContent:'space-between', marginBottom: i < STOCK_ALERTS.length - 1 ? 7 : 0 }}>
+              <span style={{ fontSize:'0.8125rem', color:'var(--text-secondary)' }}>{s.materiau}</span>
+              <span style={{ fontSize:'0.8125rem', fontWeight: 600, color: s.stock < s.seuil * 0.3 ? 'var(--danger)' : 'var(--warning)' }}>
+                {s.stock} {s.unite} / seuil {s.seuil}
+              </span>
             </div>
-            {STOCK_ALERTS.map((s, i) => (
-              <div key={i} style={{ display:'flex', justifyContent:'space-between', marginBottom: i < STOCK_ALERTS.length - 1 ? 7 : 0 }}>
-                <span style={{ fontSize:'0.8125rem', color:'var(--text-secondary)' }}>{s.materiau}</span>
-                <span style={{ fontSize:'0.8125rem', fontWeight: 600, color: s.stock < s.seuil * 0.3 ? 'var(--danger)' : 'var(--warning)' }}>
-                  {s.stock} {s.unite} / seuil {s.seuil}
-                </span>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </div>
