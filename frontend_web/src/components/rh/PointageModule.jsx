@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -22,6 +23,7 @@ export default function PointageModule({ employes = [] }) {
   const STORE_P='freample_pointages'; function loadP(){try{const d=localStorage.getItem(STORE_P);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [pointages, setPointages] = useState(loadP);
   useEffect(()=>{localStorage.setItem(STORE_P,JSON.stringify(pointages));},[pointages]);
+  useEffect(()=>{api.get('/modules/pointages').then(({data})=>{if(data.pointages?.length) setPointages(data.pointages);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [filterDate, setFilterDate] = useState('');

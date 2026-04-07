@@ -511,3 +511,226 @@ ALTER TABLE employes ADD COLUMN IF NOT EXISTS patron_id INTEGER REFERENCES users
 ALTER TABLE employes ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
 CREATE INDEX IF NOT EXISTS idx_employes_patron ON employes(patron_id);
 CREATE INDEX IF NOT EXISTS idx_employes_user ON employes(user_id);
+
+-- ============================================================
+--  INCIDENTS & ACCIDENTS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS incidents (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  date          DATE NOT NULL,
+  type          VARCHAR(100),
+  gravite       VARCHAR(50),
+  chantier      VARCHAR(255),
+  victime       VARCHAR(255),
+  description   TEXT,
+  temoin        VARCHAR(255),
+  arret_travail BOOLEAN DEFAULT false,
+  jours_arret   INTEGER DEFAULT 0,
+  statut        VARCHAR(50) DEFAULT 'ouvert',
+  actions       JSONB DEFAULT '[]',
+  analyse       TEXT,
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  NON-CONFORMITÉS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS non_conformites (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  numero        VARCHAR(50),
+  date          DATE NOT NULL,
+  categorie     VARCHAR(100),
+  chantier      VARCHAR(255),
+  description   TEXT,
+  detecte_par   VARCHAR(255),
+  gravite       VARCHAR(50),
+  cause         TEXT,
+  actions       JSONB DEFAULT '[]',
+  statut        VARCHAR(50) DEFAULT 'ouverte',
+  cout_impact   DECIMAL(12,2) DEFAULT 0,
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  BSDD (TRAÇABILITÉ DÉCHETS)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS bsdd (
+  id              SERIAL PRIMARY KEY,
+  patron_id       INTEGER REFERENCES users(id),
+  numero          VARCHAR(50),
+  date            DATE NOT NULL,
+  chantier        VARCHAR(255),
+  type_dechet     VARCHAR(100),
+  quantite        DECIMAL(10,2),
+  unite           VARCHAR(20),
+  filiere         VARCHAR(100),
+  transporteur    VARCHAR(255),
+  destinataire    VARCHAR(255),
+  numero_cap      VARCHAR(100),
+  statut          VARCHAR(50) DEFAULT 'emis',
+  date_traitement DATE,
+  certificat      BOOLEAN DEFAULT false,
+  cree_le         TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  CERTIFICATIONS (QUALIBAT, RGE, ISO...)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS certifications (
+  id              SERIAL PRIMARY KEY,
+  patron_id       INTEGER REFERENCES users(id),
+  nom             VARCHAR(255),
+  type            VARCHAR(100),
+  organisme       VARCHAR(255),
+  numero          VARCHAR(100),
+  date_obtention  DATE,
+  date_expiration DATE,
+  statut          VARCHAR(50) DEFAULT 'valide',
+  document_url    TEXT,
+  cree_le         TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  AUDITS INTERNES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS audits (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  modele        VARCHAR(50),
+  chantier      VARCHAR(255),
+  date          DATE NOT NULL,
+  auditeur      VARCHAR(255),
+  resultats     JSONB DEFAULT '{}',
+  observations  TEXT,
+  score         INTEGER DEFAULT 0,
+  actions       JSONB DEFAULT '[]',
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  ENTRETIENS ANNUELS / PROFESSIONNELS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS entretiens (
+  id                  SERIAL PRIMARY KEY,
+  patron_id           INTEGER REFERENCES users(id),
+  employe_id          INTEGER REFERENCES employes(id),
+  employe_nom         VARCHAR(255),
+  type                VARCHAR(50),
+  date                DATE,
+  statut              VARCHAR(50) DEFAULT 'planifie',
+  objectifs           JSONB DEFAULT '[]',
+  note_globale        INTEGER DEFAULT 0,
+  commentaire         TEXT,
+  prochain_entretien  DATE,
+  cree_le             TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  ONBOARDING / OFFBOARDING
+-- ============================================================
+CREATE TABLE IF NOT EXISTS onboarding (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  employe_nom   VARCHAR(255),
+  type          VARCHAR(20) DEFAULT 'onboarding',
+  date_debut    DATE,
+  checks        JSONB DEFAULT '{}',
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  POINTAGES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS pointages (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  employe_id    INTEGER REFERENCES employes(id),
+  employe_nom   VARCHAR(255),
+  chantier      VARCHAR(255),
+  date          DATE NOT NULL,
+  heure_debut   TIME,
+  heure_fin     TIME,
+  pause         INTEGER DEFAULT 60,
+  heures        DECIMAL(5,2),
+  heures_supp   DECIMAL(5,2) DEFAULT 0,
+  statut        VARCHAR(50) DEFAULT 'en_attente',
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  PIPELINE COMMERCIAL
+-- ============================================================
+CREATE TABLE IF NOT EXISTS pipeline (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  client        VARCHAR(255),
+  titre         VARCHAR(255),
+  montant       DECIMAL(12,2),
+  etape         VARCHAR(50) DEFAULT 'prospect',
+  date          DATE,
+  relance       DATE,
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  BIBLIOTHÈQUE DE PRIX
+-- ============================================================
+CREATE TABLE IF NOT EXISTS biblio_prix (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  ref           VARCHAR(50),
+  designation   TEXT NOT NULL,
+  categorie     VARCHAR(100),
+  unite         VARCHAR(20),
+  prix_ht       DECIMAL(12,2),
+  tva           DECIMAL(5,2) DEFAULT 20,
+  fournisseur   VARCHAR(255),
+  notes         TEXT,
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  CONTRATS GÉNÉRÉS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS contrats_generes (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  modele        VARCHAR(100),
+  titre         VARCHAR(255),
+  clauses       JSONB DEFAULT '{}',
+  date_creation DATE DEFAULT CURRENT_DATE,
+  statut        VARCHAR(50) DEFAULT 'brouillon',
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  PHOTOS CHANTIER
+-- ============================================================
+CREATE TABLE IF NOT EXISTS photos_chantier (
+  id            SERIAL PRIMARY KEY,
+  patron_id     INTEGER REFERENCES users(id),
+  chantier      VARCHAR(255),
+  categorie     VARCHAR(50),
+  commentaire   TEXT,
+  auteur        VARCHAR(255),
+  url           TEXT,
+  date          DATE DEFAULT CURRENT_DATE,
+  cree_le       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+--  INDEX SUPPLÉMENTAIRES
+-- ============================================================
+CREATE INDEX IF NOT EXISTS idx_incidents_patron ON incidents(patron_id);
+CREATE INDEX IF NOT EXISTS idx_nc_patron ON non_conformites(patron_id);
+CREATE INDEX IF NOT EXISTS idx_bsdd_patron ON bsdd(patron_id);
+CREATE INDEX IF NOT EXISTS idx_certifs_patron ON certifications(patron_id);
+CREATE INDEX IF NOT EXISTS idx_audits_patron ON audits(patron_id);
+CREATE INDEX IF NOT EXISTS idx_entretiens_patron ON entretiens(patron_id);
+CREATE INDEX IF NOT EXISTS idx_pointages_patron ON pointages(patron_id);
+CREATE INDEX IF NOT EXISTS idx_pointages_date ON pointages(date);
+CREATE INDEX IF NOT EXISTS idx_pipeline_patron ON pipeline(patron_id);
+CREATE INDEX IF NOT EXISTS idx_biblio_patron ON biblio_prix(patron_id);
+CREATE INDEX IF NOT EXISTS idx_photos_patron ON photos_chantier(patron_id);

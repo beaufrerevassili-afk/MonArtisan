@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -29,6 +30,7 @@ export default function CertificationsModule() {
   const STORE_C='freample_certifs'; function loadC(){try{const d=localStorage.getItem(STORE_C);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [certifs, setCertifs] = useState(loadC);
   useEffect(()=>{localStorage.setItem(STORE_C,JSON.stringify(certifs));},[certifs]);
+  useEffect(()=>{api.get('/modules/certifications').then(({data})=>{if(data.certifications?.length) setCertifs(data.certifications);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [filterType, setFilterType] = useState('');

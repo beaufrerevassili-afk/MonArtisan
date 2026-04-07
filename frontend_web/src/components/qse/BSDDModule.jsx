@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -23,6 +24,7 @@ export default function BSDDModule() {
   const STORE_B='freample_bsdd'; function loadB(){try{const d=localStorage.getItem(STORE_B);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [bsdds, setBsdds] = useState(loadB);
   useEffect(()=>{localStorage.setItem(STORE_B,JSON.stringify(bsdds));},[bsdds]);
+  useEffect(()=>{api.get('/modules/bsdd').then(({data})=>{if(data.bsdd?.length) setBsdds(data.bsdd);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
 

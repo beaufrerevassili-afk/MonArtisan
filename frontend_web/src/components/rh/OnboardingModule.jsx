@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -54,6 +55,7 @@ function loadOB() { try { const d=localStorage.getItem(STORAGE_OB); return d?JSO
 export default function OnboardingModule({ employes = [] }) {
   const [parcours, setParcours] = useState(loadOB);
   useEffect(() => { localStorage.setItem(STORAGE_OB, JSON.stringify(parcours)); }, [parcours]);
+  useEffect(()=>{api.get('/modules/onboarding').then(({data})=>{if(data.onboarding?.length) setParcours(data.onboarding);}).catch(()=>{});},[]);
   const [view, setView] = useState('onboarding');
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(null);

@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -28,6 +29,7 @@ export default function EPIModule() {
   const STORE_EPI='freample_epi'; function loadEPI(){try{const d=localStorage.getItem(STORE_EPI);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [epis, setEpis] = useState(loadEPI);
   useEffect(()=>{localStorage.setItem(STORE_EPI,JSON.stringify(epis));},[epis]);
+  useEffect(()=>{api.get('/modules/epi').then(({data})=>{if(data.epi?.length) setEpis(data.epi);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [filterEmploye, setFilterEmploye] = useState('');

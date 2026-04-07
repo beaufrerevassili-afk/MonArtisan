@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -22,6 +23,7 @@ export default function NonConformitesModule() {
   const STORE_NC='freample_nc'; function loadNC(){try{const d=localStorage.getItem(STORE_NC);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [ncs, setNcs] = useState(loadNC);
   useEffect(()=>{localStorage.setItem(STORE_NC,JSON.stringify(ncs));},[ncs]);
+  useEffect(()=>{api.get('/modules/non_conformites').then(({data})=>{if(data.non_conformites?.length) setNcs(data.non_conformites);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [selected, setSelected] = useState(null);

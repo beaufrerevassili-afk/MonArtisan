@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -22,6 +23,7 @@ export default function EntretiensModule({ employes = [] }) {
   const STORE_E='freample_entretiens'; function loadE(){try{const d=localStorage.getItem(STORE_E);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [entretiens, setEntretiens] = useState(loadE);
   useEffect(()=>{localStorage.setItem(STORE_E,JSON.stringify(entretiens));},[entretiens]);
+  useEffect(()=>{api.get('/modules/entretiens').then(({data})=>{if(data.entretiens?.length) setEntretiens(data.entretiens);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [selected, setSelected] = useState(null);

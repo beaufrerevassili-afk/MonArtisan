@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useRef, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -22,6 +23,7 @@ export default function PhotosChantier() {
   const STORE_PH='freample_photos'; function loadPH(){try{const d=localStorage.getItem(STORE_PH);return d?JSON.parse(d):DEMO_PHOTOS;}catch{return DEMO_PHOTOS;}}
   const [photos, setPhotos] = useState(loadPH);
   useEffect(()=>{localStorage.setItem(STORE_PH,JSON.stringify(photos));},[photos]);
+  useEffect(()=>{api.get('/modules/photos_chantier').then(({data})=>{if(data.photos_chantier?.length) setPhotos(data.photos_chantier);}).catch(()=>{});},[]);
   const [filterCat, setFilterCat] = useState('Toutes');
   const [filterChantier, setFilterChantier] = useState('Tous');
   const [modal, setModal] = useState(null);

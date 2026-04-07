@@ -1,3 +1,4 @@
+import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
@@ -25,6 +26,7 @@ export default function AuditsModule() {
   const STORE_A='freample_audits'; function loadA(){try{const d=localStorage.getItem(STORE_A);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
   const [audits, setAudits] = useState(loadA);
   useEffect(()=>{localStorage.setItem(STORE_A,JSON.stringify(audits));},[audits]);
+  useEffect(()=>{api.get('/modules/audits').then(({data})=>{if(data.audits?.length) setAudits(data.audits);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [selected, setSelected] = useState(null);
