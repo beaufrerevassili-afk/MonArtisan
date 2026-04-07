@@ -2,362 +2,394 @@ import React, { useState } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
-const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
+const BTN = { padding:'10px 22px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
 const BTN_O = { ...BTN, background:'transparent', color:'#0A0A0A', border:'1px solid #E8E6E1' };
+const H1 = { fontSize:28, fontWeight:800, margin:'40px 0 8px', color:'#0A0A0A', borderBottom:'3px solid #0A0A0A', paddingBottom:8 };
+const H2 = { fontSize:20, fontWeight:700, margin:'28px 0 10px', color:'#1a1a1a' };
+const H3 = { fontSize:15, fontWeight:700, margin:'16px 0 6px', color:'#333' };
+const P = { fontSize:13, lineHeight:1.75, color:'#333', margin:'0 0 10px' };
+const ENCADRE = (color) => ({ background:`${color}08`, border:`1px solid ${color}25`, borderLeft:`4px solid ${color}`, padding:'12px 16px', borderRadius:8, margin:'10px 0', fontSize:12, lineHeight:1.7 });
+const TH = { padding:'8px 12px', fontSize:11, fontWeight:700, color:'#555', textTransform:'uppercase', borderBottom:'2px solid #E8E6E1', textAlign:'left' };
+const TD = { padding:'8px 12px', fontSize:12, borderBottom:'1px solid #E8E6E1' };
 
 const ANNEE = new Date().getFullYear();
 
-// Données de synthèse annuelle (en production, agrégées depuis les autres modules)
-const RAPPORT_DATA = {
-  annee: ANNEE,
-  entreprise: 'Freample Artisans',
-  siret: '12345678900012',
-  effectif: 8,
-  nbChantiers: 24,
+// ══ DONNÉES SIMULÉES RÉALISTES ══
+const D = {
+  structure: 'Freample Artisans BTP',
+  siret: '123 456 789 000 12',
+  effectif: 12,
+  chantiers: 28,
+  ca: '1 240 000',
 
-  // Indicateurs Sécurité
-  securite: {
-    accidents: 3,
-    presquAccidents: 5,
-    joursArret: 12,
-    tauxFrequence: 37.5,
-    tauxGravite: 1.5,
-    incidentsParType: [
-      { type:'Chute', nb:1 },
-      { type:'Coupure', nb:1 },
-      { type:'Presqu\'accident — chute outil', nb:3 },
-      { type:'Glissade', nb:1 },
-      { type:'Électrisation', nb:0 },
-      { type:'Autre', nb:2 },
-    ],
-    epiDistribues: 32,
-    epiRenouveles: 8,
-    visitesMedicales: 8,
-    visitesAJour: 7,
-  },
-
-  // Indicateurs Qualité
-  qualite: {
-    nonConformites: 6,
-    ncCloturees: 4,
-    ncOuvertes: 2,
-    actionsCorrectives: 14,
-    actionsRealisees: 11,
-    reclamationsClients: 2,
-    satisfactionClient: 4.6,
-    certifications: [
-      { nom:'QUALIBAT 2111', statut:'valide', expiration:'2028-06-15' },
-      { nom:'RGE', statut:'valide', expiration:'2029-01-10' },
-      { nom:'QUALIBAT 5112 — Peinture', statut:'expiré', expiration:'2026-03-20' },
-    ],
-  },
-
-  // Indicateurs Hygiène
-  hygiene: {
-    formationsRealisees: 12,
-    formationsPrevues: 15,
-    tauxFormation: 80,
-    accueilsSecurite: 3,
-    exercicesEvacuation: 1,
-    controlesHygiene: 4,
-    conformiteHygiene: 95,
-  },
-
-  // Indicateurs Environnement
-  environnement: {
-    tonnesEvacuees: 18.5,
-    tonneDangereux: 0.58,
-    bsddEmis: 8,
-    bsddTraites: 6,
-    tauxValorisationDechets: 72,
-    consommationEau: '320 m³',
-    consommationEnergie: '12 400 kWh',
-    emissionsCO2: '4.2 tonnes',
-  },
-
-  // Budget QHSE
-  budget: {
-    total: 18500,
-    details: [
-      { poste:'EPI & équipements', montant:4200 },
-      { poste:'Formations sécurité', montant:5800 },
-      { poste:'Certifications & audits', montant:3200 },
-      { poste:'Gestion des déchets', montant:2100 },
-      { poste:'Visite médicale', montant:1600 },
-      { poste:'Mise en conformité matériel', montant:1600 },
-    ],
-    evolution: '+12%',
-    budgetParSalarie: 2312,
-  },
-
-  // Plan d'actions annuel
-  planActions: [
-    { action:'Mise à jour du DUERP', responsable:'Chef chantier', echeance:'Q1', statut:'fait', categorie:'Sécurité' },
-    { action:'Formation CACES R489 — 2 salariés', responsable:'RH', echeance:'Q1', statut:'fait', categorie:'Sécurité' },
-    { action:'Renouvellement QUALIBAT Peinture', responsable:'Direction', echeance:'Q2', statut:'en_retard', categorie:'Qualité' },
-    { action:'Mise en place tri sélectif chantiers', responsable:'QSE', echeance:'Q2', statut:'fait', categorie:'Environnement' },
-    { action:'Audit interne ISO 45001', responsable:'QSE', echeance:'Q3', statut:'fait', categorie:'Sécurité' },
-    { action:'Formation habilitation électrique BR — 1 salarié', responsable:'RH', echeance:'Q3', statut:'fait', categorie:'Sécurité' },
-    { action:'Exercice évacuation incendie', responsable:'QSE', echeance:'Q3', statut:'fait', categorie:'Hygiène' },
-    { action:'Bilan carbone simplifié', responsable:'Direction', echeance:'Q4', statut:'en_cours', categorie:'Environnement' },
-    { action:'Renouvellement EPI hiver', responsable:'Chef chantier', echeance:'Q4', statut:'fait', categorie:'Sécurité' },
-    { action:'Formation SST — recyclage 4 salariés', responsable:'RH', echeance:'Q4', statut:'planifie', categorie:'Hygiène' },
-    { action:'Audit fournisseur déchets dangereux', responsable:'QSE', echeance:'Q4', statut:'planifie', categorie:'Environnement' },
-    { action:'Campagne sensibilisation port EPI', responsable:'QSE', echeance:'Continu', statut:'fait', categorie:'Sécurité' },
+  // Objectifs N-1
+  objectifsN1: [
+    { obj:'Réduire le TF sous 25', resultat:'TF = 37.5', atteint:false, analyse:'2 accidents sur chantiers extérieurs. Renforcer la prévention sur les nouveaux sites.' },
+    { obj:'100% des habilitations à jour', resultat:'92% à jour', atteint:false, analyse:'1 salarié en retard de renouvellement CACES. Planifié Q1 N+1.' },
+    { obj:'Taux de tri déchets > 70%', resultat:'72%', atteint:true, analyse:'Objectif atteint grâce à la mise en place du tri sur 3 chantiers pilotes.' },
+    { obj:'0 réclamation client qualité', resultat:'2 réclamations', atteint:false, analyse:'Retard livraison menuiseries + défaut carrelage. Plans d\'action engagés.' },
+    { obj:'Formation SST 100% des chefs', resultat:'3/3 formés', atteint:true, analyse:'Objectif atteint. Recyclage prévu à 24 mois.' },
   ],
 
-  // Objectifs année suivante
-  objectifsN1: [
-    'Zéro accident avec arrêt',
-    'Taux de formation 100% des salariés',
-    'Renouveler QUALIBAT Peinture (Q1)',
-    'Réduire les déchets dangereux de 20%',
-    'Obtenir le label Éco Artisan',
-    'Taux de valorisation déchets > 80%',
-    'Former 2 salariés SST supplémentaires',
+  // Qualité
+  qualite: {
+    nc: [
+      { ref:'NC-001', date:'15/02', nature:'Joints carrelage irréguliers', chantier:'Dupont', gravite:'Majeure', action:'Reprise + formation', statut:'Clôturée' },
+      { ref:'NC-002', date:'08/04', nature:'Retard menuiseries 3 jours', chantier:'Médecin', gravite:'Mineure', action:'Pénalité fournisseur', statut:'Clôturée' },
+      { ref:'NC-003', date:'22/06', nature:'Peinture écaillée local tech.', chantier:'Pastorelli', gravite:'Mineure', action:'Reprise sous garantie', statut:'Clôturée' },
+      { ref:'NC-004', date:'10/09', nature:'Fissure enduit façade', chantier:'Villa Rousseau', gravite:'Majeure', action:'Expertise + reprise', statut:'En cours' },
+      { ref:'NC-005', date:'03/11', nature:'Cloison non conforme plan', chantier:'Bureau Thiers', gravite:'Mineure', action:'Modification', statut:'Clôturée' },
+      { ref:'NC-006', date:'18/12', nature:'Étanchéité terrasse', chantier:'Résidence Garibaldi', gravite:'Majeure', action:'Intervention urgente', statut:'En cours' },
+    ],
+    reclamations: 2,
+    satisfaction: 4.6,
+    audits: [
+      { type:'Audit interne qualité', date:'Mars', resultat:'3 écarts mineurs', actions:'Mise à jour procédures' },
+      { type:'Audit client (donneur d\'ordre)', date:'Juin', resultat:'Conforme', actions:'Aucune' },
+      { type:'Audit QUALIBAT', date:'Octobre', resultat:'Maintien qualification', actions:'1 observation' },
+    ],
+  },
+
+  // Sécurité
+  securite: {
+    accidents: [
+      { date:'03/04', victime:'J. Martin', nature:'Contusion genou', cause:'Sol mouillé non balisé', arret:5, mesures:'Signalétique + procédure nettoyage' },
+      { date:'20/06', victime:'L. Garcia', nature:'Coupure main', cause:'EPI inadapté (gant)', arret:5, mesures:'Changement gants + formation disqueuse' },
+      { date:'15/10', victime:'M. Lambert', nature:'Entorse cheville', cause:'Marche manquante échafaudage', arret:8, mesures:'Contrôle systématique échafaudages' },
+    ],
+    presquAccidents: [
+      { date:'12/03', description:'Chute outil depuis échafaudage — zone dégagée', mesures:'Filets + rangement outils' },
+      { date:'05/05', description:'Court-circuit armoire électrique — disjoncteur OK', mesures:'Remplacement armoire vétuste' },
+      { date:'28/07', description:'Glissade escalier — pas de blessure', mesures:'Bandes antidérapantes' },
+      { date:'14/09', description:'Projection béton — lunettes portées', mesures:'Rappel port lunettes obligatoire' },
+      { date:'22/11', description:'Chute de charge — zone périmètre respectée', mesures:'Balisage renforcé' },
+    ],
+    heuresTravaillees: 24000,
+    tf: 37.5, // (3 accidents × 1 000 000) / 80 000 heures
+    tg: 0.75, // (18 jours × 1 000) / 24 000 heures
+    epiDistribues: 38,
+    visitesMedicales: { total:12, aJour:11 },
+  },
+
+  // Environnement
+  environnement: {
+    dechets: [
+      { type:'Gravats inertes', tonnage:42.5, filiere:'ISDI', valorise:true },
+      { type:'Bois', tonnage:8.2, filiere:'Centre tri', valorise:true },
+      { type:'Métaux', tonnage:3.1, filiere:'Recyclage', valorise:true },
+      { type:'Plâtre', tonnage:2.8, filiere:'ISDND', valorise:false },
+      { type:'Amiante', tonnage:0.35, filiere:'ISDD', valorise:false },
+      { type:'Peintures/solvants', tonnage:0.23, filiere:'ISDD', valorise:false },
+      { type:'DIB mélangés', tonnage:5.4, filiere:'Centre tri', valorise:true },
+    ],
+    eau: '420 m³',
+    energie: '15 800 kWh',
+    co2: '5.2 tonnes éq. CO2',
+    tauxValorisation: 72,
+    bsdd: { emis:8, traites:7 },
+  },
+
+  // Conformité
+  conformite: [
+    { domaine:'DUERP', statut:'Conforme', detail:'Mis à jour mars et octobre' },
+    { domaine:'Registre sécurité', statut:'Conforme', detail:'Tenu à jour mensuellement' },
+    { domaine:'Habilitations électriques', statut:'Partiel', detail:'1 salarié en retard (prévu Q1)' },
+    { domaine:'CACES', statut:'Conforme', detail:'Tous les conducteurs à jour' },
+    { domaine:'Amiante SS4', statut:'Conforme', detail:'2 salariés formés' },
+    { domaine:'Registre déchets', statut:'Conforme', detail:'BSDD archivés 5 ans' },
+    { domaine:'Affichages obligatoires', statut:'Conforme', detail:'Vérifiés trimestriellement' },
+    { domaine:'EPI', statut:'Conforme', detail:'Attribution individuelle signée' },
+  ],
+
+  // Formations
+  formations: [
+    { intitule:'SST (Sauveteur Secouriste)', nb:3, duree:'14h', organisme:'INRS', statut:'Réalisée' },
+    { intitule:'CACES R489 cat. 3', nb:2, duree:'21h', organisme:'AFTRAL', statut:'Réalisée' },
+    { intitule:'Habilitation électrique BR', nb:1, duree:'14h', organisme:'APAVE', statut:'Réalisée' },
+    { intitule:'Travail en hauteur', nb:4, duree:'7h', organisme:'Interne', statut:'Réalisée' },
+    { intitule:'Accueil sécurité nouveaux', nb:3, duree:'4h', organisme:'Interne', statut:'Réalisée' },
+    { intitule:'Gestes et postures', nb:8, duree:'7h', organisme:'Kiné entreprise', statut:'Réalisée' },
+    { intitule:'Amiante SS4 recyclage', nb:2, duree:'7h', organisme:'AFPA', statut:'Reportée Q1' },
+    { intitule:'Éco-gestes chantier', nb:12, duree:'2h', organisme:'Interne', statut:'Réalisée' },
+  ],
+
+  // Budget
+  budget: {
+    total: 22400,
+    details: [
+      { poste:'EPI & équipements sécurité', montant:4800 },
+      { poste:'Formations obligatoires', montant:6200 },
+      { poste:'Formations complémentaires', montant:1800 },
+      { poste:'Certifications & audits', montant:3400 },
+      { poste:'Gestion des déchets', montant:2600 },
+      { poste:'Visites médicales', montant:1800 },
+      { poste:'Matériel de prévention', montant:1800 },
+    ],
+    parSalarie: 1867,
+    evolution: '+15% vs N-1',
+  },
+
+  // Plan d'actions
+  actions: [
+    { action:'Mise à jour DUERP semestrielle', resp:'QSE', ech:'Mars / Sept', statut:'Réalisé', cat:'S' },
+    { action:'Formation CACES R489 — 2 salariés', resp:'RH', ech:'Q1', statut:'Réalisé', cat:'S' },
+    { action:'Renouvellement QUALIBAT Peinture', resp:'Direction', ech:'Q2', statut:'En retard', cat:'Q' },
+    { action:'Tri sélectif 3 chantiers pilotes', resp:'Chefs chantier', ech:'Q2', statut:'Réalisé', cat:'E' },
+    { action:'Audit interne qualité', resp:'QSE', ech:'Mars', statut:'Réalisé', cat:'Q' },
+    { action:'Habilitation électrique BR — 1 salarié', resp:'RH', ech:'Q3', statut:'Réalisé', cat:'S' },
+    { action:'Exercice évacuation incendie', resp:'QSE', ech:'Q3', statut:'Réalisé', cat:'S' },
+    { action:'Campagne sensibilisation EPI', resp:'QSE', ech:'Continu', statut:'Réalisé', cat:'S' },
+    { action:'Bilan carbone simplifié', resp:'Direction', ech:'Q4', statut:'En cours', cat:'E' },
+    { action:'Formation SST recyclage 4 salariés', resp:'RH', ech:'Q4', statut:'Planifié', cat:'S' },
+    { action:'Audit fournisseur déchets dangereux', resp:'QSE', ech:'Q4', statut:'Planifié', cat:'E' },
+    { action:'Mise en conformité échafaudages', resp:'Chef chantier', ech:'Q3', statut:'Réalisé', cat:'S' },
+  ],
+
+  // Objectifs N+1
+  objectifsN1Next: [
+    { objectif:'Zéro accident avec arrêt > 3 jours', indicateur:'Nb AT avec arrêt', cible:'0' },
+    { objectif:'TF < 20', indicateur:'Taux de fréquence', cible:'< 20' },
+    { objectif:'100% habilitations à jour', indicateur:'% habilitations valides', cible:'100%' },
+    { objectif:'Taux valorisation déchets > 80%', indicateur:'% déchets valorisés', cible:'> 80%' },
+    { objectif:'Obtenir le label Éco Artisan', indicateur:'Label obtenu', cible:'Oui' },
+    { objectif:'Réduire consommation énergie -10%', indicateur:'kWh / chantier', cible:'-10%' },
+    { objectif:'2 audits internes / an', indicateur:'Nb audits', cible:'2' },
+    { objectif:'Note satisfaction client > 4.7/5', indicateur:'Note moyenne', cible:'> 4.7' },
   ],
 };
 
-const statutColors = { fait:'#16A34A', en_cours:'#D97706', en_retard:'#DC2626', planifie:'#2563EB' };
-const statutLabels = { fait:'Réalisé', en_cours:'En cours', en_retard:'En retard', planifie:'Planifié' };
-const catColors = { Sécurité:'#DC2626', Qualité:'#2563EB', Hygiène:'#16A34A', Environnement:'#D97706' };
-
 export default function RapportAnnuelQHSE() {
-  const [viewMode, setViewMode] = useState('ecran'); // ecran | impression
-  const d = RAPPORT_DATA;
+  const [showExport, setShowExport] = useState(false);
+  const actionsRealisees = D.actions.filter(a=>a.statut==='Réalisé').length;
+  const tauxRealisation = Math.round(actionsRealisees/D.actions.length*100);
+  const totalTonnage = D.environnement.dechets.reduce((s,d)=>s+d.tonnage,0);
+  const tonnageValorise = D.environnement.dechets.filter(d=>d.valorise).reduce((s,d)=>s+d.tonnage,0);
+  const objAtteints = D.objectifsN1.filter(o=>o.atteint).length;
 
-  const actionsRealisees = d.planActions.filter(a => a.statut === 'fait').length;
-  const tauxRealisation = Math.round(actionsRealisees / d.planActions.length * 100);
+  const exportFullReport = () => {
+    let r = '';
+    r += `${'═'.repeat(60)}\n`;
+    r += `       RAPPORT ANNUEL QHSE — ${ANNEE}\n`;
+    r += `       ${D.structure}\n`;
+    r += `       SIRET : ${D.siret}\n`;
+    r += `       Service QHSE\n`;
+    r += `${'═'.repeat(60)}\n\n`;
+    r += `SOMMAIRE\n${'─'.repeat(40)}\n1. Introduction\n2. Politique QHSE\n3. Bilan des objectifs N-1\n4. Performance Qualité\n5. Performance Sécurité\n6. Performance Environnement\n7. Conformité réglementaire\n8. Audits et contrôles\n9. Formation et sensibilisation\n10. Plan d'actions global\n11. Perspectives et objectifs N+1\n12. Conclusion\nAnnexes\n\n`;
 
-  const exportRapport = () => {
-    // Générer le texte du rapport
-    let text = `RAPPORT ANNUEL QHSE ${d.annee}\n`;
-    text += `${'='.repeat(50)}\n\n`;
-    text += `Entreprise : ${d.entreprise}\nSIRET : ${d.siret}\nEffectif : ${d.effectif} salariés\nChantiers : ${d.nbChantiers}\n\n`;
+    r += `${'═'.repeat(60)}\n1. INTRODUCTION\n${'─'.repeat(40)}\n\n`;
+    r += `${D.structure} est une entreprise du bâtiment et des travaux publics employant ${D.effectif} salariés. Au cours de l'année ${ANNEE}, l'entreprise a réalisé ${D.chantiers} chantiers pour un chiffre d'affaires de ${D.ca} €.\n\nLe présent rapport dresse le bilan annuel de la démarche Qualité, Hygiène, Sécurité et Environnement, conformément aux exigences réglementaires et aux engagements de la direction.\n\n`;
 
-    text += `1. SÉCURITÉ\n${'-'.repeat(30)}\n`;
-    text += `Accidents du travail : ${d.securite.accidents}\nPresqu'accidents : ${d.securite.presquAccidents}\nJours d'arrêt : ${d.securite.joursArret}\nTaux de fréquence : ${d.securite.tauxFrequence}\nTaux de gravité : ${d.securite.tauxGravite}\nEPI distribués : ${d.securite.epiDistribues}\nVisites médicales à jour : ${d.securite.visitesAJour}/${d.securite.visitesMedicales}\n\n`;
+    r += `${'═'.repeat(60)}\n2. POLITIQUE QHSE\n${'─'.repeat(40)}\n\n`;
+    r += `La direction de ${D.structure} s'engage à :\n- Garantir la sécurité et la santé de chaque collaborateur sur tous les chantiers\n- Assurer la qualité des prestations et la satisfaction des clients\n- Réduire l'impact environnemental de nos activités\n- Respecter les exigences réglementaires et normatives\n- Améliorer continuellement nos performances QHSE\n\n`;
 
-    text += `2. QUALITÉ\n${'-'.repeat(30)}\n`;
-    text += `Non-conformités : ${d.qualite.nonConformites} (${d.qualite.ncCloturees} clôturées, ${d.qualite.ncOuvertes} ouvertes)\nActions correctives : ${d.qualite.actionsRealisees}/${d.qualite.actionsCorrectives} réalisées\nSatisfaction client : ${d.qualite.satisfactionClient}/5\nRéclamations : ${d.qualite.reclamationsClients}\n\n`;
+    r += `${'═'.repeat(60)}\n3. BILAN DES OBJECTIFS N-1\n${'─'.repeat(40)}\n\n`;
+    r += `Résultat global : ${objAtteints}/${D.objectifsN1.length} objectifs atteints (${Math.round(objAtteints/D.objectifsN1.length*100)}%)\n\n`;
+    D.objectifsN1.forEach(o => { r += `${o.atteint?'✓':'✗'} ${o.obj}\n  Résultat : ${o.resultat}\n  Analyse : ${o.analyse}\n\n`; });
 
-    text += `3. HYGIÈNE\n${'-'.repeat(30)}\n`;
-    text += `Formations réalisées : ${d.hygiene.formationsRealisees}/${d.hygiene.formationsPrevues}\nAccueils sécurité : ${d.hygiene.accueilsSecurite}\nConformité hygiène : ${d.hygiene.conformiteHygiene}%\n\n`;
+    r += `${'═'.repeat(60)}\n4. PERFORMANCE QUALITÉ\n${'─'.repeat(40)}\n\n`;
+    r += `Non-conformités : ${D.qualite.nc.length} (dont ${D.qualite.nc.filter(n=>n.statut==='Clôturée').length} clôturées)\nRéclamations clients : ${D.qualite.reclamations}\nSatisfaction client : ${D.qualite.satisfaction}/5\n\nDétail des non-conformités :\n`;
+    D.qualite.nc.forEach(n => { r += `  ${n.ref} | ${n.date} | ${n.nature} | ${n.gravite} | ${n.statut}\n`; });
+    r += `\n[ANALYSE] Le nombre de NC est en hausse par rapport à N-1. Les NC majeures concernent des défauts d'exécution liés à la sous-traitance. Actions : renforcement des contrôles intermédiaires.\n\n`;
 
-    text += `4. ENVIRONNEMENT\n${'-'.repeat(30)}\n`;
-    text += `Déchets évacués : ${d.environnement.tonnesEvacuees} tonnes\nDont dangereux : ${d.environnement.tonneDangereux} tonnes\nBSDD émis : ${d.environnement.bsddEmis}\nTaux valorisation : ${d.environnement.tauxValorisationDechets}%\nÉmissions CO2 : ${d.environnement.emissionsCO2}\n\n`;
+    r += `${'═'.repeat(60)}\n5. PERFORMANCE SÉCURITÉ\n${'─'.repeat(40)}\n\n`;
+    r += `Accidents du travail : ${D.securite.accidents.length}\nJours d'arrêt : ${D.securite.accidents.reduce((s,a)=>s+a.arret,0)}\nPresqu'accidents déclarés : ${D.securite.presquAccidents.length}\nHeures travaillées : ${D.securite.heuresTravaillees.toLocaleString()}\nTaux de fréquence (TF) : ${D.securite.tf}\nTaux de gravité (TG) : ${D.securite.tg}\nEPI distribués : ${D.securite.epiDistribues}\nVisites médicales à jour : ${D.securite.visitesMedicales.aJour}/${D.securite.visitesMedicales.total}\n\nDétail des accidents :\n`;
+    D.securite.accidents.forEach(a => { r += `  ${a.date} | ${a.victime} | ${a.nature} | ${a.arret}j arrêt | Cause : ${a.cause}\n  → Mesures : ${a.mesures}\n\n`; });
+    r += `[ANALYSE] Le TF de ${D.securite.tf} reste au-dessus de l'objectif (< 25). Les accidents sont liés à des défauts d'organisation du poste de travail. La politique de déclaration des presqu'accidents (${D.securite.presquAccidents.length}) montre une bonne culture sécurité.\n\n`;
 
-    text += `5. BUDGET QHSE\n${'-'.repeat(30)}\n`;
-    text += `Budget total : ${d.budget.total.toLocaleString()} €\nPar salarié : ${d.budget.budgetParSalarie} €\nÉvolution : ${d.budget.evolution}\n`;
-    d.budget.details.forEach(b => { text += `  - ${b.poste} : ${b.montant.toLocaleString()} €\n`; });
+    r += `${'═'.repeat(60)}\n6. PERFORMANCE ENVIRONNEMENT\n${'─'.repeat(40)}\n\n`;
+    r += `Tonnage total déchets : ${totalTonnage.toFixed(1)} tonnes\nDont déchets dangereux : ${D.environnement.dechets.filter(d=>!d.valorise&&d.filiere==='ISDD').reduce((s,d)=>s+d.tonnage,0).toFixed(2)} tonnes\nTaux de valorisation : ${D.environnement.tauxValorisation}%\nBSDD émis : ${D.environnement.bsdd.emis} | traités : ${D.environnement.bsdd.traites}\nConsommation eau : ${D.environnement.eau}\nConsommation énergie : ${D.environnement.energie}\nEmissions CO2 : ${D.environnement.co2}\n\nDétail par type de déchet :\n`;
+    D.environnement.dechets.forEach(d => { r += `  ${d.type} : ${d.tonnage}t → ${d.filiere} ${d.valorise?'(valorisé)':''}\n`; });
+    r += `\n[ANALYSE] Objectif de 70% de valorisation atteint (72%). Les déchets dangereux sont correctement tracés via BSDD. Axe d'amélioration : réduire les DIB mélangés.\n\n`;
 
-    text += `\n6. PLAN D'ACTIONS (${tauxRealisation}% réalisé)\n${'-'.repeat(30)}\n`;
-    d.planActions.forEach(a => { text += `  [${statutLabels[a.statut]}] ${a.action} — ${a.responsable} — ${a.echeance}\n`; });
+    r += `${'═'.repeat(60)}\n7. CONFORMITÉ RÉGLEMENTAIRE\n${'─'.repeat(40)}\n\n`;
+    D.conformite.forEach(c => { r += `  ${c.statut==='Conforme'?'✓':'⚠'} ${c.domaine} — ${c.statut} — ${c.detail}\n`; });
+    r += `\nTaux de conformité : ${D.conformite.filter(c=>c.statut==='Conforme').length}/${D.conformite.length} (${Math.round(D.conformite.filter(c=>c.statut==='Conforme').length/D.conformite.length*100)}%)\n\n`;
 
-    text += `\n7. OBJECTIFS ${d.annee + 1}\n${'-'.repeat(30)}\n`;
-    d.objectifsN1.forEach(o => { text += `  • ${o}\n`; });
+    r += `${'═'.repeat(60)}\n8. AUDITS ET CONTRÔLES\n${'─'.repeat(40)}\n\n`;
+    D.qualite.audits.forEach(a => { r += `  ${a.date} | ${a.type} | Résultat : ${a.resultat} | Actions : ${a.actions}\n`; });
+    r += `\n`;
 
-    text += `\n\nRapport généré le ${new Date().toLocaleDateString('fr-FR')}\n`;
+    r += `${'═'.repeat(60)}\n9. FORMATION ET SENSIBILISATION\n${'─'.repeat(40)}\n\n`;
+    r += `Formations réalisées : ${D.formations.filter(f=>f.statut==='Réalisée').length}/${D.formations.length}\nTaux de participation : ${Math.round(D.formations.filter(f=>f.statut==='Réalisée').length/D.formations.length*100)}%\n\n`;
+    D.formations.forEach(f => { r += `  ${f.intitule} | ${f.nb} pers. | ${f.duree} | ${f.organisme} | ${f.statut}\n`; });
+    r += `\n`;
 
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    r += `${'═'.repeat(60)}\n10. PLAN D'ACTIONS GLOBAL\n${'─'.repeat(40)}\n\n`;
+    r += `Taux de réalisation : ${tauxRealisation}% (${actionsRealisees}/${D.actions.length})\n\n`;
+    D.actions.forEach(a => { r += `  [${a.statut}] ${a.action} | ${a.resp} | ${a.ech} | ${a.cat==='S'?'Sécurité':a.cat==='Q'?'Qualité':'Environnement'}\n`; });
+    r += `\n`;
+
+    r += `${'═'.repeat(60)}\n11. PERSPECTIVES ET OBJECTIFS N+1\n${'─'.repeat(40)}\n\n`;
+    D.objectifsN1Next.forEach(o => { r += `  → ${o.objectif}\n    Indicateur : ${o.indicateur} | Cible : ${o.cible}\n\n`; });
+
+    r += `${'═'.repeat(60)}\n12. CONCLUSION\n${'─'.repeat(40)}\n\n`;
+    r += `L'année ${ANNEE} a été marquée par une activité soutenue (${D.chantiers} chantiers) avec des résultats QHSE contrastés :\n\n`;
+    r += `Points positifs :\n- Objectif valorisation déchets atteint (72%)\n- 100% des chefs d'équipe formés SST\n- Bonne culture de déclaration des presqu'accidents\n- Maintien des qualifications QUALIBAT\n\n`;
+    r += `Axes d'amélioration :\n- Taux de fréquence AT à réduire (objectif < 20)\n- Renforcer le contrôle qualité en sous-traitance\n- Accélérer le renouvellement des certifications\n\n`;
+    r += `Le budget QHSE a été porté à ${D.budget.total.toLocaleString()} € (+15%), démontrant l'engagement de la direction dans la démarche d'amélioration continue.\n\n`;
+
+    r += `${'═'.repeat(60)}\nANNEXES\n${'─'.repeat(40)}\n\n`;
+    r += `A1. Budget QHSE détaillé\n`;
+    r += `Budget total : ${D.budget.total.toLocaleString()} € | Par salarié : ${D.budget.parSalarie} €/an | Évolution : ${D.budget.evolution}\n\n`;
+    D.budget.details.forEach(b => { r += `  ${b.poste} : ${b.montant.toLocaleString()} € (${Math.round(b.montant/D.budget.total*100)}%)\n`; });
+    r += `\n\nRapport généré le ${new Date().toLocaleDateString('fr-FR')} — Service QHSE — ${D.structure}\n`;
+
+    const blob = new Blob([r], { type:'text/plain;charset=utf-8' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `Rapport_QHSE_${d.annee}_${d.entreprise.replace(/\s/g, '_')}.txt`; a.click();
+    a.download = `Rapport_Annuel_QHSE_${ANNEE}_${D.structure.replace(/\s/g,'_')}.txt`; a.click();
   };
 
   return (
-    <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+    <div style={{ maxWidth:900, margin:'0 auto' }}>
+      {/* Actions */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
         <div>
-          <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Rapport annuel QHSE — {d.annee}</h2>
-          <p style={{ fontSize:13, color:'#555', margin:'4px 0 0' }}>{d.entreprise} · {d.effectif} salariés · {d.nbChantiers} chantiers</p>
+          <h2 style={{ fontSize:22, fontWeight:800, margin:0 }}>Rapport Annuel QHSE — {ANNEE}</h2>
+          <p style={{ fontSize:13, color:'#555', margin:'4px 0 0' }}>{D.structure} · {D.effectif} salariés · {D.chantiers} chantiers</p>
         </div>
         <div style={{ display:'flex', gap:6 }}>
-          <button onClick={()=>window.print()} style={BTN_O}>Imprimer</button>
-          <button onClick={exportRapport} style={BTN}>Exporter le rapport</button>
+          <button onClick={()=>window.print()} style={BTN_O}>Imprimer / PDF</button>
+          <button onClick={exportFullReport} style={BTN}>Exporter rapport complet</button>
         </div>
       </div>
 
-      {/* KPIs synthèse */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
-        {[
-          { l:'Accidents', v:d.securite.accidents, sub:`${d.securite.joursArret}j arrêt`, c:'#DC2626' },
-          { l:'Non-conformités', v:`${d.qualite.ncCloturees}/${d.qualite.nonConformites}`, sub:'clôturées', c:'#2563EB' },
-          { l:'Budget QHSE', v:`${(d.budget.total/1000).toFixed(1)}k€`, sub:`${d.budget.evolution} vs N-1`, c:'#D97706' },
-          { l:'Plan d\'actions', v:`${tauxRealisation}%`, sub:`${actionsRealisees}/${d.planActions.length} réalisées`, c:'#16A34A' },
-        ].map(k=>(
-          <div key={k.l} style={{...CARD, position:'relative'}}>
-            <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.c, borderRadius:'14px 14px 0 0' }}/>
-            <div style={{ fontSize:11, color:'#555', textTransform:'uppercase', marginBottom:4 }}>{k.l}</div>
-            <div style={{ fontSize:24, fontWeight:300 }}>{k.v}</div>
-            <div style={{ fontSize:11, color:'#555' }}>{k.sub}</div>
-          </div>
+      {/* ══ 1. INTRODUCTION ══ */}
+      <h2 style={H1}>1. Introduction</h2>
+      <p style={P}>{D.structure} est une entreprise du bâtiment employant <strong>{D.effectif} salariés</strong>. Au cours de l'année {ANNEE}, l'entreprise a réalisé <strong>{D.chantiers} chantiers</strong> pour un chiffre d'affaires de <strong>{D.ca} €</strong>.</p>
+      <p style={P}>Le présent rapport dresse le bilan annuel de la démarche Qualité, Hygiène, Sécurité et Environnement, conformément aux exigences réglementaires et aux engagements de la direction.</p>
+
+      {/* ══ 2. POLITIQUE QHSE ══ */}
+      <h2 style={H1}>2. Politique QHSE</h2>
+      <div style={ENCADRE('#2563EB')}>
+        <strong>Engagement de la direction</strong><br/>
+        La direction s'engage à garantir la sécurité de chaque collaborateur, assurer la qualité des prestations, réduire l'impact environnemental et améliorer continuellement les performances QHSE.
+      </div>
+
+      {/* ══ 3. BILAN OBJECTIFS N-1 ══ */}
+      <h2 style={H1}>3. Bilan des objectifs N-1</h2>
+      <p style={P}><strong>{objAtteints}/{D.objectifsN1.length}</strong> objectifs atteints ({Math.round(objAtteints/D.objectifsN1.length*100)}%)</p>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:16 }}>
+        <thead><tr style={{ background:'#F2F2F7' }}>
+          <th style={TH}>Objectif</th><th style={TH}>Résultat</th><th style={TH}>Atteint</th>
+        </tr></thead>
+        <tbody>{D.objectifsN1.map((o,i)=>(
+          <tr key={i}><td style={TD}>{o.obj}</td><td style={TD}>{o.resultat}</td><td style={{...TD,color:o.atteint?'#16A34A':'#DC2626',fontWeight:700}}>{o.atteint?'✓ Oui':'✗ Non'}</td></tr>
+        ))}</tbody>
+      </table>
+      {D.objectifsN1.filter(o=>!o.atteint).map((o,i)=>(
+        <div key={i} style={ENCADRE('#D97706')}><strong>Analyse — {o.obj} :</strong> {o.analyse}</div>
+      ))}
+
+      {/* ══ 4. PERFORMANCE QUALITÉ ══ */}
+      <h2 style={H1}>4. Performance Qualité</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:16 }}>
+        {[{l:'Non-conformités',v:D.qualite.nc.length,c:'#2563EB'},{l:'Satisfaction',v:`${D.qualite.satisfaction}/5`,c:DS.gold},{l:'Réclamations',v:D.qualite.reclamations,c:'#D97706'}].map(k=>(
+          <div key={k.l} style={{...CARD,textAlign:'center',position:'relative'}}><div style={{position:'absolute',top:0,left:0,right:0,height:3,background:k.c,borderRadius:'14px 14px 0 0'}}/><div style={{fontSize:28,fontWeight:300,color:k.c}}>{k.v}</div><div style={{fontSize:11,color:'#555'}}>{k.l}</div></div>
         ))}
       </div>
+      <h3 style={H3}>Détail des non-conformités</h3>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Réf</th><th style={TH}>Date</th><th style={TH}>Nature</th><th style={TH}>Gravité</th><th style={TH}>Statut</th></tr></thead>
+        <tbody>{D.qualite.nc.map(n=>(<tr key={n.ref}><td style={{...TD,fontWeight:600}}>{n.ref}</td><td style={TD}>{n.date}</td><td style={TD}>{n.nature}</td><td style={{...TD,color:n.gravite==='Majeure'?'#DC2626':'#D97706',fontWeight:600}}>{n.gravite}</td><td style={{...TD,color:n.statut==='Clôturée'?'#16A34A':'#D97706'}}>{n.statut}</td></tr>))}</tbody>
+      </table>
 
-      {/* 1. Sécurité */}
-      <div style={{...CARD, marginBottom:12, borderLeft:'4px solid #DC2626'}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px', color:'#DC2626' }}>1. Sécurité</h3>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:12 }}>
-          <div style={{ background:'#FEF2F2', padding:12, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:28, fontWeight:300, color:'#DC2626' }}>{d.securite.accidents}</div>
-            <div style={{ fontSize:11, color:'#555' }}>Accidents du travail</div>
-          </div>
-          <div style={{ background:'#FFFBEB', padding:12, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:28, fontWeight:300, color:'#D97706' }}>{d.securite.presquAccidents}</div>
-            <div style={{ fontSize:11, color:'#555' }}>Presqu'accidents</div>
-          </div>
-          <div style={{ background:'#EFF6FF', padding:12, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:28, fontWeight:300, color:'#2563EB' }}>{d.securite.joursArret}</div>
-            <div style={{ fontSize:11, color:'#555' }}>Jours d'arrêt</div>
-          </div>
-        </div>
-        <div style={{ fontSize:12, color:'#555', marginBottom:8 }}>
-          <strong>Taux de fréquence :</strong> {d.securite.tauxFrequence} · <strong>Taux de gravité :</strong> {d.securite.tauxGravite}
-        </div>
-        <div style={{ fontSize:12, color:'#555' }}>
-          <strong>EPI distribués :</strong> {d.securite.epiDistribues} · <strong>Renouvelés :</strong> {d.securite.epiRenouveles} · <strong>Visites médicales :</strong> {d.securite.visitesAJour}/{d.securite.visitesMedicales} à jour
-        </div>
-        <div style={{ marginTop:10 }}>
-          <div style={{ fontSize:12, fontWeight:600, marginBottom:6 }}>Répartition par type d'incident</div>
-          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-            {d.securite.incidentsParType.filter(i=>i.nb>0).map(i=>(
-              <span key={i.type} style={{ fontSize:11, padding:'3px 10px', background:'#FEF2F2', border:'1px solid #DC262620', borderRadius:6 }}>{i.type}: <strong>{i.nb}</strong></span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Qualité */}
-      <div style={{...CARD, marginBottom:12, borderLeft:'4px solid #2563EB'}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px', color:'#2563EB' }}>2. Qualité</h3>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:10, marginBottom:12 }}>
-          {[
-            { l:'Non-conformités', v:d.qualite.nonConformites, c:'#2563EB' },
-            { l:'Actions correctives', v:`${d.qualite.actionsRealisees}/${d.qualite.actionsCorrectives}`, c:'#16A34A' },
-            { l:'Satisfaction client', v:`${d.qualite.satisfactionClient}/5`, c:DS.gold },
-            { l:'Réclamations', v:d.qualite.reclamationsClients, c:'#D97706' },
-          ].map(k=>(
-            <div key={k.l} style={{ background:'#F8F7F4', padding:10, borderRadius:8, textAlign:'center' }}>
-              <div style={{ fontSize:22, fontWeight:300, color:k.c }}>{k.v}</div>
-              <div style={{ fontSize:10, color:'#555' }}>{k.l}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ fontSize:12, fontWeight:600, marginBottom:6 }}>Certifications</div>
-        {d.qualite.certifications.map(c=>(
-          <div key={c.nom} style={{ display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:'1px solid #E8E6E1', fontSize:12 }}>
-            <span>{c.nom}</span>
-            <span style={{ fontWeight:600, color:c.statut==='valide'?'#16A34A':'#DC2626' }}>{c.statut} — {c.expiration}</span>
-          </div>
+      {/* ══ 5. PERFORMANCE SÉCURITÉ ══ */}
+      <h2 style={H1}>5. Performance Sécurité</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
+        {[{l:'Accidents AT',v:D.securite.accidents.length,c:'#DC2626'},{l:'Jours arrêt',v:D.securite.accidents.reduce((s,a)=>s+a.arret,0),c:'#DC2626'},{l:'TF',v:D.securite.tf,c:'#D97706'},{l:'TG',v:D.securite.tg,c:'#D97706'}].map(k=>(
+          <div key={k.l} style={{...CARD,textAlign:'center',position:'relative'}}><div style={{position:'absolute',top:0,left:0,right:0,height:3,background:k.c,borderRadius:'14px 14px 0 0'}}/><div style={{fontSize:28,fontWeight:300,color:k.c}}>{k.v}</div><div style={{fontSize:11,color:'#555'}}>{k.l}</div></div>
         ))}
       </div>
+      <h3 style={H3}>Détail des accidents</h3>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Date</th><th style={TH}>Victime</th><th style={TH}>Nature</th><th style={TH}>Cause</th><th style={TH}>Arrêt</th></tr></thead>
+        <tbody>{D.securite.accidents.map((a,i)=>(<tr key={i}><td style={TD}>{a.date}</td><td style={{...TD,fontWeight:600}}>{a.victime}</td><td style={TD}>{a.nature}</td><td style={TD}>{a.cause}</td><td style={{...TD,fontWeight:600,color:'#DC2626'}}>{a.arret}j</td></tr>))}</tbody>
+      </table>
+      <div style={ENCADRE('#DC2626')}><strong>Analyse :</strong> Le TF de {D.securite.tf} reste supérieur à l'objectif ({'<'} 25). Les 3 accidents sont liés à des défauts d'organisation du poste de travail. La politique de déclaration des presqu'accidents ({D.securite.presquAccidents.length} déclarés) démontre une bonne culture sécurité.</div>
 
-      {/* 3. Hygiène */}
-      <div style={{...CARD, marginBottom:12, borderLeft:'4px solid #16A34A'}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px', color:'#16A34A' }}>3. Hygiène</h3>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
-          <div style={{ background:'#F0FDF4', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#16A34A' }}>{d.hygiene.formationsRealisees}/{d.hygiene.formationsPrevues}</div>
-            <div style={{ fontSize:10, color:'#555' }}>Formations réalisées</div>
-          </div>
-          <div style={{ background:'#F0FDF4', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#16A34A' }}>{d.hygiene.accueilsSecurite}</div>
-            <div style={{ fontSize:10, color:'#555' }}>Accueils sécurité</div>
-          </div>
-          <div style={{ background:'#F0FDF4', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#16A34A' }}>{d.hygiene.conformiteHygiene}%</div>
-            <div style={{ fontSize:10, color:'#555' }}>Conformité hygiène</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Environnement */}
-      <div style={{...CARD, marginBottom:12, borderLeft:'4px solid #D97706'}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px', color:'#D97706' }}>4. Environnement</h3>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:10 }}>
-          <div style={{ background:'#FFFBEB', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#D97706' }}>{d.environnement.tonnesEvacuees}t</div>
-            <div style={{ fontSize:10, color:'#555' }}>Déchets évacués</div>
-          </div>
-          <div style={{ background:'#FFFBEB', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#D97706' }}>{d.environnement.tauxValorisationDechets}%</div>
-            <div style={{ fontSize:10, color:'#555' }}>Taux valorisation</div>
-          </div>
-          <div style={{ background:'#FFFBEB', padding:10, borderRadius:8, textAlign:'center' }}>
-            <div style={{ fontSize:22, fontWeight:300, color:'#D97706' }}>{d.environnement.emissionsCO2}</div>
-            <div style={{ fontSize:10, color:'#555' }}>Émissions CO2</div>
-          </div>
-        </div>
-        <div style={{ fontSize:12, color:'#555' }}>
-          <strong>BSDD :</strong> {d.environnement.bsddEmis} émis, {d.environnement.bsddTraites} traités · <strong>Eau :</strong> {d.environnement.consommationEau} · <strong>Énergie :</strong> {d.environnement.consommationEnergie}
-        </div>
-      </div>
-
-      {/* 5. Budget QHSE */}
-      <div style={{...CARD, marginBottom:12}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px' }}>5. Budget QHSE — {d.budget.total.toLocaleString()} €</h3>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
-          <div>
-            <div style={{ fontSize:12, fontWeight:600, marginBottom:8 }}>Répartition par poste</div>
-            {d.budget.details.map(b=>{
-              const pct = Math.round(b.montant/d.budget.total*100);
-              return <div key={b.poste} style={{ marginBottom:6 }}>
-                <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:2 }}>
-                  <span style={{ color:'#555' }}>{b.poste}</span>
-                  <span style={{ fontWeight:600 }}>{b.montant.toLocaleString()} € ({pct}%)</span>
-                </div>
-                <div style={{ height:4, background:'#E8E6E1', borderRadius:2 }}>
-                  <div style={{ height:4, background:DS.gold, borderRadius:2, width:`${pct}%` }}/>
-                </div>
-              </div>;
-            })}
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-            <div style={{ background:'#F8F7F4', padding:14, borderRadius:8, textAlign:'center' }}>
-              <div style={{ fontSize:28, fontWeight:300, color:DS.gold }}>{d.budget.budgetParSalarie} €</div>
-              <div style={{ fontSize:11, color:'#555' }}>Par salarié / an</div>
-            </div>
-            <div style={{ background:'#F8F7F4', padding:14, borderRadius:8, textAlign:'center' }}>
-              <div style={{ fontSize:28, fontWeight:300, color:d.budget.evolution.startsWith('+')?'#16A34A':'#DC2626' }}>{d.budget.evolution}</div>
-              <div style={{ fontSize:11, color:'#555' }}>vs année précédente</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Plan d'actions */}
-      <div style={{...CARD, marginBottom:12}}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-          <h3 style={{ fontSize:16, fontWeight:700, margin:0 }}>6. Plan d'actions — {tauxRealisation}% réalisé</h3>
-          <div style={{ width:120, height:6, background:'#E8E6E1', borderRadius:3 }}>
-            <div style={{ height:6, background:'#16A34A', borderRadius:3, width:`${tauxRealisation}%` }}/>
-          </div>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'2.5fr 1fr 0.8fr 1fr', padding:'8px 12px', fontSize:10, fontWeight:700, color:'#555', borderBottom:'2px solid #E8E6E1' }}>
-          <span>Action</span><span>Responsable</span><span>Échéance</span><span>Statut</span>
-        </div>
-        {d.planActions.map((a,i)=>(
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'2.5fr 1fr 0.8fr 1fr', padding:'8px 12px', fontSize:12, borderBottom:'1px solid #E8E6E1', alignItems:'center' }}>
-            <div>
-              <span style={{ fontWeight:500 }}>{a.action}</span>
-              <span style={{ fontSize:10, color:catColors[a.categorie], fontWeight:600, marginLeft:6 }}>{a.categorie}</span>
-            </div>
-            <span style={{ color:'#555' }}>{a.responsable}</span>
-            <span style={{ color:'#555' }}>{a.echeance}</span>
-            <span style={{ fontSize:10, fontWeight:600, color:statutColors[a.statut], background:`${statutColors[a.statut]}15`, padding:'2px 8px', borderRadius:6, textAlign:'center' }}>{statutLabels[a.statut]}</span>
-          </div>
+      {/* ══ 6. PERFORMANCE ENVIRONNEMENT ══ */}
+      <h2 style={H1}>6. Performance Environnement</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
+        {[{l:'Déchets',v:`${totalTonnage.toFixed(1)}t`,c:'#D97706'},{l:'Valorisation',v:`${D.environnement.tauxValorisation}%`,c:'#16A34A'},{l:'Énergie',v:D.environnement.energie,c:'#2563EB'},{l:'CO2',v:D.environnement.co2,c:'#D97706'}].map(k=>(
+          <div key={k.l} style={{...CARD,textAlign:'center',position:'relative'}}><div style={{position:'absolute',top:0,left:0,right:0,height:3,background:k.c,borderRadius:'14px 14px 0 0'}}/><div style={{fontSize:18,fontWeight:300,color:k.c}}>{k.v}</div><div style={{fontSize:11,color:'#555'}}>{k.l}</div></div>
         ))}
       </div>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Type déchet</th><th style={TH}>Tonnage</th><th style={TH}>Filière</th><th style={TH}>Valorisé</th></tr></thead>
+        <tbody>{D.environnement.dechets.map((d,i)=>(<tr key={i}><td style={TD}>{d.type}</td><td style={{...TD,fontWeight:600}}>{d.tonnage}t</td><td style={TD}>{d.filiere}</td><td style={{...TD,color:d.valorise?'#16A34A':'#DC2626'}}>{d.valorise?'Oui':'Non'}</td></tr>))}</tbody>
+      </table>
 
-      {/* 7. Objectifs N+1 */}
-      <div style={{...CARD, borderLeft:'4px solid '+DS.gold}}>
-        <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px' }}>7. Objectifs {d.annee + 1}</h3>
-        {d.objectifsN1.map((o,i)=>(
-          <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 0', borderBottom:'1px solid #E8E6E1' }}>
-            <div style={{ width:20, height:20, borderRadius:4, border:'2px solid #E8E6E1', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#555', flexShrink:0 }}>{i+1}</div>
-            <span style={{ fontSize:13 }}>{o}</span>
-          </div>
-        ))}
+      {/* ══ 7. CONFORMITÉ ══ */}
+      <h2 style={H1}>7. Conformité réglementaire</h2>
+      <p style={P}>Taux de conformité : <strong>{D.conformite.filter(c=>c.statut==='Conforme').length}/{D.conformite.length}</strong> ({Math.round(D.conformite.filter(c=>c.statut==='Conforme').length/D.conformite.length*100)}%)</p>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Domaine</th><th style={TH}>Statut</th><th style={TH}>Détail</th></tr></thead>
+        <tbody>{D.conformite.map((c,i)=>(<tr key={i}><td style={{...TD,fontWeight:600}}>{c.domaine}</td><td style={{...TD,color:c.statut==='Conforme'?'#16A34A':'#D97706',fontWeight:600}}>{c.statut}</td><td style={TD}>{c.detail}</td></tr>))}</tbody>
+      </table>
+
+      {/* ══ 8. AUDITS ══ */}
+      <h2 style={H1}>8. Audits et contrôles</h2>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Type</th><th style={TH}>Date</th><th style={TH}>Résultat</th><th style={TH}>Actions</th></tr></thead>
+        <tbody>{D.qualite.audits.map((a,i)=>(<tr key={i}><td style={{...TD,fontWeight:600}}>{a.type}</td><td style={TD}>{a.date}</td><td style={TD}>{a.resultat}</td><td style={TD}>{a.actions}</td></tr>))}</tbody>
+      </table>
+
+      {/* ══ 9. FORMATION ══ */}
+      <h2 style={H1}>9. Formation et sensibilisation</h2>
+      <p style={P}>Formations réalisées : <strong>{D.formations.filter(f=>f.statut==='Réalisée').length}/{D.formations.length}</strong> · Taux : {Math.round(D.formations.filter(f=>f.statut==='Réalisée').length/D.formations.length*100)}%</p>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Formation</th><th style={TH}>Pers.</th><th style={TH}>Durée</th><th style={TH}>Organisme</th><th style={TH}>Statut</th></tr></thead>
+        <tbody>{D.formations.map((f,i)=>(<tr key={i}><td style={{...TD,fontWeight:600}}>{f.intitule}</td><td style={TD}>{f.nb}</td><td style={TD}>{f.duree}</td><td style={TD}>{f.organisme}</td><td style={{...TD,color:f.statut==='Réalisée'?'#16A34A':'#D97706'}}>{f.statut}</td></tr>))}</tbody>
+      </table>
+
+      {/* ══ 10. PLAN D'ACTIONS ══ */}
+      <h2 style={H1}>10. Plan d'actions global</h2>
+      <p style={P}>Taux de réalisation : <strong>{tauxRealisation}%</strong> ({actionsRealisees}/{D.actions.length})</p>
+      <div style={{ height:8, background:'#E8E6E1', borderRadius:4, marginBottom:16 }}><div style={{ height:8, background:'#16A34A', borderRadius:4, width:`${tauxRealisation}%` }}/></div>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Action</th><th style={TH}>Resp.</th><th style={TH}>Éch.</th><th style={TH}>Cat.</th><th style={TH}>Statut</th></tr></thead>
+        <tbody>{D.actions.map((a,i)=>{
+          const sc = {Réalisé:'#16A34A','En cours':'#D97706','En retard':'#DC2626',Planifié:'#2563EB'};
+          return <tr key={i}><td style={{...TD,fontWeight:500}}>{a.action}</td><td style={TD}>{a.resp}</td><td style={TD}>{a.ech}</td><td style={{...TD,fontSize:10,fontWeight:600,color:a.cat==='S'?'#DC2626':a.cat==='Q'?'#2563EB':'#D97706'}}>{a.cat==='S'?'Sécu':a.cat==='Q'?'Qual':'Env'}</td><td style={{...TD,color:sc[a.statut],fontWeight:600}}>{a.statut}</td></tr>;
+        })}</tbody>
+      </table>
+
+      {/* ══ 11. OBJECTIFS N+1 ══ */}
+      <h2 style={H1}>11. Perspectives et objectifs {ANNEE+1}</h2>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Objectif</th><th style={TH}>Indicateur</th><th style={TH}>Cible</th></tr></thead>
+        <tbody>{D.objectifsN1Next.map((o,i)=>(<tr key={i}><td style={{...TD,fontWeight:600}}>{o.objectif}</td><td style={TD}>{o.indicateur}</td><td style={{...TD,fontWeight:700,color:DS.gold}}>{o.cible}</td></tr>))}</tbody>
+      </table>
+
+      {/* ══ 12. CONCLUSION ══ */}
+      <h2 style={H1}>12. Conclusion</h2>
+      <p style={P}>L'année {ANNEE} a été marquée par une activité soutenue ({D.chantiers} chantiers) avec des résultats QHSE contrastés.</p>
+      <div style={ENCADRE('#16A34A')}>
+        <strong>Points positifs :</strong><br/>
+        • Objectif valorisation déchets atteint ({D.environnement.tauxValorisation}%)<br/>
+        • 100% des chefs d'équipe formés SST<br/>
+        • Bonne culture de déclaration des presqu'accidents ({D.securite.presquAccidents.length})<br/>
+        • Maintien des qualifications QUALIBAT
+      </div>
+      <div style={ENCADRE('#DC2626')}>
+        <strong>Axes d'amélioration :</strong><br/>
+        • Taux de fréquence AT à réduire (objectif {'<'} 20)<br/>
+        • Renforcer le contrôle qualité en sous-traitance<br/>
+        • Accélérer le renouvellement des certifications
+      </div>
+      <p style={P}>Le budget QHSE a été porté à <strong>{D.budget.total.toLocaleString()} €</strong> ({D.budget.evolution}), soit <strong>{D.budget.parSalarie} € par salarié</strong>, démontrant l'engagement de la direction dans la démarche d'amélioration continue.</p>
+
+      {/* ══ ANNEXES ══ */}
+      <h2 style={H1}>Annexes</h2>
+      <h3 style={H3}>A1. Budget QHSE détaillé</h3>
+      <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:12 }}>
+        <thead><tr style={{background:'#F2F2F7'}}><th style={TH}>Poste</th><th style={TH}>Montant</th><th style={TH}>%</th></tr></thead>
+        <tbody>{D.budget.details.map((b,i)=>(<tr key={i}><td style={TD}>{b.poste}</td><td style={{...TD,fontWeight:600}}>{b.montant.toLocaleString()} €</td><td style={TD}>{Math.round(b.montant/D.budget.total*100)}%</td></tr>))}</tbody>
+        <tfoot><tr style={{background:'#F2F2F7'}}><td style={{...TD,fontWeight:700}}>TOTAL</td><td style={{...TD,fontWeight:700}}>{D.budget.total.toLocaleString()} €</td><td style={{...TD,fontWeight:700}}>100%</td></tr></tfoot>
+      </table>
+
+      <div style={{ textAlign:'center', padding:'24px 0', color:'#555', fontSize:12, borderTop:'1px solid #E8E6E1', marginTop:24 }}>
+        Rapport généré le {new Date().toLocaleDateString('fr-FR')} — Service QHSE — {D.structure}
       </div>
     </div>
   );
