@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
+import { genererPDF_DAT, genererPDF_FAT, genererPDF_DMP, genererPDF_ITI, genererPDF_ATT } from '../../utils/pdfCerfa';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'10px 20px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -199,7 +200,15 @@ export default function FormulairesAMELI() {
     setPreview(t);
   };
 
-  const exporter = () => { if(!preview) return; const b=new Blob([preview],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`${form?.cerfa||'doc'}_${s?.nom||''}_${new Date().toISOString().slice(0,10)}.txt`; a.click(); };
+  const exporterTxt = () => { if(!preview) return; const b=new Blob([preview],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`${form?.cerfa||'doc'}_${s?.nom||''}_${new Date().toISOString().slice(0,10)}.txt`; a.click(); };
+  const exporterPDF = () => {
+    if(!s||!preview) return;
+    if(sel==='dat') genererPDF_DAT(s,e,f);
+    else if(sel==='fat') genererPDF_FAT(s,e,f);
+    else if(sel==='dmp') genererPDF_DMP(s,e,f);
+    else if(sel==='iti') genererPDF_ITI(s,e,f);
+    else if(sel==='att') genererPDF_ATT(s,e);
+  };
 
   // LISTE
   if(!sel) return (
@@ -388,7 +397,8 @@ export default function FormulairesAMELI() {
           {preview ? <>
             <div style={{background:'#FAFAF8',border:'1px solid #E8E6E1',borderRadius:8,padding:14,maxHeight:'65vh',overflowY:'auto',fontFamily:'monospace',fontSize:10,lineHeight:1.6,whiteSpace:'pre-wrap'}}>{preview}</div>
             <div style={{display:'flex',gap:8,marginTop:8}}>
-              <button onClick={exporter} style={{...BTN,flex:1}}>Télécharger</button>
+              <button onClick={exporterPDF} style={{...BTN,flex:1,background:'#DC2626'}}>PDF</button>
+              <button onClick={exporterTxt} style={{...BTN_O,flex:1}}>TXT</button>
               <button onClick={()=>window.print()} style={{...BTN_O,flex:1}}>Imprimer</button>
               <button onClick={()=>alert('Envoi par email simulé — en production, envoie via Resend/Nodemailer')} style={{...BTN,flex:1,background:'#2563EB'}}>Envoyer par email</button>
             </div>
