@@ -130,8 +130,8 @@ function RHLegalBanner() {
   );
 }
 
-const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning & Localisation', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Paie', 'Masse salariale', 'Contrats BTP', 'Recrutement', 'Formation', 'Zones trajet'];
-const RH_ONGLET_MAP = { pointage:'Pointage', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement', paie:'Paie' };
+const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Recrutement', 'Formation'];
+const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement' };
 
 export default function RH() {
   const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
@@ -219,7 +219,7 @@ export default function RH() {
 
       {tab === 'Tableau de bord'         && <TabDashboardRH employes={employes} tdb={tdb} setTab={setTab} />}
       {tab === 'Employés'                && <EmployesView employes={employes} />}
-      {tab === 'Planning & Localisation' && <PlanningLocalisationView employes={employes} />}
+      {tab === 'Planning' && <PlanningLocalisationView employes={employes} />}
       {tab === 'Congés'                  && <CongesView />}
       {tab === 'Notes de frais'   && <NotesFraisView />}
       {tab === 'Paie'             && <PaieView employes={employes} />}

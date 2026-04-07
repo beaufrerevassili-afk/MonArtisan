@@ -99,7 +99,7 @@ const MENUS = {
 };
 
 // Grouped menu for patron role
-// Sidebar simplifiée — 10 items, zéro doublon
+// Sidebar simplifiée — chaque entrée = 1 page avec ses onglets internes
 const PATRON_GROUPS = [
   {
     id: 'pilotage',
@@ -119,17 +119,24 @@ const PATRON_GROUPS = [
   },
   {
     id: 'commercial',
-    label: 'Commercial & Finances',
+    label: 'Commercial',
     items: [
-      { label: 'Devis & Factures',     path: '/patron/finance',     Icon: IconDocument   },
+      { label: 'Devis & Factures',     path: '/patron/finance?onglet=facturation', Icon: IconDocument },
       { label: 'Clients & Avis',       path: '/patron/clients-rfm', Icon: IconTeam       },
     ],
   },
   {
     id: 'rh',
-    label: 'RH & Paie',
+    label: 'Ressources Humaines',
     items: [
       { label: 'Gestion du personnel', path: '/patron/rh',          Icon: IconTeam       },
+    ],
+  },
+  {
+    id: 'paie',
+    label: 'Paie & Finances',
+    items: [
+      { label: 'Comptabilité',         path: '/patron/finance',     Icon: IconFinance    },
     ],
   },
   {
