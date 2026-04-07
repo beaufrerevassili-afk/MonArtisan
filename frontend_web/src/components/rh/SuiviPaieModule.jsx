@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import DS from '../../design/ds';
+import api from '../../services/api';
 import { calculerIndemniteTrajet, PANIER_REPAS_BTP } from '../../utils/calculPaie';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
 
@@ -96,13 +97,30 @@ const POINTAGES_MOIS = [
   { employeId:4, chantierId:1, date:'2026-04-10', heures:8, heuresSupp:0 },
 ];
 
+const STORAGE_POINTAGES = 'freample_pointages_mois';
+const STORAGE_DEPOT = 'freample_depot';
+function loadPointages() { try { const d=localStorage.getItem(STORAGE_POINTAGES); return d?JSON.parse(d):POINTAGES_MOIS; } catch { return POINTAGES_MOIS; } }
+
 export default function SuiviPaieModule() {
-  const [depot, setDepot] = useState(DEPOT_DEFAULT);
+  const [depot, setDepot] = useState(localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT);
   const [chantiers, setChantiers] = useState(CHANTIERS_INIT);
+  const [salaries, setSalaries] = useState(SALARIES);
+  const [pointages, setPointages] = useState(loadPointages);
   const [selectedSalarie, setSelectedSalarie] = useState(null);
   const [calcEnCours, setCalcEnCours] = useState(false);
   const [distancesCalculees, setDistancesCalculees] = useState(false);
   const moisActuel = `${MOIS[new Date().getMonth()]} ${new Date().getFullYear()}`;
+
+  // Sauvegarder depot et pointages
+  useEffect(() => { localStorage.setItem(STORAGE_DEPOT, depot); }, [depot]);
+  useEffect(() => { localStorage.setItem(STORAGE_POINTAGES, JSON.stringify(pointages)); }, [pointages]);
+
+  // Charger les vrais employés depuis l'API
+  useEffect(() => {
+    api.get('/rh/employes').then(({data}) => {
+      if(data.employes?.length) setSalaries(data.employes.map(e=>({id:e.id, nom:`${e.prenom} ${e.nom}`, poste:e.poste, salaireBase:e.salaireBase||2800, tauxJournalier:(e.salaireBase||2800)/21})));
+    }).catch(()=>{});
+  }, []);
 
   // Calculer les distances automatiquement via API adresse.data.gouv.fr
   const calculerDistances = useCallback(async () => {
@@ -123,13 +141,13 @@ export default function SuiviPaieModule() {
 
   // Calcul automatique de la paie pour chaque salarié
   const paiesSalaries = useMemo(() => {
-    return SALARIES.map(sal => {
-      const pointages = POINTAGES_MOIS.filter(p => p.employeId === sal.id);
+    return salaries.map(sal => {
+      const salPts = pointages.filter(p => p.employeId === sal.id);
       let totalHeures = 0, totalHeuresSupp = 0, totalIndemnites = 0, totalPaniers = 0, totalGD = 0, nbGD = 0;
       const detailJours = [];
       const chantiersVisites = new Set();
 
-      pointages.forEach(p => {
+      salPts.forEach(p => {
         const chantier = chantiers.find(c => c.id === p.chantierId);
         const dist = chantier?.distanceDepot || 0;
         const trajet = calculerIndemniteTrajet(dist);
@@ -164,7 +182,7 @@ export default function SuiviPaieModule() {
 
       return {
         ...sal,
-        nbJours: pointages.length,
+        nbJours: salPts.length,
         totalHeures: Math.round(totalHeures * 100) / 100,
         totalHeuresSupp,
         totalIndemnites: Math.round(totalIndemnites * 100) / 100,

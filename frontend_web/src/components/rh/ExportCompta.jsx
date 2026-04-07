@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
+import api from '../../services/api';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -45,9 +46,28 @@ const ECRITURES_DEMO = [
   { date:'30/04/2026', journal:'VE', piece:'FAC-2026-002', compte:'445710', libelle:'TVA collectée 20%', debit:0, credit:1160 },
 ];
 
+const STORAGE = 'freample_ecritures';
+function loadEcritures() { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):ECRITURES_DEMO; } catch { return ECRITURES_DEMO; } }
+
 export default function ExportCompta() {
-  const [ecritures] = useState(ECRITURES_DEMO);
+  const [ecritures, setEcritures] = useState(loadEcritures);
   const [periode, setPeriode] = useState('2026-04');
+  useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(ecritures)); }, [ecritures]);
+  // Charger écritures réelles depuis l'API
+  useEffect(() => {
+    Promise.all([api.get('/finance/factures'), api.get('/finance/devis')]).then(([fac, dev]) => {
+      const ecr = [];
+      (fac.data?.factures || []).forEach((f, i) => {
+        if (f.totalTTC) {
+          const d = f.dateEmission || f.creeLe || '01/04/2026';
+          ecr.push({ date:d, journal:'VE', piece:f.numero||`FAC-${i}`, compte:'411000', libelle:`Client — ${f.client?.nom||'Client'}`, debit:f.totalTTC, credit:0 });
+          ecr.push({ date:d, journal:'VE', piece:f.numero||`FAC-${i}`, compte:'706000', libelle:`Prestation`, debit:0, credit:f.totalHT||f.totalTTC*0.8 });
+          ecr.push({ date:d, journal:'VE', piece:f.numero||`FAC-${i}`, compte:'445710', libelle:`TVA collectée`, debit:0, credit:f.totalTTC-(f.totalHT||f.totalTTC*0.8) });
+        }
+      });
+      if (ecr.length > 0) setEcritures(ecr);
+    }).catch(() => {});
+  }, []);
 
   const totalDebit = ecritures.reduce((s, e) => s + e.debit, 0);
   const totalCredit = ecritures.reduce((s, e) => s + e.credit, 0);

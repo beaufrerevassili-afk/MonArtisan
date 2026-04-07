@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -48,8 +48,12 @@ const DEMO_PARCOURS = [
   { id:3, employe:'Sophie Duval', type:'offboarding', dateDebut:'2026-04-05', checks:{'off_lettre':true,'off_preavis':true,'off_solde':false,'off_bulletin':false,'off_certificat':false,'off_attestation':false,'off_recu':false,'off_materiel':false,'off_cles':false,'off_acces':false,'off_mutuelle':false} },
 ];
 
+const STORAGE_OB = 'freample_onboarding';
+function loadOB() { try { const d=localStorage.getItem(STORAGE_OB); return d?JSON.parse(d):DEMO_PARCOURS; } catch { return DEMO_PARCOURS; } }
+
 export default function OnboardingModule({ employes = [] }) {
-  const [parcours, setParcours] = useState(DEMO_PARCOURS);
+  const [parcours, setParcours] = useState(loadOB);
+  useEffect(() => { localStorage.setItem(STORAGE_OB, JSON.stringify(parcours)); }, [parcours]);
   const [view, setView] = useState('onboarding');
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(null);

@@ -18,17 +18,17 @@ const SALARIES_DEMO = [
 ];
 
 const ACTUALITES_DEMO = [
-  { id: 'a1', type: 'devis',    client: 'Mme Leblanc',   adresse: '14 rue des Lilas, 75019 Paris',        description: 'Demande de devis — Rénovation salle de bain 12 m²', date: '2024-03-25', heure: '09:14', urgence: false, lu: false },
-  { id: 'a2', type: 'mission',  client: 'M. Rousseau',   adresse: '3 impasse des Acacias, 69003 Lyon',     description: 'Demande de travaux — Dépannage fuite toiture urgent', date: '2024-03-25', heure: '08:32', urgence: true,  lu: false },
-  { id: 'a3', type: 'devis',    client: 'SCI Les Ormes', adresse: '88 av. de la République, 13001 Marseille', description: 'Demande de devis — Extension garage 30 m²', date: '2024-03-24', heure: '16:45', urgence: false, lu: true  },
-  { id: 'a4', type: 'message',  client: 'M. Petit',      adresse: '5 rue du Commerce, 33000 Bordeaux',     description: 'Message client — Confirmation RDV chantier jeudi 28 mars', date: '2024-03-24', heure: '14:21', urgence: false, lu: true  },
-  { id: 'a5', type: 'mission',  client: 'Mme Garcia',    adresse: '22 chemin du Moulin, 31000 Toulouse',   description: 'Demande de travaux — Création terrasse 25 m²', date: '2024-03-23', heure: '11:08', urgence: false, lu: true  },
+  { id: 'a1', type: 'devis',    client: 'Mme Dupont',    adresse: '12 rue de France, Nice',                description: 'Demande de devis — Rénovation cuisine complète', date: '2026-04-07', heure: '09:14', urgence: false, lu: false },
+  { id: 'a2', type: 'mission',  client: 'SCI Horizon',   adresse: '5 rue Pasteur, Créteil',                description: 'Demande urgente — Fuite plomberie bureau', date: '2026-04-07', heure: '08:32', urgence: true,  lu: false },
+  { id: 'a3', type: 'devis',    client: 'M. Martin',     adresse: '3 chemin des Vignes, Massy',            description: 'Demande de devis — Isolation toiture 120 m²', date: '2026-04-06', heure: '16:45', urgence: false, lu: true  },
+  { id: 'a4', type: 'message',  client: 'Syndic Voltaire', adresse: '15 bd Voltaire, Paris 11e',           description: 'Message — Confirmation accès cave pour intervention', date: '2026-04-06', heure: '14:21', urgence: false, lu: true  },
+  { id: 'a5', type: 'mission',  client: 'Mme Leroy',     adresse: '8 rue de la République, Antibes',       description: 'Demande de travaux — Salle de bain complète', date: '2026-04-05', heure: '11:08', urgence: false, lu: true  },
 ];
 
 const ECHEANCES = [
-  { label: 'TVA CA3',           date: '20 avr. 2024', montant: 2840, severity: 'high'   },
-  { label: 'Charges URSSAF',    date: '5 mai 2024',   montant: 6120, severity: 'medium' },
-  { label: 'Acompte IS',        date: '15 juin 2024', montant: 4200, severity: 'low'    },
+  { label: 'TVA CA3',           date: '20 avr. 2026', montant: 2840, severity: 'high'   },
+  { label: 'Charges URSSAF',    date: '5 mai 2026',   montant: 6120, severity: 'medium' },
+  { label: 'Acompte IS',        date: '15 juin 2026', montant: 4200, severity: 'low'    },
 ];
 
 const STOCK_ALERTS = [

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
+import api from '../../services/api';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
 const BTN = { padding:'8px 16px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -23,8 +24,14 @@ const DEMO = [
   { id:8, client:'SCI Les Pins', titre:'Ravalement façade', montant:18000, etape:'devis_accepte', date:'2026-03-28', relance:null },
 ];
 
+const STORAGE = 'freample_pipeline';
+function load() { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):DEMO; } catch { return DEMO; } }
+
 export default function PipelineCommercial() {
-  const [affaires, setAffaires] = useState(DEMO);
+  const [affaires, setAffaires] = useState(load);
+  useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(affaires)); }, [affaires]);
+  // Tenter de charger depuis l'API
+  useEffect(() => { api.get('/patron/pipeline').then(({data})=>{ if(data.affaires?.length) setAffaires(data.affaires); }).catch(()=>{}); }, []);
 
   const avancer = (id) => {
     setAffaires(prev => prev.map(a => {
