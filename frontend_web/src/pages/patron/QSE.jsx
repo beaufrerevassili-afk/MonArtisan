@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import {
   IconShield, IconAlert, IconDocument, IconCheck, IconSearch,
@@ -132,13 +133,25 @@ function getTabFromOnglet(onglet) {
 }
 
 export default function QSE() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const ongletParam = urlParams.get('onglet');
-  const initSection = getSectionFromOnglet(ongletParam);
-  const initTab = getTabFromOnglet(ongletParam);
-  const initSectionObj = QHSE_SECTIONS.find(s => s.id === initSection);
-  const [activeSection, setActiveSection] = useState(initSection);
-  const [tab, setTab] = useState(initTab || (initSectionObj?.tabs[0] || 'Tableau de bord'));
+  const [searchParams] = useSearchParams();
+  const onglet = searchParams.get('onglet');
+  const [activeSection, setActiveSection] = useState(() => getSectionFromOnglet(onglet));
+  const [tab, setTab] = useState(() => {
+    const t = getTabFromOnglet(onglet);
+    if (t) return t;
+    const s = QHSE_SECTIONS.find(x => x.id === getSectionFromOnglet(onglet));
+    return s?.tabs[0] || 'DUERP';
+  });
+
+  // Réagir aux changements de query param (navigation sidebar)
+  useEffect(() => {
+    if (!onglet) return;
+    const section = getSectionFromOnglet(onglet);
+    const specificTab = getTabFromOnglet(onglet);
+    const sectionObj = QHSE_SECTIONS.find(s => s.id === section);
+    setActiveSection(section);
+    setTab(specificTab || (sectionObj?.tabs[0] || 'DUERP'));
+  }, [onglet]);
   const [tdb, setTdb] = useState(null);
   const [habilitations, setHabilitations] = useState([]);
   const [loading, setLoading] = useState(true);
