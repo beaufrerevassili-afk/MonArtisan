@@ -99,81 +99,56 @@ const MENUS = {
 };
 
 // Grouped menu for patron role
+// Sidebar simplifiée — 18 items max, chaque page gère ses onglets internes
 const PATRON_GROUPS = [
   {
     id: 'pilotage',
     label: 'Pilotage',
     items: [
-      { label: 'Tableau de bord',      path: '/patron/dashboard',  Icon: IconHome     },
-      { label: 'Agenda',               path: '/patron/agenda',     Icon: IconCalendar },
+      { label: 'Tableau de bord',      path: '/patron/dashboard',   Icon: IconHome     },
+      { label: 'Agenda',               path: '/patron/agenda',      Icon: IconCalendar },
     ],
   },
   {
     id: 'chantiers',
-    label: 'Chantiers & Production',
+    label: 'Chantiers',
     items: [
-      { label: 'Missions & Chantiers', path: '/patron/missions',                      Icon: IconBuilding },
-      { label: 'Pointage',             path: '/patron/rh?onglet=pointage',            Icon: IconCalendar },
-      { label: 'Stock & Matériel',     path: '/patron/stock',                         Icon: IconBox      },
+      { label: 'Missions & Chantiers', path: '/patron/missions',    Icon: IconBuilding },
+      { label: 'Stock & Matériel',     path: '/patron/stock',       Icon: IconBox      },
     ],
   },
   {
     id: 'commercial',
     label: 'Commercial',
     items: [
-      { label: 'Devis Pro',            path: '/patron/devis-pro',                     Icon: IconDocument   },
-      { label: 'Facturation',          path: '/patron/finance?onglet=facturation',    Icon: IconCreditCard },
-      { label: 'Clients & CRM',        path: '/patron/clients-rfm',                   Icon: IconTeam       },
-      { label: 'Réputation & Avis',    path: '/patron/reputation',                    Icon: IconStar       },
+      { label: 'Devis & Factures',     path: '/patron/devis-pro',   Icon: IconDocument   },
+      { label: 'Clients',              path: '/patron/clients-rfm', Icon: IconTeam       },
+      { label: 'Avis clients',         path: '/patron/reputation',  Icon: IconStar       },
     ],
   },
   {
     id: 'rh',
-    label: 'Ressources Humaines',
+    label: 'RH & Paie',
     items: [
-      { label: 'Employés',             path: '/patron/rh',                            Icon: IconTeam       },
-      { label: 'Paie & Bulletins',     path: '/patron/finance?onglet=salaires',       Icon: IconBank       },
-      { label: 'Congés & Absences',    path: '/patron/rh?onglet=conges',             Icon: IconShield     },
-      { label: 'Notes de frais',       path: '/patron/rh?onglet=frais',              Icon: IconDocument   },
-      { label: 'Entretiens',           path: '/patron/rh?onglet=entretiens',         Icon: IconUser       },
-      { label: 'Onboarding',           path: '/patron/rh?onglet=onboarding',         Icon: IconCheck      },
-      { label: 'Formation',            path: '/patron/rh?onglet=formation',          Icon: IconDocument   },
-      { label: 'Recrutement',          path: '/patron/rh?onglet=recrutement',        Icon: IconSearch     },
+      { label: 'Gestion du personnel', path: '/patron/rh',          Icon: IconTeam       },
+      { label: 'Finances & Paie',      path: '/patron/finance',     Icon: IconFinance    },
     ],
   },
   {
     id: 'qhse',
-    label: 'QHSE & Conformité',
+    label: 'QHSE',
     items: [
-      { label: 'Tableau QHSE',         path: '/patron/qse',                           Icon: IconShield   },
-      { label: 'Habilitations',         path: '/patron/qse?onglet=habilitations',     Icon: IconShield   },
-      { label: 'EPI',                   path: '/patron/qse?onglet=epi',               Icon: IconShield   },
-      { label: 'Incidents & Accidents', path: '/patron/qse?onglet=incidents',         Icon: IconAlert    },
-      { label: 'Non-conformités',       path: '/patron/qse?onglet=nc',                Icon: IconAlert    },
-      { label: 'BSDD (Déchets)',       path: '/patron/qse?onglet=bsdd',              Icon: IconDocument },
-      { label: 'Certifications',       path: '/patron/qse?onglet=certifications',    Icon: IconCheck    },
-      { label: 'Documents QSE',        path: '/patron/qse?onglet=audits',             Icon: IconSearch   },
-    ],
-  },
-  {
-    id: 'finances',
-    label: 'Finances & Compta',
-    items: [
-      { label: 'Vue d\'ensemble',      path: '/patron/finance',                       Icon: IconFinance    },
-      { label: 'Trésorerie',           path: '/patron/finance?onglet=tresorerie',     Icon: IconFinance    },
-      { label: 'URSSAF',               path: '/patron/finance?onglet=urssaf',         Icon: IconBank       },
+      { label: 'Sécurité & Conformité',path: '/patron/qse',         Icon: IconShield     },
     ],
   },
   {
     id: 'admin',
     label: 'Administration',
     items: [
-      { label: 'Documents',            path: '/patron/documents',                     Icon: IconDownload },
-      { label: 'Contrats BTP',         path: '/patron/documents?onglet=contrats-btp', Icon: IconDocument },
-      { label: 'Gestion logiciel',     path: '/patron/gestion-logiciel',              Icon: IconSettings },
-      { label: 'Rappel juridique',     path: '/patron/rappel-juridique',              Icon: IconScale    },
-      { label: 'Freample Droit',       path: '/droit',                                Icon: IconScale    },
-      { label: 'Mon profil',           path: '/patron/profil',                        Icon: IconUser     },
+      { label: 'Documents',            path: '/patron/documents',          Icon: IconDownload },
+      { label: 'Rappel juridique',     path: '/patron/rappel-juridique',   Icon: IconScale    },
+      { label: 'Paramètres',           path: '/patron/gestion-logiciel',   Icon: IconSettings },
+      { label: 'Mon profil',           path: '/patron/profil',             Icon: IconUser     },
     ],
   },
 ];
