@@ -9,6 +9,7 @@ import EntretiensModule from '../../components/rh/EntretiensModule';
 import OnboardingModule from '../../components/rh/OnboardingModule';
 import ContratsBTPModule from '../../components/rh/ContratsBTPModule';
 import SimulateurTrajetModule from '../../components/rh/SimulateurTrajetModule';
+import SuiviPaieModule from '../../components/rh/SuiviPaieModule';
 
 /* ── French payroll cotisations config ── */
 const COTISATIONS_SALARIALES = [
@@ -131,8 +132,8 @@ function RHLegalBanner() {
   );
 }
 
-const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Simulateur trajet', 'Recrutement', 'Formation'];
-const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement', trajet:'Simulateur trajet' };
+const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Suivi de paie', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Simulateur trajet', 'Recrutement', 'Formation'];
+const RH_ONGLET_MAP = { pointage:'Pointage', paie:'Suivi de paie', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement', trajet:'Simulateur trajet' };
 
 export default function RH() {
   const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
@@ -233,6 +234,7 @@ export default function RH() {
       {tab === 'Onboarding'       && <OnboardingModule employes={employes} />}
       {tab === 'Contrats BTP'     && <ContratsBTPModule />}
       {tab === 'Simulateur trajet' && <SimulateurTrajetModule />}
+      {tab === 'Suivi de paie'     && <SuiviPaieModule />}
     </div>
   );
 }
