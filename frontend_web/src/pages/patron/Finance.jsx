@@ -6,6 +6,8 @@ import Facturation from './Facturation';
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
 import ExportCompta from '../../components/rh/ExportCompta';
 import BiblothequePrix from '../../components/rh/BiblothequePrix';
+import SuiviPaieModule from '../../components/rh/SuiviPaieModule';
+import SimulateurTrajetModule from '../../components/rh/SimulateurTrajetModule';
 import URSSAF from './URSSAF';
 
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
@@ -20,6 +22,8 @@ const TABS = [
   { id: 'salaires',        label: 'Salaires'        },
   { id: 'bareme-paiement', label: 'Barème paiement' },
   { id: 'prix',            label: 'Bibliothèque prix' },
+  { id: 'suivi-paie',      label: 'Suivi de paie'    },
+  { id: 'simulateur',      label: 'Simulateur trajet' },
 ];
 
 const STATUT_DEVIS = {
@@ -99,7 +103,7 @@ const DEMO_SALARIES = {
   resume: { totalBrut: 10_450, totalNet: 8_360, totalChargesPatronales: 4_390 },
 };
 
-const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement', pipeline:'pipeline', compta:'compta' };
+const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement', pipeline:'pipeline', compta:'compta', prix:'prix', 'suivi-paie':'suivi-paie', simulateur:'simulateur' };
 
 export default function Finance() {
   const navigate = useNavigate();
@@ -364,6 +368,8 @@ export default function Finance() {
           {tab === 'pipeline' && <PipelineCommercial />}
           {tab === 'compta' && <ExportCompta />}
           {tab === 'prix' && <BiblothequePrix />}
+          {tab === 'suivi-paie' && <SuiviPaieModule />}
+          {tab === 'simulateur' && <SimulateurTrajetModule />}
         </>
       )}
     </div>

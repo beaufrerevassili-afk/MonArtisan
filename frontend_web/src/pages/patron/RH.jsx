@@ -132,8 +132,8 @@ function RHLegalBanner() {
   );
 }
 
-const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Suivi de paie', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Simulateur trajet', 'Recrutement', 'Formation'];
-const RH_ONGLET_MAP = { pointage:'Pointage', paie:'Suivi de paie', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement', trajet:'Simulateur trajet' };
+const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Recrutement', 'Formation'];
+const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement' };
 
 export default function RH() {
   const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
@@ -233,8 +233,6 @@ export default function RH() {
       {tab === 'Entretiens'       && <EntretiensModule employes={employes} />}
       {tab === 'Onboarding'       && <OnboardingModule employes={employes} />}
       {tab === 'Contrats BTP'     && <ContratsBTPModule />}
-      {tab === 'Simulateur trajet' && <SimulateurTrajetModule />}
-      {tab === 'Suivi de paie'     && <SuiviPaieModule />}
     </div>
   );
 }
