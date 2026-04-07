@@ -5,6 +5,7 @@ import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconChe
 import Facturation from './Facturation';
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
 import ExportCompta from '../../components/rh/ExportCompta';
+import BiblothequePrix from '../../components/rh/BiblothequePrix';
 import URSSAF from './URSSAF';
 
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
@@ -18,6 +19,7 @@ const TABS = [
   { id: 'urssaf',          label: 'URSSAF'          },
   { id: 'salaires',        label: 'Salaires'        },
   { id: 'bareme-paiement', label: 'Barème paiement' },
+  { id: 'prix',            label: 'Bibliothèque prix' },
 ];
 
 const STATUT_DEVIS = {
@@ -361,6 +363,7 @@ export default function Finance() {
           {tab === 'bareme-paiement' && <BaremePaiementView />}
           {tab === 'pipeline' && <PipelineCommercial />}
           {tab === 'compta' && <ExportCompta />}
+          {tab === 'prix' && <BiblothequePrix />}
         </>
       )}
     </div>
