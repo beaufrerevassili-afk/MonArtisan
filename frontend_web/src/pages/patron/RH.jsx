@@ -224,15 +224,11 @@ export default function RH() {
       {tab === 'Planning' && <PlanningLocalisationView employes={employes} />}
       {tab === 'Congés'                  && <CongesView />}
       {tab === 'Notes de frais'   && <NotesFraisView />}
-      {tab === 'Paie'             && <PaieView employes={employes} />}
-      {tab === 'Masse salariale'  && <MasseSalarialeView employes={employes} />}
       {tab === 'Recrutement'      && <RecrutementView />}
       {tab === 'Formation'        && <FormationView />}
-      {tab === 'Zones trajet'     && <ZonesTrajetView employes={employes} />}
       {tab === 'Pointage'         && <PointageModule employes={employes} />}
       {tab === 'Entretiens'       && <EntretiensModule employes={employes} />}
       {tab === 'Onboarding'       && <OnboardingModule employes={employes} />}
-      {tab === 'Contrats BTP'     && <ContratsBTPModule />}
     </div>
   );
 }

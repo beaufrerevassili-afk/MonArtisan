@@ -121,7 +121,7 @@ function QSELegalBanner() {
 
 const QHSE_SECTIONS = [
   { id:'qualite', label:'Qualité', color:'#2563EB', tabs:['Non-conformités','Certifications','Audits','Documents QSE'] },
-  { id:'securite', label:'Sécurité', color:'#DC2626', tabs:['DUERP','Habilitations','EPI','Incidents','Formulaires AMELI','Plans de prévention'] },
+  { id:'securite', label:'Sécurité', color:'#DC2626', tabs:['DUERP','Habilitations','EPI','Incidents','Plans de prévention','Formulaires AMELI'] },
   { id:'hygiene', label:'Hygiène', color:'#16A34A', tabs:['Tableau de bord','Rapport annuel'] },
   { id:'environnement', label:'Environnement', color:'#D97706', tabs:['BSDD'] },
 ];
