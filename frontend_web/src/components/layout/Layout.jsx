@@ -109,6 +109,15 @@ const PATRON_GROUPS = [
     ],
   },
   {
+    id: 'chantiers',
+    label: 'Chantiers & Production',
+    items: [
+      { label: 'Missions & Chantiers', path: '/patron/missions',                      Icon: IconBuilding },
+      { label: 'Pointage',             path: '/patron/rh?onglet=pointage',            Icon: IconCalendar },
+      { label: 'Stock & Matériel',     path: '/patron/stock',                         Icon: IconBox      },
+    ],
+  },
+  {
     id: 'commercial',
     label: 'Commercial',
     items: [
@@ -116,15 +125,6 @@ const PATRON_GROUPS = [
       { label: 'Facturation',          path: '/patron/finance?onglet=facturation',    Icon: IconCreditCard },
       { label: 'Clients & CRM',        path: '/patron/clients-rfm',                   Icon: IconTeam       },
       { label: 'Réputation & Avis',    path: '/patron/reputation',                    Icon: IconStar       },
-    ],
-  },
-  {
-    id: 'chantiers',
-    label: 'Chantiers & Production',
-    items: [
-      { label: 'Missions & Chantiers', path: '/patron/missions',                      Icon: IconBuilding },
-      { label: 'Pointage',             path: '/patron/rh?onglet=pointage',            Icon: IconCalendar },
-      { label: 'Stock & Matériel',     path: '/patron/stock',                         Icon: IconBox      },
     ],
   },
   {
