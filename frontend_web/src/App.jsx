@@ -61,6 +61,7 @@ const FreampleLogement = React.lazy(() => import('./pages/public/FreampleLogemen
 const PortfolioCom = React.lazy(() => import('./pages/public/PortfolioCom'));
 const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
 const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
+const DashboardEmploye = React.lazy(() => import('./pages/employe/Dashboard'));
 
 const LazySpinner = () => (
   <div style={{ display:'flex', justifyContent:'center', alignItems:'center', minHeight:'100vh' }}>
@@ -219,6 +220,18 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* ── Employé ── */}
+      <Route path="/employe/*" element={
+        <ProtectedRoute roles={['employe']}>
+          <Layout>
+            <Routes>
+              <Route path="dashboard" element={<DashboardEmploye />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
+            </Routes>
+          </Layout>
+        </ProtectedRoute>
+      } />
+
       {/* ── Admin ── */}
       <Route path="/admin/*" element={
         <ProtectedRoute roles={['super_admin']}>
@@ -250,6 +263,7 @@ function AppRoutes() {
         user?.role === 'super_admin' ? <Navigate to="/admin/dashboard"      replace /> :
         user?.role === 'fondateur'   ? <Navigate to="/fondateur/dashboard" replace /> :
         user?.role === 'artisan'     ? <Navigate to="/artisan/dashboard"    replace /> :
+        user?.role === 'employe'     ? <Navigate to="/employe/dashboard"    replace /> :
         <Navigate to="/" replace />
       } />
 

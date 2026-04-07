@@ -36,6 +36,8 @@ function mapEmploye(row) {
     statut: row.statut,
     adresse: row.adresse,
     numeroSecu: row.numero_secu,
+    patronId: row.patron_id,
+    userId: row.user_id,
     creeLe: row.cree_le,
     modifieLe: row.modifie_le,
   };
@@ -166,18 +168,40 @@ router.get('/employes/:id', async (req, res) => {
   }
 });
 
-// POST /rh/employes — Créer une fiche employé
+// POST /rh/employes — Créer une fiche employé + compte utilisateur
 router.post('/employes', async (req, res) => {
   try {
-    const { prenom, nom, poste, email, telephone, dateEntree, typeContrat, salaireBase, adresse, numeroSecu } = req.body;
+    const { prenom, nom, poste, email, telephone, dateEntree, typeContrat, salaireBase, adresse, numeroSecu, creerCompte } = req.body;
     if (!prenom || !nom || !poste || !email) {
       return res.status(400).json({ erreur: 'Champs requis : prenom, nom, poste, email' });
     }
 
+    const patronId = req.user?.id || null;
+    let userId = null;
+
+    // Créer un compte utilisateur si demandé (par défaut oui)
+    if (creerCompte !== false) {
+      const bcrypt = require('bcrypt');
+      const tempPassword = Math.random().toString(36).slice(-8);
+      const hash = await bcrypt.hash(tempPassword, 12);
+
+      const existing = await db.query('SELECT id, role FROM users WHERE email = $1', [email]);
+      if (existing.rows.length > 0) {
+        userId = existing.rows[0].id;
+      } else {
+        const userResult = await db.query(
+          `INSERT INTO users (nom, email, motdepasse, role, verified, telephone)
+           VALUES ($1, $2, $3, 'employe', true, $4) RETURNING id`,
+          [`${prenom} ${nom}`, email, hash, telephone || null]
+        );
+        userId = userResult.rows[0].id;
+      }
+    }
+
     const result = await db.query(
       `INSERT INTO employes
-        (prenom, nom, poste, email, telephone, date_entree, type_contrat, salaire_base, statut, adresse, numero_secu)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'actif',$9,$10)
+        (prenom, nom, poste, email, telephone, date_entree, type_contrat, salaire_base, statut, adresse, numero_secu, patron_id, user_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'actif',$9,$10,$11,$12)
        RETURNING *`,
       [
         prenom, nom, poste, email,
@@ -187,13 +211,51 @@ router.post('/employes', async (req, res) => {
         parseFloat(salaireBase) || 0,
         adresse || null,
         numeroSecu || null,
+        patronId,
+        userId,
       ]
     );
 
-    res.status(201).json({ message: 'Fiche employé créée', employe: mapEmploye(result.rows[0]) });
+    res.status(201).json({ message: 'Fiche employé créée avec compte', employe: mapEmploye(result.rows[0]) });
   } catch (err) {
     console.error('POST /employes error:', err.message);
     res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+  }
+});
+
+// PUT /rh/employes/:id/depart — L'employé quitte l'entreprise (compte reste actif)
+router.put('/employes/:id/depart', async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE employes SET statut = 'parti', patron_id = NULL, modifie_le = NOW() WHERE id = $1 RETURNING *`,
+      [req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ erreur: 'Employé non trouvé' });
+    res.json({ message: 'Employé marqué comme parti — son compte reste actif', employe: mapEmploye(result.rows[0]) });
+  } catch (err) {
+    console.error('PUT /employes/:id/depart error:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// GET /rh/mon-profil — L'employé récupère ses données et son entreprise
+router.get('/mon-profil', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const empResult = await db.query('SELECT * FROM employes WHERE user_id = $1', [userId]);
+    if (empResult.rows.length === 0) return res.status(404).json({ erreur: 'Profil employé non trouvé' });
+    const emp = empResult.rows[0];
+
+    let patron = null;
+    if (emp.patron_id) {
+      const patronResult = await db.query('SELECT id, nom, email, telephone, metier, siret, adresse, ville FROM users WHERE id = $1', [emp.patron_id]);
+      patron = patronResult.rows[0] || null;
+    }
+
+    res.json({ employe: mapEmploye(emp), patron });
+  } catch (err) {
+    console.error('GET /mon-profil error:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 

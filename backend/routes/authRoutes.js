@@ -43,8 +43,15 @@ router.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (re
     const valide = await bcrypt.compare(motdepasse, user.motdepasse);
     if (!valide) return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom, secteur: user.secteur || null }, SECRET, { expiresIn: '8h' });
-    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, secteur: user.secteur || null, userId: user.id, nom: user.nom, email: user.email });
+    // Si employé, récupérer le patron_id
+    let patronId = null;
+    if (user.role === 'employe') {
+      const empResult = await db.query('SELECT patron_id FROM employes WHERE user_id = $1', [user.id]);
+      patronId = empResult.rows[0]?.patron_id || null;
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom, secteur: user.secteur || null, patronId }, SECRET, { expiresIn: '8h' });
+    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, secteur: user.secteur || null, userId: user.id, nom: user.nom, email: user.email, patronId });
   } catch (err) {
     console.error('Erreur /login :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
@@ -73,7 +80,7 @@ router.post('/register', authLimiter, async (req, res) => {
       if (manquants.length > 0) return res.status(400).json({ erreur: `Documents manquants : ${manquants.join(', ')}` });
     }
 
-    const rolesValides = ['client', 'patron', 'artisan'];
+    const rolesValides = ['client', 'patron', 'artisan', 'employe'];
     const roleValide   = rolesValides.includes(role) ? role : 'client';
     const isVerified   = roleValide !== 'patron' && roleValide !== 'artisan';
     const hash         = await bcrypt.hash(motdepasse, 12);

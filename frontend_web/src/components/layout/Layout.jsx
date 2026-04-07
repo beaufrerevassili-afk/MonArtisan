@@ -86,6 +86,15 @@ const MENUS = {
     { label: 'Messagerie',      path: '/artisan/dashboard?tab=messagerie',     Icon: IconMessage    },
     { label: 'Mon profil',      path: '/artisan/dashboard?tab=profil',         Icon: IconUser       },
   ],
+  employe: [
+    { label: 'Tableau de bord', path: '/employe/dashboard',                    Icon: IconHome       },
+    { label: 'Mes chantiers',   path: '/employe/dashboard?tab=chantiers',      Icon: IconBuilding   },
+    { label: 'Mon planning',    path: '/employe/dashboard?tab=planning',       Icon: IconCalendar   },
+    { label: 'Fiches de paie',  path: '/employe/dashboard?tab=paie',           Icon: IconCreditCard },
+    { label: 'Congés',          path: '/employe/dashboard?tab=conges',         Icon: IconShield     },
+    { label: 'Notes de frais',  path: '/employe/dashboard?tab=frais',          Icon: IconDocument   },
+    { label: 'Mon profil',      path: '/employe/dashboard?tab=profil',         Icon: IconUser       },
+  ],
 };
 
 // Grouped menu for patron role

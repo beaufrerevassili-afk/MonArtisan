@@ -503,3 +503,11 @@ CREATE INDEX IF NOT EXISTS idx_habilitations_exp ON habilitations(date_expiratio
 CREATE INDEX IF NOT EXISTS idx_messages_mission ON messages(mission_id);
 CREATE INDEX IF NOT EXISTS idx_devis_client    ON devis(client_id);
 CREATE INDEX IF NOT EXISTS idx_factures_client ON factures(client_id);
+
+-- ============================================================
+--  LIEN EMPLOYÉS → ENTREPRISE (patron) + COMPTE UTILISATEUR
+-- ============================================================
+ALTER TABLE employes ADD COLUMN IF NOT EXISTS patron_id INTEGER REFERENCES users(id);
+ALTER TABLE employes ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+CREATE INDEX IF NOT EXISTS idx_employes_patron ON employes(patron_id);
+CREATE INDEX IF NOT EXISTS idx_employes_user ON employes(user_id);
