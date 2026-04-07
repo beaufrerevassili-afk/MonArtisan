@@ -99,7 +99,7 @@ const MENUS = {
 };
 
 // Grouped menu for patron role
-// Sidebar simplifiée — 18 items max, chaque page gère ses onglets internes
+// Sidebar simplifiée — 10 items, zéro doublon
 const PATRON_GROUPS = [
   {
     id: 'pilotage',
@@ -119,11 +119,10 @@ const PATRON_GROUPS = [
   },
   {
     id: 'commercial',
-    label: 'Commercial',
+    label: 'Commercial & Finances',
     items: [
-      { label: 'Devis & Factures',     path: '/patron/devis-pro',   Icon: IconDocument   },
-      { label: 'Clients',              path: '/patron/clients-rfm', Icon: IconTeam       },
-      { label: 'Avis clients',         path: '/patron/reputation',  Icon: IconStar       },
+      { label: 'Devis & Factures',     path: '/patron/finance',     Icon: IconDocument   },
+      { label: 'Clients & Avis',       path: '/patron/clients-rfm', Icon: IconTeam       },
     ],
   },
   {
@@ -131,7 +130,6 @@ const PATRON_GROUPS = [
     label: 'RH & Paie',
     items: [
       { label: 'Gestion du personnel', path: '/patron/rh',          Icon: IconTeam       },
-      { label: 'Finances & Paie',      path: '/patron/finance',     Icon: IconFinance    },
     ],
   },
   {
@@ -143,12 +141,10 @@ const PATRON_GROUPS = [
   },
   {
     id: 'admin',
-    label: 'Administration',
+    label: 'Mon entreprise',
     items: [
-      { label: 'Documents',            path: '/patron/documents',          Icon: IconDownload },
-      { label: 'Rappel juridique',     path: '/patron/rappel-juridique',   Icon: IconScale    },
-      { label: 'Paramètres',           path: '/patron/gestion-logiciel',   Icon: IconSettings },
-      { label: 'Mon profil',           path: '/patron/profil',             Icon: IconUser     },
+      { label: 'Documents',            path: '/patron/documents',   Icon: IconDownload },
+      { label: 'Paramètres',           path: '/patron/profil',      Icon: IconSettings },
     ],
   },
 ];

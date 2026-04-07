@@ -193,15 +193,15 @@ function AppRoutes() {
               <Route path="rh"        element={<RH />} />
               <Route path="qse"       element={<QSE />} />
               <Route path="urssaf"    element={<Navigate to="/patron/finance?onglet=urssaf" replace />} />
-              <Route path="devis-pro"  element={<DevisPro />} />
+              <Route path="devis-pro"  element={<Navigate to="/patron/finance" replace />} />
               <Route path="documents" element={<BanqueDocuments />} />
               <Route path="stock"     element={<Stock />} />
-              <Route path="gestion-logiciel" element={<GestionLogiciel />} />
+              <Route path="gestion-logiciel" element={<Navigate to="/patron/profil" replace />} />
               <Route path="clients-rfm"      element={<ClientsRFM />} />
               <Route path="facturation"      element={<Navigate to="/patron/finance?onglet=facturation" replace />} />
               <Route path="agenda"           element={<Agenda />} />
-              <Route path="rappel-juridique" element={<RappelJuridique />} />
-              <Route path="reputation"       element={<Reputation />} />
+              <Route path="rappel-juridique" element={<Navigate to="/patron/documents" replace />} />
+              <Route path="reputation"       element={<Navigate to="/patron/clients-rfm" replace />} />
               <Route path="profil"           element={<ProfilPatron />} />
             </Routes>
           </Layout>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import Reputation from './Reputation';
 
 /* ── RFM scoring helpers ── */
 function scoreRecency(daysSince) {
@@ -127,10 +128,21 @@ function DemoBanner() {
 
 /* ── Main component ── */
 export default function ClientsRFM() {
+  const [mainTab, setMainTab] = useState('clients');
   const [filtreSegment, setFiltreSegment] = useState('tous');
   const [search, setSearch] = useState('');
-  const [tri, setTri] = useState('rfm'); // 'rfm' | 'recency' | 'frequency' | 'monetary' | 'nom'
+  const [tri, setTri] = useState('rfm');
   const [selectedId, setSelectedId] = useState(null);
+
+  if (mainTab === 'avis') return (
+    <div>
+      <div style={{ display:'flex', gap:4, marginBottom:0, padding:'28px 28px 0' }}>
+        <button onClick={()=>setMainTab('clients')} style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid transparent', fontSize:14, fontWeight:400, color:'#6E6E73', cursor:'pointer' }}>Clients & Segmentation</button>
+        <button style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid #5B5BD6', fontSize:14, fontWeight:700, color:'#1C1C1E', cursor:'pointer' }}>Avis & Réputation</button>
+      </div>
+      <Reputation />
+    </div>
+  );
 
   const clients = useMemo(() => {
     let list = CLIENTS_DEMO;
@@ -173,6 +185,12 @@ export default function ClientsRFM() {
 
   return (
     <div style={{ padding: 28, maxWidth: 1280, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Onglets principaux */}
+      <div style={{ display:'flex', gap:4, marginBottom:-16 }}>
+        <button style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid #5B5BD6', fontSize:14, fontWeight:700, color:'#1C1C1E', cursor:'pointer' }}>Clients & Segmentation</button>
+        <button onClick={()=>setMainTab('avis')} style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid transparent', fontSize:14, fontWeight:400, color:'#6E6E73', cursor:'pointer' }}>Avis & Réputation</button>
+      </div>
+
       {/* Demo banner */}
       <DemoBanner />
 
