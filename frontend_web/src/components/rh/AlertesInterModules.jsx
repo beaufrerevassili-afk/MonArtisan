@@ -12,6 +12,18 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
   const alertes = [];
   const now = new Date();
 
+  // Si aucune donnée n'est passée, générer des alertes démo réalistes
+  const noData = employes.length===0 && habilitations.length===0 && devis.length===0 && incidents.length===0 && epis.length===0;
+  if (noData) {
+    alertes.push({ type:'danger', module:'QSE → Planning', icon:'🚫', message:'Habilitation CACES R489 expirée — Marc Lambert ne peut pas conduire le chariot sur chantier', action:'Renouveler', link:'/patron/qse?onglet=habilitations' });
+    alertes.push({ type:'warning', module:'QSE → Chantier', icon:'🦺', message:'EPI expiré : Chaussures de sécurité de Sophie Duval — date d\'expiration dépassée', action:'Remplacer l\'EPI', link:'/patron/qse?onglet=epi' });
+    alertes.push({ type:'info', module:'Devis → Facturation', icon:'💰', message:'Devis DEV-2026-008 signé par Mme Dupont — facture non encore créée', action:'Créer la facture', link:'/patron/finance?onglet=facturation' });
+    alertes.push({ type:'warning', module:'QSE → DUERP', icon:'⚡', message:'Incident "Chute outil échafaudage" non clôturé — mettre à jour le DUERP', action:'Voir l\'incident', link:'/patron/qse?onglet=incidents' });
+    alertes.push({ type:'info', module:'RH → Planning', icon:'📅', message:'Jean Martin en congé du 12/04 au 16/04 — impact sur le planning chantier Dupont', action:'Voir le planning', link:'/patron/rh?onglet=conges' });
+    alertes.push({ type:'warning', module:'Pointage → Paie', icon:'⏰', message:'3 pointages en attente de validation — impact sur le calcul de paie d\'avril', action:'Valider', link:'/patron/rh?onglet=pointage' });
+    alertes.push({ type:'danger', module:'QSE → Commercial', icon:'📛', message:'Certification QUALIBAT Peinture expirée — vous ne pouvez plus répondre aux appels d\'offre peinture', action:'Renouveler', link:'/patron/qse?onglet=certifications' });
+  }
+
   // 1. Habilitation expirée → bloque le planning
   (habilitations || []).forEach(h => {
     if (h.dateExpiration && new Date(h.dateExpiration) < now) {

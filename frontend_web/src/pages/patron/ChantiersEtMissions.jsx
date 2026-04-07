@@ -8,6 +8,7 @@ import {
 import { API_URL } from '../../services/api';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
 import { calculerIndemniteTrajet } from '../../utils/calculPaie';
+import PhotosChantier from '../../components/rh/PhotosChantier';
 
 // Adresse dépôt — en prod, viendrait du profil entreprise
 const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '24 rue de la Liberté, Nice';
@@ -104,7 +105,7 @@ const DEMO_DEPENSES = [
   { id: 5, date: '2025-03-20', categorie: 'carburant', description: 'Carburant véhicule chantier', fournisseur: 'Total', montant: 95 },
 ];
 
-const MAIN_TABS = ['Vue d\'ensemble', 'Missions & Chantiers', 'Gantt', 'Dépenses', 'Rentabilité', 'Flotte', 'Ajouter'];
+const MAIN_TABS = ['Vue d\'ensemble', 'Missions & Chantiers', 'Gantt', 'Photos', 'Dépenses', 'Rentabilité', 'Flotte', 'Ajouter'];
 const STATUT_FILTERS = ['Tous', 'en_attente', 'planifie', 'assignee', 'en_cours', 'terminee', 'annulee'];
 const STATUT_FILTER_LABELS = { Tous: 'Tous', en_attente: 'En attente', planifie: 'Planifié', assignee: 'Assignée', en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée' };
 
@@ -766,6 +767,7 @@ export default function ChantiersEtMissions() {
     'Gantt': <TabGantt />,
     'Dépenses': <TabDepenses />,
     'Rentabilité': <TabRentabilite />,
+    'Photos': <PhotosChantier />,
     'Flotte': <FlotteView />,
     'Ajouter': <TabAjouter />,
   };
