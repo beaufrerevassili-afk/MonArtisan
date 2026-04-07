@@ -12,6 +12,9 @@ import PlanDechet from '../../components/qse/PlanDechet';
 import DiagnosticDemolition from '../../components/qse/DiagnosticDemolition';
 import { genererDUERP, genererPlanPrevention } from '../../utils/qsePDF';
 import { API_URL } from '../../services/api';
+import EPIModule from '../../components/qse/EPIModule';
+import IncidentsModule from '../../components/qse/IncidentsModule';
+import NonConformitesModule from '../../components/qse/NonConformitesModule';
 
 /* ── DUERP data ── */
 const UNITES_TRAVAIL = ['Tous les postes','Maçonnerie / gros œuvre','Plomberie / sanitaire','Électricité','Peinture / finition','Bureau / encadrement'];
@@ -110,10 +113,14 @@ function QSELegalBanner() {
   );
 }
 
-const TABS = ["Tableau de bord","DUERP","Habilitations","Documents QSE","Plans de prévention"];
+const TABS = ["Tableau de bord","DUERP","Habilitations","EPI","Incidents","Non-conformités","Documents QSE","Plans de prévention"];
+
+const ONGLET_MAP = { habilitations:'Habilitations', epi:'EPI', incidents:'Incidents', nc:'Non-conformités', audits:'Documents QSE' };
 
 export default function QSE() {
-  const [tab, setTab] = useState('Tableau de bord');
+  const urlParams = new URLSearchParams(window.location.search);
+  const ongletParam = urlParams.get('onglet');
+  const [tab, setTab] = useState(ONGLET_MAP[ongletParam] || 'Tableau de bord');
   const [tdb, setTdb] = useState(null);
   const [habilitations, setHabilitations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1417,7 +1424,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
     );
   }
 
-  const tabContent = { 'Tableau de bord':<TabDashboard/>, 'DUERP':<TabDUERP/>, 'Habilitations':<TabHabilitations/>, 'Documents QSE':<TabDocuments/>, 'Plans de prévention':<TabPlansPrevention/> };
+  const tabContent = { 'Tableau de bord':<TabDashboard/>, 'DUERP':<TabDUERP/>, 'Habilitations':<TabHabilitations/>, 'EPI':<EPIModule/>, 'Incidents':<IncidentsModule/>, 'Non-conformités':<NonConformitesModule/>, 'Documents QSE':<TabDocuments/>, 'Plans de prévention':<TabPlansPrevention/> };
 
   return (
     <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
