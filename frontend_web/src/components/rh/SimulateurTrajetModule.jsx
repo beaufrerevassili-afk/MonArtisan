@@ -70,7 +70,7 @@ export default function SimulateurTrajetModule() {
             {d.grandDeplacement && (
               <div style={{ background:'#FEF2F2', border:'1px solid #DC262625', borderLeft:'4px solid #DC2626', borderRadius:8, padding:'10px 14px', marginBottom:12, fontSize:12 }}>
                 <strong style={{ color:'#DC2626' }}>Grand déplacement détecté</strong><br/>
-                Distance > 200 km. Forfait hébergement + repas soir : {d.indemGrandDeplacement} €
+                Distance &gt; 200 km. Forfait hébergement + repas soir : {d.indemGrandDeplacement} €
               </div>
             )}
 
