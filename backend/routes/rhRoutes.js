@@ -873,4 +873,101 @@ router.get('/masse-salariale', async (req, res) => {
   }
 });
 
+// ============================================================
+//  DOCUMENTS EMPLOYÉ — Upload / Consultation en temps réel
+// ============================================================
+
+// POST /rh/documents — L'employé dépose un document
+router.post('/documents', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const empResult = await db.query('SELECT id, patron_id FROM employes WHERE user_id = $1', [userId]);
+    if (!empResult.rows[0]) return res.status(404).json({ erreur: 'Profil employé non trouvé' });
+    const emp = empResult.rows[0];
+
+    const { typeDocument, nomFichier, contenuBase64, taille, mimeType } = req.body;
+    if (!typeDocument || !nomFichier) return res.status(400).json({ erreur: 'typeDocument et nomFichier requis' });
+
+    // Upsert — remplace si même type déjà uploadé
+    const existing = await db.query(
+      'SELECT id FROM documents_employe WHERE employe_id = $1 AND type_document = $2',
+      [emp.id, typeDocument]
+    );
+
+    let doc;
+    if (existing.rows[0]) {
+      const r = await db.query(
+        `UPDATE documents_employe SET nom_fichier=$1, contenu_base64=$2, taille=$3, mime_type=$4, statut='en_attente', uploaded_at=NOW()
+         WHERE id=$5 RETURNING *`,
+        [nomFichier, contenuBase64 || null, taille || null, mimeType || null, existing.rows[0].id]
+      );
+      doc = r.rows[0];
+    } else {
+      const r = await db.query(
+        `INSERT INTO documents_employe (employe_id, patron_id, type_document, nom_fichier, contenu_base64, taille, mime_type)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+        [emp.id, emp.patron_id, typeDocument, nomFichier, contenuBase64 || null, taille || null, mimeType || null]
+      );
+      doc = r.rows[0];
+    }
+
+    res.status(201).json({ message: 'Document déposé', document: doc });
+  } catch (err) {
+    console.error('POST /documents error:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// GET /rh/documents — L'employé voit ses propres documents
+router.get('/documents', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const empResult = await db.query('SELECT id FROM employes WHERE user_id = $1', [userId]);
+    if (!empResult.rows[0]) return res.status(404).json({ erreur: 'Profil non trouvé' });
+
+    const { rows } = await db.query(
+      'SELECT id, type_document, nom_fichier, taille, mime_type, statut, commentaire, uploaded_at FROM documents_employe WHERE employe_id = $1 ORDER BY uploaded_at DESC',
+      [empResult.rows[0].id]
+    );
+    res.json({ documents: rows });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// GET /rh/employes/:id/documents — Le patron voit les documents d'un employé
+router.get('/employes/:id/documents', async (req, res) => {
+  try {
+    const patronId = req.user?.id;
+    // Vérifier que l'employé appartient au patron
+    const empCheck = await db.query('SELECT id FROM employes WHERE id = $1 AND patron_id = $2', [req.params.id, patronId]);
+    if (!empCheck.rows[0]) return res.status(403).json({ erreur: 'Accès refusé' });
+
+    const { rows } = await db.query(
+      'SELECT id, type_document, nom_fichier, taille, mime_type, statut, commentaire, uploaded_at FROM documents_employe WHERE employe_id = $1 ORDER BY uploaded_at DESC',
+      [req.params.id]
+    );
+    res.json({ documents: rows });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /rh/documents/:id/valider — Le patron valide ou refuse un document
+router.put('/documents/:id/valider', async (req, res) => {
+  try {
+    const { statut, commentaire } = req.body; // 'valide' | 'refuse'
+    if (!['valide', 'refuse'].includes(statut)) return res.status(400).json({ erreur: 'Statut invalide' });
+
+    const { rows } = await db.query(
+      `UPDATE documents_employe SET statut=$1, commentaire=$2 WHERE id=$3 AND patron_id=$4 RETURNING *`,
+      [statut, commentaire || null, req.params.id, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Document non trouvé' });
+    res.json({ message: `Document ${statut}`, document: rows[0] });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

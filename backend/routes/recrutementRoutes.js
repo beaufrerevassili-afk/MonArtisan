@@ -22,11 +22,23 @@ function getMailer() {
 }
 
 const STATUT_NOTIF = {
-  examinée:  { emoji: '👀', sujet: 'Votre candidature est en cours d\'examen', msg: 'Bonne nouvelle ! Votre candidature a retenu l\'attention de l\'entreprise et est en cours d\'examen.' },
+  examinée:  { emoji: '👀', sujet: 'Votre candidature est en cours d\'examen', msg: 'Bonne nouvelle ! Votre candidature a retenu l\'attention de l\'entreprise et est en cours d\'examen. Nous reviendrons vers vous rapidement.' },
   entretien: { emoji: '📞', sujet: 'Entretien proposé pour votre candidature', msg: 'L\'entreprise souhaite vous rencontrer ! Vous allez être contacté(e) prochainement pour fixer les modalités de l\'entretien.' },
-  retenue:   { emoji: '🎉', sujet: 'Votre candidature a été retenue !', msg: 'Félicitations ! Votre candidature a été retenue. L\'entreprise va prendre contact avec vous.' },
+  retenue:   { emoji: '🎉', sujet: 'Votre candidature a été retenue !', msg: 'Félicitations ! Votre candidature a été retenue. Vous allez recevoir prochainement les informations nécessaires pour préparer votre intégration.' },
   rejetée:   { emoji: '📋', sujet: 'Réponse concernant votre candidature', msg: 'Votre candidature a été examinée avec attention mais ne correspond pas aux besoins actuels. Nous vous souhaitons bonne continuation dans votre recherche.' },
 };
+
+const DOCUMENTS_REQUIS_EMBAUCHE = [
+  { id: 'piece_identite',      label: 'Pièce d\'identité (CNI ou passeport)' },
+  { id: 'carte_vitale',        label: 'Carte Vitale (attestation ou copie)' },
+  { id: 'rib',                 label: 'RIB (pour le versement du salaire)' },
+  { id: 'justificatif_domicile', label: 'Justificatif de domicile (< 3 mois)' },
+  { id: 'diplomes',            label: 'Diplômes et certifications' },
+  { id: 'permis_conduire',     label: 'Permis de conduire (si poste le requiert)' },
+  { id: 'photo_identite',      label: 'Photo d\'identité' },
+  { id: 'attestation_securite_sociale', label: 'Attestation de sécurité sociale' },
+  { id: 'casier_judiciaire',   label: 'Extrait de casier judiciaire (si requis)' },
+];
 
 async function envoyerEmailCandidature(candidature, statut, annonce) {
   const notif = STATUT_NOTIF[statut];
@@ -93,9 +105,28 @@ async function ensureTables() {
       cv_texte        TEXT,
       statut          TEXT NOT NULL DEFAULT 'nouvelle',
       note_interne    TEXT,
+      date_entretien  TIMESTAMPTZ,
+      employe_id      INTEGER,
       created_at      TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS documents_employe (
+      id              SERIAL PRIMARY KEY,
+      employe_id      INTEGER NOT NULL,
+      patron_id       INTEGER,
+      type_document   TEXT NOT NULL,
+      nom_fichier     TEXT NOT NULL,
+      contenu_base64  TEXT,
+      taille          INTEGER,
+      mime_type       TEXT,
+      statut          TEXT NOT NULL DEFAULT 'en_attente',
+      commentaire     TEXT,
+      uploaded_at     TIMESTAMPTZ DEFAULT NOW()
+    );
   `);
+  // Add columns if missing (idempotent)
+  await db.query(`ALTER TABLE candidatures_recrutement ADD COLUMN IF NOT EXISTS date_entretien TIMESTAMPTZ`).catch(()=>{});
+  await db.query(`ALTER TABLE candidatures_recrutement ADD COLUMN IF NOT EXISTS employe_id INTEGER`).catch(()=>{});
 }
 ensureTables().catch(e => console.error('recrutement ensureTables:', e.message));
 
@@ -383,6 +414,153 @@ router.put('/patron/candidatures/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
+});
+
+// ── Envoyer email d'embauche avec liste de documents ──
+router.post('/patron/candidatures/:id/envoyer-documents', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT c.*, a.titre, a.nom_entreprise, a.patron_id, u.nom AS patron_nom
+       FROM candidatures_recrutement c
+       JOIN annonces_recrutement a ON a.id = c.annonce_id
+       LEFT JOIN users u ON u.id = a.patron_id
+       WHERE c.id = $1 AND a.patron_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Candidature introuvable' });
+    const c = rows[0];
+    const nomEntreprise = c.nom_entreprise || c.patron_nom || 'L\'entreprise';
+
+    const docsHtml = DOCUMENTS_REQUIS_EMBAUCHE.map(d =>
+      `<li style="padding:6px 0;border-bottom:1px solid #F2F2F7;">${d.label}</li>`
+    ).join('');
+
+    const mailer = getMailer();
+    if (mailer) {
+      await mailer.sendMail({
+        from: process.env.SMTP_FROM || `"Freample Recrutement" <noreply@freample.fr>`,
+        to: c.email,
+        subject: `📋 Documents à fournir — ${nomEntreprise}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E5E5EA;">
+            <div style="background:linear-gradient(135deg,#16A34A,#059669);padding:32px 28px;text-align:center;">
+              <div style="font-size:52px;margin-bottom:12px;">📋</div>
+              <h1 style="color:#fff;font-size:20px;margin:0;font-weight:800;">Bienvenue chez ${nomEntreprise} !</h1>
+            </div>
+            <div style="padding:28px;">
+              <p>Bonjour <strong>${c.prenom} ${c.nom}</strong>,</p>
+              <p style="line-height:1.7;color:#3A3A3C;">Suite à votre candidature retenue pour le poste <strong>${c.titre}</strong>, merci de préparer et transmettre les documents suivants :</p>
+              <ul style="list-style:none;padding:0;margin:16px 0;background:#F4F4F8;border-radius:12px;padding:12px 18px;">${docsHtml}</ul>
+              <p style="line-height:1.7;color:#3A3A3C;">Vous recevrez prochainement vos identifiants de connexion à la plateforme Freample pour déposer vos documents en ligne.</p>
+              <p style="color:#8E8E93;font-size:12px;margin-top:28px;border-top:1px solid #F2F2F7;padding-top:16px;">
+                Ce message a été envoyé automatiquement par Freample. Ne pas répondre à cet email.
+              </p>
+            </div>
+          </div>
+        `,
+      }).catch(e => console.error('Email documents:', e.message));
+    }
+
+    res.json({ message: 'Email envoyé avec la liste des documents', documentsRequis: DOCUMENTS_REQUIS_EMBAUCHE });
+  } catch (err) {
+    console.error('POST envoyer-documents:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// ── Créer compte employé depuis candidature retenue ──
+router.post('/patron/candidatures/:id/creer-employe', authenticateToken, async (req, res) => {
+  try {
+    const { poste, typeContrat, salaireBase, dateEntree } = req.body;
+
+    // Vérifier que la candidature est retenue et appartient au patron
+    const { rows } = await db.query(
+      `SELECT c.*, a.titre, a.nom_entreprise, a.patron_id
+       FROM candidatures_recrutement c
+       JOIN annonces_recrutement a ON a.id = c.annonce_id
+       WHERE c.id = $1 AND a.patron_id = $2 AND c.statut = 'retenue'`,
+      [req.params.id, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Candidature introuvable ou non retenue' });
+    const c = rows[0];
+
+    // Créer le compte utilisateur
+    const bcrypt = require('bcrypt');
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hash = await bcrypt.hash(tempPassword, 12);
+
+    let userId;
+    const existing = await db.query('SELECT id FROM users WHERE email = $1', [c.email]);
+    if (existing.rows.length > 0) {
+      userId = existing.rows[0].id;
+    } else {
+      const userResult = await db.query(
+        `INSERT INTO users (nom, email, motdepasse, role, verified, telephone)
+         VALUES ($1, $2, $3, 'employe', true, $4) RETURNING id`,
+        [`${c.prenom} ${c.nom}`, c.email, hash, c.telephone || null]
+      );
+      userId = userResult.rows[0].id;
+    }
+
+    // Créer la fiche employé
+    const empResult = await db.query(
+      `INSERT INTO employes
+        (prenom, nom, poste, email, telephone, date_entree, type_contrat, salaire_base, statut, patron_id, user_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'actif',$9,$10) RETURNING *`,
+      [c.prenom, c.nom, poste || c.titre, c.email, c.telephone || '',
+       dateEntree || new Date().toISOString().split('T')[0],
+       typeContrat || 'CDI', parseFloat(salaireBase) || 0,
+       req.user.id, userId]
+    );
+
+    // Lier la candidature à l'employé
+    await db.query('UPDATE candidatures_recrutement SET employe_id = $1 WHERE id = $2', [empResult.rows[0].id, c.id]);
+
+    // Envoyer email avec identifiants
+    const mailer = getMailer();
+    if (mailer) {
+      await mailer.sendMail({
+        from: process.env.SMTP_FROM || `"Freample" <noreply@freample.fr>`,
+        to: c.email,
+        subject: `🔑 Vos identifiants Freample — Bienvenue !`,
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E5E5EA;">
+            <div style="background:linear-gradient(135deg,#5B5BD6,#7C3AED);padding:32px 28px;text-align:center;">
+              <div style="font-size:52px;margin-bottom:12px;">🔑</div>
+              <h1 style="color:#fff;font-size:20px;margin:0;font-weight:800;">Votre compte Freample est prêt</h1>
+            </div>
+            <div style="padding:28px;">
+              <p>Bonjour <strong>${c.prenom} ${c.nom}</strong>,</p>
+              <p>Voici vos identifiants de connexion :</p>
+              <div style="background:#F4F4F8;border-radius:12px;padding:16px 18px;margin:20px 0;">
+                <p style="margin:0 0 8px;font-size:14px;"><strong>Email :</strong> ${c.email}</p>
+                <p style="margin:0;font-size:14px;"><strong>Mot de passe temporaire :</strong> <code style="background:#E8E6E1;padding:2px 8px;border-radius:4px;font-size:16px;font-weight:700;">${tempPassword}</code></p>
+              </div>
+              <p style="line-height:1.7;color:#3A3A3C;">Connectez-vous sur Freample pour déposer vos documents d'embauche et accéder à votre espace salarié.</p>
+              <p style="color:#DC2626;font-weight:600;font-size:13px;">⚠️ Pensez à changer votre mot de passe dès la première connexion.</p>
+              <p style="color:#8E8E93;font-size:12px;margin-top:28px;border-top:1px solid #F2F2F7;padding-top:16px;">
+                Ce message a été envoyé automatiquement par Freample.
+              </p>
+            </div>
+          </div>
+        `,
+      }).catch(e => console.error('Email identifiants:', e.message));
+    }
+
+    res.status(201).json({
+      message: 'Compte employé créé et identifiants envoyés',
+      employe: empResult.rows[0],
+      identifiants: { email: c.email, motdepasse: tempPassword },
+    });
+  } catch (err) {
+    console.error('POST creer-employe:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+  }
+});
+
+// ── Liste des documents requis (public info) ──
+router.get('/documents-requis', (req, res) => {
+  res.json({ documents: DOCUMENTS_REQUIS_EMBAUCHE });
 });
 
 module.exports = router;

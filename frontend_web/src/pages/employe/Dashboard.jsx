@@ -4,7 +4,19 @@ import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
 import DS from '../../design/ds';
 
-const TABS = ['Tableau de bord', 'Mes chantiers', 'Mon planning', 'Fiches de paie', 'Congés', 'Notes de frais', 'Mon profil'];
+const TABS = ['Tableau de bord', 'Mes chantiers', 'Mon planning', 'Fiches de paie', 'Congés', 'Notes de frais', 'Mes documents', 'Mon profil'];
+
+const DOCUMENTS_REQUIS = [
+  { id: 'piece_identite',      label: 'Pièce d\'identité (CNI ou passeport)', icon: '🪪' },
+  { id: 'carte_vitale',        label: 'Carte Vitale (attestation ou copie)', icon: '💚' },
+  { id: 'rib',                 label: 'RIB (pour le versement du salaire)', icon: '🏦' },
+  { id: 'justificatif_domicile', label: 'Justificatif de domicile (< 3 mois)', icon: '🏠' },
+  { id: 'diplomes',            label: 'Diplômes et certifications', icon: '🎓' },
+  { id: 'permis_conduire',     label: 'Permis de conduire', icon: '🚗' },
+  { id: 'photo_identite',      label: 'Photo d\'identité', icon: '📷' },
+  { id: 'attestation_securite_sociale', label: 'Attestation de sécurité sociale', icon: '📋' },
+  { id: 'casier_judiciaire',   label: 'Extrait de casier judiciaire', icon: '📄' },
+];
 
 const DEMO_CHANTIERS = [
   { id:1, titre:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, Nice', statut:'en_cours', dateDebut:'2026-04-01', dateFin:'2026-04-20', chef:'Vassili B.' },
@@ -62,6 +74,8 @@ export default function DashboardEmploye() {
   const [patron, setPatron] = useState(DEMO_PATRON);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
+  const [mesDocs, setMesDocs] = useState([]);
+  const [uploadingDoc, setUploadingDoc] = useState('');
 
   const patronId = user?.patronId;
   const hasEntreprise = !!patronId;
@@ -75,6 +89,7 @@ export default function DashboardEmploye() {
     api.get('/rh/bulletins-paie').then(({ data }) => { if (data.bulletins?.length) setBulletins(data.bulletins); }).catch(() => {});
     api.get('/rh/conges').then(({ data }) => { if (data.conges?.length) setConges(data.conges); }).catch(() => {});
     api.get('/rh/notes-frais').then(({ data }) => { if (data.notes?.length) setFrais(data.notes); }).catch(() => {});
+    api.get('/rh/documents').then(({ data }) => { if (data.documents) setMesDocs(data.documents); }).catch(() => {});
   }, []);
 
   const congesRestants = 25 - conges.filter(c => c.statut === 'approuve' && c.type === 'vacances').reduce((s, c) => s + c.jours, 0);
@@ -261,8 +276,92 @@ export default function DashboardEmploye() {
         </div>
       </>}
 
-      {/* ═══ MON PROFIL ═══ */}
+      {/* ═══ MES DOCUMENTS ═══ */}
       {tab === 6 && <>
+        <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: DS.ink }}>Mes documents</h2>
+        <p style={{ fontSize: 13, color: DS.muted, marginBottom: 16 }}>Déposez les documents demandés par votre employeur. Ils seront visibles en temps réel.</p>
+
+        {/* Barre de progression */}
+        {(() => {
+          const deposés = DOCUMENTS_REQUIS.filter(d => mesDocs.some(m => m.type_document === d.id));
+          const validés = DOCUMENTS_REQUIS.filter(d => mesDocs.some(m => m.type_document === d.id && m.statut === 'valide'));
+          const pct = Math.round(deposés.length / DOCUMENTS_REQUIS.length * 100);
+          return (
+            <div style={{ ...CARD, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>Progression : {deposés.length}/{DOCUMENTS_REQUIS.length} documents déposés</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: pct === 100 ? '#16A34A' : '#D97706' }}>{pct}%</span>
+              </div>
+              <div style={{ height: 6, background: '#E8E6E1', borderRadius: 3 }}>
+                <div style={{ height: 6, background: pct === 100 ? '#16A34A' : '#D97706', borderRadius: 3, width: `${pct}%`, transition: 'width .3s' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: DS.muted }}>
+                <span style={{ color: '#16A34A' }}>✓ {validés.length} validé{validés.length > 1 ? 's' : ''}</span>
+                <span style={{ color: '#D97706' }}>{deposés.length - validés.length} en attente</span>
+                <span>{DOCUMENTS_REQUIS.length - deposés.length} manquant{DOCUMENTS_REQUIS.length - deposés.length > 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Liste des documents */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {DOCUMENTS_REQUIS.map(doc => {
+            const uploaded = mesDocs.find(m => m.type_document === doc.id);
+            const sColor = { en_attente: '#D97706', valide: '#16A34A', refuse: '#DC2626' };
+            const sLabel = { en_attente: 'En attente de validation', valide: 'Validé par l\'employeur', refuse: 'Refusé — à renvoyer' };
+            return (
+              <div key={doc.id} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
+                <span style={{ fontSize: 22 }}>{doc.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: DS.ink }}>{doc.label}</div>
+                  {uploaded ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <span style={{ fontSize: 11, color: '#636363' }}>{uploaded.nom_fichier}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: sColor[uploaded.statut], background: sColor[uploaded.statut] + '18', padding: '2px 6px', borderRadius: 4 }}>
+                        {sLabel[uploaded.statut]}
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>Non déposé</div>
+                  )}
+                  {uploaded?.commentaire && <div style={{ fontSize: 11, color: '#DC2626', marginTop: 2 }}>💬 {uploaded.commentaire}</div>}
+                </div>
+                <div>
+                  <label style={{ padding: '7px 14px', background: uploaded ? (uploaded.statut === 'refuse' ? '#DC2626' : '#F2F2F7') : DS.accent, color: uploaded ? (uploaded.statut === 'refuse' ? '#fff' : '#636363') : '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 11, display: 'inline-block' }}>
+                    {uploadingDoc === doc.id ? 'Envoi...' : uploaded ? (uploaded.statut === 'refuse' ? 'Renvoyer' : 'Remplacer') : 'Déposer'}
+                    <input type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingDoc(doc.id);
+                      try {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                          const base64 = reader.result.split(',')[1];
+                          await api.post('/rh/documents', {
+                            typeDocument: doc.id,
+                            nomFichier: file.name,
+                            contenuBase64: base64.slice(0, 500),
+                            taille: file.size,
+                            mimeType: file.type,
+                          });
+                          const { data } = await api.get('/rh/documents');
+                          setMesDocs(data.documents || []);
+                          setUploadingDoc('');
+                        };
+                        reader.readAsDataURL(file);
+                      } catch { setUploadingDoc(''); }
+                    }} />
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </>}
+
+      {/* ═══ MON PROFIL ═══ */}
+      {tab === 7 && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Mon profil</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={CARD}>

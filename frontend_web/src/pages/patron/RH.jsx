@@ -132,7 +132,7 @@ function RHLegalBanner() {
   );
 }
 
-const TABS_LABELS = ['Tableau de bord', 'Employés', 'Pointage', 'Planning', 'Congés', 'Notes de frais', 'Entretiens', 'Onboarding', 'Recrutement', 'Formation'];
+const TABS_LABELS = ['Tableau de bord', 'Employés', 'Planning', 'Congés', 'Recrutement', 'Formation', 'Pointage', 'Notes de frais', 'Entretiens', 'Onboarding'];
 const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement' };
 
 export default function RH() {
@@ -335,7 +335,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
 
 /* ── Recrutement ── */
 const PIPELINE_STAGES = ['nouvelle', 'examinée', 'entretien', 'retenue', 'rejetée'];
-const PIPELINE_LABELS = { nouvelle:'Nouvelle', examinée:'CV examiné', entretien:'Entretien prévu', retenue:'Retenue', rejetée:'Rejetée' };
+const PIPELINE_LABELS = { nouvelle:'Nouvelle', examinée:'CV examiné', entretien:'Entretien', retenue:'Retenue', rejetée:'Rejetée' };
 const PIPELINE_COLORS = { nouvelle:'#636363', examinée:'#5B5BD6', entretien:'#FF9500', retenue:'#34C759', rejetée:'#C0392B' };
 const CONTRATS = ['CDI','CDD','Intérim','Alternance','Stage','Freelance'];
 const POSTES_BTP = ['Maçon','Plombier','Électricien','Charpentier','Menuisier','Carreleur','Peintre','Chef de chantier','Conducteur de travaux','Grutier','Coffreur','Étancheur','Autre'];
@@ -352,6 +352,11 @@ function RecrutementView() {
   const [toast, setToast] = useState('');
   const [selectedCand, setSelectedCand] = useState(null);
   const [candDetail, setCandDetail] = useState(null);
+  const [embaucheForm, setEmbaucheForm] = useState({ poste:'', typeContrat:'CDI', salaireBase:'', dateEntree:'' });
+  const [showEmbaucheForm, setShowEmbaucheForm] = useState(false);
+  const [docsSent, setDocsSent] = useState({});
+  const [empDocs, setEmpDocs] = useState([]);
+  const [loadingAction, setLoadingAction] = useState('');
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
@@ -404,13 +409,52 @@ function RecrutementView() {
   }
 
   async function avancerCandidature(candId, statut) {
+    setLoadingAction(statut);
     await api.put(`/recrutement/patron/candidatures/${candId}`, { statut }).catch(() => {});
     await fetchCandidatures(selectedAnnonce.id);
+    setLoadingAction('');
+    const labels = { examinée:'CV marqué comme examiné — notification envoyée', entretien:'Entretien planifié — notification envoyée', retenue:'Candidature retenue — notification envoyée', rejetée:'Candidature rejetée — notification envoyée' };
+    showToast(labels[statut] || 'Statut mis à jour');
   }
 
   async function noterCandidature(candId, noteInterne) {
     await api.put(`/recrutement/patron/candidatures/${candId}`, { noteInterne }).catch(() => {});
     setCandidatures(prev => prev.map(c => c.id === candId ? { ...c, noteInterne } : c));
+  }
+
+  async function envoyerDocsEmail(candId) {
+    setLoadingAction('docs');
+    try {
+      await api.post(`/recrutement/patron/candidatures/${candId}/envoyer-documents`);
+      setDocsSent(prev => ({ ...prev, [candId]: true }));
+      showToast('Email envoyé avec la liste des documents à fournir');
+    } catch { showToast('Erreur lors de l\'envoi'); }
+    setLoadingAction('');
+  }
+
+  async function creerEmployeDepuisCand(candId) {
+    setLoadingAction('embauche');
+    try {
+      const { data } = await api.post(`/recrutement/patron/candidatures/${candId}/creer-employe`, embaucheForm);
+      showToast(`Compte créé ! Identifiants envoyés à ${data.identifiants.email}`);
+      setCandDetail(d => ({ ...d, employeId: data.employe.id, identifiants: data.identifiants }));
+      setShowEmbaucheForm(false);
+      await fetchCandidatures(selectedAnnonce.id);
+    } catch (err) { showToast(err.response?.data?.erreur || 'Erreur création compte'); }
+    setLoadingAction('');
+  }
+
+  async function fetchEmployeDocs(employeId) {
+    try {
+      const { data } = await api.get(`/rh/employes/${employeId}/documents`);
+      setEmpDocs(data.documents || []);
+    } catch { setEmpDocs([]); }
+  }
+
+  async function validerDocument(docId, statut) {
+    await api.put(`/rh/documents/${docId}/valider`, { statut }).catch(() => {});
+    if (candDetail?.employeId) fetchEmployeDocs(candDetail.employeId);
+    showToast(`Document ${statut === 'valide' ? 'validé' : 'refusé'}`);
   }
 
   const statutBadgeAnnonce = (s) => {
@@ -613,19 +657,18 @@ function RecrutementView() {
         </div>
       )}
 
-      {/* Modal lettre de motivation */}
       {/* ── Panel détail candidature ── */}
       {candDetail && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 9999, display: 'flex', justifyContent: 'flex-end' }}
-          onClick={e => { if (e.target === e.currentTarget) setCandDetail(null); }}>
-          <div style={{ width: '100%', maxWidth: 500, background: '#fff', height: '100%', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column' }}>
+          onClick={e => { if (e.target === e.currentTarget) { setCandDetail(null); setShowEmbaucheForm(false); setEmpDocs([]); } }}>
+          <div style={{ width: '100%', maxWidth: 540, background: '#fff', height: '100%', overflowY: 'auto', boxShadow: '-8px 0 40px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column' }}>
             {/* Header sticky */}
             <div style={{ padding: '18px 22px', borderBottom: '1px solid #F2F2F7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1C1C1E' }}>{candDetail.prenom} {candDetail.nom}</h3>
                 <StatutBadge statut={candDetail.statut} />
               </div>
-              <button onClick={() => setCandDetail(null)} style={{ background: '#F2F2F7', border: 'none', cursor: 'pointer', fontSize: 18, color: '#3A3A3C', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              <button onClick={() => { setCandDetail(null); setShowEmbaucheForm(false); setEmpDocs([]); }} style={{ background: '#F2F2F7', border: 'none', cursor: 'pointer', fontSize: 18, color: '#3A3A3C', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
 
             <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -669,27 +712,195 @@ function RecrutementView() {
                 />
               </div>
 
-              {/* Actions */}
+              {/* ── Actions pipeline ── */}
               <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 16 }}>
-                <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Faire avancer la candidature</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {[
-                    { label: '📋 Marquer comme examinée', statut: 'examinée', bg: '#EEF2FF', color: '#5B5BD6', border: 'rgba(91,91,214,0.25)' },
-                    { label: '📞 Proposer un entretien', statut: 'entretien', bg: '#FFF7ED', color: '#C2610C', border: 'rgba(194,97,12,0.25)' },
-                    { label: '✅ Retenir / Embaucher', statut: 'retenue', bg: '#F0FDF4', color: '#1A7F43', border: 'rgba(26,127,67,0.25)' },
-                    { label: '❌ Rejeter', statut: 'rejetée', bg: '#FEF2F2', color: '#C0392B', border: 'rgba(192,57,43,0.25)' },
-                  ].map(({ label, statut, bg, color, border }) => (
-                    <button key={statut}
-                      disabled={candDetail.statut === statut}
-                      onClick={async () => {
-                        await avancerCandidature(candDetail.id, statut);
-                        setCandDetail(d => ({ ...d, statut }));
-                      }}
-                      style={{ padding: '11px 16px', background: candDetail.statut === statut ? '#F2F2F7' : bg, color: candDetail.statut === statut ? '#636363' : color, border: `1px solid ${candDetail.statut === statut ? '#E5E5EA' : border}`, borderRadius: 10, cursor: candDetail.statut === statut ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left', transition: 'all 0.15s' }}>
-                      {label}{candDetail.statut === statut ? ' ✓ (actuel)' : ''}
-                    </button>
-                  ))}
+                <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pipeline de recrutement</p>
+
+                {/* Barre de progression visuelle */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+                  {PIPELINE_STAGES.filter(s => s !== 'rejetée').map(s => {
+                    const idx = PIPELINE_STAGES.indexOf(s);
+                    const currentIdx = PIPELINE_STAGES.indexOf(candDetail.statut);
+                    const done = candDetail.statut !== 'rejetée' && currentIdx >= idx;
+                    return <div key={s} style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ height: 4, borderRadius: 2, background: done ? PIPELINE_COLORS[s] : '#E5E5EA', marginBottom: 4, transition: 'background .3s' }} />
+                      <span style={{ fontSize: 9, fontWeight: 600, color: done ? PIPELINE_COLORS[s] : '#8E8E93' }}>{PIPELINE_LABELS[s]}</span>
+                    </div>;
+                  })}
                 </div>
+
+                {/* Boutons d'avancement contextuels */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {candDetail.statut === 'nouvelle' && (
+                    <button disabled={loadingAction === 'examinée'} onClick={async () => { await avancerCandidature(candDetail.id, 'examinée'); setCandDetail(d => ({ ...d, statut: 'examinée' })); }}
+                      style={{ padding: '12px 16px', background: '#EEF2FF', color: '#5B5BD6', border: '1px solid rgba(91,91,214,0.25)', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left' }}>
+                      👀 {loadingAction === 'examinée' ? 'Envoi notification...' : 'Marquer CV comme examiné'} <span style={{ float: 'right', fontSize: 11, opacity: 0.7 }}>→ Notification envoyée au candidat</span>
+                    </button>
+                  )}
+
+                  {candDetail.statut === 'examinée' && <>
+                    <button disabled={loadingAction === 'entretien'} onClick={async () => { await avancerCandidature(candDetail.id, 'entretien'); setCandDetail(d => ({ ...d, statut: 'entretien' })); }}
+                      style={{ padding: '12px 16px', background: '#FFF7ED', color: '#C2610C', border: '1px solid rgba(194,97,12,0.25)', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left' }}>
+                      📞 {loadingAction === 'entretien' ? 'Envoi...' : 'Proposer un entretien'} <span style={{ float: 'right', fontSize: 11, opacity: 0.7 }}>→ Notification envoyée</span>
+                    </button>
+                    <button disabled={loadingAction === 'rejetée'} onClick={async () => { await avancerCandidature(candDetail.id, 'rejetée'); setCandDetail(d => ({ ...d, statut: 'rejetée' })); }}
+                      style={{ padding: '10px 16px', background: '#FEF2F2', color: '#C0392B', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, textAlign: 'left' }}>
+                      ❌ Rejeter la candidature
+                    </button>
+                  </>}
+
+                  {candDetail.statut === 'entretien' && <>
+                    <div style={{ background: '#FFF7ED', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(194,97,12,0.15)' }}>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#C2610C' }}>📞 Entretien en cours</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#636363' }}>Appelez le candidat ou rencontrez-le. Mettez à jour le statut après l'entretien.</p>
+                    </div>
+                    <button disabled={loadingAction === 'retenue'} onClick={async () => { await avancerCandidature(candDetail.id, 'retenue'); setCandDetail(d => ({ ...d, statut: 'retenue' })); }}
+                      style={{ padding: '12px 16px', background: '#F0FDF4', color: '#1A7F43', border: '1px solid rgba(26,127,67,0.25)', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13, textAlign: 'left' }}>
+                      ✅ {loadingAction === 'retenue' ? 'Envoi...' : 'Retenir / Embaucher'} <span style={{ float: 'right', fontSize: 11, opacity: 0.7 }}>→ Email de félicitations envoyé</span>
+                    </button>
+                    <button disabled={loadingAction === 'rejetée'} onClick={async () => { await avancerCandidature(candDetail.id, 'rejetée'); setCandDetail(d => ({ ...d, statut: 'rejetée' })); }}
+                      style={{ padding: '10px 16px', background: '#FEF2F2', color: '#C0392B', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, textAlign: 'left' }}>
+                      ❌ Rejeter après entretien
+                    </button>
+                  </>}
+
+                  {candDetail.statut === 'retenue' && <>
+                    <div style={{ background: '#F0FDF4', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(26,127,67,0.15)' }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1A7F43' }}>🎉 Candidature retenue</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#636363' }}>Le candidat a reçu un email de félicitations. Suivez les étapes ci-dessous pour finaliser l'embauche.</p>
+                    </div>
+
+                    {/* Étape 1 : Envoyer la liste des documents */}
+                    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                        <span style={{ width: 24, height: 24, borderRadius: '50%', background: docsSent[candDetail.id] ? '#16A34A' : '#5B5BD6', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{docsSent[candDetail.id] ? '✓' : '1'}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>Envoyer la liste des documents</span>
+                      </div>
+                      <p style={{ margin: '0 0 10px', fontSize: 12, color: '#636363', paddingLeft: 34 }}>
+                        Envoie un email au candidat avec la liste complète des documents à fournir (pièce d'identité, RIB, carte vitale, diplômes...)
+                      </p>
+                      {!docsSent[candDetail.id] ? (
+                        <button disabled={loadingAction === 'docs'} onClick={() => envoyerDocsEmail(candDetail.id)}
+                          style={{ marginLeft: 34, padding: '8px 16px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+                          {loadingAction === 'docs' ? 'Envoi en cours...' : '📧 Envoyer l\'email des documents'}
+                        </button>
+                      ) : (
+                        <p style={{ margin: 0, paddingLeft: 34, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>✅ Email envoyé</p>
+                      )}
+                    </div>
+
+                    {/* Étape 2 : Créer le compte salarié */}
+                    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                        <span style={{ width: 24, height: 24, borderRadius: '50%', background: candDetail.employeId ? '#16A34A' : '#5B5BD6', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{candDetail.employeId ? '✓' : '2'}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>Créer le compte salarié</span>
+                      </div>
+
+                      {candDetail.employeId ? (
+                        <div style={{ paddingLeft: 34 }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 12, color: '#16A34A', fontWeight: 600 }}>✅ Compte créé — identifiants envoyés par email</p>
+                          {candDetail.identifiants && (
+                            <div style={{ background: '#F4F4F8', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
+                              <p style={{ margin: '0 0 4px' }}><strong>Email :</strong> {candDetail.identifiants.email}</p>
+                              <p style={{ margin: 0 }}><strong>Mot de passe temporaire :</strong> <code style={{ background: '#E8E6E1', padding: '1px 6px', borderRadius: 4 }}>{candDetail.identifiants.motdepasse}</code></p>
+                            </div>
+                          )}
+                        </div>
+                      ) : !showEmbaucheForm ? (
+                        <button onClick={() => { setEmbaucheForm({ poste: selectedAnnonce?.poste || '', typeContrat: selectedAnnonce?.typeContrat || 'CDI', salaireBase: '', dateEntree: '' }); setShowEmbaucheForm(true); }}
+                          style={{ marginLeft: 34, padding: '8px 16px', background: '#1A7F43', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+                          👤 Créer le compte et envoyer les codes
+                        </button>
+                      ) : (
+                        <div style={{ paddingLeft: 34, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            <div>
+                              <label style={{ fontSize: 10, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Poste</label>
+                              <input value={embaucheForm.poste} onChange={e => setEmbaucheForm(f => ({ ...f, poste: e.target.value }))}
+                                style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, boxSizing: 'border-box', outline: 'none' }} />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: 10, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Contrat</label>
+                              <select value={embaucheForm.typeContrat} onChange={e => setEmbaucheForm(f => ({ ...f, typeContrat: e.target.value }))}
+                                style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, boxSizing: 'border-box', outline: 'none' }}>
+                                {CONTRATS.map(c => <option key={c}>{c}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: 10, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Salaire brut (€)</label>
+                              <input type="number" value={embaucheForm.salaireBase} onChange={e => setEmbaucheForm(f => ({ ...f, salaireBase: e.target.value }))}
+                                placeholder="2400" style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, boxSizing: 'border-box', outline: 'none' }} />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: 10, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 3 }}>Date d'entrée</label>
+                              <input type="date" value={embaucheForm.dateEntree} onChange={e => setEmbaucheForm(f => ({ ...f, dateEntree: e.target.value }))}
+                                style={{ width: '100%', padding: '7px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, boxSizing: 'border-box', outline: 'none' }} />
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button disabled={loadingAction === 'embauche'} onClick={() => creerEmployeDepuisCand(candDetail.id)}
+                              style={{ padding: '8px 16px', background: '#1A7F43', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+                              {loadingAction === 'embauche' ? 'Création...' : '✅ Confirmer et envoyer les identifiants'}
+                            </button>
+                            <button onClick={() => setShowEmbaucheForm(false)}
+                              style={{ padding: '8px 12px', background: '#F2F2F7', color: '#636363', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Étape 3 : Suivi documents employé (temps réel) */}
+                    {candDetail.employeId && (
+                      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E5EA', padding: '14px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#5B5BD6', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#1C1C1E' }}>Documents déposés par le salarié</span>
+                          </div>
+                          <button onClick={() => fetchEmployeDocs(candDetail.employeId)}
+                            style={{ padding: '4px 10px', background: '#F2F2F7', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#5B5BD6' }}>
+                            ↻ Actualiser
+                          </button>
+                        </div>
+                        {empDocs.length === 0 ? (
+                          <p style={{ margin: 0, paddingLeft: 34, fontSize: 12, color: '#8E8E93' }}>Aucun document déposé pour le moment. Le salarié peut les déposer depuis son espace "Mes documents".</p>
+                        ) : (
+                          <div style={{ paddingLeft: 34, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {empDocs.map(doc => {
+                              const sColor = { en_attente:'#D97706', valide:'#16A34A', refuse:'#DC2626' };
+                              const sLabel = { en_attente:'En attente', valide:'Validé', refuse:'Refusé' };
+                              return (
+                                <div key={doc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#F9F9FB', borderRadius: 8, fontSize: 12 }}>
+                                  <div>
+                                    <span style={{ fontWeight: 600 }}>{doc.type_document.replace(/_/g, ' ')}</span>
+                                    <span style={{ color: '#8E8E93', marginLeft: 8 }}>{doc.nom_fichier}</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: sColor[doc.statut], background: sColor[doc.statut] + '18', padding: '2px 6px', borderRadius: 4 }}>{sLabel[doc.statut]}</span>
+                                    {doc.statut === 'en_attente' && <>
+                                      <button onClick={() => validerDocument(doc.id, 'valide')} style={{ padding: '3px 8px', background: '#F0FDF4', color: '#16A34A', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 10, fontWeight: 700 }}>✓</button>
+                                      <button onClick={() => validerDocument(doc.id, 'refuse')} style={{ padding: '3px 8px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 10, fontWeight: 700 }}>✗</button>
+                                    </>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>}
+
+                  {candDetail.statut === 'rejetée' && (
+                    <div style={{ background: '#FEF2F2', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(192,57,43,0.15)' }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C0392B' }}>❌ Candidature rejetée</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#636363' }}>Le candidat a été notifié par email.</p>
+                    </div>
+                  )}
+                </div>
+
                 <p style={{ margin: '12px 0 0', fontSize: 11, color: '#636363' }}>
                   💡 Le candidat reçoit un email de notification à chaque changement de statut.
                 </p>
