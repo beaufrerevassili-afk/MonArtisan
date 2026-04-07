@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -19,7 +19,9 @@ const statutColors = { planifie:'#D97706', realise:'#16A34A', annule:'#DC2626' }
 const statutLabels = { planifie:'Planifié', realise:'Réalisé', annule:'Annulé' };
 
 export default function EntretiensModule({ employes = [] }) {
-  const [entretiens, setEntretiens] = useState(DEMO);
+  const STORE_E='freample_entretiens'; function loadE(){try{const d=localStorage.getItem(STORE_E);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const [entretiens, setEntretiens] = useState(loadE);
+  useEffect(()=>{localStorage.setItem(STORE_E,JSON.stringify(entretiens));},[entretiens]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [selected, setSelected] = useState(null);

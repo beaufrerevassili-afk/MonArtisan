@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -20,7 +20,9 @@ const statutColors = { emis:'#D97706', en_transit:'#2563EB', traite:'#16A34A', r
 const statutLabels = { emis:'Émis', en_transit:'En transit', traite:'Traité', refuse:'Refusé' };
 
 export default function BSDDModule() {
-  const [bsdds, setBsdds] = useState(DEMO);
+  const STORE_B='freample_bsdd'; function loadB(){try{const d=localStorage.getItem(STORE_B);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const [bsdds, setBsdds] = useState(loadB);
+  useEffect(()=>{localStorage.setItem(STORE_B,JSON.stringify(bsdds));},[bsdds]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
 

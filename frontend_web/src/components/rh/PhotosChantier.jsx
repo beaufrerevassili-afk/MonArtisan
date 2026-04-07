@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -19,7 +19,9 @@ const CATEGORIES = ['Toutes', 'Avant travaux', 'En cours', 'Après travaux', 'Pr
 const CHANTIERS_LIST = ['Tous', 'Rénovation Dupont', 'Bureau Médecin', 'Peinture Pastorelli'];
 
 export default function PhotosChantier() {
-  const [photos, setPhotos] = useState(DEMO_PHOTOS);
+  const STORE_PH='freample_photos'; function loadPH(){try{const d=localStorage.getItem(STORE_PH);return d?JSON.parse(d):DEMO_PHOTOS;}catch{return DEMO_PHOTOS;}}
+  const [photos, setPhotos] = useState(loadPH);
+  useEffect(()=>{localStorage.setItem(STORE_PH,JSON.stringify(photos));},[photos]);
   const [filterCat, setFilterCat] = useState('Toutes');
   const [filterChantier, setFilterChantier] = useState('Tous');
   const [modal, setModal] = useState(null);

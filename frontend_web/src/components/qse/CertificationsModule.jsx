@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -26,7 +26,9 @@ const DEMO = [
 const statutColors = { valide:'#16A34A', expire:'#DC2626', en_cours:'#D97706', a_renouveler:'#D97706' };
 
 export default function CertificationsModule() {
-  const [certifs, setCertifs] = useState(DEMO);
+  const STORE_C='freample_certifs'; function loadC(){try{const d=localStorage.getItem(STORE_C);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const [certifs, setCertifs] = useState(loadC);
+  useEffect(()=>{localStorage.setItem(STORE_C,JSON.stringify(certifs));},[certifs]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [filterType, setFilterType] = useState('');

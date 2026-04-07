@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -18,7 +18,9 @@ const DEMO = [
 ];
 
 export default function IncidentsModule() {
-  const [incidents, setIncidents] = useState(DEMO);
+  const STORE_I='freample_incidents'; function loadI(){try{const d=localStorage.getItem(STORE_I);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const [incidents, setIncidents] = useState(loadI);
+  useEffect(()=>{localStorage.setItem(STORE_I,JSON.stringify(incidents));},[incidents]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [selected, setSelected] = useState(null);
