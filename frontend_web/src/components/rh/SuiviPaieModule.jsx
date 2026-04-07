@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import DS from '../../design/ds';
 import { calculerIndemniteTrajet, PANIER_REPAS_BTP } from '../../utils/calculPaie';
+import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -14,15 +15,15 @@ const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août'
 const DEPOT_DEFAULT = '24 rue de la Liberté, Nice';
 
 // ══ Chantiers avec adresses (simulé — en prod vient de ChantiersEtMissions) ══
-const CHANTIERS = [
-  { id:1, nom:'Rénovation Dupont', adresse:'12 rue de France, Nice', distanceDepot:8 },
-  { id:2, nom:'Bureau Médecin', adresse:'8 av Jean Médecin, Nice', distanceDepot:3 },
-  { id:3, nom:'Peinture Pastorelli', adresse:'24 rue Pastorelli, Nice', distanceDepot:5 },
-  { id:4, nom:'Villa Rousseau', adresse:'15 chemin des Collines, Cagnes-sur-Mer', distanceDepot:18 },
-  { id:5, nom:'Résidence Garibaldi', adresse:'10 place Garibaldi, Nice', distanceDepot:4 },
-  { id:6, nom:'Entrepôt Carros', adresse:'ZI Carros, Carros', distanceDepot:22 },
-  { id:7, nom:'Maison Antibes', adresse:'8 rue de la République, Antibes', distanceDepot:35 },
-  { id:8, nom:'Chantier Grasse', adresse:'12 bd du Jeu de Ballon, Grasse', distanceDepot:52 },
+const CHANTIERS_INIT = [
+  { id:1, nom:'Rénovation Dupont', adresse:'12 rue de France, Nice', distanceDepot:null },
+  { id:2, nom:'Bureau Médecin', adresse:'8 avenue Jean Médecin, Nice', distanceDepot:null },
+  { id:3, nom:'Peinture Pastorelli', adresse:'24 rue Pastorelli, Nice', distanceDepot:null },
+  { id:4, nom:'Villa Rousseau', adresse:'15 chemin des Collines, Cagnes-sur-Mer', distanceDepot:null },
+  { id:5, nom:'Résidence Garibaldi', adresse:'10 place Garibaldi, Nice', distanceDepot:null },
+  { id:6, nom:'Entrepôt Carros', adresse:'Zone industrielle, Carros', distanceDepot:null },
+  { id:7, nom:'Maison Antibes', adresse:'8 rue de la République, Antibes', distanceDepot:null },
+  { id:8, nom:'Chantier Grasse', adresse:'12 boulevard du Jeu de Ballon, Grasse', distanceDepot:null },
 ];
 
 // ══ Salariés ══
@@ -97,8 +98,28 @@ const POINTAGES_MOIS = [
 
 export default function SuiviPaieModule() {
   const [depot, setDepot] = useState(DEPOT_DEFAULT);
+  const [chantiers, setChantiers] = useState(CHANTIERS_INIT);
   const [selectedSalarie, setSelectedSalarie] = useState(null);
+  const [calcEnCours, setCalcEnCours] = useState(false);
+  const [distancesCalculees, setDistancesCalculees] = useState(false);
   const moisActuel = `${MOIS[new Date().getMonth()]} ${new Date().getFullYear()}`;
+
+  // Calculer les distances automatiquement via API adresse.data.gouv.fr
+  const calculerDistances = useCallback(async () => {
+    if (!depot || depot.length < 5) return;
+    setCalcEnCours(true);
+    const updated = [...chantiers];
+    for (let i = 0; i < updated.length; i++) {
+      const result = await calculerDistanceEntreAdresses(depot, updated[i].adresse);
+      updated[i] = { ...updated[i], distanceDepot: result ? result.distanceKm : updated[i].distanceDepot };
+    }
+    setChantiers(updated);
+    setCalcEnCours(false);
+    setDistancesCalculees(true);
+  }, [depot]);
+
+  // Calcul au premier chargement
+  useEffect(() => { calculerDistances(); }, []);
 
   // Calcul automatique de la paie pour chaque salarié
   const paiesSalaries = useMemo(() => {
@@ -109,7 +130,7 @@ export default function SuiviPaieModule() {
       const chantiersVisites = new Set();
 
       pointages.forEach(p => {
-        const chantier = CHANTIERS.find(c => c.id === p.chantierId);
+        const chantier = chantiers.find(c => c.id === p.chantierId);
         const dist = chantier?.distanceDepot || 0;
         const trajet = calculerIndemniteTrajet(dist);
         const tauxH = sal.salaireBase / 21 / 7;
@@ -156,7 +177,7 @@ export default function SuiviPaieModule() {
         detailJours,
       };
     });
-  }, []);
+  }, [calculerDistances]);
 
   const totalMasse = paiesSalaries.reduce((s, p) => s + p.totalBrut, 0);
 
@@ -183,10 +204,24 @@ export default function SuiviPaieModule() {
       </div>
 
       {/* Config dépôt */}
-      <div style={{ ...CARD, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#555', whiteSpace: 'nowrap' }}>Adresse dépôt :</span>
-        <input value={depot} onChange={e => setDepot(e.target.value)} style={{ ...INP, flex: 1 }} />
-        <span style={{ fontSize: 11, color: '#555', whiteSpace: 'nowrap' }}>Les distances sont calculées automatiquement</span>
+      <div style={{ ...CARD, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: distancesCalculees ? 10 : 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#555', whiteSpace: 'nowrap' }}>Adresse dépôt :</span>
+          <input value={depot} onChange={e => setDepot(e.target.value)} style={{ ...INP, flex: 1 }} />
+          <button onClick={calculerDistances} disabled={calcEnCours} style={{ ...BTN, opacity: calcEnCours ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+            {calcEnCours ? 'Calcul...' : 'Calculer distances'}
+          </button>
+        </div>
+        {distancesCalculees && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {chantiers.map(c => (
+              <span key={c.id} style={{ fontSize: 10, padding: '3px 8px', background: c.distanceDepot !== null ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${c.distanceDepot !== null ? '#16A34A25' : '#DC262625'}`, borderRadius: 6 }}>
+                {c.nom} : {c.distanceDepot !== null ? <strong>{c.distanceDepot} km</strong> : 'Erreur'}
+              </span>
+            ))}
+            <span style={{ fontSize: 10, color: '#555', alignSelf: 'center' }}>via api-adresse.data.gouv.fr</span>
+          </div>
+        )}
       </div>
 
       {/* KPIs */}
