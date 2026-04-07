@@ -71,7 +71,7 @@ function genererDocument(formulaireId, salarie, champs) {
     } else {
       txt += `Son contrat, conclu sous la forme d'un ${s.typeContrat}, a débuté le ${s.dateEmbauche} et est censé prendre fin le jour de la réalisation de l'évènement y mettant un terme. À ce jour, ${s.civilite === 'Mme' ? 'elle' : 'il'} bénéficie d'une ancienneté de ${anc}.\n\n`;
     }
-    txt += `Sa rémunération brute mensuelle s'élève à ${s.salaireBase.toLocaleString()} euros.\n\n`;
+    txt += ``;
     txt += `Cette attestation est délivrée pour servir et valoir ce que de droit.\n\n\n`;
     txt += `${e.representant}\n${e.fonction}\n\n[Signature]\n`;
     return txt;
@@ -108,11 +108,8 @@ function genererDocument(formulaireId, salarie, champs) {
     txt += `AT ou MP à l'origine de l'inaptitude: ${champs.atOrigine}\n`;
     txt += `Date de l'AT ou de la MP            : ${champs.dateInaptitude}\n\n`;
     txt += `D. SITUATION DU SALARIÉ À LA DATE DE L'AVIS\n`;
-    txt += `Le salarié perçoit-il un salaire ?           : NON\n`;
     txt += `Le salarié perçoit-il des IJ ?               : NON\n`;
-    txt += `Le contrat de travail est-il rompu ?         : NON\n`;
-    txt += `Dernier salaire journalier de référence      : ${(s.salaireBase/30).toFixed(2)} €\n`;
-    txt += `Salaire mensuel brut                         : ${s.salaireBase.toLocaleString()} €\n\n`;
+    txt += `Le contrat de travail est-il rompu ?         : NON\n\n`;
     txt += `Je certifie l'exactitude des renseignements ci-dessus.\n\n`;
     txt += `Fait à ${e.ville}, le ${date}\n`;
     txt += `Signature et cachet de l'employeur :\n\n\n_________________________________\n\n`;
@@ -311,7 +308,7 @@ export default function FormulairesAMELI() {
                 {salarie.civilite} {salarie.prenom} {salarie.nom} · N° SS {salarie.numSecu}<br/>
                 Né(e) le {salarie.dateNaissance} à {salarie.lieuNaissance}<br/>
                 {salarie.adresse}, {salarie.cp} {salarie.ville}<br/>
-                {salarie.poste} ({salarie.qualification}) · {salarie.typeContrat} · {salarie.salaireBase}€<br/>
+                {salarie.poste} ({salarie.qualification}) · {salarie.typeContrat}<br/>
                 Embauché le {salarie.dateEmbauche} · Ancienneté : {calculerAnciennete(salarie.dateEmbauche)}
               </div>
 
