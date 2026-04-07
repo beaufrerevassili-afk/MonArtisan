@@ -3,14 +3,18 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp, IconClock, IconUser } from '../../components/ui/Icons';
 import Facturation from './Facturation';
+import PipelineCommercial from '../../components/rh/PipelineCommercial';
+import ExportCompta from '../../components/rh/ExportCompta';
 import URSSAF from './URSSAF';
 
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
 
 const TABS = [
   { id: 'tableau-de-bord', label: "Vue d'ensemble" },
-  { id: 'tresorerie',      label: 'Trésorerie'      },
+  { id: 'pipeline',        label: 'Pipeline'        },
   { id: 'facturation',     label: 'Facturation'     },
+  { id: 'tresorerie',      label: 'Trésorerie'      },
+  { id: 'compta',          label: 'Comptabilité'    },
   { id: 'urssaf',          label: 'URSSAF'          },
   { id: 'salaires',        label: 'Salaires'        },
   { id: 'bareme-paiement', label: 'Barème paiement' },
@@ -93,7 +97,7 @@ const DEMO_SALARIES = {
   resume: { totalBrut: 10_450, totalNet: 8_360, totalChargesPatronales: 4_390 },
 };
 
-const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement' };
+const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement', pipeline:'pipeline', compta:'compta' };
 
 export default function Finance() {
   const navigate = useNavigate();
@@ -355,6 +359,8 @@ export default function Finance() {
 
           {/* Barème de paiement */}
           {tab === 'bareme-paiement' && <BaremePaiementView />}
+          {tab === 'pipeline' && <PipelineCommercial />}
+          {tab === 'compta' && <ExportCompta />}
         </>
       )}
     </div>

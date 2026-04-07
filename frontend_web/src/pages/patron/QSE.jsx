@@ -20,6 +20,7 @@ import BSDDModule from '../../components/qse/BSDDModule';
 import CertificationsModule from '../../components/qse/CertificationsModule';
 import RapportAnnuelQHSE from '../../components/qse/RapportAnnuelQHSE';
 import FormulairesAMELI from '../../components/qse/FormulairesAMELI';
+import AuditsModule from '../../components/qse/AuditsModule';
 
 /* ── DUERP data ── */
 const UNITES_TRAVAIL = ['Tous les postes','Maçonnerie / gros œuvre','Plomberie / sanitaire','Électricité','Peinture / finition','Bureau / encadrement'];
@@ -119,7 +120,7 @@ function QSELegalBanner() {
 }
 
 const QHSE_SECTIONS = [
-  { id:'qualite', label:'Qualité', color:'#2563EB', tabs:['Non-conformités','Certifications','Documents QSE'] },
+  { id:'qualite', label:'Qualité', color:'#2563EB', tabs:['Non-conformités','Certifications','Audits','Documents QSE'] },
   { id:'securite', label:'Sécurité', color:'#DC2626', tabs:['DUERP','Habilitations','EPI','Incidents','Formulaires AMELI','Plans de prévention'] },
   { id:'hygiene', label:'Hygiène', color:'#16A34A', tabs:['Tableau de bord','Rapport annuel'] },
   { id:'environnement', label:'Environnement', color:'#D97706', tabs:['BSDD'] },
@@ -1457,7 +1458,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
     );
   }
 
-  const tabContent = { 'Tableau de bord':<TabDashboard/>, 'DUERP':<TabDUERP/>, 'Habilitations':<TabHabilitations/>, 'EPI':<EPIModule/>, 'Incidents':<IncidentsModule/>, 'Non-conformités':<NonConformitesModule/>, 'BSDD':<BSDDModule/>, 'Certifications':<CertificationsModule/>, 'Formulaires AMELI':<FormulairesAMELI/>, 'Rapport annuel':<RapportAnnuelQHSE/>, 'Documents QSE':<TabDocuments/>, 'Plans de prévention':<TabPlansPrevention/> };
+  const tabContent = { 'Tableau de bord':<TabDashboard/>, 'DUERP':<TabDUERP/>, 'Habilitations':<TabHabilitations/>, 'EPI':<EPIModule/>, 'Incidents':<IncidentsModule/>, 'Non-conformités':<NonConformitesModule/>, 'BSDD':<BSDDModule/>, 'Certifications':<CertificationsModule/>, 'Formulaires AMELI':<FormulairesAMELI/>, 'Audits':<AuditsModule/>, 'Rapport annuel':<RapportAnnuelQHSE/>, 'Documents QSE':<TabDocuments/>, 'Plans de prévention':<TabPlansPrevention/> };
 
   return (
     <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
