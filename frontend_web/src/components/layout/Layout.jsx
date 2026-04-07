@@ -7,6 +7,7 @@ import {
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
   IconDownload, IconBox, IconBell, IconSearch, IconCalendar, IconCreditCard,
   IconChevronDown, IconScale, IconStar, IconUser, IconMessage, IconGift,
+  IconCheck, IconAlert,
 } from '../ui/Icons';
 
 /* ── Inline icon helpers ───────────────────────────────── */
