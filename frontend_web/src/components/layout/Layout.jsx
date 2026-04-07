@@ -143,7 +143,10 @@ const PATRON_GROUPS = [
     id: 'qhse',
     label: 'QHSE',
     items: [
-      { label: 'Sécurité & Conformité',path: '/patron/qse',         Icon: IconShield     },
+      { label: 'Qualité',              path: '/patron/qse?onglet=qualite',        Icon: IconCheck      },
+      { label: 'Sécurité',             path: '/patron/qse?onglet=securite',       Icon: IconShield     },
+      { label: 'Hygiène',              path: '/patron/qse?onglet=hygiene',        Icon: IconDocument   },
+      { label: 'Environnement',        path: '/patron/qse?onglet=environnement',  Icon: IconAlert      },
     ],
   },
   {

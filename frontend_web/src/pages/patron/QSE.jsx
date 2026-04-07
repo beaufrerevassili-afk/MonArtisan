@@ -121,14 +121,24 @@ const QHSE_SECTIONS = [
   { id:'hygiene', label:'Hygiène', color:'#16A34A', tabs:['Tableau de bord'] },
   { id:'environnement', label:'Environnement', color:'#D97706', tabs:['BSDD'] },
 ];
-const ALL_TABS = QHSE_SECTIONS.flatMap(s => s.tabs);
 
-const ONGLET_MAP = { habilitations:'Habilitations', epi:'EPI', incidents:'Incidents', nc:'Non-conformités', bsdd:'BSDD', certifications:'Certifications', audits:'Documents QSE', qualite:'Non-conformités', securite:'DUERP', hygiene:'Tableau de bord', environnement:'BSDD' };
+function getSectionFromOnglet(onglet) {
+  const sectionMap = { qualite:'qualite', securite:'securite', hygiene:'hygiene', environnement:'environnement', habilitations:'securite', epi:'securite', incidents:'securite', nc:'qualite', bsdd:'environnement', certifications:'qualite', audits:'qualite' };
+  return sectionMap[onglet] || 'securite';
+}
+function getTabFromOnglet(onglet) {
+  const tabMap = { habilitations:'Habilitations', epi:'EPI', incidents:'Incidents', nc:'Non-conformités', bsdd:'BSDD', certifications:'Certifications', audits:'Documents QSE' };
+  return tabMap[onglet] || null;
+}
 
 export default function QSE() {
   const urlParams = new URLSearchParams(window.location.search);
   const ongletParam = urlParams.get('onglet');
-  const [tab, setTab] = useState(ONGLET_MAP[ongletParam] || 'Tableau de bord');
+  const initSection = getSectionFromOnglet(ongletParam);
+  const initTab = getTabFromOnglet(ongletParam);
+  const initSectionObj = QHSE_SECTIONS.find(s => s.id === initSection);
+  const [activeSection, setActiveSection] = useState(initSection);
+  const [tab, setTab] = useState(initTab || (initSectionObj?.tabs[0] || 'Tableau de bord'));
   const [tdb, setTdb] = useState(null);
   const [habilitations, setHabilitations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1437,31 +1447,28 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
   return (
     <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
       <QSELegalBanner />
-      <div style={{ marginBottom:22 }}>
-        <h1 style={{ fontSize:26, fontWeight:700, margin:0 }}>QHSE</h1>
-        <p style={{ color:'#6E6E73', marginTop:4, fontSize:14 }}>Qualité · Hygiène · Sécurité · Environnement</p>
-      </div>
-      <div className="no-print" style={{ marginBottom:22 }}>
-        {QHSE_SECTIONS.map(section => {
-          const isActive = section.tabs.includes(tab);
-          return (
-            <div key={section.id} style={{ marginBottom:8 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-                <div style={{ width:4, height:20, borderRadius:2, background:section.color }} />
-                <span style={{ fontSize:13, fontWeight:700, color:isActive?section.color:'#6E6E73', letterSpacing:'0.02em' }}>{section.label}</span>
-              </div>
-              <div style={{ display:'flex', gap:4, paddingLeft:12, overflowX:'auto' }}>
-                {section.tabs.map(t=>(
-                  <button key={t} onClick={()=>setTab(t)} style={{
-                    padding:'6px 14px', border:'none', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:600, whiteSpace:'nowrap', transition:'all .15s',
-                    background:tab===t?section.color:'#F2F2F7', color:tab===t?'#fff':'#6E6E73',
-                  }}>{t}</button>
-                ))}
-              </div>
+      {(() => {
+        const section = QHSE_SECTIONS.find(s => s.id === activeSection) || QHSE_SECTIONS[1];
+        return <>
+          <div style={{ marginBottom:22 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+              <div style={{ width:5, height:28, borderRadius:3, background:section.color }} />
+              <h1 style={{ fontSize:26, fontWeight:700, margin:0 }}>{section.label}</h1>
             </div>
-          );
-        })}
-      </div>
+            <p style={{ color:'#6E6E73', marginTop:4, fontSize:13, paddingLeft:15 }}>QHSE — {section.label}</p>
+          </div>
+          {section.tabs.length > 1 && (
+            <div className="no-print" style={{ display:'flex', gap:4, background:'#F2F2F7', borderRadius:12, padding:4, marginBottom:22, overflowX:'auto' }}>
+              {section.tabs.map(t=>(
+                <button key={t} onClick={()=>setTab(t)} style={{
+                  padding:'8px 16px', border:'none', borderRadius:9, cursor:'pointer', fontSize:13, fontWeight:600, whiteSpace:'nowrap', transition:'all .15s',
+                  background:tab===t?section.color:'transparent', color:tab===t?'#fff':'#6E6E73',
+                }}>{t}</button>
+              ))}
+            </div>
+          )}
+        </>;
+      })()}
       {loading ? <div style={{ padding:60, textAlign:'center', color:'#636363' }}>Chargement…</div> : tabContent[tab]}
     </div>
   );
