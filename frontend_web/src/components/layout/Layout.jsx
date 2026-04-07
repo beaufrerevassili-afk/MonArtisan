@@ -150,7 +150,9 @@ const PATRON_GROUPS = [
       { label: 'EPI',                   path: '/patron/qse?onglet=epi',               Icon: IconShield   },
       { label: 'Incidents & Accidents', path: '/patron/qse?onglet=incidents',         Icon: IconAlert    },
       { label: 'Non-conformités',       path: '/patron/qse?onglet=nc',                Icon: IconAlert    },
-      { label: 'Audits',               path: '/patron/qse?onglet=audits',             Icon: IconSearch   },
+      { label: 'BSDD (Déchets)',       path: '/patron/qse?onglet=bsdd',              Icon: IconDocument },
+      { label: 'Certifications',       path: '/patron/qse?onglet=certifications',    Icon: IconCheck    },
+      { label: 'Documents QSE',        path: '/patron/qse?onglet=audits',             Icon: IconSearch   },
     ],
   },
   {
@@ -167,8 +169,10 @@ const PATRON_GROUPS = [
     label: 'Administration',
     items: [
       { label: 'Documents',            path: '/patron/documents',                     Icon: IconDownload },
+      { label: 'Contrats BTP',         path: '/patron/documents?onglet=contrats-btp', Icon: IconDocument },
       { label: 'Gestion logiciel',     path: '/patron/gestion-logiciel',              Icon: IconSettings },
       { label: 'Rappel juridique',     path: '/patron/rappel-juridique',              Icon: IconScale    },
+      { label: 'Freample Droit',       path: '/droit',                                Icon: IconScale    },
       { label: 'Mon profil',           path: '/patron/profil',                        Icon: IconUser     },
     ],
   },
