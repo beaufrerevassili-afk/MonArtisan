@@ -262,20 +262,23 @@ export default function ProjetsClients() {
               {modalView === 'actions' && <>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Que souhaitez-vous faire ?</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {/* 1. Accepter + devis auto */}
+                  {/* 1. Accepter + voir devis auto avant envoi */}
                   <button onClick={() => {
                     const b = selected.budget || 0;
-                    setDevisLignes([{ desc: selected.titre || selected.metier, qte: 1, pu: b, tva: 10 }]);
+                    setDevisLignes([
+                      { desc: `${selected.metier} — ${selected.titre || selected.description?.slice(0, 50)}`, qte: 1, pu: Math.round(b * 0.6), tva: 10 },
+                      { desc: 'Fournitures et matériaux', qte: 1, pu: Math.round(b * 0.3), tva: 10 },
+                      { desc: 'Déplacement', qte: 1, pu: Math.round(b * 0.1), tva: 20 },
+                    ]);
                     setOffreForm(f => ({ ...f, prix: String(b) }));
-                    envoyerOffre();
-                    setModalView('sent');
+                    setModalView('devis_auto');
                   }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#F0FDF4', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 12, cursor: 'pointer', textAlign: 'left', fontFamily: DS.font, transition: 'all .15s' }}
                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(22,163,74,0.1)'; }}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                     <div style={{ width: 40, height: 40, borderRadius: 10, background: '#16A34A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✓</div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: '#16A34A' }}>Accepter l'offre + Devis automatique</div>
-                      <div style={{ fontSize: 12, color: DS.muted }}>Freample génère le devis au prix du client ({selected.budget || '?'}€) et l'envoie directement.</div>
+                      <div style={{ fontSize: 12, color: DS.muted }}>Freample pré-génère le devis ({selected.budget || '?'}€). Vous vérifiez et validez avant envoi.</div>
                     </div>
                   </button>
 
@@ -322,6 +325,71 @@ export default function ProjetsClients() {
                   </button>
                 </div>
               </>}
+
+              {/* ── DEVIS AUTO (validation avant envoi) ── */}
+              {modalView === 'devis_auto' && (() => {
+                const ht = devisLignes.reduce((s, l) => s + l.qte * l.pu, 0);
+                const tva = devisLignes.reduce((s, l) => s + l.qte * l.pu * l.tva / 100, 0);
+                const ttc = ht + tva;
+                return <>
+                  <button onClick={() => setModalView('actions')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 12, fontFamily: DS.font }}>← Retour</button>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>✓ Devis automatique</div>
+                  <div style={{ fontSize: 12, color: DS.muted, marginBottom: 16 }}>Vérifiez le devis pré-généré par Freample avant de l'envoyer au client.</div>
+
+                  {/* Aperçu devis */}
+                  <div style={{ border: `1px solid ${DS.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+                    <div style={{ background: '#2C2520', color: '#F5EFE0', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>DEVIS N° {Date.now().toString().slice(-6)}</div>
+                        <div style={{ fontSize: 11, opacity: 0.6 }}>{new Date().toLocaleDateString('fr-FR')}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 11, opacity: 0.6 }}>Client</div>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{selected.clientNom || selected.client_nom || 'Client'}</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '0' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 50px 80px 80px', padding: '8px 16px', fontSize: 10, fontWeight: 700, color: DS.muted, borderBottom: `1px solid ${DS.border}`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <span>Description</span><span style={{ textAlign: 'center' }}>Qté</span><span style={{ textAlign: 'right' }}>PU HT</span><span style={{ textAlign: 'right' }}>Total HT</span>
+                      </div>
+                      {devisLignes.map((l, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 50px 80px 80px', padding: '10px 16px', fontSize: 12, borderBottom: `1px solid ${DS.border}`, alignItems: 'center' }}>
+                          <span>{l.desc}</span>
+                          <span style={{ textAlign: 'center', color: DS.muted }}>{l.qte}</span>
+                          <span style={{ textAlign: 'right', color: DS.muted }}>{l.pu.toLocaleString('fr-FR')} €</span>
+                          <span style={{ textAlign: 'right', fontWeight: 600 }}>{(l.qte * l.pu).toLocaleString('fr-FR')} €</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ padding: '12px 16px', background: '#F8F7F4' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}><span style={{ color: DS.muted }}>Total HT</span><span style={{ fontWeight: 600 }}>{ht.toLocaleString('fr-FR')} €</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}><span style={{ color: DS.muted }}>TVA</span><span style={{ fontWeight: 600 }}>{Math.round(tva).toLocaleString('fr-FR')} €</span></div>
+                      <div style={{ height: 1, background: DS.border, margin: '6px 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, padding: '3px 0' }}><span style={{ fontWeight: 800 }}>Total TTC</span><span style={{ fontWeight: 800, color: '#2C2520' }}>{Math.round(ttc).toLocaleString('fr-FR')} €</span></div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setModalView('devis')}
+                      style={{ flex: 1, padding: '12px', background: '#EFF6FF', color: '#2563EB', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+                      ✏️ Modifier le devis
+                    </button>
+                    <button onClick={() => {
+                      setOffreForm(f => ({ ...f, prix: String(ttc) }));
+                      envoyerOffre();
+                      try {
+                        const devis = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+                        devis.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, lignes: devisLignes, ht, tva: Math.round(tva), ttc: Math.round(ttc), date: new Date().toISOString(), type: 'auto' });
+                        localStorage.setItem('freample_devis', JSON.stringify(devis));
+                      } catch {}
+                      setModalView('sent');
+                    }}
+                      style={{ flex: 1, padding: '12px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font }}>
+                      ✓ Valider et envoyer
+                    </button>
+                  </div>
+                </>;
+              })()}
 
               {/* ── DEVIS PERSONNALISÉ ── */}
               {modalView === 'devis' && <>
