@@ -21,7 +21,29 @@ export default function SecteurSelect() {
   const [projetStep, setProjetStep] = useState(1);
   const [projet, setProjet] = useState({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' });
   const [projetSent, setProjetSent] = useState(false);
-  useEffect(() => { setMounted(true); document.title = 'Freample — Trouvez un artisan de confiance'; }, []);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Au chargement : si un projet en attente existe et l'utilisateur est connecté → publier auto
+  useEffect(() => {
+    setMounted(true);
+    document.title = 'Freample — Trouvez un artisan de confiance';
+    try {
+      const pending = localStorage.getItem('freample_projet_pending');
+      if (pending && user) {
+        const p = JSON.parse(pending);
+        localStorage.removeItem('freample_projet_pending');
+        // Publier automatiquement
+        const budget = Number(p.budget) || 0;
+        const commission = Math.max(1, Math.round(budget * 0.01 * 100) / 100);
+        const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
+        projets.push({ id: Date.now(), ...p, budget, commission, total: budget + commission, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
+        localStorage.setItem('freample_projets', JSON.stringify(projets));
+        setProjet(p);
+        setShowProjet(true);
+        setProjetSent(true);
+      }
+    } catch {}
+  }, [user]);
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -127,7 +149,7 @@ export default function SecteurSelect() {
             {/* 2 cartes : Proposer projet + Trouver artisan */}
             <div style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
               {/* Carte 1 — Proposer mon projet */}
-              <div onClick={() => { if (!user) { navigate('/register?role=client'); return; } setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
+              <div onClick={() => { setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
                 style={{ flex: '1 1 280px', background: L.gold, borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s', boxShadow: '0 4px 20px rgba(166,139,75,0.3)' }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(166,139,75,0.3)'; }}>
@@ -297,9 +319,15 @@ export default function SecteurSelect() {
                 </div>
 
                 <button onClick={() => {
+                  if (!user) {
+                    // Sauvegarder le projet en attente et afficher la modale auth
+                    localStorage.setItem('freample_projet_pending', JSON.stringify(projet));
+                    setShowAuthModal(true);
+                    return;
+                  }
                   try {
                     const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
-                    projets.push({ id: Date.now(), ...projet, budget, commission, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Anonyme' });
+                    projets.push({ id: Date.now(), ...projet, budget, commission, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
                     localStorage.setItem('freample_projets', JSON.stringify(projets));
                   } catch {}
                   setProjetSent(true);
@@ -401,6 +429,45 @@ export default function SecteurSelect() {
           </button>
         </div>
       </section>
+
+      {/* ══ MODALE AUTH — "Créer un compte pour publier" ══ */}
+      {showAuthModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(8px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
+          <div style={{ background: '#fff', borderRadius: 20, maxWidth: 420, width: '100%', padding: '32px 28px', boxShadow: '0 32px 80px rgba(0,0,0,0.25)', textAlign: 'center', position: 'relative' }}
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowAuthModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: '#F2F2F7', border: 'none', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 14, color: '#636363', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FFF7ED', border: '2px solid #A68B4B', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24 }}>📋</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.02em' }}>Votre projet est prêt !</h3>
+            <p style={{ fontSize: 14, color: '#636363', lineHeight: 1.6, margin: '0 0 24px' }}>
+              Créez un compte gratuit pour publier votre projet et recevoir des offres d'artisans. <strong>Votre projet ne sera pas perdu.</strong>
+            </p>
+
+            {/* Récap mini du projet */}
+            <div style={{ background: '#F8F7F4', borderRadius: 12, padding: '12px 16px', marginBottom: 20, textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                <span style={{ color: '#636363' }}>{projet.metier}</span>
+                <span style={{ fontWeight: 700 }}>{projet.budget ? `${Number(projet.budget).toLocaleString('fr-FR')}€` : '—'}</span>
+              </div>
+              <div style={{ fontSize: 12, color: '#8E8E93' }}>📍 {projet.ville || '—'} · {projet.description?.slice(0, 40)}{projet.description?.length > 40 ? '...' : ''}</div>
+            </div>
+
+            <button onClick={() => { setShowAuthModal(false); navigate('/register?role=client&redirect=/'); }}
+              style={{ width: '100%', padding: '14px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, marginBottom: 10, transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#8B7540'} onMouseLeave={e => e.currentTarget.style.background = '#A68B4B'}>
+              Créer mon compte — Gratuit
+            </button>
+            <button onClick={() => { setShowAuthModal(false); navigate('/login'); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#636363', fontFamily: L.font }}>
+              J'ai déjà un compte — Se connecter
+            </button>
+            <div style={{ fontSize: 11, color: '#AEAEB2', marginTop: 12 }}>
+              ✓ Gratuit · ✓ Sans engagement · ✓ Votre projet sera publié automatiquement
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ Footer ══ */}
       <footer style={{ padding: '28px 32px', textAlign: 'center', borderTop: `1px solid ${L.border}` }}>
