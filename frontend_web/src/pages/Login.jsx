@@ -3,30 +3,25 @@ import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import L from '../design/luxe';
 
-// ── Comptes démo ──
-const CLIENT_DEMO = { role:'Client', email:'client@demo.com', motdepasse:'client123', icon:'👤', universal:true };
+// ── Comptes démo (alignés avec AuthContext) ──
+const CLIENT_DEMO = { role:'Client', email:'demo-client@freample.fr', motdepasse:'demo', icon:'👤', universal:true };
 const SECTEUR_COMPTES = {
   btp: [
-    { role:'Chef d\'entreprise BTP', email:'patron.btp@demo.com', motdepasse:'patron123', icon:'🏗️' },
-    { role:'Employé BTP', email:'employe.btp@demo.com', motdepasse:'employe123', icon:'👷' },
+    { role:'Chef d\'entreprise BTP', email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏗️' },
+    { role:'Employé BTP', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
+    { role:'Artisan BTP', email:'demo-artisan@freample.fr', motdepasse:'demo', icon:'🔨' },
   ],
-  coiffure: [
-    { role:'Gérant·e salon', email:'patron.coiffure@demo.com', motdepasse:'patron123', icon:'✂️' },
-    { role:'Employé·e salon', email:'employe.coiffure@demo.com', motdepasse:'employe123', icon:'💇' },
-  ],
-  com: [],
 };
 const GENERIC_DEMO = [
   CLIENT_DEMO,
-  { role:"Chef d'entreprise", email:'patron.btp@demo.com', motdepasse:'patron123', icon:'🏢' },
-  { role:'Employé', email:'employe.btp@demo.com', motdepasse:'employe123', icon:'👷' },
+  { role:"Chef d'entreprise", email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏢' },
+  { role:'Employé', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
 ];
 const SECTOR_CONFIG = {
-  btp:       { label:'BTP',         icon:'🏗️' },
-  coiffure:  { label:'Coiffure',    icon:'✂️' },
+  btp: { label:'BTP', icon:'🏗️' },
 };
-const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/fondateur/dashboard' };
-const PUBLIC_SECTORS = ['coiffure','btp','com'];
+const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/' };
+const PUBLIC_SECTORS = ['btp'];
 
 const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };
 
@@ -57,7 +52,7 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true);
-    try { const data = await login(form.email, form.motdepasse); navigate(form.email === 'freamplecom@gmail.com' ? '/' : getDestination(data.role)); }
+    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }

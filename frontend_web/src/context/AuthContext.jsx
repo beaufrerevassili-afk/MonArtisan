@@ -25,15 +25,25 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  // Comptes démo — fonctionnent sans backend
+  const DEMO_ACCOUNTS = {
+    'freamplecom@gmail.com': { id:999, nom:'Dev Freample', role:'fondateur', secteur:null },
+    'demo-client@freample.fr': { id:900, nom:'Marie Dupont', role:'client', secteur:null },
+    'demo-patron@freample.fr': { id:901, nom:'Jean Martin BTP', role:'patron', secteur:'btp' },
+    'demo-employe@freample.fr': { id:902, nom:'Lucas Garcia', role:'employe', secteur:'btp', patronId:901 },
+    'demo-artisan@freample.fr': { id:903, nom:'Marc Lambert', role:'artisan', secteur:'btp' },
+  };
+
   async function login(email, motdepasse) {
-    // Compte démo Freample — fonctionne sans backend
-    if (email === 'freamplecom@gmail.com') {
+    // Comptes démo — fonctionne sans backend
+    const demo = DEMO_ACCOUNTS[email];
+    if (demo) {
       const header = btoa(JSON.stringify({alg:'HS256',typ:'JWT'}));
-      const payload = btoa(JSON.stringify({id:999,nom:'Dev Freample',email,role:'fondateur',exp:Math.floor(Date.now()/1000)+86400}));
+      const payload = btoa(JSON.stringify({...demo, email, exp:Math.floor(Date.now()/1000)+86400}));
       const devToken = `${header}.${payload}.dev`;
       localStorage.setItem('token', devToken);
-      setUser({ id:999, nom:'Dev Freample', email, role:'fondateur', secteur:null });
-      return { userId:999, nom:'Dev Freample', email, role:'fondateur', token:devToken };
+      setUser({ ...demo, email });
+      return { userId:demo.id, ...demo, email, token:devToken };
     }
     const { data } = await api.post('/login', { email, motdepasse });
     localStorage.setItem('token', data.token);
