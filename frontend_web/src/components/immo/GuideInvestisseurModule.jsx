@@ -15,7 +15,7 @@ const ETAPES = [
       'Déterminer mon budget d\'investissement total',
       'Évaluer ma tolérance au risque (conservateur, équilibré, dynamique)',
     ],
-    outils: ['Stratégie & Pilotage → Objectifs', 'Investir → Dossiers d\'investissement'],
+    outils: [{label:'Stratégie & Pilotage → Objectifs',tab:'strategie'},{label:'Investir → Dossiers d\'investissement',tab:'investir_tab'}],
   },
   {
     num: 2, icon: '📍', title: 'Analyser le marché',
@@ -29,7 +29,7 @@ const ETAPES = [
       'Identifier les risques géographiques (Géorisques)',
       'Analyser le taux de vacance locative moyen de la zone',
     ],
-    outils: ['Géorisques → Analyse des risques', 'Pige immobilière → Marché local'],
+    outils: [{label:'Géorisques → Analyse des risques',tab:'georisques'},{label:'Pige immobilière → Marché local',tab:'pige'}],
   },
   {
     num: 3, icon: '🧮', title: 'Calculer la rentabilité',
@@ -43,7 +43,7 @@ const ETAPES = [
       'Calculer le cashflow net mensuel (loyer - charges - crédit - impôts)',
       'Vérifier que le taux d\'effort reste < 35%',
     ],
-    outils: ['Finances → Simulateurs', 'Stratégie → Comparateur de biens'],
+    outils: [{label:'Finances → Simulateurs',tab:'outils'},{label:'Stratégie → Comparateur de biens',tab:'strategie'}],
   },
   {
     num: 4, icon: '🔍', title: 'Faire la due diligence',
@@ -58,7 +58,7 @@ const ETAPES = [
       'Faire chiffrer les travaux par un professionnel',
       'Consulter les risques via Géorisques',
     ],
-    outils: ['Géorisques → Risques naturels & technologiques', 'Estimations → Comparables'],
+    outils: [{label:'Géorisques → Risques naturels & technologiques',tab:'georisques'},{label:'Estimations → Comparables',tab:'estimations_tab'}],
   },
   {
     num: 5, icon: '🏦', title: 'Structurer le financement',
@@ -72,7 +72,7 @@ const ETAPES = [
       'Souscrire les assurances (PNO, GLI, emprunteur)',
       'Préparer le dossier bancaire complet',
     ],
-    outils: ['Stratégie → IR vs IS', 'Investir → Score bancabilité', 'Stratégie → Structure'],
+    outils: [{label:'Stratégie → IR vs IS',tab:'strategie'},{label:'Investir → Score bancabilité',tab:'investir_tab'},{label:'Stratégie → Structure',tab:'strategie'}],
   },
 ];
 
@@ -193,7 +193,10 @@ export default function GuideInvestisseurModule({ onNavigate }) {
               <div style={{ marginTop: 14, padding: '12px 14px', background: '#FAFAF8', borderRadius: 8 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Outils Freample liés</div>
                 {etape.outils.map(o => (
-                  <div key={o} style={{ fontSize: 12, color: etape.color, fontWeight: 500, padding: '2px 0' }}>→ {o}</div>
+                  <div key={o.label} onClick={() => onNavigate && onNavigate(o.tab)} style={{ fontSize: 12, color: etape.color, fontWeight: 500, padding: '4px 0', cursor: onNavigate ? 'pointer' : 'default', transition: 'opacity .15s' }}
+                    onMouseEnter={e => { if (onNavigate) e.currentTarget.style.opacity = '0.7'; }} onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}>
+                    → {o.label} {onNavigate && <span style={{ fontSize: 10, opacity: 0.6 }}>↗</span>}
+                  </div>
                 ))}
               </div>
             )}

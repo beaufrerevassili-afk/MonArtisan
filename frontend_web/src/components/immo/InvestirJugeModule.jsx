@@ -370,7 +370,66 @@ export default function InvestirJugeModule({ data, setData, showToast }) {
               {geo && geo.nbRisques > 5 && <div style={{ fontSize: 12, color: '#D97706', padding: '4px 8px', background: '#FFFBEB', borderRadius: 4, marginBottom: 4 }}>🌊 Zone multi-risques — vérifiez assurances et PLU.</div>}
               {s.cfMois >= 100 && s.rdtNet >= 5 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>✅ Cashflow positif + bon rendement — excellent profil.</div>}
               {s.total >= 65 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>🏦 Prochaine étape : préparez le dossier bancaire (onglet ci-dessus).</div>}
+              {/* TRI */}
+              {(() => {
+                const n = dos.dureeCredit || 20;
+                const invest = -(s.prixTotal - (dos.banque?.apport || 0));
+                const cfAnnuel = s.cfAn;
+                const revente = dos.prix * 1.02 ** n; // hypothèse +2%/an
+                if (invest >= 0 || n <= 0) return null;
+                // Newton-Raphson pour TRI
+                let tri = 0.05;
+                for (let iter = 0; iter < 50; iter++) {
+                  let npv = invest, dnpv = 0;
+                  for (let t = 1; t <= n; t++) { const d = (1 + tri) ** t; npv += cfAnnuel / d; dnpv -= t * cfAnnuel / (d * (1 + tri)); }
+                  npv += revente / (1 + tri) ** n; dnpv -= n * revente / ((1 + tri) ** (n + 1));
+                  if (Math.abs(npv) < 1) break;
+                  tri -= npv / dnpv;
+                  if (tri < -0.5) { tri = -0.5; break; } if (tri > 1) { tri = 1; break; }
+                }
+                const triPct = (tri * 100).toFixed(1);
+                return <div style={{ fontSize: 12, color: tri >= 0.06 ? '#16A34A' : tri >= 0.03 ? '#D97706' : '#DC2626', padding: '4px 8px', background: tri >= 0.06 ? '#F0FDF4' : tri >= 0.03 ? '#FFFBEB' : '#FEF2F2', borderRadius: 4, marginBottom: 4 }}>
+                  📈 TRI estimé : <strong>{triPct}%</strong>/an sur {n} ans (hypothèse revente +2%/an). {tri >= 0.06 ? 'Excellent.' : tri >= 0.03 ? 'Correct.' : 'Faible.'}
+                </div>;
+              })()}
             </div>
+
+            {/* Stress test */}
+            <div style={{ ...CARD, marginTop: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🧪 Stress test — Et si...</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+                {[
+                  { label: 'Loyer baisse de 10%', cf: Math.round((dos.loyer * 0.9 - dos.charges - dos.taxeFonciere - dos.assurance) - dos.mensualite) },
+                  { label: 'Vacance 3 mois/an', cf: Math.round(dos.loyer * 9 / 12 - (dos.charges + dos.taxeFonciere + dos.assurance) - dos.mensualite) },
+                  { label: 'Taux crédit +1%', cf: Math.round(dos.loyer - dos.charges - dos.taxeFonciere - dos.assurance - dos.mensualite * 1.12) },
+                  { label: 'Charges copro +20%', cf: Math.round(dos.loyer - dos.charges * 1.2 - dos.taxeFonciere - dos.assurance - dos.mensualite) },
+                ].map(st => (
+                  <div key={st.label} style={{ padding: '10px 12px', background: st.cf >= 0 ? '#F0FDF4' : '#FEF2F2', borderRadius: 8, borderLeft: `3px solid ${st.cf >= 0 ? '#16A34A' : '#DC2626'}` }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2 }}>{st.label}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: st.cf >= 0 ? '#16A34A' : '#DC2626' }}>{st.cf >= 0 ? '+' : ''}{st.cf}€/mois</div>
+                    <div style={{ fontSize: 10, color: st.cf >= 0 ? '#16A34A' : '#DC2626' }}>{st.cf >= 0 ? '✅ Toujours positif' : '⚠️ Cashflow négatif'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Convertir en bien */}
+            {s.total >= 45 && (
+              <div style={{ ...CARD, marginTop: 12, borderLeft: `4px solid ${L.green}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>🏠 Vous avez acheté ce bien ?</div>
+                  <div style={{ fontSize: 12, color: L.textSec }}>Ajoutez-le à votre patrimoine en un clic. Toutes les infos seront pré-remplies.</div>
+                </div>
+                <button onClick={() => {
+                  const bien = { id: Date.now(), sciId: data.scis?.[0]?.id || 1, nom: dos.nom, type: 'Appartement', adresse: dos.adresse || '', surface: 0, pieces: 0, prixAchat: dos.prix, fraisNotaire: dos.fraisNotaire, travaux: dos.travaux, dateAcquisition: new Date().toISOString().slice(0, 10), valeur: dos.prix, loyer: dos.loyer, autresRevenus: 0, charges: dos.charges, chargesNonRecup: 0, vacanceLocative: Math.round(dos.vacanceMois / 12 * 100), locataireId: null, dpe: null, loyerRef: null, assurance: { pno: dos.assurance, gli: 0 }, taxeFonciere: dos.taxeFonciere };
+                  const credit = dos.mensualite > 0 ? { id: Date.now() + 1, bienId: bien.id, banque: '', montant: dos.prix - (dos.banque?.apport || 0), duree: dos.dureeCredit || 20, taux: dos.tauxCredit || 2.5, mensualite: dos.mensualite, assuranceCredit: 0, debut: new Date().toISOString().slice(0, 10), restant: dos.prix - (dos.banque?.apport || 0) } : null;
+                  setData(d => ({ ...d, biens: [...d.biens, bien], ...(credit ? { credits: [...(d.credits || []), credit] } : {}) }));
+                  showToast('Bien ajouté au patrimoine !');
+                }} style={{ ...BTN, background: L.green, flexShrink: 0, padding: '10px 20px' }}>
+                  Ajouter au patrimoine →
+                </button>
+              </div>
+            )}
           </div>
         </>}
 
