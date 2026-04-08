@@ -3,341 +3,448 @@ import L from '../../design/luxe';
 
 const CARD = { background: L.white, border: `1px solid ${L.border}`, padding: '20px' };
 const BTN = { padding: '8px 18px', background: L.noir, color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' };
+const BTN_O = { ...BTN, background: 'transparent', color: L.text, border: `1px solid ${L.border}` };
 const INP = { width: '100%', padding: '10px 12px', border: `1px solid ${L.border}`, fontSize: 13, fontFamily: L.font, outline: 'none', boxSizing: 'border-box', background: L.white };
 const LBL = { fontSize: 10, fontWeight: 600, color: L.textSec, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' };
 const GEORISQUES_BASE = 'https://www.georisques.gouv.fr/api/v1';
 
 const PROFIL_RISQUE = [
-  { id: 'conservateur', label: 'Conservateur', icon: '🛡️', desc: 'Sécurité maximale, cashflow positif, zone tendue', color: '#16A34A' },
-  { id: 'equilibre', label: 'Équilibré', icon: '⚖️', desc: 'Bon compromis rentabilité/risque', color: '#2563EB' },
-  { id: 'dynamique', label: 'Dynamique', icon: '🚀', desc: 'Rendement élevé, plus-value, accepte du risque', color: '#D97706' },
+  { id: 'conservateur', label: 'Conservateur', icon: '🛡️', desc: 'Sécurité, cashflow positif', color: '#16A34A' },
+  { id: 'equilibre', label: 'Équilibré', icon: '⚖️', desc: 'Bon compromis rendement/risque', color: '#2563EB' },
+  { id: 'dynamique', label: 'Dynamique', icon: '🚀', desc: 'Rendement élevé, accepte du risque', color: '#D97706' },
 ];
 
-function scoreColor(s) { return s >= 70 ? L.green : s >= 45 ? '#D97706' : '#DC2626'; }
-function scoreLabel(s) { return s >= 80 ? 'Excellente opportunité' : s >= 65 ? 'Bonne opportunité' : s >= 45 ? 'Opportunité moyenne' : s >= 25 ? 'Risquée' : 'À éviter'; }
-function scoreVerdict(s) {
-  if (s >= 80) return { emoji: '🟢', text: 'FONCEZ — Ce bien coche toutes les cases. Montez le dossier bancaire.' };
-  if (s >= 65) return { emoji: '🟢', text: 'GO — Bonne opportunité avec quelques points de vigilance.' };
-  if (s >= 45) return { emoji: '🟡', text: 'À ÉTUDIER — Potentiel intéressant mais des risques à couvrir.' };
-  if (s >= 25) return { emoji: '🟠', text: 'PRUDENCE — Le ratio risque/rendement est défavorable.' };
-  return { emoji: '🔴', text: 'PASSER — Trop de signaux négatifs. Cherchez mieux.' };
+function sc(s) { return s >= 70 ? L.green : s >= 45 ? '#D97706' : '#DC2626'; }
+function sLabel(s) { return s >= 80 ? 'Excellente opportunité' : s >= 65 ? 'Bonne opportunité' : s >= 45 ? 'Opportunité moyenne' : s >= 25 ? 'Risquée' : 'À éviter'; }
+function sVerdict(s) {
+  if (s >= 80) return { emoji: '🟢', text: 'FONCEZ — Ce bien coche toutes les cases.' };
+  if (s >= 65) return { emoji: '🟢', text: 'GO — Bonne opportunité, quelques points de vigilance.' };
+  if (s >= 45) return { emoji: '🟡', text: 'À ÉTUDIER — Potentiel intéressant mais des risques.' };
+  if (s >= 25) return { emoji: '🟠', text: 'PRUDENCE — Ratio risque/rendement défavorable.' };
+  return { emoji: '🔴', text: 'PASSER — Trop de signaux négatifs.' };
+}
+
+function calcScore(dos, geo, profil) {
+  const prixTotal = dos.prix + dos.fraisNotaire + dos.travaux;
+  const loyerAn = dos.loyer * (12 - dos.vacanceMois);
+  const chargesAn = (dos.charges + dos.taxeFonciere + dos.assurance) * 12;
+  const creditAn = dos.mensualite * 12;
+  const cfAn = loyerAn - chargesAn - creditAn;
+  const cfMois = Math.round(cfAn / 12);
+  const rdtBrut = prixTotal > 0 ? Math.round(dos.loyer * 12 / prixTotal * 10000) / 100 : 0;
+  const rdtNet = prixTotal > 0 ? Math.round(loyerAn / prixTotal * 10000) / 100 : 0;
+  const effort = dos.loyer > 0 ? Math.round(dos.mensualite / dos.loyer * 100) : 100;
+
+  let r = 0;
+  if (profil === 'conservateur') r = rdtNet >= 4 ? 25 : rdtNet >= 3 ? 18 : rdtNet >= 2 ? 10 : 5;
+  else if (profil === 'equilibre') r = rdtNet >= 6 ? 25 : rdtNet >= 4 ? 18 : rdtNet >= 3 ? 10 : 5;
+  else r = rdtNet >= 8 ? 25 : rdtNet >= 6 ? 20 : rdtNet >= 4 ? 12 : 5;
+
+  let c = cfMois >= 200 ? 25 : cfMois >= 50 ? 20 : cfMois >= 0 ? 15 : cfMois >= -100 ? 8 : 0;
+  if (profil === 'conservateur' && cfMois < 0) c = 0;
+
+  let g = 25;
+  if (geo) {
+    if (geo.nbRisques > 8) g -= 15; else if (geo.nbRisques > 4) g -= 8; else if (geo.nbRisques > 2) g -= 3;
+    if (geo.sismique >= 4) g -= 8; else if (geo.sismique >= 3) g -= 4;
+    if (geo.radon >= 3) g -= 5; else if (geo.radon >= 2) g -= 2;
+    if (geo.nbCatnat > 10) g -= 5; else if (geo.nbCatnat > 5) g -= 2;
+    g = Math.max(0, g);
+  }
+
+  let st = 0;
+  if (effort < 70) st += 10; else if (effort < 90) st += 5;
+  if (dos.vacanceMois <= 1) st += 8; else if (dos.vacanceMois <= 2) st += 4;
+  if (dos.travaux < dos.prix * 0.1) st += 7; else if (dos.travaux < dos.prix * 0.2) st += 3;
+
+  return { total: Math.min(100, Math.max(0, r + c + Math.min(25, g) + st)), r, c, g: Math.min(25, g), st, rdtBrut, rdtNet, cfMois, cfAn, prixTotal, loyerAn, chargesAn, creditAn, effort };
+}
+
+async function fetchGeo(adresse) {
+  try {
+    const gR = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`);
+    const gJ = await gR.json();
+    if (!gJ.features?.length) return null;
+    const code = gJ.features[0].properties.citycode;
+    const commune = gJ.features[0].properties.city;
+    const [risques, sism, radon, rga, catnat] = await Promise.all([
+      fetch(`${GEORISQUES_BASE}/gaspar/risques?code_insee=${code}&page_size=50`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${GEORISQUES_BASE}/zonage_sismique?code_insee=${code}`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${GEORISQUES_BASE}/radon?code_insee=${code}`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${GEORISQUES_BASE}/rga?code_insee=${code}`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${GEORISQUES_BASE}/gaspar/catnat?code_insee=${code}&page_size=20`).then(r => r.json()).catch(() => ({ data: [] })),
+    ]);
+    return {
+      commune, codeInsee: code,
+      nbRisques: (risques.data?.[0]?.risques_detail || []).length,
+      risques: (risques.data?.[0]?.risques_detail || []).map(r => r.libelle_risque_long || ''),
+      sismique: parseInt(sism.data?.[0]?.code_zone) || 1,
+      radon: parseInt(radon.data?.[0]?.classe_potentiel) || 1,
+      argiles: rga.data?.[0]?.exposition || 'faible',
+      nbCatnat: (catnat.data || []).length,
+    };
+  } catch { return null; }
+}
+
+/* ══ EXPORT PDF via window.print ══ */
+function exportPDF(title, contentId) {
+  const el = document.getElementById(contentId);
+  if (!el) return;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>
+    body{font-family:Arial,sans-serif;padding:32px;color:#1a1a1a;font-size:13px;line-height:1.6}
+    h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:20px 0 8px;border-bottom:1px solid #e5e5ea;padding-bottom:4px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+    .kpi{background:#f8f8f6;padding:10px 14px;border-radius:6px}
+    .kpi .label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.05em}
+    .kpi .val{font-size:18px;font-weight:700}
+    .green{color:#16a34a}.orange{color:#d97706}.red{color:#dc2626}.blue{color:#2563eb}
+    .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;margin:2px}
+    .tag-red{background:#fef2f2;color:#dc2626}.tag-green{background:#f0fdf4;color:#16a34a}.tag-orange{background:#fffbeb;color:#d97706}
+    table{width:100%;border-collapse:collapse;margin:8px 0}td,th{text-align:left;padding:6px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}
+    @media print{body{padding:16px}}
+  </style></head><body>${el.innerHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`);
+  w.document.close();
 }
 
 export default function InvestirJugeModule({ data, setData, showToast }) {
-  const [step, setStep] = useState('list'); // 'list' | 'create' | 'analyse' | 'bilan'
+  const [step, setStep] = useState('list');
   const [form, setForm] = useState({});
+  const [formBanque, setFormBanque] = useState({});
   const [profilRisque, setProfilRisque] = useState('equilibre');
   const [geoLoading, setGeoLoading] = useState(false);
-  const [geoData, setGeoData] = useState(null);
   const [analyseDossier, setAnalyseDossier] = useState(null);
+  const [activeDoc, setActiveDoc] = useState('jugement'); // 'jugement' | 'banque'
 
   const dossiers = data.dossiers || [];
 
-  const creerDossier = () => {
+  const creerDossier = async () => {
     const d = {
       id: Date.now(), nom: form.nom || 'Sans nom', adresse: form.adresse || '',
       prix: Number(form.prix) || 0, fraisNotaire: Number(form.fraisNotaire) || 0, travaux: Number(form.travaux) || 0,
       loyer: Number(form.loyer) || 0, charges: Number(form.charges) || 0, taxeFonciere: Number(form.taxeFonciere) || 0,
       vacanceMois: Number(form.vacanceMois) || 1, assurance: Number(form.assurance) || 0,
-      mensualite: Number(form.mensualite) || 0, dureeCredit: Number(form.dureeCredit) || 20,
-      tauxCredit: Number(form.tauxCredit) || 2.5,
+      mensualite: Number(form.mensualite) || 0, dureeCredit: Number(form.dureeCredit) || 20, tauxCredit: Number(form.tauxCredit) || 2.5,
       strategie: form.strategie || 'Location nue', profilRisque, created: new Date().toISOString(),
+      // Dossier banque
+      banque: {
+        revenusMensuels: Number(formBanque.revenus) || 0, chargesMensuelles: Number(formBanque.chargesPerso) || 0,
+        apport: Number(formBanque.apport) || 0, epargne: Number(formBanque.epargne) || 0,
+        situationPro: formBanque.situationPro || 'CDI', anciennete: Number(formBanque.anciennete) || 0,
+        autresCredits: Number(formBanque.autresCredits) || 0, nbBiensExistants: Number(formBanque.nbBiens) || data.biens?.length || 0,
+        loyersPercus: Number(formBanque.loyersPercus) || 0,
+      },
     };
     setData(prev => ({ ...prev, dossiers: [d, ...(prev.dossiers || [])] }));
-    showToast('Dossier créé');
-    lancerAnalyse(d);
+    showToast('Dossier créé — analyse en cours...');
+    await lancerAnalyse(d);
   };
 
-  async function fetchGeorisques(adresse) {
-    try {
-      setGeoLoading(true);
-      const geoRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`);
-      const geoJson = await geoRes.json();
-      if (!geoJson.features?.length) { setGeoData({ error: 'Adresse non trouvée' }); setGeoLoading(false); return null; }
-      const [lon, lat] = geoJson.features[0].geometry.coordinates;
-      const codeInsee = geoJson.features[0].properties.citycode;
-      const commune = geoJson.features[0].properties.city;
-
-      const [risques, sism, radon, rga, catnat] = await Promise.all([
-        fetch(`${GEORISQUES_BASE}/gaspar/risques?code_insee=${codeInsee}&page_size=50`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${GEORISQUES_BASE}/zonage_sismique?code_insee=${codeInsee}`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${GEORISQUES_BASE}/radon?code_insee=${codeInsee}`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${GEORISQUES_BASE}/rga?code_insee=${codeInsee}`).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${GEORISQUES_BASE}/gaspar/catnat?code_insee=${codeInsee}&page_size=20`).then(r => r.json()).catch(() => ({ data: [] })),
-      ]);
-
-      const result = {
-        commune, codeInsee,
-        nbRisques: (risques.data?.[0]?.risques_detail || []).length,
-        risques: (risques.data?.[0]?.risques_detail || []).map(r => r.libelle_risque_long || r.libelle_risque || ''),
-        sismique: parseInt(sism.data?.[0]?.code_zone) || 1,
-        radon: parseInt(radon.data?.[0]?.classe_potentiel) || 1,
-        argiles: rga.data?.[0]?.exposition || 'faible',
-        nbCatnat: (catnat.data || []).length,
-      };
-      setGeoData(result);
-      setGeoLoading(false);
-      return result;
-    } catch { setGeoData({ error: 'Erreur API' }); setGeoLoading(false); return null; }
-  }
-
-  function calculerScore(dos, geo, profil) {
-    const prixTotal = dos.prix + dos.fraisNotaire + dos.travaux;
-    const loyerAnnuel = dos.loyer * (12 - dos.vacanceMois);
-    const chargesAnnuelles = (dos.charges + dos.taxeFonciere + dos.assurance) * 12;
-    const creditAnnuel = dos.mensualite * 12;
-    const cashflowAnnuel = loyerAnnuel - chargesAnnuelles - creditAnnuel;
-    const cashflowMensuel = Math.round(cashflowAnnuel / 12);
-    const rendementBrut = prixTotal > 0 ? Math.round(dos.loyer * 12 / prixTotal * 10000) / 100 : 0;
-    const rendementNet = prixTotal > 0 ? Math.round(loyerAnnuel / prixTotal * 10000) / 100 : 0;
-
-    // Score rentabilité (0-25)
-    let scoreRenta = 0;
-    if (profil === 'conservateur') scoreRenta = rendementNet >= 4 ? 25 : rendementNet >= 3 ? 18 : rendementNet >= 2 ? 10 : 5;
-    else if (profil === 'equilibre') scoreRenta = rendementNet >= 6 ? 25 : rendementNet >= 4 ? 18 : rendementNet >= 3 ? 10 : 5;
-    else scoreRenta = rendementNet >= 8 ? 25 : rendementNet >= 6 ? 20 : rendementNet >= 4 ? 12 : 5;
-
-    // Score cashflow (0-25)
-    let scoreCash = cashflowMensuel >= 200 ? 25 : cashflowMensuel >= 50 ? 20 : cashflowMensuel >= 0 ? 15 : cashflowMensuel >= -100 ? 8 : 0;
-    if (profil === 'conservateur' && cashflowMensuel < 0) scoreCash = 0;
-
-    // Score risque géo (0-25)
-    let scoreGeo = 25;
-    if (geo) {
-      if (geo.nbRisques > 8) scoreGeo -= 15; else if (geo.nbRisques > 4) scoreGeo -= 8; else if (geo.nbRisques > 2) scoreGeo -= 3;
-      if (geo.sismique >= 4) scoreGeo -= 8; else if (geo.sismique >= 3) scoreGeo -= 4;
-      if (geo.radon >= 3) scoreGeo -= 5; else if (geo.radon >= 2) scoreGeo -= 2;
-      if (geo.nbCatnat > 10) scoreGeo -= 5; else if (geo.nbCatnat > 5) scoreGeo -= 2;
-      scoreGeo = Math.max(0, scoreGeo);
-    }
-    if (profil === 'conservateur') scoreGeo = Math.round(scoreGeo * 1.2); // Poids accru pour conservateur
-    if (profil === 'dynamique') scoreGeo = Math.round(scoreGeo * 0.8);
-
-    // Score structure (0-25)
-    const tauxEffort = dos.loyer > 0 ? (dos.mensualite / dos.loyer * 100) : 100;
-    let scoreStruct = 0;
-    if (tauxEffort < 70) scoreStruct += 10; else if (tauxEffort < 90) scoreStruct += 5;
-    if (dos.vacanceMois <= 1) scoreStruct += 8; else if (dos.vacanceMois <= 2) scoreStruct += 4;
-    if (dos.travaux < dos.prix * 0.1) scoreStruct += 7; else if (dos.travaux < dos.prix * 0.2) scoreStruct += 3;
-
-    const total = Math.min(100, Math.max(0, scoreRenta + scoreCash + Math.min(25, scoreGeo) + scoreStruct));
-
-    return {
-      total, scoreRenta, scoreCash, scoreGeo: Math.min(25, scoreGeo), scoreStruct,
-      rendementBrut, rendementNet, cashflowMensuel, cashflowAnnuel,
-      prixTotal, loyerAnnuel, chargesAnnuelles, creditAnnuel, tauxEffort: Math.round(tauxEffort),
-    };
-  }
-
   async function lancerAnalyse(dos) {
-    const geo = dos.adresse ? await fetchGeorisques(dos.adresse) : null;
-    const score = calculerScore(dos, geo, dos.profilRisque || profilRisque);
-    setAnalyseDossier({ dossier: dos, geo, score });
-    setStep('bilan');
+    setGeoLoading(true);
+    const geo = dos.adresse ? await fetchGeo(dos.adresse) : null;
+    setGeoLoading(false);
+    const score = calcScore(dos, geo, dos.profilRisque || profilRisque);
+    const b = dos.banque || {};
+    const revTotal = b.revenusMensuels + b.loyersPercus * 0.7;
+    const chargesTotal = b.chargesMensuelles + b.autresCredits + dos.mensualite;
+    const txEndettement = revTotal > 0 ? Math.round(chargesTotal / revTotal * 100) : 0;
+    const resteAVivre = revTotal - chargesTotal;
+    const capMens = Math.max(0, revTotal * 0.35 - (b.chargesMensuelles + b.autresCredits));
+    const tM = 0.025 / 12; const dur = 240;
+    const capEmprunt = capMens > 0 ? Math.round(capMens * (Math.pow(1 + tM, dur) - 1) / (tM * Math.pow(1 + tM, dur))) : 0;
+    const scoreBanque = Math.min(100, Math.max(0,
+      (txEndettement < 35 ? 30 : txEndettement < 50 ? 15 : 0) +
+      (resteAVivre > 800 ? 25 : resteAVivre > 300 ? 15 : resteAVivre > 0 ? 5 : 0) +
+      (b.apport >= dos.prix * 0.1 ? 20 : b.apport > 0 ? 10 : 0) +
+      (['CDI', 'Fonctionnaire'].includes(b.situationPro) ? 15 : b.situationPro === 'Indépendant' && b.anciennete >= 3 ? 10 : 5) +
+      (b.nbBiensExistants >= 3 ? 10 : b.nbBiensExistants >= 1 ? 5 : 0)
+    ));
+
+    setAnalyseDossier({ dossier: dos, geo, score, banque: { txEndettement, resteAVivre, capEmprunt, scoreBanque, revTotal, chargesTotal } });
+    setStep('bilan'); setActiveDoc('jugement');
   }
 
-  // ── VUE LISTE ──
+  function supprimerDossier(id) {
+    setData(d => ({ ...d, dossiers: (d.dossiers || []).filter(x => x.id !== id) }));
+    showToast('Supprimé');
+  }
+
+  // ═══ LISTE ═══
   if (step === 'list') return (
     <div>
       <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>Investir — Juge de décision</h2>
-      <p style={{ fontSize: 13, color: L.textSec, margin: '0 0 20px' }}>Créez un dossier, on analyse tout automatiquement en 5 minutes.</p>
-
-      <button onClick={() => { setForm({}); setStep('create'); }} style={{ ...BTN, padding: '12px 28px', marginBottom: 20 }}
+      <p style={{ fontSize: 13, color: L.textSec, margin: '0 0 20px' }}>Créez un dossier complet (banque + analyse), verdict automatique en 5 minutes.</p>
+      <button onClick={() => { setForm({}); setFormBanque({}); setStep('create'); }} style={{ ...BTN, padding: '12px 28px', marginBottom: 20 }}
         onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
         + Nouveau dossier d'investissement
       </button>
-
       {dossiers.length === 0 ? (
         <div style={{ ...CARD, textAlign: 'center', padding: 48, color: L.textSec }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📁</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Aucun dossier</div>
-          <div style={{ fontSize: 12 }}>Créez votre premier dossier pour obtenir un verdict automatique.</div>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>Aucun dossier</div>
+          <div style={{ fontSize: 12 }}>Créez votre premier dossier pour obtenir un verdict + dossier bancaire.</div>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {dossiers.map(dos => {
-            const s = calculerScore(dos, null, dos.profilRisque || 'equilibre');
-            const sc = scoreColor(s.total);
-            return (
-              <div key={dos.id} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 16, borderLeft: `4px solid ${sc}` }}>
-                <div style={{ width: 50, height: 50, borderRadius: '50%', border: `3px solid ${sc}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: sc }}>{s.total}</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{dos.nom}</div>
-                  <div style={{ fontSize: 11, color: L.textSec }}>{dos.adresse || 'Adresse non renseignée'} · {dos.prix?.toLocaleString()}€ · Loyer {dos.loyer}€/mois</div>
-                  <div style={{ fontSize: 11, color: sc, fontWeight: 600, marginTop: 2 }}>{scoreLabel(s.total)} · Cashflow {s.cashflowMensuel >= 0 ? '+' : ''}{s.cashflowMensuel}€/mois</div>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => lancerAnalyse(dos)} style={{ ...BTN, fontSize: 10, padding: '6px 14px' }}
-                    onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
-                    Analyser
-                  </button>
-                  <button onClick={() => { setData(d => ({ ...d, dossiers: (d.dossiers || []).filter(x => x.id !== dos.id) })); showToast('Supprimé'); }}
-                    style={{ padding: '6px 10px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 0, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>✕</button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      ) : dossiers.map(dos => {
+        const s = calcScore(dos, null, dos.profilRisque || 'equilibre');
+        return (
+          <div key={dos.id} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 16, borderLeft: `4px solid ${sc(s.total)}`, marginBottom: 8 }}>
+            <div style={{ width: 50, height: 50, borderRadius: '50%', border: `3px solid ${sc(s.total)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: sc(s.total) }}>{s.total}</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{dos.nom}</div>
+              <div style={{ fontSize: 11, color: L.textSec }}>{dos.adresse || '—'} · {dos.prix?.toLocaleString()}€ · {dos.strategie}</div>
+              <div style={{ fontSize: 11, color: sc(s.total), fontWeight: 600, marginTop: 2 }}>{sLabel(s.total)} · CF {s.cfMois >= 0 ? '+' : ''}{s.cfMois}€/mois</div>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => lancerAnalyse(dos)} style={{ ...BTN, fontSize: 10, padding: '6px 14px' }} onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>Analyser</button>
+              <button onClick={() => supprimerDossier(dos.id)} style={{ padding: '6px 10px', background: '#FEF2F2', color: '#DC2626', border: 'none', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>✕</button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 
-  // ── VUE CRÉATION RAPIDE ──
+  // ═══ CRÉATION (2 volets : bien + banque) ═══
   if (step === 'create') return (
     <div>
       <button onClick={() => setStep('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: L.gold, fontWeight: 600, marginBottom: 16, fontFamily: L.font }}>← Retour</button>
-      <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>Nouveau dossier — 5 minutes chrono</h2>
-      <p style={{ fontSize: 13, color: L.textSec, margin: '0 0 20px' }}>Remplissez les infos du bien, on s'occupe du reste.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>Nouveau dossier — 5 min chrono</h2>
+      <p style={{ fontSize: 13, color: L.textSec, margin: '0 0 20px' }}>Remplissez les 2 volets, on génère automatiquement votre dossier bancaire + verdict d'opportunité.</p>
 
       {/* Profil risque */}
       <div style={{ marginBottom: 20 }}>
-        <label style={LBL}>Votre profil investisseur</label>
+        <label style={LBL}>Profil investisseur</label>
         <div style={{ display: 'flex', gap: 8 }}>
           {PROFIL_RISQUE.map(p => (
             <button key={p.id} onClick={() => setProfilRisque(p.id)}
-              style={{ flex: 1, padding: '12px', border: `2px solid ${profilRisque === p.id ? p.color : L.border}`, background: profilRisque === p.id ? p.color + '10' : 'transparent', cursor: 'pointer', fontFamily: L.font, textAlign: 'center', transition: 'all .15s' }}>
-              <div style={{ fontSize: 22 }}>{p.icon}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: profilRisque === p.id ? p.color : L.text, marginTop: 4 }}>{p.label}</div>
-              <div style={{ fontSize: 10, color: L.textSec, marginTop: 2 }}>{p.desc}</div>
+              style={{ flex: 1, padding: '10px', border: `2px solid ${profilRisque === p.id ? p.color : L.border}`, background: profilRisque === p.id ? p.color + '10' : 'transparent', cursor: 'pointer', fontFamily: L.font, textAlign: 'center', transition: 'all .15s' }}>
+              <div style={{ fontSize: 20 }}>{p.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: profilRisque === p.id ? p.color : L.text, marginTop: 2 }}>{p.label}</div>
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div style={{ gridColumn: '1/-1' }}><label style={LBL}>Nom du projet</label><input value={form.nom || ''} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} style={INP} placeholder="T2 Nice Centre" /></div>
-        <div style={{ gridColumn: '1/-1' }}><label style={LBL}>Adresse complète (pour Géorisques)</label><input value={form.adresse || ''} onChange={e => setForm(f => ({ ...f, adresse: e.target.value }))} style={INP} placeholder="12 rue de la Liberté, 06000 Nice" /></div>
-        <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.prix || ''} onChange={e => setForm(f => ({ ...f, prix: e.target.value }))} style={INP} placeholder="180000" /></div>
-        <div><label style={LBL}>Frais de notaire (€)</label><input type="number" value={form.fraisNotaire || ''} onChange={e => setForm(f => ({ ...f, fraisNotaire: e.target.value }))} style={INP} placeholder="14000" /></div>
-        <div><label style={LBL}>Travaux estimés (€)</label><input type="number" value={form.travaux || ''} onChange={e => setForm(f => ({ ...f, travaux: e.target.value }))} style={INP} placeholder="5000" /></div>
-        <div><label style={LBL}>Loyer mensuel (€)</label><input type="number" value={form.loyer || ''} onChange={e => setForm(f => ({ ...f, loyer: e.target.value }))} style={INP} placeholder="850" /></div>
-        <div><label style={LBL}>Charges mensuelles (€)</label><input type="number" value={form.charges || ''} onChange={e => setForm(f => ({ ...f, charges: e.target.value }))} style={INP} placeholder="120" /></div>
-        <div><label style={LBL}>Taxe foncière / mois (€)</label><input type="number" value={form.taxeFonciere || ''} onChange={e => setForm(f => ({ ...f, taxeFonciere: e.target.value }))} style={INP} placeholder="80" /></div>
-        <div><label style={LBL}>Assurance PNO / mois (€)</label><input type="number" value={form.assurance || ''} onChange={e => setForm(f => ({ ...f, assurance: e.target.value }))} style={INP} placeholder="20" /></div>
-        <div><label style={LBL}>Vacance estimée (mois/an)</label><input type="number" value={form.vacanceMois || ''} onChange={e => setForm(f => ({ ...f, vacanceMois: e.target.value }))} style={INP} placeholder="1" /></div>
-        <div><label style={LBL}>Mensualité crédit (€)</label><input type="number" value={form.mensualite || ''} onChange={e => setForm(f => ({ ...f, mensualite: e.target.value }))} style={INP} placeholder="750" /></div>
-        <div>
-          <label style={LBL}>Stratégie</label>
-          <select value={form.strategie || 'Location nue'} onChange={e => setForm(f => ({ ...f, strategie: e.target.value }))} style={INP}>
-            {['Location nue', 'Location meublée (LMNP)', 'Colocation', 'Location courte durée', 'Achat-revente', 'Division', 'Immeuble de rapport'].map(s => <option key={s}>{s}</option>)}
-          </select>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        {/* Volet 1 : Le bien */}
+        <div style={{ flex: '1 1 340px', ...CARD }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>🏠 Le bien</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ gridColumn: '1/-1' }}><label style={LBL}>Nom du projet</label><input value={form.nom || ''} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} style={INP} placeholder="T2 Nice Centre" /></div>
+            <div style={{ gridColumn: '1/-1' }}><label style={LBL}>Adresse (pour Géorisques auto)</label><input value={form.adresse || ''} onChange={e => setForm(f => ({ ...f, adresse: e.target.value }))} style={INP} placeholder="12 rue de la Liberté, Nice" /></div>
+            <div><label style={LBL}>Prix d'achat €</label><input type="number" value={form.prix || ''} onChange={e => setForm(f => ({ ...f, prix: e.target.value }))} style={INP} placeholder="180000" /></div>
+            <div><label style={LBL}>Frais notaire €</label><input type="number" value={form.fraisNotaire || ''} onChange={e => setForm(f => ({ ...f, fraisNotaire: e.target.value }))} style={INP} placeholder="14000" /></div>
+            <div><label style={LBL}>Travaux €</label><input type="number" value={form.travaux || ''} onChange={e => setForm(f => ({ ...f, travaux: e.target.value }))} style={INP} placeholder="5000" /></div>
+            <div><label style={LBL}>Loyer mensuel €</label><input type="number" value={form.loyer || ''} onChange={e => setForm(f => ({ ...f, loyer: e.target.value }))} style={INP} placeholder="850" /></div>
+            <div><label style={LBL}>Charges/mois €</label><input type="number" value={form.charges || ''} onChange={e => setForm(f => ({ ...f, charges: e.target.value }))} style={INP} placeholder="120" /></div>
+            <div><label style={LBL}>Taxe foncière/mois €</label><input type="number" value={form.taxeFonciere || ''} onChange={e => setForm(f => ({ ...f, taxeFonciere: e.target.value }))} style={INP} placeholder="80" /></div>
+            <div><label style={LBL}>Assurance PNO/mois €</label><input type="number" value={form.assurance || ''} onChange={e => setForm(f => ({ ...f, assurance: e.target.value }))} style={INP} placeholder="20" /></div>
+            <div><label style={LBL}>Vacance (mois/an)</label><input type="number" value={form.vacanceMois || ''} onChange={e => setForm(f => ({ ...f, vacanceMois: e.target.value }))} style={INP} placeholder="1" /></div>
+            <div><label style={LBL}>Mensualité crédit €</label><input type="number" value={form.mensualite || ''} onChange={e => setForm(f => ({ ...f, mensualite: e.target.value }))} style={INP} placeholder="750" /></div>
+            <div><label style={LBL}>Stratégie</label>
+              <select value={form.strategie || 'Location nue'} onChange={e => setForm(f => ({ ...f, strategie: e.target.value }))} style={INP}>
+                {['Location nue', 'LMNP meublé', 'Colocation', 'Courte durée', 'Achat-revente', 'Division', 'Immeuble de rapport'].map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Volet 2 : Profil bancaire */}
+        <div style={{ flex: '1 1 340px', ...CARD }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>🏦 Votre profil bancaire</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div><label style={LBL}>Revenus mensuels nets €</label><input type="number" value={formBanque.revenus || ''} onChange={e => setFormBanque(f => ({ ...f, revenus: e.target.value }))} style={INP} placeholder="3500" /></div>
+            <div><label style={LBL}>Charges perso/mois €</label><input type="number" value={formBanque.chargesPerso || ''} onChange={e => setFormBanque(f => ({ ...f, chargesPerso: e.target.value }))} style={INP} placeholder="500" /></div>
+            <div><label style={LBL}>Apport disponible €</label><input type="number" value={formBanque.apport || ''} onChange={e => setFormBanque(f => ({ ...f, apport: e.target.value }))} style={INP} placeholder="25000" /></div>
+            <div><label style={LBL}>Épargne résiduelle €</label><input type="number" value={formBanque.epargne || ''} onChange={e => setFormBanque(f => ({ ...f, epargne: e.target.value }))} style={INP} placeholder="15000" /></div>
+            <div><label style={LBL}>Situation professionnelle</label>
+              <select value={formBanque.situationPro || 'CDI'} onChange={e => setFormBanque(f => ({ ...f, situationPro: e.target.value }))} style={INP}>
+                {['CDI', 'Fonctionnaire', 'Indépendant', 'CDD', 'Profession libérale', 'Retraité'].map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div><label style={LBL}>Ancienneté (années)</label><input type="number" value={formBanque.anciennete || ''} onChange={e => setFormBanque(f => ({ ...f, anciennete: e.target.value }))} style={INP} placeholder="5" /></div>
+            <div><label style={LBL}>Autres crédits/mois €</label><input type="number" value={formBanque.autresCredits || ''} onChange={e => setFormBanque(f => ({ ...f, autresCredits: e.target.value }))} style={INP} placeholder="0" /></div>
+            <div><label style={LBL}>Loyers déjà perçus/mois €</label><input type="number" value={formBanque.loyersPercus || ''} onChange={e => setFormBanque(f => ({ ...f, loyersPercus: e.target.value }))} style={INP} placeholder="0" /></div>
+            <div><label style={LBL}>Nb biens existants</label><input type="number" value={formBanque.nbBiens || ''} onChange={e => setFormBanque(f => ({ ...f, nbBiens: e.target.value }))} style={INP} placeholder="0" /></div>
+          </div>
         </div>
       </div>
 
-      <button onClick={creerDossier} disabled={!form.prix || !form.loyer} style={{ ...BTN, width: '100%', padding: 14, marginTop: 20, fontSize: 14, background: L.gold, opacity: !form.prix || !form.loyer ? 0.5 : 1 }}>
-        {geoLoading ? 'Analyse Géorisques en cours...' : '⚡ Analyser ce bien — Verdict en 5 secondes'}
+      <button onClick={creerDossier} disabled={!form.prix || !form.loyer || geoLoading}
+        style={{ ...BTN, width: '100%', padding: 14, marginTop: 20, fontSize: 14, background: L.gold, opacity: !form.prix || !form.loyer ? 0.5 : 1 }}>
+        {geoLoading ? '🔍 Analyse Géorisques en cours...' : '⚡ Créer le dossier + Analyser automatiquement'}
       </button>
     </div>
   );
 
-  // ── VUE BILAN ──
+  // ═══ BILAN (2 documents) ═══
   if (step === 'bilan' && analyseDossier) {
-    const { dossier: dos, geo, score: s } = analyseDossier;
-    const sc = scoreColor(s.total);
-    const verdict = scoreVerdict(s.total);
+    const { dossier: dos, geo, score: s, banque: bk } = analyseDossier;
+    const verdict = sVerdict(s.total);
+    const bkColor = sc(bk.scoreBanque);
 
     return (
       <div>
-        <button onClick={() => { setStep('list'); setAnalyseDossier(null); setGeoData(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: L.gold, fontWeight: 600, marginBottom: 16, fontFamily: L.font }}>← Retour aux dossiers</button>
+        <button onClick={() => { setStep('list'); setAnalyseDossier(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: L.gold, fontWeight: 600, marginBottom: 16, fontFamily: L.font }}>← Retour aux dossiers</button>
 
-        {/* Verdict principal */}
-        <div style={{ background: L.noir, color: '#fff', padding: 'clamp(24px,4vw,36px)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 24 }}>
-          <div style={{ width: 90, height: 90, borderRadius: '50%', border: `4px solid ${sc}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 32, fontWeight: 800, color: sc }}>{s.total}</span>
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Verdict Freample</div>
-            <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{verdict.emoji} {scoreLabel(s.total)}</div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>{verdict.text}</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>{dos.nom} · {dos.adresse || '—'} · Profil : {PROFIL_RISQUE.find(p => p.id === (dos.profilRisque || profilRisque))?.label}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{dos.nom}</h2>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setActiveDoc('jugement')} style={activeDoc === 'jugement' ? BTN : BTN_O}>📊 Verdict d'opportunité</button>
+            <button onClick={() => setActiveDoc('banque')} style={activeDoc === 'banque' ? BTN : BTN_O}>🏦 Dossier bancaire</button>
           </div>
         </div>
 
-        {/* 4 piliers du score */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
-          {[
-            { label: 'Rentabilité', score: s.scoreRenta, max: 25, icon: '📈', detail: `Brut ${s.rendementBrut}% · Net ${s.rendementNet}%` },
-            { label: 'Cashflow', score: s.scoreCash, max: 25, icon: '💰', detail: `${s.cashflowMensuel >= 0 ? '+' : ''}${s.cashflowMensuel}€/mois` },
-            { label: 'Risques géo', score: s.scoreGeo, max: 25, icon: '⚠️', detail: geo ? `${geo.nbRisques} risques · Sisme ${geo.sismique}` : 'Non analysé' },
-            { label: 'Structure', score: s.scoreStruct, max: 25, icon: '🏗️', detail: `Effort ${s.tauxEffort}% · Vac. ${dos.vacanceMois}m` },
-          ].map(p => (
-            <div key={p.label} style={{ ...CARD, textAlign: 'center', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: scoreColor(p.score / p.max * 100) }} />
-              <div style={{ fontSize: 18, marginBottom: 4 }}>{p.icon}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: L.serif, color: scoreColor(p.score / p.max * 100) }}>{p.score}/{p.max}</div>
-              <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2 }}>{p.label}</div>
-              <div style={{ fontSize: 10, color: L.textSec, marginTop: 4 }}>{p.detail}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Chiffres clés */}
-        <div style={{ ...CARD, marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Chiffres clés</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }}>
-            {[
-              ['Prix total', `${s.prixTotal.toLocaleString()} €`],
-              ['Loyer annuel net', `${s.loyerAnnuel.toLocaleString()} €`],
-              ['Charges annuelles', `${s.chargesAnnuelles.toLocaleString()} €`],
-              ['Crédit annuel', `${s.creditAnnuel.toLocaleString()} €`],
-              ['Cashflow annuel', `${s.cashflowAnnuel >= 0 ? '+' : ''}${s.cashflowAnnuel.toLocaleString()} €`],
-              ['Rendement brut', `${s.rendementBrut} %`],
-              ['Rendement net', `${s.rendementNet} %`],
-              ['Taux d\'effort', `${s.tauxEffort} %`],
-            ].map(([k, v]) => (
-              <div key={k} style={{ padding: '8px 12px', background: '#FAFAF8', borderRadius: 6 }}>
-                <div style={{ fontSize: 10, color: L.textSec, marginBottom: 2 }}>{k}</div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{v}</div>
+        {/* ══ DOC 1 : VERDICT D'OPPORTUNITÉ ══ */}
+        {activeDoc === 'jugement' && <>
+          <div style={{ textAlign: 'right', marginBottom: 12 }}>
+            <button onClick={() => exportPDF(`Verdict - ${dos.nom}`, 'pdf-jugement')} style={{ ...BTN, fontSize: 11, padding: '6px 14px' }}
+              onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>🖨️ Exporter / Imprimer</button>
+          </div>
+          <div id="pdf-jugement">
+            {/* Score principal */}
+            <div style={{ background: L.noir, color: '#fff', padding: 'clamp(20px,3vw,32px)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div style={{ width: 80, height: 80, borderRadius: '50%', border: `4px solid ${sc(s.total)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 28, fontWeight: 800, color: sc(s.total) }}>{s.total}</span>
               </div>
-            ))}
-          </div>
-        </div>
+              <div>
+                <div style={{ fontSize: 11, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Verdict Freample</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{verdict.emoji} {sLabel(s.total)}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 2 }}>{verdict.text}</div>
+              </div>
+            </div>
 
-        {/* Géorisques */}
-        {geo && !geo.error && (
-          <div style={{ ...CARD, marginBottom: 16, borderLeft: `4px solid ${geo.nbRisques > 5 ? '#DC2626' : geo.nbRisques > 2 ? '#D97706' : '#16A34A'}` }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>⚠️ Géorisques — {geo.commune} ({geo.codeInsee})</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+            {/* 4 piliers */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
               {[
-                ['Risques identifiés', geo.nbRisques, geo.nbRisques > 5 ? '#DC2626' : geo.nbRisques > 2 ? '#D97706' : '#16A34A'],
-                ['Zone sismique', geo.sismique, geo.sismique >= 4 ? '#DC2626' : geo.sismique >= 3 ? '#D97706' : '#16A34A'],
-                ['Radon', `Classe ${geo.radon}`, geo.radon >= 3 ? '#DC2626' : geo.radon >= 2 ? '#D97706' : '#16A34A'],
-                ['CATNAT', `${geo.nbCatnat} arrêtés`, geo.nbCatnat > 10 ? '#DC2626' : geo.nbCatnat > 5 ? '#D97706' : '#16A34A'],
-              ].map(([k, v, c]) => (
-                <div key={k} style={{ textAlign: 'center', padding: '8px', background: c + '10', borderRadius: 6 }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: c }}>{v}</div>
-                  <div style={{ fontSize: 10, color: L.textSec }}>{k}</div>
+                { label: 'Rentabilité', score: s.r, icon: '📈', detail: `Brut ${s.rdtBrut}% · Net ${s.rdtNet}%` },
+                { label: 'Cashflow', score: s.c, icon: '💰', detail: `${s.cfMois >= 0 ? '+' : ''}${s.cfMois}€/mois` },
+                { label: 'Risques géo', score: s.g, icon: '⚠️', detail: geo ? `${geo.nbRisques} risques` : 'Non analysé' },
+                { label: 'Structure', score: s.st, icon: '🏗️', detail: `Effort ${s.effort}%` },
+              ].map(p => (
+                <div key={p.label} style={{ ...CARD, textAlign: 'center', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: sc(p.score / 25 * 100) }} />
+                  <div style={{ fontSize: 16 }}>{p.icon}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, fontFamily: L.serif, color: sc(p.score / 25 * 100) }}>{p.score}/25</div>
+                  <div style={{ fontSize: 10, fontWeight: 700 }}>{p.label}</div>
+                  <div style={{ fontSize: 9, color: L.textSec, marginTop: 2 }}>{p.detail}</div>
                 </div>
               ))}
             </div>
-            {geo.risques.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {geo.risques.slice(0, 8).map((r, i) => (
-                  <span key={i} style={{ fontSize: 10, padding: '3px 8px', background: '#FEF2F2', color: '#DC2626', borderRadius: 4 }}>{r}</span>
-                ))}
-                {geo.risques.length > 8 && <span style={{ fontSize: 10, padding: '3px 8px', color: L.textSec }}>+{geo.risques.length - 8} autres</span>}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* Recommandations automatiques */}
-        <div style={{ ...CARD, borderLeft: `4px solid ${L.gold}` }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>💡 Recommandations</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {s.cashflowMensuel < 0 && <div style={{ fontSize: 12, color: '#DC2626', padding: '6px 10px', background: '#FEF2F2', borderRadius: 6 }}>⚠️ Cashflow négatif — Négociez le prix ou augmentez le loyer cible.</div>}
-            {s.tauxEffort > 80 && <div style={{ fontSize: 12, color: '#DC2626', padding: '6px 10px', background: '#FEF2F2', borderRadius: 6 }}>⚠️ Taux d'effort {s.tauxEffort}% — Le crédit absorbe presque tout le loyer.</div>}
-            {s.rendementBrut < 4 && <div style={{ fontSize: 12, color: '#D97706', padding: '6px 10px', background: '#FFFBEB', borderRadius: 6 }}>📊 Rendement brut faible ({s.rendementBrut}%) — Envisagez une stratégie plus-value ou meublé.</div>}
-            {geo && geo.nbRisques > 5 && <div style={{ fontSize: 12, color: '#D97706', padding: '6px 10px', background: '#FFFBEB', borderRadius: 6 }}>🌊 Zone à risques multiples ({geo.nbRisques}) — Vérifiez les assurances et le PLU.</div>}
-            {geo && geo.sismique >= 4 && <div style={{ fontSize: 12, color: '#DC2626', padding: '6px 10px', background: '#FEF2F2', borderRadius: 6 }}>🔴 Zone sismique élevée ({geo.sismique}/5) — Vérifiez les normes parasismiques du bâtiment.</div>}
-            {s.cashflowMensuel >= 100 && s.rendementNet >= 5 && <div style={{ fontSize: 12, color: '#16A34A', padding: '6px 10px', background: '#F0FDF4', borderRadius: 6 }}>✅ Cashflow positif + bon rendement — Excellent profil d'investissement.</div>}
-            {dos.travaux > dos.prix * 0.15 && <div style={{ fontSize: 12, color: '#D97706', padding: '6px 10px', background: '#FFFBEB', borderRadius: 6 }}>🔧 Travaux importants ({Math.round(dos.travaux / dos.prix * 100)}% du prix) — Faites chiffrer par un pro avant de signer.</div>}
-            {(!geo || geo.error) && dos.adresse && <div style={{ fontSize: 12, color: L.textSec, padding: '6px 10px', background: '#FAFAF8', borderRadius: 6 }}>ℹ️ Relancez l'analyse pour obtenir les données Géorisques.</div>}
-            {s.total >= 65 && <div style={{ fontSize: 12, color: '#16A34A', padding: '6px 10px', background: '#F0FDF4', borderRadius: 6 }}>🏦 Prochaine étape : préparez votre dossier bancaire et lancez les visites.</div>}
+            {/* Chiffres clés */}
+            <div style={{ ...CARD, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Chiffres clés</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 }}>
+                {[['Prix total', `${s.prixTotal.toLocaleString()} €`], ['Loyer annuel', `${s.loyerAn.toLocaleString()} €`], ['Charges annuelles', `${s.chargesAn.toLocaleString()} €`], ['Crédit annuel', `${s.creditAn.toLocaleString()} €`], ['Cashflow annuel', `${s.cfAn >= 0 ? '+' : ''}${s.cfAn.toLocaleString()} €`], ['Rendement brut', `${s.rdtBrut}%`], ['Rendement net', `${s.rdtNet}%`], ['Taux effort', `${s.effort}%`]].map(([k, v]) => (
+                  <div key={k} style={{ padding: '6px 10px', background: '#FAFAF8', borderRadius: 4 }}>
+                    <div style={{ fontSize: 9, color: L.textSec }}>{k}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Géorisques */}
+            {geo && <div style={{ ...CARD, marginBottom: 12, borderLeft: `4px solid ${geo.nbRisques > 5 ? '#DC2626' : geo.nbRisques > 2 ? '#D97706' : '#16A34A'}` }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>⚠️ Géorisques — {geo.commune}</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                {[['Risques', geo.nbRisques], ['Sismique', `Zone ${geo.sismique}`], ['Radon', `Classe ${geo.radon}`], ['CATNAT', geo.nbCatnat]].map(([k, v]) => (
+                  <span key={k} style={{ fontSize: 11, padding: '4px 10px', background: '#FAFAF8', borderRadius: 4 }}>{k} : <strong>{v}</strong></span>
+                ))}
+              </div>
+              {geo.risques.length > 0 && <div style={{ fontSize: 11, color: L.textSec }}>{geo.risques.slice(0, 6).join(' · ')}{geo.risques.length > 6 ? ` +${geo.risques.length - 6}` : ''}</div>}
+            </div>}
+
+            {/* Recommandations */}
+            <div style={{ ...CARD, borderLeft: `4px solid ${L.gold}` }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>💡 Recommandations</div>
+              {s.cfMois < 0 && <div style={{ fontSize: 12, color: '#DC2626', padding: '4px 8px', background: '#FEF2F2', borderRadius: 4, marginBottom: 4 }}>⚠️ Cashflow négatif — négociez le prix ou le loyer.</div>}
+              {s.effort > 80 && <div style={{ fontSize: 12, color: '#DC2626', padding: '4px 8px', background: '#FEF2F2', borderRadius: 4, marginBottom: 4 }}>⚠️ Taux d'effort {s.effort}% — le crédit absorbe presque tout.</div>}
+              {s.rdtBrut < 4 && <div style={{ fontSize: 12, color: '#D97706', padding: '4px 8px', background: '#FFFBEB', borderRadius: 4, marginBottom: 4 }}>📊 Rendement faible — envisagez meublé ou courte durée.</div>}
+              {geo && geo.nbRisques > 5 && <div style={{ fontSize: 12, color: '#D97706', padding: '4px 8px', background: '#FFFBEB', borderRadius: 4, marginBottom: 4 }}>🌊 Zone multi-risques — vérifiez assurances et PLU.</div>}
+              {s.cfMois >= 100 && s.rdtNet >= 5 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>✅ Cashflow positif + bon rendement — excellent profil.</div>}
+              {s.total >= 65 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>🏦 Prochaine étape : préparez le dossier bancaire (onglet ci-dessus).</div>}
+            </div>
           </div>
-        </div>
+        </>}
+
+        {/* ══ DOC 2 : DOSSIER BANCAIRE ══ */}
+        {activeDoc === 'banque' && <>
+          <div style={{ textAlign: 'right', marginBottom: 12 }}>
+            <button onClick={() => exportPDF(`Dossier Bancaire - ${dos.nom}`, 'pdf-banque')} style={{ ...BTN, fontSize: 11, padding: '6px 14px' }}
+              onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>🖨️ Exporter / Imprimer</button>
+          </div>
+          <div id="pdf-banque">
+            {/* Score bancabilité */}
+            <div style={{ background: L.noir, color: '#fff', padding: 'clamp(20px,3vw,32px)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div style={{ width: 80, height: 80, borderRadius: '50%', border: `4px solid ${bkColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 28, fontWeight: 800, color: bkColor }}>{bk.scoreBanque}</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Score bancabilité</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{bk.scoreBanque >= 70 ? 'Dossier solide' : bk.scoreBanque >= 40 ? 'Dossier à renforcer' : 'Dossier fragile'}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>Profil : {dos.banque?.situationPro} · {dos.banque?.anciennete || 0} an(s) ancienneté</div>
+              </div>
+            </div>
+
+            {/* KPIs banquier */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 }}>
+              {[
+                { l: 'Taux endettement', v: `${bk.txEndettement}%`, ok: bk.txEndettement < 35, warn: bk.txEndettement < 50, note: '< 35% requis' },
+                { l: 'Reste à vivre', v: `${bk.resteAVivre}€/mois`, ok: bk.resteAVivre > 800, warn: bk.resteAVivre > 0, note: '> 800€ idéal' },
+                { l: 'Apport', v: `${(dos.banque?.apport || 0).toLocaleString()}€`, ok: (dos.banque?.apport || 0) >= dos.prix * 0.1, warn: (dos.banque?.apport || 0) > 0, note: '> 10% du prix' },
+                { l: 'Épargne résiduelle', v: `${(dos.banque?.epargne || 0).toLocaleString()}€`, ok: (dos.banque?.epargne || 0) > 10000, warn: (dos.banque?.epargne || 0) > 0, note: 'Matelas de sécurité' },
+                { l: 'Capacité emprunt', v: `${(bk.capEmprunt / 1000).toFixed(0)}k€`, ok: bk.capEmprunt > dos.prix, warn: bk.capEmprunt > 50000, note: '20 ans, 2.5%' },
+                { l: 'Revenus retenus', v: `${bk.revTotal}€/mois`, ok: true, warn: true, note: 'Salaire + 70% loyers' },
+              ].map(k => (
+                <div key={k.l} style={{ ...CARD, position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: k.ok ? L.green : k.warn ? '#D97706' : '#DC2626' }} />
+                  <div style={{ fontSize: 9, color: L.textSec, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{k.l}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: L.serif, color: k.ok ? L.green : k.warn ? '#D97706' : '#DC2626' }}>{k.v}</div>
+                  <div style={{ fontSize: 9, color: L.textSec, marginTop: 2 }}>{k.note}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Résumé du projet */}
+            <div style={{ ...CARD, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Résumé du projet</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <tbody>
+                  {[
+                    ['Bien', dos.nom], ['Adresse', dos.adresse || '—'], ['Prix d\'achat', `${dos.prix.toLocaleString()} €`],
+                    ['Frais de notaire', `${dos.fraisNotaire.toLocaleString()} €`], ['Travaux', `${dos.travaux.toLocaleString()} €`],
+                    ['Coût total', `${s.prixTotal.toLocaleString()} €`], ['Apport', `${(dos.banque?.apport || 0).toLocaleString()} €`],
+                    ['Montant emprunté', `${(s.prixTotal - (dos.banque?.apport || 0)).toLocaleString()} €`],
+                    ['Mensualité crédit', `${dos.mensualite} €/mois`], ['Stratégie', dos.strategie],
+                    ['Loyer prévu', `${dos.loyer} €/mois`], ['Rendement brut', `${s.rdtBrut}%`], ['Cashflow net', `${s.cfMois >= 0 ? '+' : ''}${s.cfMois} €/mois`],
+                  ].map(([k, v]) => (
+                    <tr key={k}>
+                      <td style={{ padding: '6px 10px', borderBottom: `1px solid ${L.border}`, color: L.textSec }}>{k}</td>
+                      <td style={{ padding: '6px 10px', borderBottom: `1px solid ${L.border}`, fontWeight: 600, textAlign: 'right' }}>{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Conseils pour la banque */}
+            <div style={{ ...CARD, borderLeft: `4px solid ${L.gold}` }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>💡 Conseils pour le rendez-vous banque</div>
+              {bk.txEndettement >= 35 && <div style={{ fontSize: 12, color: '#DC2626', padding: '4px 8px', background: '#FEF2F2', borderRadius: 4, marginBottom: 4 }}>⚠️ Endettement à {bk.txEndettement}% — proposez un apport plus important ou une durée plus longue.</div>}
+              {(dos.banque?.apport || 0) < dos.prix * 0.1 && <div style={{ fontSize: 12, color: '#D97706', padding: '4px 8px', background: '#FFFBEB', borderRadius: 4, marginBottom: 4 }}>💰 Apport &lt; 10% — les banques préfèrent au moins 10% du prix d'achat.</div>}
+              {bk.resteAVivre < 500 && <div style={{ fontSize: 12, color: '#D97706', padding: '4px 8px', background: '#FFFBEB', borderRadius: 4, marginBottom: 4 }}>📉 Reste à vivre faible — la banque sera vigilante sur votre capacité de remboursement.</div>}
+              {dos.banque?.situationPro === 'CDI' && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>✅ CDI — votre situation professionnelle est un atout pour le dossier.</div>}
+              {(dos.banque?.nbBiensExistants || 0) >= 2 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>✅ Expérience investisseur ({dos.banque.nbBiensExistants} biens) — valorisez votre track record.</div>}
+              {s.cfMois > 0 && <div style={{ fontSize: 12, color: '#16A34A', padding: '4px 8px', background: '#F0FDF4', borderRadius: 4, marginBottom: 4 }}>✅ Cashflow positif — argument fort : le bien s'autofinance.</div>}
+              <div style={{ fontSize: 12, color: L.textSec, padding: '4px 8px', background: '#FAFAF8', borderRadius: 4, marginTop: 4 }}>📋 Apportez : 3 derniers bulletins de salaire, avis d'imposition, relevés bancaires 3 mois, compromis de vente, simulation crédit.</div>
+            </div>
+          </div>
+        </>}
       </div>
     );
   }
