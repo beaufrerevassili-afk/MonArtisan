@@ -37,6 +37,7 @@ const reservationsRoutes   = require('./routes/reservationsRoutes');
 const comRoutes            = require('./routes/comRoutes');
 const modulesRoutes        = require('./routes/modulesRoutes');
 const immoRoutes           = require('./routes/immoRoutes');
+const projetsRoutes        = require('./routes/projetsRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -110,6 +111,7 @@ app.use('/client',  authenticateToken, clientRoutes);
 app.use('/patron',  authenticateToken, patronRoutes);
 app.use('/artisan', authenticateToken, artisanRoutes);
 app.use('/immo',    authenticateToken, immoRoutes);
+app.use('/projets', projetsRoutes);  // mix public + auth
 
 // ─── Analytics (visites) ────────────────────────────────────
 (async () => {

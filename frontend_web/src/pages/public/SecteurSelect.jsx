@@ -113,20 +113,20 @@ export default function SecteurSelect() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(44,37,32,0.4) 0%, rgba(44,37,32,0.95) 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto', opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(16px)', transition: 'opacity .6s, transform .6s' }}>
-          <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(36px,7vw,60px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 16px', lineHeight: 1.06, color: '#F5EFE0', textAlign: 'center' }}>
-            Trouvez un artisan<br />de <span style={{ fontWeight: 700, color: L.gold }}>confiance</span>
+          <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(34px,6.5vw,56px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 16px', lineHeight: 1.06, color: '#F5EFE0', textAlign: 'center' }}>
+            Publiez votre projet,<br />recevez des <span style={{ fontWeight: 700, color: L.gold }}>offres</span>
           </h1>
-          <p style={{ fontSize: 16, color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 460, textAlign: 'center' }}>
-            Plombier, électricien, peintre, menuisier — trouvez le bon professionnel près de chez vous.
+          <p style={{ fontSize: 16, color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 480, textAlign: 'center' }}>
+            Décrivez vos travaux, fixez votre budget. Des artisans vérifiés vous proposent leur offre. Vous choisissez.
           </p>
 
-          {/* Barre de recherche — 1 clic */}
+          {/* Barre de publication rapide */}
           <div style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 40px rgba(0,0,0,0.3)', maxWidth: 620, margin: '0 auto' }}>
             <div style={{ flex: 1, position: 'relative' }}>
               <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none' }}>🔨</span>
               <select value={searchMetier} onChange={e => setSearchMetier(e.target.value)}
                 style={{ width: '100%', padding: '16px 16px 16px 42px', border: 'none', fontSize: 15, fontFamily: L.font, outline: 'none', background: 'transparent', color: L.text, cursor: 'pointer', appearance: 'none' }}>
-                <option value="">Quel métier ?</option>
+                <option value="">Quel type de travaux ?</option>
                 {['Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture', 'Maçonnerie', 'Chauffage', 'Serrurerie', 'Couverture', 'Isolation', 'Autre'].map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
@@ -140,7 +140,7 @@ export default function SecteurSelect() {
             <button onClick={() => navigate(`/btp?metier=${searchMetier}&ville=${searchVille}`)}
               style={{ padding: '14px 28px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, flexShrink: 0, transition: 'background .2s' }}
               onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
-              Rechercher
+              Publier
             </button>
           </div>
 
@@ -156,14 +156,24 @@ export default function SecteurSelect() {
             ))}
           </div>
 
-          {/* Chiffres */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(24px,5vw,56px)', marginTop: 40 }}>
-            {[{ v: '100%', l: 'Gratuit' }, { v: '✓', l: 'Artisans vérifiés' }, { v: '⭐', l: 'Avis clients' }].map(s => (
-              <div key={s.l} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 22, fontWeight: 500, fontFamily: L.serif, color: L.gold }}>{s.v}</div>
-                <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.45)', marginTop: 4 }}>{s.l}</div>
+          {/* Comment ça marche — 3 étapes */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(20px,4vw,48px)', marginTop: 40, flexWrap: 'wrap' }}>
+            {[
+              { n: '1', icon: '📋', title: 'Publiez', desc: 'Décrivez votre projet et fixez votre budget' },
+              { n: '2', icon: '🔔', title: 'Recevez', desc: 'Des artisans vous envoient leurs offres' },
+              { n: '3', icon: '✅', title: 'Choisissez', desc: 'Comparez et acceptez la meilleure offre' },
+            ].map(s => (
+              <div key={s.n} style={{ textAlign: 'center', maxWidth: 140 }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#F5EFE0', marginBottom: 2 }}>{s.title}</div>
+                <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.45)', lineHeight: 1.4 }}>{s.desc}</div>
               </div>
             ))}
+          </div>
+
+          {/* Commission */}
+          <div style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: 'rgba(245,239,224,0.35)' }}>
+            Commission : 2€ pour les projets &lt; 500€ · 5€ au-dessus · Payée par le client, pas l'artisan
           </div>
         </div>
       </section>
