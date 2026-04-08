@@ -33,34 +33,34 @@ const ECO_DATA = {
     titre: 'Je suis un particulier',
     center: { icon: '🏠', label: 'Votre projet' },
     nodes: [
-      { id: 'artisan',     icon: '🔨', label: 'Trouver un artisan',       desc: 'Décrivez votre besoin, recevez des devis gratuits de pros vérifiés.', color: '#8B5CF6', href: '/btp' },
-      { id: 'devis',       icon: '📋', label: 'Devis en 24h',             desc: 'Comparez les offres, choisissez le meilleur rapport qualité/prix.', color: '#2563EB' },
-      { id: 'suivi',       icon: '📍', label: 'Suivi du chantier',        desc: 'Suivez l\'avancement en temps réel, photos et étapes validées.', color: '#16A34A' },
-      { id: 'com',         icon: '🎬', label: 'Montage vidéo',            desc: 'Besoin d\'une vidéo pro ? Confiez le montage à nos experts.', color: '#D97706', href: '/com' },
-      { id: 'recrutement', icon: '👥', label: 'Emploi BTP',               desc: 'Consultez les offres d\'emploi des entreprises du bâtiment.', color: '#059669', href: '/recrutement' },
-      { id: 'avis',        icon: '⭐', label: 'Avis vérifiés',            desc: 'Des retours authentiques pour choisir en toute confiance.', color: '#DC2626' },
+      { id: 'artisan',     icon: '🔨', label: 'Trouver un pro',          desc: 'Décrivez votre besoin, recevez des devis gratuits de professionnels vérifiés près de chez vous.', color: '#8B5CF6', href: '/btp' },
+      { id: 'devis',       icon: '📋', label: 'Devis en 24h',             desc: 'Comparez les offres et choisissez le meilleur rapport qualité/prix, sans engagement.', color: '#2563EB' },
+      { id: 'suivi',       icon: '📍', label: 'Suivi en temps réel',      desc: 'Suivez l\'avancement de votre projet : photos, étapes validées, planning partagé.', color: '#16A34A' },
+      { id: 'com',         icon: '🎬', label: 'Communication',            desc: 'Montage vidéo, création de contenu, stratégie digitale — confiez votre image à des experts.', color: '#D97706', href: '/com' },
+      { id: 'recrutement', icon: '👥', label: 'Offres d\'emploi',         desc: 'Consultez les offres d\'emploi publiées par les entreprises sur Freample.', color: '#059669', href: '/recrutement' },
+      { id: 'avis',        icon: '⭐', label: 'Avis vérifiés',            desc: 'Des retours authentiques de vrais clients pour choisir en toute confiance.', color: '#DC2626' },
     ],
     avantages: [
       { icon: '💸', titre: '0 € de commission', desc: 'Aucun frais caché. Le prix affiché est le prix payé.' },
       { icon: '⚡', titre: 'Réponse en 24h', desc: 'Recevez des devis de professionnels proches de chez vous.' },
-      { icon: '🛡️', titre: 'Artisans vérifiés', desc: 'Assurances, qualifications et avis contrôlés.' },
+      { icon: '🛡️', titre: 'Professionnels vérifiés', desc: 'Assurances, qualifications et avis contrôlés.' },
     ],
   },
   entreprise: {
-    titre: 'Je suis une entreprise BTP',
-    center: { icon: '🏗️', label: 'Votre entreprise' },
+    titre: 'Je suis un professionnel',
+    center: { icon: '💼', label: 'Votre activité' },
     nodes: [
-      { id: 'commercial', icon: '📊', label: 'Pipeline commercial',  desc: 'Gérez vos prospects, devis et factures dans un pipeline visuel.', color: '#8B5CF6', href: '/pro' },
-      { id: 'rh',         icon: '👥', label: 'RH & Paie',            desc: 'Employés, congés, bulletins de paie, contrats — tout automatisé.', color: '#2563EB', href: '/pro' },
-      { id: 'qhse',       icon: '🛡️', label: 'QHSE & Sécurité',     desc: 'Audits, EPI, incidents, BSDD, certifications — conformité totale.', color: '#16A34A', href: '/pro' },
-      { id: 'chantier',   icon: '📍', label: 'Gestion chantiers',    desc: 'Planning, affectation, photos, suivi distance — tout centralisé.', color: '#D97706', href: '/pro' },
-      { id: 'recruter',   icon: '📢', label: 'Recruter',             desc: 'Publiez vos offres, recevez des candidatures, gérez le pipeline.', color: '#059669', href: '/recrutement' },
-      { id: 'finance',    icon: '💰', label: 'Finance & Compta',     desc: 'Trésorerie, export comptable, URSSAF, bibliothèque de prix.', color: '#DC2626', href: '/pro' },
+      { id: 'erp',        icon: '📊', label: 'Gestion d\'entreprise', desc: 'Un ERP complet adapté à votre métier : commercial, facturation, suivi clients, pipeline de ventes.', color: '#8B5CF6', href: '/pro' },
+      { id: 'rh',         icon: '👥', label: 'RH & Paie',            desc: 'Gérez vos équipes, congés, contrats et bulletins de paie. Automatisez l\'administratif.', color: '#2563EB', href: '/pro' },
+      { id: 'conformite', icon: '🛡️', label: 'Conformité & Qualité', desc: 'Audits, certifications, documents réglementaires — restez conforme aux normes de votre secteur.', color: '#16A34A', href: '/pro' },
+      { id: 'recruter',   icon: '📢', label: 'Recruter',             desc: 'Publiez vos offres, recevez des candidatures qualifiées et gérez tout le processus d\'embauche.', color: '#D97706', href: '/recrutement' },
+      { id: 'com',        icon: '🎬', label: 'Communication',        desc: 'Vidéo, branding, présence en ligne — développez votre visibilité avec nos services créatifs.', color: '#059669', href: '/com' },
+      { id: 'finance',    icon: '💰', label: 'Finance & Compta',     desc: 'Trésorerie, export comptable, déclarations sociales, bibliothèque de prix — tout centralisé.', color: '#DC2626', href: '/pro' },
     ],
     avantages: [
-      { icon: '🎯', titre: '1 outil au lieu de 6', desc: 'Remplace Sage, PayFit, Qualnet, votre CRM et vos tableaux Excel.' },
-      { icon: '⏱️', titre: '10h gagnées / semaine', desc: 'Automatisation de la paie, documents, calculs de trajet.' },
-      { icon: '🏗️', titre: 'Spécialiste BTP', desc: 'Convention collective, habilitations, BSDD — tout est natif.' },
+      { icon: '🎯', titre: 'Tout-en-un', desc: 'Un seul outil remplace vos logiciels de gestion, paie, conformité et CRM.' },
+      { icon: '⏱️', titre: 'Gain de temps massif', desc: 'Automatisation des tâches répétitives : paie, documents, calculs, relances.' },
+      { icon: '🔗', titre: 'Données connectées', desc: 'Un client, un devis, une facture, un salarié — tout est lié, zéro ressaisie.' },
     ],
   },
 };
@@ -92,7 +92,7 @@ function EcosystemeSection({ sectionRef }) {
         {/* Toggle Client / Entreprise */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
           <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: 12, padding: 4 }}>
-            {[['client', '🏠 Je suis particulier'], ['entreprise', '🏗️ Je suis une entreprise']].map(([id, label]) => (
+            {[['client', '🏠 Je suis particulier'], ['entreprise', '💼 Je suis professionnel']].map(([id, label]) => (
               <button key={id} onClick={() => { setMode(id); setActiveNode(null); }}
                 style={{ padding: '10px 24px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all .2s',
                   background: mode === id ? L.noir : 'transparent', color: mode === id ? '#fff' : '#636363' }}>
@@ -180,8 +180,8 @@ function EcosystemeSection({ sectionRef }) {
         <div style={{ display: 'flex', gap: 0, borderTop: `1px solid ${L.border}` }}>
           {[
             { val: '0 €', label: 'Pour les particuliers' },
-            { val: '4 en 1', label: 'ERP + RH + QHSE + Commercial' },
-            { val: '100 %', label: 'Conçu pour le BTP' },
+            { val: 'Tout-en-un', label: 'Gestion, RH, conformité, com' },
+            { val: '100 %', label: 'Adapté à votre métier' },
           ].map((m, i) => (
             <div key={m.label} style={{ flex: 1, padding: '20px 0', textAlign: 'center', borderRight: i < 2 ? `1px solid ${L.border}` : 'none' }}>
               <div style={{ fontSize: 24, fontWeight: 500, fontFamily: L.serif, letterSpacing: '-0.02em' }}>{m.val}</div>
