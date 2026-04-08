@@ -297,6 +297,75 @@ const ECO_PAR_SECTEUR = {
   },
 };
 
+function SecteurEcosystemeSide({ secteur }) {
+  const [hovered, setHovered] = useState(null);
+  const eco = ECO_PAR_SECTEUR[secteur] || ECO_PAR_SECTEUR.btp;
+  const modules = eco.modules;
+  const cx = 50, cy = 50, r = 36;
+  const positions = modules.map((_, i) => {
+    const angle = (i / modules.length) * Math.PI * 2 - Math.PI / 2;
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  });
+
+  return (
+    <div style={{ background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 14, padding: '20px 18px', overflow: 'hidden' }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px', textAlign: 'center' }}>Votre écosystème</p>
+      <p style={{ fontSize: 13, color: '#1A1A1A', margin: '0 0 16px', textAlign: 'center', fontWeight: 600 }}>{eco.phrase}</p>
+
+      {/* Schéma circulaire */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: 280, margin: '0 auto', aspectRatio: '1' }}>
+        <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E8E6E1" strokeWidth={0.3} strokeDasharray="2 1.5" />
+          {positions.map((pos, i) => (
+            <line key={i} x1={cx} y1={cy} x2={pos.x} y2={pos.y}
+              stroke={hovered === i ? modules[i].color : '#E5E5EA'} strokeWidth={hovered === i ? 0.5 : 0.2}
+              style={{ transition: 'all .3s' }} />
+          ))}
+        </svg>
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: '#1A1A1A', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+          <span style={{ fontSize: 18 }}>{eco.center.icon}</span>
+          <span style={{ fontSize: 6, fontWeight: 700, marginTop: 1 }}>{eco.center.label}</span>
+        </div>
+        {modules.map((mod, i) => {
+          const pos = positions[i];
+          const active = hovered === i;
+          return (
+            <div key={mod.label} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+              style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', zIndex: active ? 3 : 1 }}>
+              <div style={{ width: active ? 46 : 38, height: active ? 46 : 38, borderRadius: '50%', background: '#fff', border: `2px solid ${active ? mod.color : '#E8E6E1'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: active ? `0 4px 14px ${mod.color}30` : '0 1px 4px rgba(0,0,0,0.05)', transition: 'all .2s' }}>
+                <span style={{ fontSize: active ? 15 : 12 }}>{mod.icon}</span>
+                <span style={{ fontSize: 5, fontWeight: 700, color: active ? mod.color : '#636363', textAlign: 'center', lineHeight: 1.1, padding: '0 2px' }}>{mod.label}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Détail au survol */}
+      <div style={{ minHeight: 60, marginTop: 10 }}>
+        {hovered !== null ? (
+          <div style={{ background: '#fff', border: `1px solid ${modules[hovered].color}40`, borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{modules[hovered].icon}</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: modules[hovered].color, marginBottom: 2 }}>{modules[hovered].label}</div>
+              <div style={{ fontSize: 11, color: '#636363', lineHeight: 1.5 }}>{modules[hovered].desc}</div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <p style={{ fontSize: 11, color: '#8E8E93', fontStyle: 'italic', margin: '0 0 8px' }}>Survolez un module pour en savoir plus</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+              {modules.map(m => (
+                <span key={m.label} style={{ fontSize: 9, color: '#636363', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 4, padding: '2px 6px' }}>{m.icon} {m.label}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SecteurEcosysteme({ secteur, setSecteur, setError, locked }) {
   const [hovered, setHovered] = useState(null);
   const eco = ECO_PAR_SECTEUR[secteur] || ECO_PAR_SECTEUR.btp;
@@ -597,7 +666,8 @@ export default function Register() {
   const currentDocs = secteur === 'coiffure' ? DOCUMENTS_COIFFURE
     : DOCUMENTS_REQUIS;
   const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
-  const maxWidth   = (isPro && step === 3) ? 600 : 440;
+  const showSideEco = isPatron && step === 1;
+  const maxWidth   = showSideEco ? 880 : (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
   if (step === 5) {
@@ -723,105 +793,127 @@ export default function Register() {
           </div>
         )}
 
-        {/* Sélecteur secteur + Écosystème ciblé (patron uniquement, step 1) */}
-        {step === 1 && isPatron && (
-          <SecteurEcosysteme secteur={secteur} setSecteur={setSecteur} setError={setError} locked={!!searchParams.get('secteur')} />
+        {/* Sélecteur secteur (sans schéma — le schéma est à droite) */}
+        {step === 1 && isPatron && !searchParams.get('secteur') && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4A4A4A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {SECTEURS_LIST.map(s => (
+                <button key={s.id} type="button" onClick={() => { setSecteur(s.id); setError(''); }}
+                  style={{ padding: '9px 16px', border: `1px solid ${secteur === s.id ? '#A68B4B' : '#E8E6E1'}`, background: secteur === s.id ? '#F5EFE0' : 'transparent', color: secteur === s.id ? '#7A6232' : '#4A4A4A', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s', borderRadius: 6 }}>
+                  {s.emoji} {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Step indicator artisan */}
         {isPro && <StepIndicator steps={STEPS_ARTISAN} current={step} />}
 
-        {/* ══ STEP 1 — Compte ══════════════════════════════════════════════════ */}
+        {/* ══ STEP 1 — Compte (2 colonnes si patron) ═══════════════════════ */}
         {step === 1 && (
-          <div className="reg-card">
-            {isPro && (
-              <div style={{ background: DS.accentMuted, border: `1px solid ${DS.accentLight}`, borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
-                <span style={{ flexShrink: 0, fontSize: '1rem' }}>ℹ️</span>
-                <p style={{ fontSize: '0.8125rem', color: DS.accent, lineHeight: 1.5 }}>
-                  {isArtisan
-                    ? <><strong>Processus de vérification obligatoire</strong> — Pour garantir la sécurité de nos clients, chaque artisan est vérifié avant activation : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.</>
-                    : secteur === 'coiffure'
-                    ? <><strong>Vérification du salon</strong> — Kbis, RC Pro, diplôme de coiffure requis pour activer votre espace.</>
-                    : <><strong>Processus de vérification obligatoire</strong> — Pièce d'identité, Kbis, RC Pro et attestation URSSAF requis pour activer votre compte.</>
-                  }
-                </p>
+          <div style={showSideEco ? { display: 'flex', gap: 24, alignItems: 'flex-start' } : {}}>
+            {/* Colonne gauche : formulaire */}
+            <div style={showSideEco ? { flex: '1 1 400px', minWidth: 0 } : {}}>
+              <div className="reg-card">
+                {isPro && (
+                  <div style={{ background: DS.accentMuted, border: `1px solid ${DS.accentLight}`, borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
+                    <span style={{ flexShrink: 0, fontSize: '1rem' }}>ℹ️</span>
+                    <p style={{ fontSize: '0.8125rem', color: DS.accent, lineHeight: 1.5 }}>
+                      {isArtisan
+                        ? <><strong>Processus de vérification obligatoire</strong> — Pour garantir la sécurité de nos clients, chaque artisan est vérifié avant activation : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.</>
+                        : secteur === 'coiffure'
+                        ? <><strong>Vérification du salon</strong> — Kbis, RC Pro, diplôme de coiffure requis pour activer votre espace.</>
+                        : <><strong>Processus de vérification obligatoire</strong> — Pièce d'identité, Kbis, RC Pro et attestation URSSAF requis pour activer votre compte.</>
+                      }
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <label htmlFor="reg-nom" className="reg-label">Prénom et nom complet</label>
+                    <input id="reg-nom" className="reg-input" type="text" placeholder={isArtisan ? 'Carlos Garcia' : 'Marie Dupont'} value={compte.nom} onChange={e => setCompte({ ...compte, nom: e.target.value })} autoComplete="name" />
+                  </div>
+
+                  <div>
+                    <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
+                    <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => setCompte({ ...compte, email: e.target.value })} autoComplete="email" />
+                  </div>
+
+                  {isPro && (
+                    <div>
+                      <label htmlFor="reg-tel" className="reg-label">Numéro de téléphone <span style={{ color: '#F87171' }}>*</span></label>
+                      <input id="reg-tel" className="reg-input" type="tel" placeholder="06 12 34 56 78" value={compte.telephone} onChange={e => setCompte({ ...compte, telephone: e.target.value })} autoComplete="tel" />
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="reg-password" className="reg-label">Mot de passe <span style={{ fontSize: '0.75rem', color: DS.subtle, fontWeight: 400 }}>— 8 caractères minimum</span></label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        id="reg-password"
+                        className="reg-input"
+                        type={showPwd ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={compte.motdepasse}
+                        onChange={e => setCompte({ ...compte, motdepasse: e.target.value })}
+                        autoComplete="new-password"
+                        style={{ paddingRight: 44 }}
+                      />
+                      <button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.subtle, display: 'flex', padding: 2 }}>
+                        <EyeIcon open={showPwd} />
+                      </button>
+                    </div>
+                    {compte.motdepasse && (
+                      <div style={{ marginTop: 8, display: 'flex', gap: 4, alignItems: 'center' }}>
+                        {[2, 6, 10].map((threshold, i) => (
+                          <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: compte.motdepasse.length >= threshold ? (compte.motdepasse.length >= 10 ? '#34D399' : '#FBBF24') : DS.border, transition: 'background 0.2s' }} />
+                        ))}
+                        <span style={{ fontSize: '0.6875rem', color: DS.subtle, marginLeft: 6, whiteSpace: 'nowrap' }}>
+                          {compte.motdepasse.length < 6 ? 'Faible' : compte.motdepasse.length < 10 ? 'Moyen' : 'Fort'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="reg-confirm-password" className="reg-label">Confirmer le mot de passe</label>
+                    <input
+                      id="reg-confirm-password"
+                      className="reg-input"
+                      type={showPwd ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={compte.confirmMotdepasse}
+                      onChange={e => setCompte({ ...compte, confirmMotdepasse: e.target.value })}
+                      autoComplete="new-password"
+                    />
+                    {compte.confirmMotdepasse && compte.motdepasse !== compte.confirmMotdepasse && (
+                      <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#DC2626', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        ✗ Les mots de passe ne correspondent pas
+                      </div>
+                    )}
+                    {compte.confirmMotdepasse && compte.motdepasse === compte.confirmMotdepasse && compte.motdepasse.length >= 8 && (
+                      <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#16A34A', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        ✓ Les mots de passe correspondent
+                      </div>
+                    )}
+                  </div>
+
+                  {error && <ErrorBox message={error} />}
+
+                  <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} />
+                </div>
+              </div>
+            </div>
+
+            {/* Colonne droite : écosystème (patron step 1 uniquement) */}
+            {showSideEco && (
+              <div style={{ flex: '1 1 380px', minWidth: 0, position: 'sticky', top: 24 }}>
+                <SecteurEcosystemeSide secteur={secteur} />
               </div>
             )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label htmlFor="reg-nom" className="reg-label">Prénom et nom complet</label>
-                <input id="reg-nom" className="reg-input" type="text" placeholder={isArtisan ? 'Carlos Garcia' : 'Marie Dupont'} value={compte.nom} onChange={e => setCompte({ ...compte, nom: e.target.value })} autoComplete="name" />
-              </div>
-
-              <div>
-                <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
-                <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => setCompte({ ...compte, email: e.target.value })} autoComplete="email" />
-              </div>
-
-              {isPro && (
-                <div>
-                  <label htmlFor="reg-tel" className="reg-label">Numéro de téléphone <span style={{ color: '#F87171' }}>*</span></label>
-                  <input id="reg-tel" className="reg-input" type="tel" placeholder="06 12 34 56 78" value={compte.telephone} onChange={e => setCompte({ ...compte, telephone: e.target.value })} autoComplete="tel" />
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="reg-password" className="reg-label">Mot de passe <span style={{ fontSize: '0.75rem', color: DS.subtle, fontWeight: 400 }}>— 8 caractères minimum</span></label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    id="reg-password"
-                    className="reg-input"
-                    type={showPwd ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={compte.motdepasse}
-                    onChange={e => setCompte({ ...compte, motdepasse: e.target.value })}
-                    autoComplete="new-password"
-                    style={{ paddingRight: 44 }}
-                  />
-                  <button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: DS.subtle, display: 'flex', padding: 2 }}>
-                    <EyeIcon open={showPwd} />
-                  </button>
-                </div>
-                {compte.motdepasse && (
-                  <div style={{ marginTop: 8, display: 'flex', gap: 4, alignItems: 'center' }}>
-                    {[2, 6, 10].map((threshold, i) => (
-                      <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: compte.motdepasse.length >= threshold ? (compte.motdepasse.length >= 10 ? '#34D399' : '#FBBF24') : DS.border, transition: 'background 0.2s' }} />
-                    ))}
-                    <span style={{ fontSize: '0.6875rem', color: DS.subtle, marginLeft: 6, whiteSpace: 'nowrap' }}>
-                      {compte.motdepasse.length < 6 ? 'Faible' : compte.motdepasse.length < 10 ? 'Moyen' : 'Fort'}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="reg-confirm-password" className="reg-label">Confirmer le mot de passe</label>
-                <input
-                  id="reg-confirm-password"
-                  className="reg-input"
-                  type={showPwd ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={compte.confirmMotdepasse}
-                  onChange={e => setCompte({ ...compte, confirmMotdepasse: e.target.value })}
-                  autoComplete="new-password"
-                />
-                {compte.confirmMotdepasse && compte.motdepasse !== compte.confirmMotdepasse && (
-                  <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#DC2626', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    ✗ Les mots de passe ne correspondent pas
-                  </div>
-                )}
-                {compte.confirmMotdepasse && compte.motdepasse === compte.confirmMotdepasse && compte.motdepasse.length >= 8 && (
-                  <div style={{ marginTop: 6, fontSize: '0.8rem', color: '#16A34A', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    ✓ Les mots de passe correspondent
-                  </div>
-                )}
-              </div>
-
-              {error && <ErrorBox message={error} />}
-
-              <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} />
-            </div>
           </div>
         )}
 
