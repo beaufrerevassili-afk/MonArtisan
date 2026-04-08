@@ -19,12 +19,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Rediriger vers /login si session expirée (sauf pour /login lui-même)
+// Rediriger vers /login si session expirée (sauf comptes démo et erreurs réseau)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || '';
-    if (error.response?.status === 401 && !url.includes('/login')) {
+    const token = localStorage.getItem('token');
+    const isDemo = token && token.endsWith('.dev');
+    // Ne déconnecter que sur une vraie 401 du serveur, jamais pour les comptes démo ou erreurs réseau
+    if (error.response?.status === 401 && !url.includes('/login') && !isDemo) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
