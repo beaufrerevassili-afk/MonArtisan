@@ -264,7 +264,7 @@ function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const urlMetier = searchParams.get('metier') || '';
   const urlVille = searchParams.get('ville') || '';
@@ -421,9 +421,16 @@ export default function Landing() {
           <button onClick={() => navigate('/pro')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Professionnel</button>
           <button onClick={() => navigate('/immo')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Freample Immo</button>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Se connecter</button>
-          <button onClick={() => navigate('/register')} style={{ padding: '8px 18px', background: DS.ink, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: DS.font }}>S'inscrire</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {user ? <>
+            <button onClick={() => { const d = { client:'/client/dashboard', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard' }; navigate(d[user.role] || '/'); }}
+              style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: '#A68B4B', cursor: 'pointer', fontFamily: DS.font }}>Mon espace</button>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#A68B4B', color: '#fff', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              onClick={() => navigate('/login')}>{(user.nom || 'U').charAt(0).toUpperCase()}</div>
+          </> : <>
+            <button onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Se connecter</button>
+            <button onClick={() => navigate('/register')} style={{ padding: '8px 18px', background: DS.ink, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: DS.font }}>S'inscrire</button>
+          </>}
         </div>
       </nav>
 
@@ -781,7 +788,7 @@ export default function Landing() {
           isLoggedIn={!!token}
           onClose={() => setSelectedArtisan(null)}
           onRegister={() => { setSelectedArtisan(null); navigate('/register'); }}
-          onLogin={() => { setSelectedArtisan(null); navigate(token ? '/app' : '/login'); }}
+          onLogin={() => { setSelectedArtisan(null); navigate(user ? '/' : '/login'); }}
         />
       )}
 
