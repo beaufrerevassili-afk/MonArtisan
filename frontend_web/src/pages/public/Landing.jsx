@@ -3,7 +3,7 @@ import DS from '../../design/ds';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import HideForClient from '../../components/public/HideForClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconMapPin, IconStar, IconShield, IconCheck, IconChevronDown, IconX, IconUser } from '../../components/ui/Icons';
@@ -265,11 +265,14 @@ function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
 export default function Landing() {
   const navigate = useNavigate();
   const { token } = useAuth();
+  const [searchParams] = useSearchParams();
+  const urlMetier = searchParams.get('metier') || '';
+  const urlVille = searchParams.get('ville') || '';
 
   const [query, setQuery]             = useState('');
-  const [metier, setMetier]           = useState('');
-  const [ville, setVille]             = useState('');
-  const [villeInput, setVilleInput]   = useState('');
+  const [metier, setMetier]           = useState(urlMetier);
+  const [ville, setVille]             = useState(urlVille);
+  const [villeInput, setVilleInput]   = useState(urlVille);
   const [villeSuggestions, setVilleSuggestions] = useState([]);
   const [disponibilite, setDispo]     = useState('');
   const [noteMin, setNoteMin]         = useState('');
@@ -396,99 +399,77 @@ export default function Landing() {
   return (
     <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
 
-      <RecrutementBanner secteur="btp" />
-      <PublicNavbar />
+      {/* ── Navbar cohérente homepage ── */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 64, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${DS.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 900, color: DS.ink, fontFamily: DS.font, letterSpacing: '-0.04em' }}>
+            Freample<span style={{ color: '#A68B4B' }}>.</span>
+          </button>
+          <button onClick={() => navigate('/pro')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Professionnel</button>
+          <button onClick={() => navigate('/immo')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Freample Immo</button>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Se connecter</button>
+          <button onClick={() => navigate('/register')} style={{ padding: '8px 18px', background: DS.ink, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: DS.font }}>S'inscrire</button>
+        </div>
+      </nav>
 
-      {/* ── Hero ── */}
-      <section style={{ background: DS.bg, borderBottom: `1px solid ${DS.border}`, padding: 'clamp(36px,6vw,56px) clamp(16px,4vw,48px) 0' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-
-          {/* Titre + sous-titre */}
-          <div style={{ marginBottom: 28 }}>
-            <h1 ref={sTitle} style={{ fontSize: 'clamp(1.5rem,3.5vw,2.125rem)', fontWeight: 900, color: DS.ink, letterSpacing: '-0.04em', margin: '0 0 6px', lineHeight: 1.12 }}>
-              Freample Artisans
+      {/* ── Hero — fond sombre, barre de recherche, même esthétique homepage ── */}
+      <section style={{ background: '#2C2520', padding: 'clamp(32px,5vh,56px) clamp(16px,4vw,48px) clamp(24px,4vh,40px)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.1 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(44,37,32,0.5) 0%, rgba(44,37,32,0.95) 100%)' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ marginBottom: 20 }}>
+            <h1 ref={sTitle} style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 800, color: '#F5EFE0', letterSpacing: '-0.03em', margin: '0 0 4px', lineHeight: 1.15 }}>
+              {metier ? `${metier}${ville ? ` à ${ville}` : ''}` : 'Artisans disponibles'}
             </h1>
-            <p ref={rSub} style={{ fontSize: 14, color: DS.muted, margin: 0, lineHeight: 1.5 }}>Trouvez un artisan de confiance en quelques clics</p>
+            <p ref={rSub} style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', margin: 0, lineHeight: 1.5 }}>
+              {artisans.length} professionnel{artisans.length !== 1 ? 's' : ''} trouvé{artisans.length !== 1 ? 's' : ''}{ville ? ` près de ${ville}` : ''}
+            </p>
           </div>
 
-          {/* ── Grille métiers cliquables ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: 10, marginBottom: 24 }}>
-            {[
-              { m: 'Plomberie',    icon: '🔧' },
-              { m: 'Électricité',  icon: '⚡' },
-              { m: 'Peinture',     icon: '🎨' },
-              { m: 'Menuiserie',   icon: '🪚' },
-              { m: 'Maçonnerie',   icon: '🧱' },
-              { m: 'Carrelage',    icon: '🔲' },
-              { m: 'Chauffage',    icon: '🔥' },
-              { m: 'Serrurerie',   icon: '🔑' },
-              { m: 'Jardinage',    icon: '🌿' },
-            ].map(({ m, icon }) => {
-              const active = metier === m;
-              return (
-                <button key={m} onClick={() => { setMetier(active ? '' : m); setTimeout(search, 50); }}
-                  style={{
-                    padding: '16px 8px', background: active ? DS.ink : '#fff', border: `1.5px solid ${active ? DS.ink : DS.border}`,
-                    borderRadius: 14, cursor: 'pointer', textAlign: 'center', fontFamily: DS.font,
-                    transition: 'all .15s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                  }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = DS.ink; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = DS.shadow.sm; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; } }}>
-                  <span style={{ fontSize: 22 }}>{icon}</span>
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: active ? '#fff' : DS.ink, letterSpacing: '-0.01em' }}>{m}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── Barre ville + recherche libre ── */}
-          <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+          {/* Barre de recherche blanche */}
+          <div style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', maxWidth: 800 }}>
             {/* Ville */}
-            <div style={{ flex: '1 1 220px', position: 'relative', background: '#fff', border: `1.5px solid ${DS.border}`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', transition: 'border-color .15s' }}
-              onFocusCapture={e => e.currentTarget.style.borderColor = DS.ink}
-              onBlurCapture={e => e.currentTarget.style.borderColor = DS.border}>
-              <IconMapPin size={16} color={DS.muted} />
-              <input
-                type="text"
-                value={villeInput}
+            <div style={{ flex: '1 1 220px', position: 'relative', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+              <IconMapPin size={16} color={DS.muted} style={{ flexShrink: 0 }} />
+              <input type="text" value={villeInput}
                 onChange={e => { setVilleInput(e.target.value); if (!e.target.value) setVille(''); }}
                 placeholder="Ville ou code postal"
-                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '13px 0' }}
-              />
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '14px 10px' }} />
               {villeSuggestions.length > 0 && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 300, background: '#fff', borderRadius: 12, border: `1px solid ${DS.border}`, boxShadow: DS.shadow.lg, overflow: 'hidden' }}>
                   {villeSuggestions.map(v => (
                     <button key={v} onClick={() => { setVille(v); setVilleInput(v); setVilleSuggestions([]); }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', padding: '11px 16px', fontSize: 14, cursor: 'pointer', background: 'none', border: 'none', color: DS.ink, transition: 'background 0.1s', fontFamily: DS.font }}
-                      onMouseEnter={e => e.currentTarget.style.background = DS.bgSoft}
-                      onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', padding: '11px 16px', fontSize: 14, cursor: 'pointer', background: 'none', border: 'none', color: DS.ink, fontFamily: DS.font }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F8F7F4'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                       <IconMapPin size={12} color={DS.subtle} /> {v}
                     </button>
                   ))}
                 </div>
               )}
             </div>
+            <div style={{ width: 1, background: '#E8E6E1', margin: '10px 0' }} />
             {/* Recherche libre */}
-            <div style={{ flex: '2 1 300px', background: '#fff', border: `1.5px solid ${DS.border}`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', transition: 'border-color .15s' }}
-              onFocusCapture={e => e.currentTarget.style.borderColor = DS.ink}
-              onBlurCapture={e => e.currentTarget.style.borderColor = DS.border}>
-              <IconSearch size={16} color={DS.muted} />
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
+            <div style={{ flex: '2 1 300px', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+              <IconSearch size={16} color={DS.muted} style={{ flexShrink: 0 }} />
+              <input value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') search(); }}
                 placeholder="Décrivez votre besoin…"
-                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '13px 0' }}
-              />
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '14px 10px' }} />
             </div>
-            {/* Bouton */}
             <button onClick={search}
-              style={{ padding: '0 28px', background: DS.ink, border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, color: '#fff', cursor: 'pointer', fontFamily: DS.font, transition: 'opacity .15s', whiteSpace: 'nowrap', flexShrink: 0 }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              style={{ padding: '12px 24px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0, transition: 'background .2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
               Rechercher
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* ── Filtres ── */}
+      <section style={{ borderBottom: `1px solid ${DS.border}`, padding: '0 clamp(16px,4vw,48px)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
           {/* Filtres + confiance */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, padding: '10px 0 18px' }}>
