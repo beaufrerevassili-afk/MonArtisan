@@ -30,6 +30,7 @@ function load() { try { const d=localStorage.getItem(STORAGE); return d?JSON.par
 export default function PipelineCommercial() {
   const [affaires, setAffaires] = useState(load);
   const [selected, setSelected] = useState(null);
+  const [showArchives, setShowArchives] = useState(false);
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(affaires)); }, [affaires]);
   useEffect(() => { api.get('/patron/pipeline').then(({data})=>{ if(data.affaires?.length) setAffaires(data.affaires); }).catch(()=>{}); }, []);
 
@@ -52,14 +53,26 @@ export default function PipelineCommercial() {
     setSelected(null);
   };
 
+  const archiver = (id) => {
+    setAffaires(prev => prev.map(a => a.id === id ? { ...a, archive: true, dateArchive: new Date().toISOString().slice(0, 10) } : a));
+    setSelected(null);
+  };
+
+  const desarchiver = (id) => {
+    setAffaires(prev => prev.map(a => a.id === id ? { ...a, archive: false, dateArchive: null } : a));
+  };
+
+  const actives = affaires.filter(a => !a.archive);
+  const archives = affaires.filter(a => a.archive);
+
   const totalParEtape = ETAPES.map(e => ({
     ...e,
-    items: affaires.filter(a => a.etape === e.id),
-    total: affaires.filter(a => a.etape === e.id).reduce((s, a) => s + a.montant, 0),
+    items: actives.filter(a => a.etape === e.id),
+    total: actives.filter(a => a.etape === e.id).reduce((s, a) => s + a.montant, 0),
   }));
 
-  const caTotal = affaires.reduce((s, a) => s + a.montant, 0);
-  const caPaye = affaires.filter(a => a.etape === 'paye').reduce((s, a) => s + a.montant, 0);
+  const caTotal = actives.reduce((s, a) => s + a.montant, 0);
+  const caPaye = actives.filter(a => a.etape === 'paye').reduce((s, a) => s + a.montant, 0);
   const caEnCours = caTotal - caPaye;
   const tauxConversion = affaires.length > 0 ? Math.round(affaires.filter(a => ['facture', 'paye'].includes(a.etape)).length / affaires.length * 100) : 0;
 
@@ -159,11 +172,15 @@ export default function PipelineCommercial() {
                     {ETAPES[selIdx + 1].icon} Avancer vers "{ETAPES[selIdx + 1].label}"
                   </button>
                 )}
-                {sel.etape === 'paye' && (
+                {sel.etape === 'paye' && <>
                   <div style={{ padding: '12px 16px', background: '#F0FDF4', borderRadius: 10, textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#16A34A' }}>
                     ✓ Dossier terminé — payé
                   </div>
-                )}
+                  <button onClick={() => archiver(sel.id)}
+                    style={{ padding: '10px 16px', background: '#EFF6FF', color: '#2563EB', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                    📦 Archiver ce dossier
+                  </button>
+                </>}
                 <button onClick={() => setSelected(null)}
                   style={{ padding: '10px 16px', background: '#F2F2F7', color: '#636363', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
                   Fermer
@@ -175,6 +192,38 @@ export default function PipelineCommercial() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Archives */}
+      {archives.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <button onClick={() => setShowArchives(p => !p)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#636363', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 0' }}>
+            📦 Archives ({archives.length} dossier{archives.length > 1 ? 's' : ''} · {archives.reduce((s, a) => s + a.montant, 0).toLocaleString()} €)
+            <span style={{ fontSize: 10 }}>{showArchives ? '▼' : '▶'}</span>
+          </button>
+          {showArchives && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+              {archives.map(a => {
+                const etape = ETAPES.find(e => e.id === a.etape);
+                return (
+                  <div key={a.id} style={{ ...CARD, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.7 }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>{a.client}</span>
+                      <span style={{ fontSize: 11, color: '#555', marginLeft: 8 }}>{a.titre}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: etape?.color, marginLeft: 8 }}>{a.montant.toLocaleString()} €</span>
+                      {a.dateArchive && <span style={{ fontSize: 10, color: '#888', marginLeft: 8 }}>Archivé le {a.dateArchive}</span>}
+                    </div>
+                    <button onClick={() => desarchiver(a.id)}
+                      style={{ padding: '4px 10px', background: '#F2F2F7', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#636363' }}>
+                      Désarchiver
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
