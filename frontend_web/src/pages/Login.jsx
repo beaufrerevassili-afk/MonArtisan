@@ -26,7 +26,7 @@ const PUBLIC_SECTORS = ['btp'];
 const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };
 
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromSector = searchParams.get('from');
@@ -44,8 +44,26 @@ export default function Login() {
     return REDIRECTIONS[role] || '/';
   };
 
-  // Auto-redirect si déjà connecté
-  if (user) return <Navigate to={getDestination(user.role)} replace />;
+  // Si déjà connecté — proposer de continuer ou changer de compte
+  if (user) return (
+    <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+      <div style={{ width:'100%', maxWidth:400, textAlign:'center' }}>
+        <div style={{ fontSize:18, fontWeight:800, marginBottom:8 }}>Déjà connecté</div>
+        <div style={{ fontSize:14, color:L.textSec, marginBottom:24 }}>Vous êtes connecté en tant que <strong>{user.nom}</strong> ({user.role})</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <button onClick={() => navigate(getDestination(user.role))}
+            style={{ padding:'14px 24px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
+            Continuer vers mon espace →
+          </button>
+          <button onClick={async () => { await logout(); navigate('/login'); }}
+            style={{ padding:'14px 24px', background:'transparent', color:L.textSec, border:`1px solid ${L.border}`, fontSize:14, fontWeight:500, cursor:'pointer', fontFamily:L.font }}>
+            Se déconnecter et changer de compte
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const activeSector = sector || demoSector;
   const demoAccounts = activeSector ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector]||[])] : GENERIC_DEMO;
