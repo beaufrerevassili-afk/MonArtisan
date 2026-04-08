@@ -232,6 +232,7 @@ export default function ImmoDemo() {
     ]},
     { id:'projets', label:'Projets immobiliers', icon:'🎯', items:[
       { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
+      { id:'investir_tab', label:'Investir', icon:'🏦' },
       { id:'georisques', label:'Géorisques', icon:'⚠️' },
     ]},
     { id:'finance', label:'Finances & Compta', icon:'💰', items:[
@@ -1556,7 +1557,7 @@ export default function ImmoDemo() {
           {tab==='strategie' && <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Stratégie & Pilotage</h2>
             <div style={{ display:'flex', gap:0, marginBottom:16, borderBottom:`1px solid ${L.border}` }}>
-              {[{id:'objectifs',label:'Objectifs'},{id:'comparateur',label:'Comparateur'},{id:'fiscal',label:'IR vs IS'},{id:'investir',label:'Investir ?'},{id:'structure',label:'Structure'}].map(st=>(
+              {[{id:'objectifs',label:'Objectifs'},{id:'comparateur',label:'Comparateur'},{id:'fiscal',label:'IR vs IS'},{id:'structure',label:'Structure'}].map(st=>(
                 <button key={st.id} onClick={()=>setSubStrat(st.id)} style={{ padding:'8px 14px', background:'none', border:'none', borderBottom:`2px solid ${subStrat===st.id?L.gold:'transparent'}`, fontSize:12, fontWeight:subStrat===st.id?700:400, color:subStrat===st.id?L.text:L.textSec, cursor:'pointer', fontFamily:L.font }}>
                   {st.label}
                 </button>
@@ -1986,6 +1987,98 @@ export default function ImmoDemo() {
           })()}
 
           </>}{/* fin tab==='strategie' */}
+
+          {/* ═══ INVESTIR (tab indépendant) ═══ */}
+          {tab==='investir_tab' && (()=>{
+              const revMens=totalLoyers;
+              const chargesMens=totalMensualites;
+              const capaciteMens=Math.max(0,revMens*0.35-chargesMens);
+              const tauxMensuel=0.025/12;const duree=240;
+              const capaciteEmprunt=capaciteMens>0?Math.round(capaciteMens*(Math.pow(1+tauxMensuel,duree)-1)/(tauxMensuel*Math.pow(1+tauxMensuel,duree))):0;
+              const txEndettement=revMens>0?(chargesMens/revMens*100):0;
+              const resteAVivre=revMens-chargesMens-totalCharges;
+              return <>
+                <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 4px' }}>Investir</h2>
+                <p style={{ fontSize:13, color:L.textSec, margin:'0 0 20px' }}>Votre profil emprunteur et vos dossiers d'investissement.</p>
+
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>🏦 Vision banquier — Votre profil emprunteur</div>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:10, marginBottom:16 }}>
+                  {[
+                    { l:'Taux endettement', v:`${txEndettement.toFixed(0)}%`, ok:txEndettement<35, warn:txEndettement<50, note:'< 35% requis' },
+                    { l:'Reste à vivre', v:`${resteAVivre}€/mois`, ok:resteAVivre>500, warn:resteAVivre>0, note:'> 500€ idéal' },
+                    { l:'Cashflow global', v:`${cashflow-totalMensualites}€`, ok:(cashflow-totalMensualites)>0, warn:(cashflow-totalMensualites)>-500, note:'Positif idéal' },
+                    { l:'LTV patrimoine', v:`${totalValeur>0?(totalRestant/totalValeur*100).toFixed(0):0}%`, ok:totalValeur>0&&totalRestant/totalValeur<0.7, warn:totalValeur>0&&totalRestant/totalValeur<0.85, note:'< 70% idéal' },
+                    { l:'Nb biens existants', v:data.biens.length, ok:true, warn:true, note:'Expérience' },
+                    { l:'Capacité emprunt', v:`${(capaciteEmprunt/1000).toFixed(0)}k€`, ok:capaciteEmprunt>50000, warn:capaciteEmprunt>0, note:'20 ans, 2.5%' },
+                  ].map(k=>(
+                    <div key={k.l} style={{ ...CARD, position:'relative' }}>
+                      <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.ok?L.green:k.warn?L.orange:L.red }} />
+                      <div style={{ fontSize:10, color:L.textLight, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{k.l}</div>
+                      <div style={{ fontSize:18, fontWeight:200, fontFamily:L.serif, color:k.ok?L.green:k.warn?L.orange:L.red }}>{k.v}</div>
+                      <div style={{ fontSize:9, color:L.textLight, marginTop:2 }}>{k.note}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {(()=>{
+                  const scoreBanque = Math.min(100, Math.max(0,
+                    (txEndettement<35?30:txEndettement<50?15:0) +
+                    (resteAVivre>500?20:resteAVivre>0?10:0) +
+                    ((cashflow-totalMensualites)>0?20:10) +
+                    (totalValeur>0&&totalRestant/totalValeur<0.7?15:5) +
+                    (data.biens.length>=3?15:data.biens.length>=1?10:5)
+                  ));
+                  const scoreColor=scoreBanque>=70?L.green:scoreBanque>=40?L.orange:L.red;
+                  const scoreLabel=scoreBanque>=70?'Excellent — dossier solide':scoreBanque>=40?'Moyen — à renforcer':'Faible — consolidez d\'abord';
+                  return <div style={{ background:L.noir, color:'#fff', padding:'20px', marginBottom:16, display:'flex', alignItems:'center', gap:20 }}>
+                    <div style={{ width:64, height:64, borderRadius:'50%', border:`3px solid ${scoreColor}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <span style={{ fontSize:22, fontWeight:800, color:scoreColor }}>{scoreBanque}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Score bancabilité</div>
+                      <div style={{ fontSize:16, fontWeight:600 }}>{scoreLabel}</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)', marginTop:2 }}>Endettement (30%) + Reste à vivre (20%) + Cashflow (20%) + LTV (15%) + Expérience (15%)</div>
+                    </div>
+                  </div>;
+                })()}
+
+                <div style={{ ...CARD, borderLeft:`4px solid ${L.gold}`, marginBottom:16 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>📁 Dossiers d'investissement</div>
+                      <div style={{ fontSize:12, color:L.textSec }}>Créez et comparez plusieurs dossiers pour vos projets.</div>
+                    </div>
+                    <button onClick={()=>{setForm({dossierNom:''});setModal({type:'nouveauDossier'});}} style={{ ...BTN, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>+ Nouveau dossier</button>
+                  </div>
+                  {(data.dossiers||[]).length===0 ? (
+                    <div style={{ fontSize:12, color:L.textLight, textAlign:'center', padding:16 }}>Aucun dossier — cliquez sur "+ Nouveau dossier" pour commencer</div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                      {(data.dossiers||[]).map(dos=>{
+                        const cf=dos.loyer-dos.charges-(dos.mensualite||0);
+                        return <div key={dos.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', border:`1px solid ${L.border}`, background:L.white, transition:'all .15s' }}
+                          onMouseEnter={e=>e.currentTarget.style.borderColor=L.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=L.border}>
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontSize:14, fontWeight:700 }}>{dos.nom}</div>
+                            <div style={{ fontSize:11, color:L.textSec }}>{dos.strategie} · {dos.prix?.toLocaleString()}€ · Loyer {dos.loyer}€</div>
+                          </div>
+                          <div style={{ textAlign:'right', marginRight:12 }}>
+                            <div style={{ fontSize:16, fontWeight:200, color:cf>=0?L.green:L.red, fontFamily:L.serif }}>{cf>=0?'+':''}{cf}€</div>
+                            <div style={{ fontSize:9, color:L.textLight }}>cashflow/mois</div>
+                          </div>
+                          <div style={{ display:'flex', gap:4 }}>
+                            <button onClick={()=>{setForm({});setModal({type:'dossierBancaire',data:dos});}} style={{ ...BTN, fontSize:10, padding:'5px 10px' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Modifier</button>
+                            <button onClick={()=>setModal({type:'dossierView',data:dos})} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px' }}>PDF</button>
+                            <button onClick={()=>{setData(d=>({...d,dossiers:(d.dossiers||[]).filter(x=>x.id!==dos.id)}));showToast('Dossier supprimé');}} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 10px', color:L.red, borderColor:L.red+'40' }}>✕</button>
+                          </div>
+                        </div>;
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize:11, color:L.textLight }}>Estimation basée sur un taux d'endettement de 35% des revenus locatifs.</div>
+              </>;
+          })()}
 
           {/* ═══ GÉORISQUES ═══ */}
           {tab==='georisques' && <GeorisquesModule biens={biens} />}
