@@ -47,9 +47,9 @@ async function ensureTables() {
 }
 ensureTables().catch(e => console.error('projets ensureTables:', e.message));
 
-// ── Calcul commission ──
+// ── Calcul commission (1% du budget, minimum 1€) ──
 function calcCommission(montant) {
-  return montant >= 500 ? 5 : 2;
+  return Math.max(1, Math.round(montant * 0.01 * 100) / 100);
 }
 
 // ═══════════════════════════════════════════════════

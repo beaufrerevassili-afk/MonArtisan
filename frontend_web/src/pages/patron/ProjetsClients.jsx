@@ -245,7 +245,7 @@ export default function ProjetsClients() {
                 {[
                   ['Budget client', `${selected.budget || selected.budget_ajuste || '?'}€`],
                   ['Urgence', URGENCE_LABELS[selected.urgence]?.label || 'Normal'],
-                  ['Commission', `${selected.budget >= 500 ? 5 : 2}€`],
+                  ['Commission (1%)', `${Math.max(1, Math.round((selected.budget || 0) * 0.01 * 100) / 100)}€`],
                   ['Vous recevez', `${(selected.budget || 0)}€`],
                 ].map(([k, v]) => (
                   <div key={k} style={{ flex: '1 1 100px', background: '#F8F7F4', padding: '8px 12px', borderRadius: 8 }}>

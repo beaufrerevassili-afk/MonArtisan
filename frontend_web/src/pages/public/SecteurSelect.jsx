@@ -250,22 +250,45 @@ export default function SecteurSelect() {
                 </button>
               </>}
 
-              {projetStep === 4 && <>
+              {projetStep === 4 && (() => {
+                const budget = Number(projet.budget) || 0;
+                const commission = Math.max(1, Math.round(budget * 0.01 * 100) / 100);
+                const total = budget + commission;
+                return <>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Votre budget</div>
-                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Freample propose un prix estimé, vous pouvez l'ajuster</p>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Indiquez votre budget, la commission Freample est calculée automatiquement.</p>
                 <div>
-                  <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Budget estimé (€)</div>
+                  <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Budget travaux (€)</div>
                   <input type="number" value={projet.budget} onChange={e => setProjet(p => ({ ...p, budget: e.target.value }))} placeholder="Ex : 2000"
                     style={{ width: '100%', padding: '14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 18, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#F5EFE0', outline: 'none', boxSizing: 'border-box', fontFamily: L.font, textAlign: 'center' }} />
-                  {projet.budget && <div style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: 'rgba(245,239,224,0.4)' }}>
-                    Commission Freample : {Number(projet.budget) >= 500 ? '5' : '2'}€ · L'artisan reçoit {Number(projet.budget) > 0 ? Number(projet.budget) : 0}€
-                  </div>}
                 </div>
 
+                {/* Détail commission */}
+                {budget > 0 && (
+                  <div style={{ marginTop: 16, padding: '16px', background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 14, color: '#F5EFE0' }}>
+                      <span>Budget travaux</span>
+                      <span style={{ fontWeight: 700 }}>{budget.toLocaleString('fr-FR')} €</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: 'rgba(245,239,224,0.6)' }}>
+                      <span>Commission Freample (1%)</span>
+                      <span style={{ fontWeight: 600 }}>{commission.toLocaleString('fr-FR')} €</span>
+                    </div>
+                    <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 16, color: L.gold }}>
+                      <span style={{ fontWeight: 700 }}>Total à payer</span>
+                      <span style={{ fontWeight: 800 }}>{total.toLocaleString('fr-FR')} €</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.35)', marginTop: 6 }}>
+                      L'artisan reçoit 100% du budget travaux ({budget.toLocaleString('fr-FR')}€). La commission de 1% finance la plateforme.
+                    </div>
+                  </div>
+                )}
+
                 {/* Récap */}
-                <div style={{ marginTop: 20, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Récapitulatif</div>
-                  {[['Métier', projet.metier], ['Description', projet.description?.slice(0, 60) + (projet.description?.length > 60 ? '...' : '')], ['Ville', projet.ville], ['Urgence', { urgent: 'Urgent (48h)', normal: 'Normal (2 sem.)', flexible: 'Flexible' }[projet.urgence]], ['Budget', projet.budget ? `${projet.budget}€` : 'Non défini']].map(([k, v]) => (
+                  {[['Métier', projet.metier], ['Description', projet.description?.slice(0, 60) + (projet.description?.length > 60 ? '...' : '')], ['Ville', projet.ville], ['Urgence', { urgent: 'Urgent (48h)', normal: 'Normal (2 sem.)', flexible: 'Flexible' }[projet.urgence]], ['Budget', budget > 0 ? `${budget.toLocaleString('fr-FR')}€` : 'Non défini'], ['Commission (1%)', budget > 0 ? `${commission}€` : '—'], ['Total', budget > 0 ? `${total.toLocaleString('fr-FR')}€` : '—']].map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 }}>
                       <span style={{ color: 'rgba(245,239,224,0.5)' }}>{k}</span>
                       <span style={{ color: '#F5EFE0', fontWeight: 600 }}>{v}</span>
@@ -274,10 +297,9 @@ export default function SecteurSelect() {
                 </div>
 
                 <button onClick={() => {
-                  // Sauvegarder le projet
                   try {
                     const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
-                    projets.push({ id: Date.now(), ...projet, budget: Number(projet.budget) || 0, commission: Number(projet.budget) >= 500 ? 5 : 2, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Anonyme' });
+                    projets.push({ id: Date.now(), ...projet, budget, commission, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Anonyme' });
                     localStorage.setItem('freample_projets', JSON.stringify(projets));
                   } catch {}
                   setProjetSent(true);
@@ -286,7 +308,8 @@ export default function SecteurSelect() {
                   onMouseEnter={e => e.currentTarget.style.background = '#B89B5A'} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
                   Publier mon projet →
                 </button>
-              </>}
+              </>;
+              })()}
             </div>
           </>}
         </div>
