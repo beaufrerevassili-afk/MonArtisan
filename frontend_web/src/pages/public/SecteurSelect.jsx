@@ -17,6 +17,10 @@ export default function SecteurSelect() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchMetier, setSearchMetier] = useState('');
   const [searchVille, setSearchVille] = useState('');
+  const [showProjet, setShowProjet] = useState(false);
+  const [projetStep, setProjetStep] = useState(1);
+  const [projet, setProjet] = useState({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' });
+  const [projetSent, setProjetSent] = useState(false);
   useEffect(() => { setMounted(true); document.title = 'Freample — Trouvez un artisan de confiance'; }, []);
 
   const scrollTo = (id) => {
@@ -104,77 +108,187 @@ export default function SecteurSelect() {
         </div>
       </nav>
 
-      {/* ══ HERO — Uber/Doctolib style, recherche directe ══ */}
-      <section style={{
-        background: '#2C2520', position: 'relative', overflow: 'hidden',
-        padding: 'clamp(72px,14vh,140px) clamp(20px,4vw,48px) clamp(60px,10vh,100px)',
-      }}>
+      {/* ══ HERO ══ */}
+      <section style={{ background: '#2C2520', position: 'relative', overflow: 'hidden', padding: 'clamp(64px,12vh,120px) clamp(20px,4vw,48px) clamp(52px,9vh,88px)' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(44,37,32,0.4) 0%, rgba(44,37,32,0.95) 100%)' }} />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto', opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(16px)', transition: 'opacity .6s, transform .6s' }}>
-          <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(34px,6.5vw,56px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 16px', lineHeight: 1.06, color: '#F5EFE0', textAlign: 'center' }}>
-            Publiez votre projet,<br />recevez des <span style={{ fontWeight: 700, color: L.gold }}>offres</span>
-          </h1>
-          <p style={{ fontSize: 16, color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 480, textAlign: 'center' }}>
-            Décrivez vos travaux, fixez votre budget. Des artisans vérifiés vous proposent leur offre. Vous choisissez.
-          </p>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 720, margin: '0 auto', opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(16px)', transition: 'opacity .6s, transform .6s' }}>
 
-          {/* Barre de publication rapide */}
-          <div style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 40px rgba(0,0,0,0.3)', maxWidth: 620, margin: '0 auto' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none' }}>🔨</span>
-              <select value={searchMetier} onChange={e => setSearchMetier(e.target.value)}
-                style={{ width: '100%', padding: '16px 16px 16px 42px', border: 'none', fontSize: 15, fontFamily: L.font, outline: 'none', background: 'transparent', color: L.text, cursor: 'pointer', appearance: 'none' }}>
-                <option value="">Quel type de travaux ?</option>
-                {['Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture', 'Maçonnerie', 'Chauffage', 'Serrurerie', 'Couverture', 'Isolation', 'Autre'].map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div style={{ width: 1, background: '#E8E6E1', margin: '10px 0' }} />
-            <div style={{ flex: 1, position: 'relative' }}>
-              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none' }}>📍</span>
-              <input value={searchVille} onChange={e => setSearchVille(e.target.value)} placeholder="Ville ou code postal"
-                style={{ width: '100%', padding: '16px 16px 16px 42px', border: 'none', fontSize: 15, fontFamily: L.font, outline: 'none', background: 'transparent', color: L.text, boxSizing: 'border-box' }}
-                onKeyDown={e => { if (e.key === 'Enter') navigate(`/btp?metier=${searchMetier}&ville=${searchVille}`); }} />
-            </div>
-            <button onClick={() => navigate(`/btp?metier=${searchMetier}&ville=${searchVille}`)}
-              style={{ padding: '14px 28px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, flexShrink: 0, transition: 'background .2s' }}
-              onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
-              Publier
-            </button>
-          </div>
+          {!showProjet ? <>
+            {/* ── Vue principale : 2 options ── */}
+            <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(32px,6vw,52px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.06, color: '#F5EFE0', textAlign: 'center' }}>
+              Vos travaux,<br /><span style={{ fontWeight: 700, color: L.gold }}>simplifiés</span>
+            </h1>
+            <p style={{ fontSize: 15, color: 'rgba(245,239,224,0.55)', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 440, textAlign: 'center' }}>
+              Publiez votre projet et recevez des offres, ou trouvez directement un artisan pour un dépannage.
+            </p>
 
-          {/* Métiers rapides */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
-            {[{ m: 'Plomberie', e: '🔧' }, { m: 'Électricité', e: '⚡' }, { m: 'Peinture', e: '🎨' }, { m: 'Maçonnerie', e: '🧱' }, { m: 'Menuiserie', e: '🪚' }, { m: 'Carrelage', e: '🔲' }].map(({ m, e }) => (
-              <button key={m} onClick={() => navigate(`/btp?metier=${m}`)}
-                style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'rgba(245,239,224,0.7)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: L.font, transition: 'all .15s', display: 'flex', alignItems: 'center', gap: 6 }}
-                onMouseEnter={e2 => { e2.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e2.currentTarget.style.color = '#F5EFE0'; }}
-                onMouseLeave={e2 => { e2.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e2.currentTarget.style.color = 'rgba(245,239,224,0.7)'; }}>
-                {e} {m}
-              </button>
-            ))}
-          </div>
-
-          {/* Comment ça marche — 3 étapes */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(20px,4vw,48px)', marginTop: 40, flexWrap: 'wrap' }}>
-            {[
-              { n: '1', icon: '📋', title: 'Publiez', desc: 'Décrivez votre projet et fixez votre budget' },
-              { n: '2', icon: '🔔', title: 'Recevez', desc: 'Des artisans vous envoient leurs offres' },
-              { n: '3', icon: '✅', title: 'Choisissez', desc: 'Comparez et acceptez la meilleure offre' },
-            ].map(s => (
-              <div key={s.n} style={{ textAlign: 'center', maxWidth: 140 }}>
-                <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#F5EFE0', marginBottom: 2 }}>{s.title}</div>
-                <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.45)', lineHeight: 1.4 }}>{s.desc}</div>
+            {/* 2 cartes : Proposer projet + Trouver artisan */}
+            <div style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
+              {/* Carte 1 — Proposer mon projet */}
+              <div onClick={() => { setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
+                style={{ flex: '1 1 280px', background: L.gold, borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s', boxShadow: '0 4px 20px rgba(166,139,75,0.3)' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(166,139,75,0.3)'; }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Proposer mon projet</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, marginBottom: 16 }}>Décrivez vos travaux, fixez votre budget. Des artisans vous envoient leurs offres.</div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+                  <span>📋 Publiez</span><span>🔔 Recevez</span><span>✅ Choisissez</span>
+                </div>
               </div>
-            ))}
-          </div>
+              {/* Carte 2 — Trouver un artisan */}
+              <div onClick={() => navigate('/btp')}
+                style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'none'; }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 6 }}>Trouver un artisan</div>
+                <div style={{ fontSize: 13, color: 'rgba(245,239,224,0.6)', lineHeight: 1.5, marginBottom: 16 }}>Dépannage urgent ou artisan de confiance — trouvez le bon professionnel directement.</div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(245,239,224,0.4)' }}>
+                  <span>⚡ Rapide</span><span>🛡️ Vérifiés</span><span>⭐ Avis</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Commission */}
-          <div style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: 'rgba(245,239,224,0.35)' }}>
-            Commission : 2€ pour les projets &lt; 500€ · 5€ au-dessus · Payée par le client, pas l'artisan
-          </div>
+            {/* Commission */}
+            <div style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: 'rgba(245,239,224,0.3)' }}>
+              Commission projet : 2€ &lt; 500€ · 5€ au-dessus · L'artisan reçoit 100%
+            </div>
+          </> : projetSent ? <>
+            {/* ── Confirmation ── */}
+            <div style={{ textAlign: 'center', maxWidth: 440, margin: '0 auto' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', border: '2px solid #16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 32 }}>✓</div>
+              <h2 style={{ fontSize: 24, fontWeight: 800, color: '#F5EFE0', marginBottom: 8 }}>Projet publié !</h2>
+              <p style={{ fontSize: 14, color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, marginBottom: 24 }}>
+                Votre projet <strong style={{ color: '#F5EFE0' }}>{projet.metier}</strong> est en ligne. Les artisans de votre zone vont vous envoyer leurs offres.
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {user && <button onClick={() => navigate('/client/dashboard')} style={{ padding: '12px 24px', background: L.gold, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font }}>Voir mes projets</button>}
+                <button onClick={() => { setShowProjet(false); setProjetSent(false); }} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.1)', color: '#F5EFE0', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: L.font }}>Retour</button>
+              </div>
+            </div>
+          </> : <>
+            {/* ── Questionnaire étape par étape ── */}
+            <button onClick={() => { if (projetStep > 1) setProjetStep(projetStep - 1); else setShowProjet(false); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(245,239,224,0.5)', fontSize: 13, fontFamily: L.font, marginBottom: 16 }}>
+              ← {projetStep > 1 ? 'Étape précédente' : 'Retour'}
+            </button>
+
+            {/* Progression */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 24 }}>
+              {[1, 2, 3, 4].map(s => (
+                <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: projetStep >= s ? L.gold : 'rgba(255,255,255,0.12)', transition: 'background .3s' }} />
+              ))}
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {projetStep === 1 && <>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Quel type de travaux ?</div>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 20 }}>Sélectionnez le métier concerné</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
+                  {[{ m: 'Plomberie', e: '🔧' }, { m: 'Électricité', e: '⚡' }, { m: 'Peinture', e: '🎨' }, { m: 'Maçonnerie', e: '🧱' }, { m: 'Menuiserie', e: '🪚' }, { m: 'Carrelage', e: '🔲' }, { m: 'Chauffage', e: '🔥' }, { m: 'Serrurerie', e: '🔑' }, { m: 'Couverture', e: '🏠' }, { m: 'Isolation', e: '🧊' }, { m: 'Autre', e: '🔨' }].map(({ m, e }) => (
+                    <button key={m} onClick={() => { setProjet(p => ({ ...p, metier: m })); setProjetStep(2); }}
+                      style={{ padding: '14px 12px', background: projet.metier === m ? L.gold : 'rgba(255,255,255,0.06)', border: `1px solid ${projet.metier === m ? L.gold : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, color: projet.metier === m ? '#fff' : '#F5EFE0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, textAlign: 'center', transition: 'all .15s' }}>
+                      <span style={{ fontSize: 20, display: 'block', marginBottom: 4 }}>{e}</span>{m}
+                    </button>
+                  ))}
+                </div>
+              </>}
+
+              {projetStep === 2 && <>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Décrivez votre projet</div>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Plus c'est précis, meilleures seront les offres</p>
+                <textarea value={projet.description} onChange={e => setProjet(p => ({ ...p, description: e.target.value }))} rows={4}
+                  placeholder="Ex : Je souhaite refaire la salle de bain complète (douche à l'italienne, nouveau carrelage, meuble vasque)..."
+                  style={{ width: '100%', padding: '14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 14, background: 'rgba(255,255,255,0.06)', color: '#F5EFE0', outline: 'none', boxSizing: 'border-box', fontFamily: L.font, resize: 'vertical' }} />
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 6 }}>Pièce concernée (optionnel)</div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {['Salle de bain', 'Cuisine', 'Salon', 'Chambre', 'Extérieur', 'Tout le logement', 'Autre'].map(p => (
+                      <button key={p} onClick={() => setProjet(pr => ({ ...pr, pieces: p }))}
+                        style={{ padding: '6px 14px', background: projet.pieces === p ? L.gold : 'rgba(255,255,255,0.06)', border: `1px solid ${projet.pieces === p ? L.gold : 'rgba(255,255,255,0.1)'}`, borderRadius: 6, color: projet.pieces === p ? '#fff' : 'rgba(245,239,224,0.7)', fontSize: 12, cursor: 'pointer', fontFamily: L.font }}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={() => { if (projet.description.trim()) setProjetStep(3); }}
+                  disabled={!projet.description.trim()}
+                  style={{ marginTop: 16, width: '100%', padding: '14px', background: projet.description.trim() ? L.gold : 'rgba(255,255,255,0.08)', color: projet.description.trim() ? '#fff' : 'rgba(245,239,224,0.3)', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: projet.description.trim() ? 'pointer' : 'not-allowed', fontFamily: L.font }}>
+                  Continuer →
+                </button>
+              </>}
+
+              {projetStep === 3 && <>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Où et quand ?</div>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Pour trouver les artisans proches de chez vous</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Ville *</div>
+                    <input value={projet.ville} onChange={e => setProjet(p => ({ ...p, ville: e.target.value }))} placeholder="Nice, Paris, Lyon..."
+                      style={{ width: '100%', padding: '12px 14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 14, background: 'rgba(255,255,255,0.06)', color: '#F5EFE0', outline: 'none', boxSizing: 'border-box', fontFamily: L.font }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Urgence</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[{ id: 'urgent', label: '🚨 Urgent', desc: 'Sous 48h' }, { id: 'normal', label: '📅 Normal', desc: 'Sous 2 semaines' }, { id: 'flexible', label: '🕐 Flexible', desc: 'Pas pressé' }].map(u => (
+                        <button key={u.id} onClick={() => setProjet(p => ({ ...p, urgence: u.id }))}
+                          style={{ flex: 1, padding: '10px', background: projet.urgence === u.id ? L.gold + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${projet.urgence === u.id ? L.gold : 'rgba(255,255,255,0.1)'}`, borderRadius: 8, cursor: 'pointer', fontFamily: L.font, textAlign: 'center' }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: projet.urgence === u.id ? L.gold : '#F5EFE0' }}>{u.label}</div>
+                          <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.4)' }}>{u.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { if (projet.ville.trim()) setProjetStep(4); }}
+                  disabled={!projet.ville.trim()}
+                  style={{ marginTop: 16, width: '100%', padding: '14px', background: projet.ville.trim() ? L.gold : 'rgba(255,255,255,0.08)', color: projet.ville.trim() ? '#fff' : 'rgba(245,239,224,0.3)', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: projet.ville.trim() ? 'pointer' : 'not-allowed', fontFamily: L.font }}>
+                  Continuer →
+                </button>
+              </>}
+
+              {projetStep === 4 && <>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Votre budget</div>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Freample propose un prix estimé, vous pouvez l'ajuster</p>
+                <div>
+                  <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Budget estimé (€)</div>
+                  <input type="number" value={projet.budget} onChange={e => setProjet(p => ({ ...p, budget: e.target.value }))} placeholder="Ex : 2000"
+                    style={{ width: '100%', padding: '14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 18, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#F5EFE0', outline: 'none', boxSizing: 'border-box', fontFamily: L.font, textAlign: 'center' }} />
+                  {projet.budget && <div style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: 'rgba(245,239,224,0.4)' }}>
+                    Commission Freample : {Number(projet.budget) >= 500 ? '5' : '2'}€ · L'artisan reçoit {Number(projet.budget) > 0 ? Number(projet.budget) : 0}€
+                  </div>}
+                </div>
+
+                {/* Récap */}
+                <div style={{ marginTop: 20, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Récapitulatif</div>
+                  {[['Métier', projet.metier], ['Description', projet.description?.slice(0, 60) + (projet.description?.length > 60 ? '...' : '')], ['Ville', projet.ville], ['Urgence', { urgent: 'Urgent (48h)', normal: 'Normal (2 sem.)', flexible: 'Flexible' }[projet.urgence]], ['Budget', projet.budget ? `${projet.budget}€` : 'Non défini']].map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 }}>
+                      <span style={{ color: 'rgba(245,239,224,0.5)' }}>{k}</span>
+                      <span style={{ color: '#F5EFE0', fontWeight: 600 }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={() => {
+                  // Sauvegarder le projet
+                  try {
+                    const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
+                    projets.push({ id: Date.now(), ...projet, budget: Number(projet.budget) || 0, commission: Number(projet.budget) >= 500 ? 5 : 2, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Anonyme' });
+                    localStorage.setItem('freample_projets', JSON.stringify(projets));
+                  } catch {}
+                  setProjetSent(true);
+                }}
+                  style={{ marginTop: 16, width: '100%', padding: '16px', background: L.gold, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, transition: 'background .2s', boxShadow: '0 4px 16px rgba(166,139,75,0.3)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#B89B5A'} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
+                  Publier mon projet →
+                </button>
+              </>}
+            </div>
+          </>}
         </div>
       </section>
 
