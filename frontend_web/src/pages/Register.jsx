@@ -228,9 +228,7 @@ function FileUploadZone({ doc, file, onChange }) {
 
 const SECTEURS_LIST = [
   { id: 'btp',       emoji: '🏗️', label: 'BTP & Artisans' },
-  { id: 'coiffure',  emoji: '💇', label: 'Coiffure & Beauté' },
   { id: 'immo',      emoji: '🏠', label: 'Immobilier & SCI' },
-  { id: 'droit',     emoji: '⚖️', label: 'Droit & Juridique' },
   { id: 'autre',     emoji: '💼', label: 'Autre activité' },
 ];
 

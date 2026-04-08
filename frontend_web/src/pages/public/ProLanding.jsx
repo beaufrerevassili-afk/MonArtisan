@@ -6,9 +6,7 @@ import L from '../../design/luxe';
 
 const SECTEURS = [
   { id: 'btp', emoji: '🏗️', label: 'BTP & Artisans', color: '#8B5CF6' },
-  { id: 'coiffure', emoji: '💇', label: 'Coiffure & Beauté', color: '#EC4899' },
   { id: 'immo', emoji: '🏠', label: 'Immobilier & SCI', color: '#2563EB' },
-  { id: 'droit', emoji: '⚖️', label: 'Droit & Juridique', color: '#059669' },
   { id: 'autre', emoji: '💼', label: 'Autre activité', color: '#D97706' },
 ];
 
@@ -316,7 +314,7 @@ export default function ProLanding() {
             { q: 'L\'inscription est-elle vraiment gratuite ?', a: 'Oui. Inscription, accès à tous les modules et utilisation quotidienne sont gratuits. Aucun abonnement.' },
             { q: 'Comment Freample gagne de l\'argent ?', a: 'Une commission est prélevée sur le client final lors des transactions, jamais sur le professionnel. Vous recevez 100% de vos prestations.' },
             { q: 'Combien de temps pour commencer ?', a: '5 minutes. Créez votre compte, choisissez votre secteur, et vous accédez immédiatement à tous les outils.' },
-            { q: 'C\'est adapté à mon métier ?', a: 'Freample est conçu pour le BTP, la coiffure, l\'immobilier, le droit et toute activité nécessitant de la gestion. Les modules s\'adaptent à votre secteur.' },
+            { q: 'C\'est adapté à mon métier ?', a: 'Freample est conçu pour le BTP, l\'immobilier et toute activité nécessitant de la gestion. Les modules s\'adaptent à votre secteur.' },
             { q: 'Puis-je créer les comptes de mes salariés ?', a: 'Oui. Depuis votre espace, vous créez les comptes employés. Ils reçoivent leurs identifiants et accèdent à leur propre espace (planning, fiches de paie, documents...).' },
             { q: 'Mes données sont-elles sécurisées ?', a: 'Oui. Hébergement sécurisé, chiffrement SSL, sauvegardes quotidiennes, conformité RGPD.' },
           ].map(faq => (
