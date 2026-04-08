@@ -20,6 +20,7 @@ import ClesModule from '../../components/immo/ClesModule';
 import SiteWebModule from '../../components/immo/SiteWebModule';
 import ParametresModule from '../../components/immo/ParametresModule';
 import GeorisquesModule from '../../components/immo/GeorisquesModule';
+import GuideInvestisseurModule from '../../components/immo/GuideInvestisseurModule';
 
 const STORAGE_KEY = 'freample_immo_data';
 const TYPES_BIEN = ['Appartement','Studio','Maison','Local commercial','Parking','Cave','Terrain'];
@@ -231,6 +232,7 @@ export default function ImmoDemo() {
       { id:'cles_tab', label:'Clés', icon:'🔑' },
     ]},
     { id:'projets', label:'Projets immobiliers', icon:'🎯', items:[
+      { id:'guide_invest', label:'Guide investisseur', icon:'🧭' },
       { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
       { id:'investir_tab', label:'Investir', icon:'🏦' },
       { id:'georisques', label:'Géorisques', icon:'⚠️' },
@@ -1987,6 +1989,9 @@ export default function ImmoDemo() {
           })()}
 
           </>}{/* fin tab==='strategie' */}
+
+          {/* ═══ GUIDE INVESTISSEUR ═══ */}
+          {tab==='guide_invest' && <GuideInvestisseurModule />}
 
           {/* ═══ INVESTIR (tab indépendant) ═══ */}
           {tab==='investir_tab' && (()=>{
