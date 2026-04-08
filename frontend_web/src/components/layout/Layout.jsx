@@ -93,6 +93,7 @@ const PATRON_GROUPS = [
     label: 'Pilotage',
     items: [
       { label: 'Tableau de bord',      path: '/patron/dashboard',   Icon: IconHome     },
+      { label: 'Projets clients',      path: '/patron/projets',     Icon: IconSearch   },
       { label: 'Agenda',               path: '/patron/agenda',      Icon: IconCalendar },
     ],
   },

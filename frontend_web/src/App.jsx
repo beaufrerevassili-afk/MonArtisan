@@ -15,6 +15,7 @@ import ParrainageClient from './pages/client/Parrainage';
 import ComClient from './pages/client/ComClient';
 import ProfilClient from './pages/client/Profil';
 import DashboardPatron from './pages/patron/Dashboard';
+import ProjetsClients from './pages/patron/ProjetsClients';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
 import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
@@ -187,6 +188,7 @@ function AppRoutes() {
           <Layout>
             <Routes>
               <Route path="dashboard" element={<PatronDashboard />} />
+              <Route path="projets"  element={<ProjetsClients />} />
               <Route path="missions"   element={<ChantiersEtMissions />} />
               <Route path="chantiers"  element={<Navigate to="/patron/missions" replace />} />
               <Route path="finance"   element={<Finance />} />
