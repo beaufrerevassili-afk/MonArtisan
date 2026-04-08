@@ -785,7 +785,7 @@ export default function Landing() {
       {selectedArtisan && (
         <ContactModal
           artisan={selectedArtisan}
-          isLoggedIn={!!token}
+          isLoggedIn={!!user}
           onClose={() => setSelectedArtisan(null)}
           onRegister={() => { setSelectedArtisan(null); navigate('/register'); }}
           onLogin={() => { setSelectedArtisan(null); navigate(user ? '/' : '/login'); }}
