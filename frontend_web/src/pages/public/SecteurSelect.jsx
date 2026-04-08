@@ -25,6 +25,175 @@ const SECTORS_DEV = [
 ];
 
 
+/* ══════════════════════════════════════════════════════════════
+   Écosystème interactif — schéma visuel avec toggle Client / Entreprise
+   ══════════════════════════════════════════════════════════════ */
+const ECO_DATA = {
+  client: {
+    titre: 'Je suis un particulier',
+    center: { icon: '🏠', label: 'Votre projet' },
+    nodes: [
+      { id: 'artisan',     icon: '🔨', label: 'Trouver un artisan',       desc: 'Décrivez votre besoin, recevez des devis gratuits de pros vérifiés.', color: '#8B5CF6', href: '/btp' },
+      { id: 'devis',       icon: '📋', label: 'Devis en 24h',             desc: 'Comparez les offres, choisissez le meilleur rapport qualité/prix.', color: '#2563EB' },
+      { id: 'suivi',       icon: '📍', label: 'Suivi du chantier',        desc: 'Suivez l\'avancement en temps réel, photos et étapes validées.', color: '#16A34A' },
+      { id: 'com',         icon: '🎬', label: 'Montage vidéo',            desc: 'Besoin d\'une vidéo pro ? Confiez le montage à nos experts.', color: '#D97706', href: '/com' },
+      { id: 'recrutement', icon: '👥', label: 'Emploi BTP',               desc: 'Consultez les offres d\'emploi des entreprises du bâtiment.', color: '#059669', href: '/recrutement' },
+      { id: 'avis',        icon: '⭐', label: 'Avis vérifiés',            desc: 'Des retours authentiques pour choisir en toute confiance.', color: '#DC2626' },
+    ],
+    avantages: [
+      { icon: '💸', titre: '0 € de commission', desc: 'Aucun frais caché. Le prix affiché est le prix payé.' },
+      { icon: '⚡', titre: 'Réponse en 24h', desc: 'Recevez des devis de professionnels proches de chez vous.' },
+      { icon: '🛡️', titre: 'Artisans vérifiés', desc: 'Assurances, qualifications et avis contrôlés.' },
+    ],
+  },
+  entreprise: {
+    titre: 'Je suis une entreprise BTP',
+    center: { icon: '🏗️', label: 'Votre entreprise' },
+    nodes: [
+      { id: 'commercial', icon: '📊', label: 'Pipeline commercial',  desc: 'Gérez vos prospects, devis et factures dans un pipeline visuel.', color: '#8B5CF6', href: '/pro' },
+      { id: 'rh',         icon: '👥', label: 'RH & Paie',            desc: 'Employés, congés, bulletins de paie, contrats — tout automatisé.', color: '#2563EB', href: '/pro' },
+      { id: 'qhse',       icon: '🛡️', label: 'QHSE & Sécurité',     desc: 'Audits, EPI, incidents, BSDD, certifications — conformité totale.', color: '#16A34A', href: '/pro' },
+      { id: 'chantier',   icon: '📍', label: 'Gestion chantiers',    desc: 'Planning, affectation, photos, suivi distance — tout centralisé.', color: '#D97706', href: '/pro' },
+      { id: 'recruter',   icon: '📢', label: 'Recruter',             desc: 'Publiez vos offres, recevez des candidatures, gérez le pipeline.', color: '#059669', href: '/recrutement' },
+      { id: 'finance',    icon: '💰', label: 'Finance & Compta',     desc: 'Trésorerie, export comptable, URSSAF, bibliothèque de prix.', color: '#DC2626', href: '/pro' },
+    ],
+    avantages: [
+      { icon: '🎯', titre: '1 outil au lieu de 6', desc: 'Remplace Sage, PayFit, Qualnet, votre CRM et vos tableaux Excel.' },
+      { icon: '⏱️', titre: '10h gagnées / semaine', desc: 'Automatisation de la paie, documents, calculs de trajet.' },
+      { icon: '🏗️', titre: 'Spécialiste BTP', desc: 'Convention collective, habilitations, BSDD — tout est natif.' },
+    ],
+  },
+};
+
+function EcosystemeSection({ sectionRef }) {
+  const [mode, setMode] = useState('client');
+  const [activeNode, setActiveNode] = useState(null);
+  const data = ECO_DATA[mode];
+  const nodes = data.nodes;
+
+  // Positions circulaires autour du centre
+  const cx = 50, cy = 50, r = 36;
+  const positions = nodes.map((_, i) => {
+    const angle = (i / nodes.length) * Math.PI * 2 - Math.PI / 2;
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  });
+
+  return (
+    <section id="ecosysteme" ref={sectionRef} style={{ padding: 'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: L.gold, letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px', textAlign: 'center' }}>L'écosystème Freample</p>
+        <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, margin: '0 0 12px', letterSpacing: '-0.03em', textAlign: 'center' }}>
+          Tout ce dont vous avez besoin, en un seul endroit.
+        </h2>
+        <p style={{ fontSize: 15, color: L.textSec, lineHeight: 1.7, margin: '0 auto 32px', maxWidth: 520, textAlign: 'center' }}>
+          Cliquez sur un module pour découvrir comment Freample simplifie votre quotidien.
+        </p>
+
+        {/* Toggle Client / Entreprise */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
+          <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: 12, padding: 4 }}>
+            {[['client', '🏠 Je suis particulier'], ['entreprise', '🏗️ Je suis une entreprise']].map(([id, label]) => (
+              <button key={id} onClick={() => { setMode(id); setActiveNode(null); }}
+                style={{ padding: '10px 24px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all .2s',
+                  background: mode === id ? L.noir : 'transparent', color: mode === id ? '#fff' : '#636363' }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Schéma circulaire interactif */}
+        <div style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '0 auto 40px', aspectRatio: '1' }}>
+          {/* SVG lignes de connexion */}
+          <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            {positions.map((pos, i) => (
+              <line key={i} x1={cx} y1={cy} x2={pos.x} y2={pos.y}
+                stroke={activeNode === i ? nodes[i].color : '#E5E5EA'} strokeWidth={activeNode === i ? 0.6 : 0.3}
+                strokeDasharray={activeNode === i ? 'none' : '1.5 1'} style={{ transition: 'all .3s' }} />
+            ))}
+            {/* Cercle pointillé */}
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E5E5EA" strokeWidth={0.2} strokeDasharray="2 1.5" />
+          </svg>
+
+          {/* Centre */}
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 90, height: 90, borderRadius: '50%', background: L.noir, color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <span style={{ fontSize: 28 }}>{data.center.icon}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, marginTop: 2, textAlign: 'center', lineHeight: 1.2, padding: '0 4px' }}>{data.center.label}</span>
+          </div>
+
+          {/* Nodes */}
+          {nodes.map((node, i) => {
+            const pos = positions[i];
+            const isActive = activeNode === i;
+            return (
+              <div key={node.id}
+                onClick={() => setActiveNode(isActive ? null : i)}
+                onMouseEnter={() => setActiveNode(i)}
+                style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', zIndex: isActive ? 3 : 1, transition: 'transform .25s' }}>
+                <div style={{ width: isActive ? 72 : 60, height: isActive ? 72 : 60, borderRadius: '50%', background: '#fff', border: `2px solid ${isActive ? node.color : '#E5E5EA'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: isActive ? `0 8px 24px ${node.color}30` : '0 2px 8px rgba(0,0,0,0.06)', transition: 'all .25s' }}>
+                  <span style={{ fontSize: isActive ? 22 : 18, transition: 'font-size .2s' }}>{node.icon}</span>
+                  <span style={{ fontSize: 7, fontWeight: 700, color: isActive ? node.color : '#636363', marginTop: 1, textAlign: 'center', lineHeight: 1.1, padding: '0 4px', transition: 'color .2s' }}>{node.label}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Détail du node sélectionné */}
+        <div style={{ minHeight: 90, marginBottom: 40 }}>
+          {activeNode !== null ? (() => {
+            const node = nodes[activeNode];
+            return (
+              <div style={{ background: '#fff', border: `2px solid ${node.color}`, borderRadius: 16, padding: '20px 24px', maxWidth: 520, margin: '0 auto', boxShadow: `0 8px 32px ${node.color}12`, transition: 'all .3s' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <span style={{ fontSize: 28 }}>{node.icon}</span>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: node.color }}>{node.label}</h3>
+                </div>
+                <p style={{ margin: '0 0 12px', fontSize: 14, color: L.textSec, lineHeight: 1.7 }}>{node.desc}</p>
+                {node.href && (
+                  <a href={node.href} style={{ display: 'inline-block', padding: '8px 20px', background: node.color, color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'opacity .2s' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.85'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                    Découvrir →
+                  </a>
+                )}
+              </div>
+            );
+          })() : (
+            <p style={{ textAlign: 'center', fontSize: 14, color: '#8E8E93', fontStyle: 'italic' }}>
+              Survolez un module pour en savoir plus
+            </p>
+          )}
+        </div>
+
+        {/* Avantages — 3 colonnes */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+          {data.avantages.map(a => (
+            <div key={a.titre} style={{ background: L.noir, borderRadius: 14, padding: 'clamp(18px,3vw,24px)', color: '#fff', textAlign: 'center' }}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>{a.icon}</div>
+              <h4 style={{ fontSize: 15, fontWeight: 800, margin: '0 0 6px' }}>{a.titre}</h4>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, margin: 0 }}>{a.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Chiffres */}
+        <div style={{ display: 'flex', gap: 0, borderTop: `1px solid ${L.border}` }}>
+          {[
+            { val: '0 €', label: 'Pour les particuliers' },
+            { val: '4 en 1', label: 'ERP + RH + QHSE + Commercial' },
+            { val: '100 %', label: 'Conçu pour le BTP' },
+          ].map((m, i) => (
+            <div key={m.label} style={{ flex: 1, padding: '20px 0', textAlign: 'center', borderRight: i < 2 ? `1px solid ${L.border}` : 'none' }}>
+              <div style={{ fontSize: 24, fontWeight: 500, fontFamily: L.serif, letterSpacing: '-0.02em' }}>{m.val}</div>
+              <div style={{ fontSize: 11, color: L.textSec, marginTop: 4 }}>{m.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function SecteurSelect() {
   const navigate = useNavigate();
   const auth = useAuth() || {};
@@ -226,70 +395,8 @@ export default function SecteurSelect() {
         </div>
       </section>
 
-      {/* L'écosystème Freample */}
-      <section id="ecosysteme" ref={a3} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
-        <div style={{ maxWidth:840, margin:'0 auto' }}>
-          <p style={{ fontSize:12, fontWeight:600, color:L.gold, letterSpacing:'0.15em', textTransform:'uppercase', margin:'0 0 16px' }}>L'écosystème</p>
-          <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:'0 0 16px', letterSpacing:'-0.03em' }}>
-            Une plateforme, tous vos besoins.
-          </h2>
-          <p style={{ fontSize:15, color:L.textSec, lineHeight:1.7, margin:'0 0 40px', maxWidth:600 }}>
-            Freample regroupe un ensemble de services conçus pour fonctionner ensemble. Chaque brique s'intègre naturellement aux autres pour simplifier votre quotidien.
-          </p>
-
-          {/* Services de l'écosystème */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16, marginBottom:40 }}>
-            {[
-              { name:'Freample Artisan', desc:'Trouvez un artisan de confiance pour vos travaux. Devis gratuits, professionnels vérifiés, suivi de chantier.', icon:'🔨', color:'#8B5CF6', href:'/btp' },
-              { name:'Freample Artisan ERP', desc:'L\'outil de gestion complet pour les chefs d\'entreprise du BTP : RH, paie, QHSE, comptabilité, chantiers.', icon:'📊', color:'#2563EB', href:'/pro' },
-              { name:'Freample Com', desc:'Montage vidéo professionnel, création de contenu et stratégie digitale pour les entreprises.', icon:'🎬', color:'#D97706', href:'/com' },
-              { name:'Freample Recrutement', desc:'Publiez vos offres d\'emploi et recevez des candidatures qualifiées directement sur la plateforme.', icon:'👥', color:'#16A34A', href:'/recrutement' },
-            ].map(s => (
-              <a key={s.name} href={s.href} style={{ background:L.white, border:`1px solid ${L.border}`, borderRadius:14, padding:'clamp(20px,3vw,28px)', textDecoration:'none', color:'inherit', transition:'all .2s', display:'block' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; e.currentTarget.style.boxShadow = `0 8px 24px ${s.color}15`; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = L.border; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>
-                <div style={{ fontSize:28, marginBottom:12 }}>{s.icon}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 8px', color:s.color }}>{s.name}</h3>
-                <p style={{ fontSize:13, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
-              </a>
-            ))}
-          </div>
-
-          {/* Avantages de l'écosystème */}
-          <div style={{ background:L.noir, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,36px)', color:'#fff', marginBottom:24 }}>
-            <h3 style={{ fontSize:18, fontWeight:800, color:'#fff', margin:'0 0 24px', letterSpacing:'-0.02em' }}>Pourquoi un écosystème ?</h3>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:24 }}>
-              {[
-                { title:'Tout centralisé', desc:'Plus besoin de jongler entre 10 logiciels. Vos clients, chantiers, employés, finances — tout est au même endroit.', icon:'🎯' },
-                { title:'Données connectées', desc:'Un client qui demande un devis se retrouve dans votre pipeline commercial, puis dans votre facturation. Zéro ressaisie.', icon:'🔗' },
-                { title:'Gain de temps', desc:'Automatisation de la paie, calcul des trajets, génération de documents administratifs — ce qui prenait des heures se fait en un clic.', icon:'⚡' },
-                { title:'Un seul abonnement', desc:'Au lieu de payer Sage + PayFit + Qualnet + un CRM, tout est inclus dans Freample à une fraction du prix.', icon:'💰' },
-                { title:'Spécialiste BTP', desc:'Conçu par et pour les artisans du bâtiment. Convention collective, EPI, BSDD, habilitations — tout est intégré nativement.', icon:'🏗️' },
-                { title:'Évolutif', desc:'Commencez avec ce dont vous avez besoin, activez les modules au fur et à mesure de la croissance de votre entreprise.', icon:'📈' },
-              ].map(a => (
-                <div key={a.title}>
-                  <div style={{ fontSize:22, marginBottom:8 }}>{a.icon}</div>
-                  <h4 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 6px' }}>{a.title}</h4>
-                  <p style={{ fontSize:12, color:'rgba(255,255,255,0.6)', lineHeight:1.6, margin:0 }}>{a.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display:'flex', gap:0, borderTop:`1px solid ${L.border}` }}>
-            {[
-              { val:'0 %', label:'Commission artisan' },
-              { val:'4 en 1', label:'ERP + RH + QHSE + Commercial' },
-              { val:'100 %', label:'Pensé pour le BTP' },
-            ].map((m, i) => (
-              <div key={m.label} style={{ flex:1, padding:'20px 0', textAlign:'center', borderRight: i < 2 ? `1px solid ${L.border}` : 'none' }}>
-                <div style={{ fontSize:24, fontWeight:500, fontFamily:L.serif, letterSpacing:'-0.02em' }}>{m.val}</div>
-                <div style={{ fontSize:11, color:L.textSec, marginTop:4 }}>{m.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* L'écosystème Freample — Schéma interactif */}
+      <EcosystemeSection sectionRef={a3} />
 
       {/* Footer */}
       <footer ref={r3} style={{ padding:'28px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
