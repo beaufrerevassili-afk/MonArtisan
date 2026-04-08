@@ -166,6 +166,74 @@ export default function DashboardPatron() {
         </div>
       )}
 
+      {/* ══ MA JOURNÉE ══ */}
+      {(() => {
+        const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        const todayChantiers = chantierActifs.length > 0 ? chantierActifs.slice(0, 3) : [{ id: 'd1', titre: 'Rénovation Dupont', adresse: '12 rue de France, Nice', avancement: 65 }, { id: 'd2', titre: 'Installation électrique Bureau', adresse: '8 av Jean Médecin, Nice', avancement: 30 }];
+        const todayRdv = [
+          { heure: '09:00', label: 'Estimation — Mme Leroy', lieu: 'Antibes', type: 'estimation' },
+          { heure: '14:00', label: 'Réunion chantier SCI Horizon', lieu: 'Nice', type: 'chantier' },
+        ];
+        const urgentActions = [];
+        if (nbImpayees > 0) urgentActions.push({ icon: '💰', label: `${nbImpayees} facture${nbImpayees > 1 ? 's' : ''} impayée${nbImpayees > 1 ? 's' : ''} (${impayees.toLocaleString('fr-FR')}€)`, color: '#DC2626', action: () => navigate('/patron/finance?onglet=facturation') });
+        const nonLusCount = actualites.filter(a => !a.lu).length;
+        if (nonLusCount > 0) urgentActions.push({ icon: '🔔', label: `${nonLusCount} nouvelle${nonLusCount > 1 ? 's' : ''} demande${nonLusCount > 1 ? 's' : ''}`, color: '#D97706' });
+        return (
+          <div style={{ background: 'linear-gradient(135deg, #2C2520 0%, #3D332D 100%)', borderRadius: 16, padding: 'clamp(18px,3vw,24px)', color: '#F5EFE0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Ma journée</div>
+                <div style={{ fontSize: 18, fontWeight: 800 }}>{today}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => navigate('/patron/projets')} style={{ padding: '6px 14px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>📋 Projets clients</button>
+                <button onClick={() => navigate('/patron/agenda')} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#F5EFE0', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, fontSize: 11, fontWeight: 500, cursor: 'pointer' }}>📅 Agenda</button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              {/* Chantiers du jour */}
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>🏗️ CHANTIERS EN COURS ({todayChantiers.length})</div>
+                {todayChantiers.map(c => (
+                  <div key={c.id} onClick={() => navigate('/patron/missions')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{c.titre}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.45)' }}>📍 {c.adresse}</div>
+                    </div>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#A68B4B' }}>{c.avancement || '?'}%</div>
+                  </div>
+                ))}
+              </div>
+              {/* RDV du jour */}
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>📅 RENDEZ-VOUS ({todayRdv.length})</div>
+                {todayRdv.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#A68B4B', width: 40, flexShrink: 0 }}>{r.heure}</div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.45)' }}>📍 {r.lieu}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Actions urgentes */}
+              {urgentActions.length > 0 && (
+                <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>⚡ ACTIONS URGENTES</div>
+                  {urgentActions.map((a, i) => (
+                    <div key={i} onClick={a.action} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a.color + '15', borderRadius: 8, marginBottom: 4, cursor: a.action ? 'pointer' : 'default' }}>
+                      <span style={{ fontSize: 14 }}>{a.icon}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: a.color }}>{a.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Alertes inter-modules */}
       <AlertesInterModules />
 
@@ -387,7 +455,7 @@ export default function DashboardPatron() {
         <KpiCard label="CA annuel"    valeur={`${caAnnuel.toLocaleString('fr-FR')} €`}        Icon={IconTrendUp}  color="green"  sub={`exercice ${new Date().getFullYear()}`} />
         <KpiCard label="Marge nette"  valeur={`${margeNette} %`}                               Icon={IconDocument} color="green"  sub={`${benefice.toLocaleString('fr-FR')} €`} />
         <KpiCard label="Trésorerie"   valeur={`${treso.toLocaleString('fr-FR')} €`}           Icon={IconFinance}  color={treso > 15000 ? 'green' : 'orange'} sub="solde bancaire" />
-        <KpiCard label="Impayées"     valeur={`${impayees.toLocaleString('fr-FR')} €`}        Icon={IconAlert}    color="orange" sub={`${nbImpayees} factures`} />
+        <KpiCard label="Impayées"     valeur={`${impayees.toLocaleString('fr-FR')} €`}        Icon={IconAlert}    color="orange" sub={`${nbImpayees} factures`} onClick={() => navigate('/patron/finance?onglet=facturation')} />
         <KpiCard label="Devis signés" valeur={`${(pipeline?.stats?.ca_signe || 12100).toLocaleString('fr-FR')} €`} Icon={IconCheck} color="blue" sub={`taux conv. ${pipeline?.stats?.taux_conversion || 50}%`} />
       </div>
 
