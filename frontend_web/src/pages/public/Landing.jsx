@@ -189,6 +189,10 @@ function ArtisanCard({ artisan, onContact }) {
 
 function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
   const accentColor = COLORS[artisan.id % COLORS.length];
+  const [msg, setMsg] = useState('');
+  const [tel, setTel] = useState('');
+  const [sent, setSent] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleKey = e => { if (e.key === 'Escape') onClose(); };
@@ -196,66 +200,97 @@ function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  function envoyerDemande() {
+    if (!msg.trim()) return;
+    // Sauvegarder la demande en localStorage (sera sync avec backend quand dispo)
+    try {
+      const demandes = JSON.parse(localStorage.getItem('freample_demandes') || '[]');
+      demandes.push({ id: Date.now(), artisanId: artisan.id, artisanNom: artisan.nom, metier: artisan.metier, message: msg, telephone: tel, date: new Date().toISOString(), statut: 'envoyee' });
+      localStorage.setItem('freample_demandes', JSON.stringify(demandes));
+    } catch {}
+    // Aussi tenter l'API
+    api.post('/client/demandes', { artisanId: artisan.id, message: msg, telephone: tel }).catch(() => {});
+    setSent(true);
+  }
+
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(8,8,15,0.6)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
-      onClick={onClose}
-    >
-      <div
-        className="animate-scale-in"
-        style={{ background: '#fff', borderRadius: 24, padding: '36px 32px', width: '100%', maxWidth: 440, textAlign: 'center', boxShadow: '0 40px 100px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)', position: 'relative' }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Close */}
-        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: 8, background: '#F4F4F8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9898B8', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#EBEBF0'; e.currentTarget.style.color = '#0E0E1A'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#F4F4F8'; e.currentTarget.style.color = '#9898B8'; }}
-        >
-          <IconX size={14} />
-        </button>
+      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(8,8,15,0.6)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={onClose}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 440, boxShadow: '0 40px 100px rgba(0,0,0,0.25)', position: 'relative' }}
+        onClick={e => e.stopPropagation()}>
 
-        {/* Artisan avatar */}
-        <div style={{ width: 72, height: 72, borderRadius: 22, background: `linear-gradient(135deg, ${accentColor}22, ${accentColor}44)`, border: `2px solid ${accentColor}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '1.375rem', fontWeight: 800, color: accentColor, letterSpacing: '-0.02em' }}>
-          {artisan.nom.split(' ').map(n => n[0]).join('').slice(0, 2)}
-        </div>
+        <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, background: '#F4F4F8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9898B8', fontSize: 14 }}>×</button>
 
-        <h2 style={{ fontSize: '1.375rem', fontWeight: 800, color: '#0E0E1A', marginBottom: 8, letterSpacing: '-0.03em' }}>
-          Contacter {artisan.nom}
-        </h2>
-        <p style={{ color: '#4A4A6A', fontSize: '0.9375rem', lineHeight: 1.55, marginBottom: 24 }}>
-          {isLoggedIn
-            ? 'Accédez à votre espace pour envoyer votre demande.'
-            : 'Créez votre compte gratuit pour contacter cet artisan.'}
-        </p>
-
-        {/* Artisan mini card */}
-        <div style={{ background: '#F4F4F8', borderRadius: 14, padding: '14px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${accentColor}22`, color: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 700, flexShrink: 0 }}>
+        {/* Artisan info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: `linear-gradient(135deg, ${accentColor}22, ${accentColor}44)`, border: `2px solid ${accentColor}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: accentColor, flexShrink: 0 }}>
             {artisan.nom.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0E0E1A', letterSpacing: '-0.015em' }}>{artisan.nom}</p>
-            <p style={{ fontSize: '0.75rem', color: '#4A4A6A' }}>{artisan.metier} · {artisan.ville}</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            <StarRatingDark note={artisan.note} size={11} />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0E0E1A' }}>{artisan.note}</span>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#0E0E1A', letterSpacing: '-0.02em' }}>{artisan.nom}</div>
+            <div style={{ fontSize: 13, color: '#4A4A6A' }}>{artisan.metier} · {artisan.ville}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <StarRatingDark note={artisan.note} size={10} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0E0E1A' }}>{artisan.note}</span>
+              <span style={{ fontSize: 11, color: '#9898B8' }}>({artisan.nbAvis} avis)</span>
+            </div>
           </div>
         </div>
 
         {isLoggedIn ? (
-          <button onClick={onLogin} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 14, fontSize: '0.9375rem', borderRadius: 14 }}>
-            Accéder à mon espace →
-          </button>
+          sent ? (
+            /* Confirmation envoyée */
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#F0FDF4', border: '2px solid #16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24 }}>✓</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: '#0E0E1A', marginBottom: 6 }}>Demande envoyée !</div>
+              <div style={{ fontSize: 13, color: '#4A4A6A', lineHeight: 1.6, marginBottom: 20 }}>
+                {artisan.nom} recevra votre message et vous recontactera rapidement.
+              </div>
+              <button onClick={onClose} style={{ padding: '12px 28px', background: '#0E0E1A', color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                Fermer
+              </button>
+            </div>
+          ) : (
+            /* Formulaire de contact direct */
+            <>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#4A4A6A', marginBottom: 12 }}>Décrivez votre besoin</div>
+              <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={4}
+                placeholder={`Bonjour ${artisan.nom.split(' ')[0]}, j'aurais besoin de...`}
+                style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #E5E7EB', borderRadius: 12, fontSize: 14, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.5 }}
+                onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                onBlur={e => e.currentTarget.style.borderColor = '#E5E7EB'} />
+
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#4A4A6A', marginBottom: 4 }}>Votre téléphone (optionnel)</div>
+                <input type="tel" value={tel} onChange={e => setTel(e.target.value)} placeholder="06 12 34 56 78"
+                  style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                  onFocus={e => e.currentTarget.style.borderColor = accentColor}
+                  onBlur={e => e.currentTarget.style.borderColor = '#E5E7EB'} />
+              </div>
+
+              <button onClick={envoyerDemande} disabled={!msg.trim()}
+                style={{ width: '100%', marginTop: 16, padding: '14px', background: msg.trim() ? accentColor : '#E5E7EB', color: msg.trim() ? '#fff' : '#9898B8', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: msg.trim() ? 'pointer' : 'not-allowed', transition: 'all .2s' }}>
+                Envoyer ma demande →
+              </button>
+              <div style={{ fontSize: 11, color: '#9898B8', textAlign: 'center', marginTop: 10 }}>
+                100% gratuit · Réponse rapide · Sans engagement
+              </div>
+            </>
+          )
         ) : (
-          <>
-            <button onClick={onRegister} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 14, fontSize: '0.9375rem', borderRadius: 14, marginBottom: 12 }}>
-              Créer mon compte — C'est gratuit
+          /* Non connecté */
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 14, color: '#4A4A6A', lineHeight: 1.6, marginBottom: 20 }}>
+              Créez votre compte gratuit pour contacter {artisan.nom} directement.
+            </div>
+            <button onClick={onRegister} style={{ width: '100%', padding: '14px', background: '#0E0E1A', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 10 }}>
+              Créer mon compte — Gratuit
             </button>
-            <button onClick={() => { onClose(); navigate('/login'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9898B8', fontSize: '0.875rem', textDecoration: 'underline', textDecorationColor: 'rgba(152,152,184,0.4)' }}>
+            <button onClick={() => { onClose(); navigate('/login'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9898B8', fontSize: 13 }}>
               J'ai déjà un compte
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
