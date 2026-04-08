@@ -21,11 +21,41 @@ function formatTime(iso) {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
+const DEMO_CONVERSATIONS = [
+  { missionId: 1, artisanNom: 'Lucas Garcia', metier: 'Plomberie', titre: 'Rénovation salle de bain', lastMessage: 'Bonjour, je peux passer demain matin pour le devis.', lastDate: new Date(Date.now() - 3600000).toISOString(), unread: 1 },
+  { missionId: 2, artisanNom: 'Marc Lambert', metier: 'Électricité', titre: 'Mise aux normes tableau', lastMessage: 'Le devis est prêt, je vous l\'envoie ce soir.', lastDate: new Date(Date.now() - 86400000).toISOString(), unread: 0 },
+  { missionId: 3, artisanNom: 'Sophie Duval', metier: 'Peinture', titre: 'Peinture salon + chambre', lastMessage: 'Très bien, on commence lundi !', lastDate: new Date(Date.now() - 172800000).toISOString(), unread: 0 },
+];
+const DEMO_MESSAGES = {
+  1: [
+    { id: 1, auteur: 'artisan', nomAuteur: 'Lucas Garcia', texte: 'Bonjour ! J\'ai bien reçu votre demande pour la rénovation de la salle de bain. Quelques questions :', date: new Date(Date.now() - 7200000).toISOString() },
+    { id: 2, auteur: 'artisan', nomAuteur: 'Lucas Garcia', texte: 'Quelle est la surface de la pièce ? Et est-ce que vous souhaitez remplacer la baignoire par une douche ?', date: new Date(Date.now() - 7100000).toISOString() },
+    { id: 3, auteur: 'client', nomAuteur: 'Marie Dupont', texte: 'Bonjour Lucas, la pièce fait environ 6m². Oui, on voudrait une douche à l\'italienne.', date: new Date(Date.now() - 5400000).toISOString() },
+    { id: 4, auteur: 'artisan', nomAuteur: 'Lucas Garcia', texte: 'Parfait, c\'est noté. Je peux passer demain matin vers 9h pour prendre les mesures et vous faire un devis détaillé. Ça vous convient ?', date: new Date(Date.now() - 3700000).toISOString() },
+    { id: 5, auteur: 'artisan', nomAuteur: 'Lucas Garcia', texte: 'Bonjour, je peux passer demain matin pour le devis.', date: new Date(Date.now() - 3600000).toISOString() },
+  ],
+  2: [
+    { id: 10, auteur: 'client', nomAuteur: 'Marie Dupont', texte: 'Bonjour, j\'ai un tableau électrique ancien qui doit être mis aux normes. Disponible quand ?', date: new Date(Date.now() - 259200000).toISOString() },
+    { id: 11, auteur: 'artisan', nomAuteur: 'Marc Lambert', texte: 'Bonjour Marie, je suis disponible cette semaine. C\'est un tableau de combien de rangées ?', date: new Date(Date.now() - 172800000).toISOString() },
+    { id: 12, auteur: 'client', nomAuteur: 'Marie Dupont', texte: '2 rangées, c\'est un vieil appartement des années 70.', date: new Date(Date.now() - 100000000).toISOString() },
+    { id: 13, auteur: 'artisan', nomAuteur: 'Marc Lambert', texte: 'Le devis est prêt, je vous l\'envoie ce soir.', date: new Date(Date.now() - 86400000).toISOString() },
+  ],
+  3: [
+    { id: 20, auteur: 'artisan', nomAuteur: 'Sophie Duval', texte: 'Bonjour ! Suite à notre échange, je confirme : salon + chambre, 2 couches, peinture premium.', date: new Date(Date.now() - 345600000).toISOString() },
+    { id: 21, auteur: 'client', nomAuteur: 'Marie Dupont', texte: 'Super, le devis me convient. On peut commencer quand ?', date: new Date(Date.now() - 259200000).toISOString() },
+    { id: 22, auteur: 'artisan', nomAuteur: 'Sophie Duval', texte: 'Très bien, on commence lundi !', date: new Date(Date.now() - 172800000).toISOString() },
+  ],
+};
+const STORAGE_MSG = 'freample_messages';
+function loadLocalMessages() { try { return JSON.parse(localStorage.getItem(STORAGE_MSG)) || DEMO_MESSAGES; } catch { return DEMO_MESSAGES; } }
+function saveLocalMessages(m) { localStorage.setItem(STORAGE_MSG, JSON.stringify(m)); }
+
 export default function Messagerie() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [conv, setConv]           = useState(null);
   const [messages, setMessages]   = useState([]);
+  const [localMsgs, setLocalMsgs] = useState(loadLocalMessages);
   const [texte, setTexte]         = useState('');
   const [sending, setSending]     = useState(false);
   const [typing, setTyping]       = useState(false);
@@ -41,21 +71,28 @@ export default function Messagerie() {
     api.get('/client/conversations')
       .then(({ data }) => {
         const convs = data.conversations || [];
-        setConversations(convs);
-        if (convs.length > 0) setConv(convs[0]);
+        setConversations(convs.length > 0 ? convs : DEMO_CONVERSATIONS);
+        if (convs.length > 0) setConv(convs[0]); else setConv(DEMO_CONVERSATIONS[0]);
       })
-      .catch(() => {});
+      .catch(() => {
+        setConversations(DEMO_CONVERSATIONS);
+        setConv(DEMO_CONVERSATIONS[0]);
+      });
   }, []);
+
+  // Save local messages
+  useEffect(() => { saveLocalMessages(localMsgs); }, [localMsgs]);
 
   // Load messages when conversation changes
   const loadMessages = useCallback(async (missionId) => {
     try {
       const { data } = await api.get(`/client/messages-list/${missionId}`);
-      setMessages(data.messages || []);
+      const msgs = data.messages || [];
+      setMessages(msgs.length > 0 ? msgs : (localMsgs[missionId] || []));
     } catch {
-      setMessages([]);
+      setMessages(localMsgs[missionId] || []);
     }
-  }, []);
+  }, [localMsgs]);
 
   useEffect(() => {
     if (!conv) return;
@@ -112,12 +149,16 @@ export default function Messagerie() {
     const draft = texte.trim();
     setTexte('');
     setSending(true);
+    const newMsg = { id: Date.now(), auteur: 'client', nomAuteur: user?.nom || 'Vous', texte: draft, date: new Date().toISOString() };
     try {
-      await api.post(`/client/messages-list/${conv.missionId}`, {
-        texte: draft,
-        nomAuteur: user?.nom,
-      });
+      await api.post(`/client/messages-list/${conv.missionId}`, { texte: draft, nomAuteur: user?.nom });
       await loadMessages(conv.missionId);
+    } catch {
+      // Fallback local — ajouter le message localement
+      setMessages(prev => [...prev, newMsg]);
+      setLocalMsgs(prev => ({ ...prev, [conv.missionId]: [...(prev[conv.missionId] || []), newMsg] }));
+      // Mettre à jour la conversation
+      setConversations(prev => prev.map(c => c.missionId === conv.missionId ? { ...c, lastMessage: draft, lastDate: newMsg.date } : c));
     } finally {
       setSending(false);
       inputRef.current?.focus();
