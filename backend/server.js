@@ -36,6 +36,7 @@ const recrutementRoutes    = require('./routes/recrutementRoutes');
 const reservationsRoutes   = require('./routes/reservationsRoutes');
 const comRoutes            = require('./routes/comRoutes');
 const modulesRoutes        = require('./routes/modulesRoutes');
+const immoRoutes           = require('./routes/immoRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -108,6 +109,7 @@ app.use('/notifications', authenticateToken, notificationsRoutes);
 app.use('/client',  authenticateToken, clientRoutes);
 app.use('/patron',  authenticateToken, patronRoutes);
 app.use('/artisan', authenticateToken, artisanRoutes);
+app.use('/immo',    authenticateToken, immoRoutes);
 
 // ─── Analytics (visites) ────────────────────────────────────
 (async () => {

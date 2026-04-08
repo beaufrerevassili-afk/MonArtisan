@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import L from '../../design/luxe';
 import CRMModule from '../../components/immo/CRMModule';
 import ProspectionModule from '../../components/immo/ProspectionModule';
@@ -119,6 +120,38 @@ export default function ImmoDemo() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => { saveData(data); }, [data]);
+
+  // Sync avec l'API backend (si connecté)
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      api.get('/immo/scis').catch(() => null),
+      api.get('/immo/biens').catch(() => null),
+      api.get('/immo/locataires').catch(() => null),
+      api.get('/immo/paiements').catch(() => null),
+      api.get('/immo/depenses').catch(() => null),
+      api.get('/immo/credits').catch(() => null),
+      api.get('/immo/associes').catch(() => null),
+      api.get('/immo/banque').catch(() => null),
+      api.get('/immo/travaux').catch(() => null),
+    ]).then(([scis, biens, locs, paie, dep, cred, assoc, banq, trav]) => {
+      if (scis?.data?.scis?.length || biens?.data?.biens?.length) {
+        setData(d => ({
+          ...d,
+          scis: scis?.data?.scis?.length ? scis.data.scis.map(s => ({ ...s, sciId: s.id })) : d.scis,
+          biens: biens?.data?.biens?.length ? biens.data.biens : d.biens,
+          locataires: locs?.data?.locataires?.length ? locs.data.locataires : d.locataires,
+          paiements: paie?.data?.paiements?.length ? paie.data.paiements : d.paiements,
+          depenses: dep?.data?.depenses?.length ? dep.data.depenses : d.depenses,
+          credits: cred?.data?.credits?.length ? cred.data.credits : d.credits,
+          associes: assoc?.data?.associes?.length ? assoc.data.associes : d.associes,
+          banque: banq?.data?.banque?.length ? banq.data.banque : d.banque,
+          travaux: trav?.data?.travaux?.length ? trav.data.travaux : d.travaux,
+        }));
+      }
+    }).catch(() => {});
+  }, []);
+
   if (!user || user.email !== 'freamplecom@gmail.com') { navigate('/'); return null; }
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 3000); };
