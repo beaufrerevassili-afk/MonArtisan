@@ -308,12 +308,12 @@ function SecteurEcosystemeSide({ secteur }) {
   });
 
   return (
-    <div style={{ background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 14, padding: '20px 18px', overflow: 'hidden' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px', textAlign: 'center' }}>Votre écosystème</p>
-      <p style={{ fontSize: 13, color: '#1A1A1A', margin: '0 0 16px', textAlign: 'center', fontWeight: 600 }}>{eco.phrase}</p>
+    <div style={{ background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 14, padding: '24px 20px', overflow: 'hidden' }}>
+      <p style={{ fontSize: 12, fontWeight: 700, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px', textAlign: 'center' }}>Votre écosystème</p>
+      <p style={{ fontSize: 15, color: '#1A1A1A', margin: '0 0 20px', textAlign: 'center', fontWeight: 600 }}>{eco.phrase}</p>
 
       {/* Schéma circulaire */}
-      <div style={{ position: 'relative', width: '100%', maxWidth: 280, margin: '0 auto', aspectRatio: '1' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 360, margin: '0 auto', aspectRatio: '1' }}>
         <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E8E6E1" strokeWidth={0.3} strokeDasharray="2 1.5" />
           {positions.map((pos, i) => (
@@ -322,9 +322,9 @@ function SecteurEcosystemeSide({ secteur }) {
               style={{ transition: 'all .3s' }} />
           ))}
         </svg>
-        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: '#1A1A1A', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-          <span style={{ fontSize: 18 }}>{eco.center.icon}</span>
-          <span style={{ fontSize: 6, fontWeight: 700, marginTop: 1 }}>{eco.center.label}</span>
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 68, height: 68, borderRadius: '50%', background: '#1A1A1A', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+          <span style={{ fontSize: 24 }}>{eco.center.icon}</span>
+          <span style={{ fontSize: 8, fontWeight: 700, marginTop: 2 }}>{eco.center.label}</span>
         </div>
         {modules.map((mod, i) => {
           const pos = positions[i];
@@ -332,9 +332,9 @@ function SecteurEcosystemeSide({ secteur }) {
           return (
             <div key={mod.label} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
               style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', zIndex: active ? 3 : 1 }}>
-              <div style={{ width: active ? 46 : 38, height: active ? 46 : 38, borderRadius: '50%', background: '#fff', border: `2px solid ${active ? mod.color : '#E8E6E1'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: active ? `0 4px 14px ${mod.color}30` : '0 1px 4px rgba(0,0,0,0.05)', transition: 'all .2s' }}>
-                <span style={{ fontSize: active ? 15 : 12 }}>{mod.icon}</span>
-                <span style={{ fontSize: 5, fontWeight: 700, color: active ? mod.color : '#636363', textAlign: 'center', lineHeight: 1.1, padding: '0 2px' }}>{mod.label}</span>
+              <div style={{ width: active ? 58 : 50, height: active ? 58 : 50, borderRadius: '50%', background: '#fff', border: `2px solid ${active ? mod.color : '#E8E6E1'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: active ? `0 4px 14px ${mod.color}30` : '0 1px 4px rgba(0,0,0,0.05)', transition: 'all .2s' }}>
+                <span style={{ fontSize: active ? 19 : 16 }}>{mod.icon}</span>
+                <span style={{ fontSize: 6, fontWeight: 700, color: active ? mod.color : '#636363', textAlign: 'center', lineHeight: 1.1, padding: '0 3px' }}>{mod.label}</span>
               </div>
             </div>
           );
@@ -667,7 +667,7 @@ export default function Register() {
     : DOCUMENTS_REQUIS;
   const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
   const showSideEco = isPatron && step === 1;
-  const maxWidth   = showSideEco ? 880 : (isPro && step === 3) ? 600 : 440;
+  const maxWidth   = showSideEco ? 960 : (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
   if (step === 5) {
@@ -910,7 +910,7 @@ export default function Register() {
 
             {/* Colonne droite : écosystème (patron step 1 uniquement) */}
             {showSideEco && (
-              <div style={{ flex: '1 1 380px', minWidth: 0, position: 'sticky', top: 24 }}>
+              <div style={{ flex: '1 1 440px', minWidth: 0, position: 'sticky', top: 24 }}>
                 <SecteurEcosystemeSide secteur={secteur} />
               </div>
             )}
