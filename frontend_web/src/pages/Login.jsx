@@ -44,8 +44,8 @@ export default function Login() {
     return REDIRECTIONS[role] || '/';
   };
 
-  // Dev account can access all public pages — don't auto-redirect
-  if (user && user.role !== 'client' && user.email !== 'freamplecom@gmail.com') return <Navigate to={getDestination(user.role)} replace />;
+  // Auto-redirect si déjà connecté
+  if (user) return <Navigate to={getDestination(user.role)} replace />;
 
   const activeSector = sector || demoSector;
   const demoAccounts = activeSector ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector]||[])] : GENERIC_DEMO;
