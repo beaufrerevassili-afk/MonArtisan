@@ -62,7 +62,7 @@ export default function SecteurSelect() {
       <PublicNavbar onMenuOpen={()=>setMenuOpen(true)} navLinks={[
         { id:'qui-nous-sommes', label:'Qui nous sommes', onClick:()=>scrollTo('qui-nous-sommes') },
         { id:'nos-objectifs', label:'Nos objectifs', onClick:()=>scrollTo('nos-objectifs') },
-        { id:'notre-gouvernance', label:'Notre gouvernance', onClick:()=>scrollTo('notre-gouvernance') },
+        { id:'ecosysteme', label:'L\'écosystème', onClick:()=>scrollTo('ecosysteme') },
       ]} />
 
       {/* Sidebar */}
@@ -226,36 +226,61 @@ export default function SecteurSelect() {
         </div>
       </section>
 
-      {/* Notre gouvernance */}
-      <section id="notre-gouvernance" ref={a3} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
-        <div style={{ maxWidth:720, margin:'0 auto' }}>
+      {/* L'écosystème Freample */}
+      <section id="ecosysteme" ref={a3} style={{ padding:'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
+        <div style={{ maxWidth:840, margin:'0 auto' }}>
+          <p style={{ fontSize:12, fontWeight:600, color:L.gold, letterSpacing:'0.15em', textTransform:'uppercase', margin:'0 0 16px' }}>L'écosystème</p>
           <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, margin:'0 0 16px', letterSpacing:'-0.03em' }}>
-            Des services quasi-gratuits, par design.
+            Une plateforme, tous vos besoins.
           </h2>
-          <p style={{ fontSize:15, color:L.textSec, lineHeight:1.7, margin:'0 0 36px' }}>
-            Chez Freample, on ne dépend pas de nos utilisateurs pour financer la boîte. Notre modèle repose sur des investissements immobiliers et boursiers qui génèrent les revenus nécessaires au fonctionnement de la plateforme. Résultat : on peut casser les prix de tous nos services.
+          <p style={{ fontSize:15, color:L.textSec, lineHeight:1.7, margin:'0 0 40px', maxWidth:600 }}>
+            Freample regroupe un ensemble de services conçus pour fonctionner ensemble. Chaque brique s'intègre naturellement aux autres pour simplifier votre quotidien.
           </p>
 
+          {/* Services de l'écosystème */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16, marginBottom:40 }}>
+            {[
+              { name:'Freample Artisan', desc:'Trouvez un artisan de confiance pour vos travaux. Devis gratuits, professionnels vérifiés, suivi de chantier.', icon:'🔨', color:'#8B5CF6', href:'/btp' },
+              { name:'Freample Artisan ERP', desc:'L\'outil de gestion complet pour les chefs d\'entreprise du BTP : RH, paie, QHSE, comptabilité, chantiers.', icon:'📊', color:'#2563EB', href:'/pro' },
+              { name:'Freample Com', desc:'Montage vidéo professionnel, création de contenu et stratégie digitale pour les entreprises.', icon:'🎬', color:'#D97706', href:'/com' },
+              { name:'Freample Recrutement', desc:'Publiez vos offres d\'emploi et recevez des candidatures qualifiées directement sur la plateforme.', icon:'👥', color:'#16A34A', href:'/recrutement' },
+            ].map(s => (
+              <a key={s.name} href={s.href} style={{ background:L.white, border:`1px solid ${L.border}`, borderRadius:14, padding:'clamp(20px,3vw,28px)', textDecoration:'none', color:'inherit', transition:'all .2s', display:'block' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; e.currentTarget.style.boxShadow = `0 8px 24px ${s.color}15`; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = L.border; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>
+                <div style={{ fontSize:28, marginBottom:12 }}>{s.icon}</div>
+                <h3 style={{ fontSize:15, fontWeight:700, margin:'0 0 8px', color:s.color }}>{s.name}</h3>
+                <p style={{ fontSize:13, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
+              </a>
+            ))}
+          </div>
+
+          {/* Avantages de l'écosystème */}
           <div style={{ background:L.noir, padding:'clamp(28px,4vh,44px) clamp(24px,4vw,36px)', color:'#fff', marginBottom:24 }}>
-            <div style={{ marginBottom:28 }}>
-              <h3 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.02em' }}>Immobilier locatif</h3>
-              <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:0 }}>
-                Les revenus locatifs financent le développement et l'exploitation de la plateforme. Ça nous permet de réduire les marges sur chaque service proposé.
-              </p>
-            </div>
-            <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:28 }}>
-              <h3 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 8px', letterSpacing:'0.02em' }}>Marchés financiers</h3>
-              <p style={{ fontSize:14, color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:0 }}>
-                Une part de nos fonds est investie sur les marchés. Les plus-values générées servent à maintenir des tarifs parmi les plus bas du marché.
-              </p>
+            <h3 style={{ fontSize:18, fontWeight:800, color:'#fff', margin:'0 0 24px', letterSpacing:'-0.02em' }}>Pourquoi un écosystème ?</h3>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:24 }}>
+              {[
+                { title:'Tout centralisé', desc:'Plus besoin de jongler entre 10 logiciels. Vos clients, chantiers, employés, finances — tout est au même endroit.', icon:'🎯' },
+                { title:'Données connectées', desc:'Un client qui demande un devis se retrouve dans votre pipeline commercial, puis dans votre facturation. Zéro ressaisie.', icon:'🔗' },
+                { title:'Gain de temps', desc:'Automatisation de la paie, calcul des trajets, génération de documents administratifs — ce qui prenait des heures se fait en un clic.', icon:'⚡' },
+                { title:'Un seul abonnement', desc:'Au lieu de payer Sage + PayFit + Qualnet + un CRM, tout est inclus dans Freample à une fraction du prix.', icon:'💰' },
+                { title:'Spécialiste BTP', desc:'Conçu par et pour les artisans du bâtiment. Convention collective, EPI, BSDD, habilitations — tout est intégré nativement.', icon:'🏗️' },
+                { title:'Évolutif', desc:'Commencez avec ce dont vous avez besoin, activez les modules au fur et à mesure de la croissance de votre entreprise.', icon:'📈' },
+              ].map(a => (
+                <div key={a.title}>
+                  <div style={{ fontSize:22, marginBottom:8 }}>{a.icon}</div>
+                  <h4 style={{ fontSize:14, fontWeight:700, color:'#fff', margin:'0 0 6px' }}>{a.title}</h4>
+                  <p style={{ fontSize:12, color:'rgba(255,255,255,0.6)', lineHeight:1.6, margin:0 }}>{a.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           <div style={{ display:'flex', gap:0, borderTop:`1px solid ${L.border}` }}>
             {[
               { val:'0 %', label:'Commission artisan' },
-              { val:'~0 €', label:'Objectif tarifaire' },
-              { val:'100 %', label:'Indépendance financière' },
+              { val:'4 en 1', label:'ERP + RH + QHSE + Commercial' },
+              { val:'100 %', label:'Pensé pour le BTP' },
             ].map((m, i) => (
               <div key={m.label} style={{ flex:1, padding:'20px 0', textAlign:'center', borderRight: i < 2 ? `1px solid ${L.border}` : 'none' }}>
                 <div style={{ fontSize:24, fontWeight:500, fontFamily:L.serif, letterSpacing:'-0.02em' }}>{m.val}</div>
