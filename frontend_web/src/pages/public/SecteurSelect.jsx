@@ -127,7 +127,7 @@ export default function SecteurSelect() {
             {/* 2 cartes : Proposer projet + Trouver artisan */}
             <div style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
               {/* Carte 1 — Proposer mon projet */}
-              <div onClick={() => { setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
+              <div onClick={() => { if (!user) { navigate('/register?role=client'); return; } setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
                 style={{ flex: '1 1 280px', background: L.gold, borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s', boxShadow: '0 4px 20px rgba(166,139,75,0.3)' }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(166,139,75,0.3)'; }}>
