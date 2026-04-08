@@ -224,6 +224,165 @@ function FileUploadZone({ doc, file, onChange }) {
   );
 }
 
+// ─── Écosystème ciblé par secteur ─────────────────────────────────────────────
+
+const SECTEURS_LIST = [
+  { id: 'btp',       emoji: '🏗️', label: 'BTP & Artisans' },
+  { id: 'coiffure',  emoji: '💇', label: 'Coiffure & Beauté' },
+  { id: 'immo',      emoji: '🏠', label: 'Immobilier & SCI' },
+  { id: 'droit',     emoji: '⚖️', label: 'Droit & Juridique' },
+  { id: 'autre',     emoji: '💼', label: 'Autre activité' },
+];
+
+const ECO_PAR_SECTEUR = {
+  btp: {
+    center: { icon: '🏗️', label: 'BTP' },
+    modules: [
+      { icon: '📊', label: 'Pipeline commercial', desc: 'Prospects, devis, factures — suivez chaque affaire du premier contact au paiement.', color: '#8B5CF6' },
+      { icon: '👥', label: 'RH & Paie BTP', desc: 'Gestion des ouvriers, convention collective, bulletins de paie, indemnités trajet.', color: '#2563EB' },
+      { icon: '🛡️', label: 'QHSE', desc: 'Audits sécurité, EPI, BSDD, incidents, habilitations — conformité chantier totale.', color: '#16A34A' },
+      { icon: '📍', label: 'Gestion chantiers', desc: 'Planning, affectation, photos, distance auto-calculée.', color: '#D97706' },
+      { icon: '📢', label: 'Recrutement', desc: 'Publiez des offres, recevez des CV, gérez le processus d\'embauche.', color: '#059669' },
+      { icon: '💰', label: 'Finance', desc: 'Trésorerie, URSSAF, export comptable Sage/EBP, bibliothèque de prix.', color: '#DC2626' },
+    ],
+    phrase: 'Remplace Sage, PayFit et Qualnet en un seul outil.',
+  },
+  coiffure: {
+    center: { icon: '💇', label: 'Salon' },
+    modules: [
+      { icon: '📅', label: 'Agenda & RDV', desc: 'Prise de rendez-vous en ligne, rappels automatiques, planning équipe.', color: '#8B5CF6' },
+      { icon: '👥', label: 'Gestion du personnel', desc: 'Planning, congés, paie, contrats — adapté aux salons et indépendants.', color: '#2563EB' },
+      { icon: '💰', label: 'Caisse & Facturation', desc: 'Encaissements, historique client, export comptable automatique.', color: '#16A34A' },
+      { icon: '📦', label: 'Stock produits', desc: 'Suivi des produits, alertes de réapprovisionnement, fournisseurs.', color: '#D97706' },
+      { icon: '⭐', label: 'Avis & Fidélité', desc: 'Collectez les avis, programme de fidélité, communication client.', color: '#059669' },
+      { icon: '🎬', label: 'Communication', desc: 'Vidéos pour réseaux sociaux, branding, présence en ligne.', color: '#DC2626' },
+    ],
+    phrase: 'Gérez votre salon de A à Z sans multiplier les logiciels.',
+  },
+  immo: {
+    center: { icon: '🏠', label: 'Immobilier' },
+    modules: [
+      { icon: '🏢', label: 'Gestion locative', desc: 'Baux, quittances, appels de loyer, états des lieux automatisés.', color: '#8B5CF6' },
+      { icon: '💰', label: 'Comptabilité SCI', desc: 'Revenus, charges, amortissements, déclarations fiscales.', color: '#2563EB' },
+      { icon: '🔧', label: 'Travaux & Entretien', desc: 'Suivi des interventions, devis artisans, historique par bien.', color: '#16A34A' },
+      { icon: '📄', label: 'Documents juridiques', desc: 'Baux, avenants, PV d\'AG, courriers type — générés en un clic.', color: '#D97706' },
+      { icon: '📊', label: 'Rentabilité', desc: 'Rendement par bien, cash-flow, projection, reporting.', color: '#059669' },
+      { icon: '👥', label: 'Locataires', desc: 'Fiches locataires, historique paiements, relances automatiques.', color: '#DC2626' },
+    ],
+    phrase: 'Pilotez vos biens et vos SCI depuis un seul tableau de bord.',
+  },
+  droit: {
+    center: { icon: '⚖️', label: 'Cabinet' },
+    modules: [
+      { icon: '📁', label: 'Gestion des dossiers', desc: 'Suivi des affaires, échéances, pièces jointes, historique complet.', color: '#8B5CF6' },
+      { icon: '💰', label: 'Facturation & Temps', desc: 'Saisie du temps passé, honoraires, facturation automatique.', color: '#2563EB' },
+      { icon: '📄', label: 'Documents juridiques', desc: 'Modèles de contrats, actes, courriers — personnalisables.', color: '#16A34A' },
+      { icon: '👥', label: 'Clients & CRM', desc: 'Fiches clients, historique, suivi commercial, relances.', color: '#D97706' },
+      { icon: '📅', label: 'Agenda & Audiences', desc: 'Planning, rappels d\'audiences, rendez-vous clients.', color: '#059669' },
+      { icon: '🛡️', label: 'Conformité', desc: 'RGPD, registre des traitements, archivage sécurisé.', color: '#DC2626' },
+    ],
+    phrase: 'L\'outil de gestion pensé pour les professionnels du droit.',
+  },
+  autre: {
+    center: { icon: '💼', label: 'Activité' },
+    modules: [
+      { icon: '📊', label: 'Commercial', desc: 'Pipeline de ventes, devis, factures, suivi clients.', color: '#8B5CF6' },
+      { icon: '👥', label: 'RH & Équipe', desc: 'Gestion du personnel, congés, paie, contrats.', color: '#2563EB' },
+      { icon: '💰', label: 'Finance', desc: 'Trésorerie, comptabilité, déclarations, export.', color: '#16A34A' },
+      { icon: '📢', label: 'Recrutement', desc: 'Offres d\'emploi, candidatures, pipeline d\'embauche.', color: '#D97706' },
+      { icon: '🎬', label: 'Communication', desc: 'Vidéos, branding, réseaux sociaux.', color: '#059669' },
+      { icon: '📄', label: 'Documents', desc: 'Contrats, modèles, génération automatique.', color: '#DC2626' },
+    ],
+    phrase: 'Un outil de gestion complet, quel que soit votre métier.',
+  },
+};
+
+function SecteurEcosysteme({ secteur, setSecteur, setError, locked }) {
+  const [hovered, setHovered] = useState(null);
+  const eco = ECO_PAR_SECTEUR[secteur] || ECO_PAR_SECTEUR.btp;
+  const modules = eco.modules;
+  const cx = 50, cy = 50, r = 36;
+  const positions = modules.map((_, i) => {
+    const angle = (i / modules.length) * Math.PI * 2 - Math.PI / 2;
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  });
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {/* Sélecteur secteur */}
+      {!locked && (
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4A4A4A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {SECTEURS_LIST.map(s => (
+              <button key={s.id} type="button" onClick={() => { setSecteur(s.id); setError(''); setHovered(null); }}
+                style={{ padding: '9px 16px', border: `1px solid ${secteur === s.id ? '#A68B4B' : '#E8E6E1'}`, background: secteur === s.id ? '#F5EFE0' : 'transparent', color: secteur === s.id ? '#7A6232' : '#4A4A4A', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, transition: 'all .15s', borderRadius: 6 }}>
+                {s.emoji} {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mini schéma écosystème */}
+      <div style={{ background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 14, padding: '16px 16px 12px', overflow: 'hidden' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 4px', textAlign: 'center' }}>Votre écosystème Freample</p>
+        <p style={{ fontSize: 12, color: '#636363', margin: '0 0 12px', textAlign: 'center', fontStyle: 'italic' }}>{eco.phrase}</p>
+
+        {/* Schéma circulaire */}
+        <div style={{ position: 'relative', width: '100%', maxWidth: 300, margin: '0 auto', aspectRatio: '1' }}>
+          <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E8E6E1" strokeWidth={0.3} strokeDasharray="2 1.5" />
+            {positions.map((pos, i) => (
+              <line key={i} x1={cx} y1={cy} x2={pos.x} y2={pos.y}
+                stroke={hovered === i ? modules[i].color : '#E5E5EA'} strokeWidth={hovered === i ? 0.5 : 0.2}
+                style={{ transition: 'all .3s' }} />
+            ))}
+          </svg>
+
+          {/* Centre */}
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 56, height: 56, borderRadius: '50%', background: '#1A1A1A', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+            <span style={{ fontSize: 20 }}>{eco.center.icon}</span>
+            <span style={{ fontSize: 7, fontWeight: 700, marginTop: 1 }}>{eco.center.label}</span>
+          </div>
+
+          {/* Nodes */}
+          {modules.map((mod, i) => {
+            const pos = positions[i];
+            const active = hovered === i;
+            return (
+              <div key={mod.label} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+                style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', zIndex: active ? 3 : 1 }}>
+                <div style={{ width: active ? 48 : 40, height: active ? 48 : 40, borderRadius: '50%', background: '#fff', border: `2px solid ${active ? mod.color : '#E8E6E1'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: active ? `0 4px 14px ${mod.color}30` : '0 1px 4px rgba(0,0,0,0.05)', transition: 'all .2s' }}>
+                  <span style={{ fontSize: active ? 16 : 13 }}>{mod.icon}</span>
+                  <span style={{ fontSize: 5, fontWeight: 700, color: active ? mod.color : '#636363', textAlign: 'center', lineHeight: 1.1, padding: '0 2px' }}>{mod.label}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Détail au survol */}
+        <div style={{ minHeight: 52, marginTop: 8 }}>
+          {hovered !== null ? (
+            <div style={{ background: '#fff', border: `1px solid ${modules[hovered].color}40`, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'regFadeUp 0.2s ease' }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>{modules[hovered].icon}</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: modules[hovered].color, marginBottom: 2 }}>{modules[hovered].label}</div>
+                <div style={{ fontSize: 11, color: '#636363', lineHeight: 1.5 }}>{modules[hovered].desc}</div>
+              </div>
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', fontSize: 11, color: '#8E8E93', fontStyle: 'italic', margin: '12px 0 0' }}>
+              Survolez un module pour en savoir plus
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page principale ───────────────────────────────────────────────────────────
 
 export default function Register() {
@@ -564,21 +723,9 @@ export default function Register() {
           </div>
         )}
 
-        {/* Sélecteur secteur (patron uniquement, step 1, masqué si secteur prédéfini) */}
-        {step === 1 && isPatron && !searchParams.get('secteur') && (
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize:'0.75rem', fontWeight:600, color:'#4A4A4A', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Votre secteur</p>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-              {[
-                { id:'btp', emoji:'🏗️', label:'BTP & Artisans' },
-              ].map(s => (
-                <button key={s.id} type="button" onClick={()=>{setSecteur(s.id);setError('');}}
-                  style={{ padding:'10px 18px', border:`1px solid ${secteur===s.id?'#A68B4B':'#E8E6E1'}`, background:secteur===s.id?'#F5EFE0':'transparent', color:secteur===s.id?'#7A6232':'#4A4A4A', fontSize:'0.8125rem', fontWeight:600, cursor:'pointer', fontFamily:DS.font, transition:'all .15s' }}>
-                  {s.emoji} {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Sélecteur secteur + Écosystème ciblé (patron uniquement, step 1) */}
+        {step === 1 && isPatron && (
+          <SecteurEcosysteme secteur={secteur} setSecteur={setSecteur} setError={setError} locked={!!searchParams.get('secteur')} />
         )}
 
         {/* Step indicator artisan */}
