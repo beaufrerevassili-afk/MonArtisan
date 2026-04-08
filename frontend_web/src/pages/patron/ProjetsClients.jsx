@@ -34,6 +34,9 @@ export default function ProjetsClients() {
   const [selected, setSelected] = useState(null);
   const [offreForm, setOffreForm] = useState({ prix: '', message: '', date: '', delai: '' });
   const [offreSent, setOffreSent] = useState(false);
+  const [modalView, setModalView] = useState('actions'); // 'actions' | 'devis' | 'rdv' | 'sent'
+  const [devisLignes, setDevisLignes] = useState([]);
+  const [rdvForm, setRdvForm] = useState({ date: '', heure: '', lieu: '', message: '' });
   const [filtreMet, setFiltreMet] = useState('');
 
   // Config entreprise — adresse dépôt + rayon (Nice par défaut pour démo)
@@ -191,7 +194,7 @@ export default function ProjetsClients() {
           {filtered.map(p => {
             const urg = URGENCE_LABELS[p.urgence] || URGENCE_LABELS.normal;
             return (
-              <div key={p.id} onClick={() => { setSelected(p); setOffreSent(false); setOffreForm({ prix: String(p.budget || ''), message: '', date: '', delai: '' }); }}
+              <div key={p.id} onClick={() => { setSelected(p); setOffreSent(false); setModalView('actions'); setOffreForm({ prix: String(p.budget || ''), message: '', date: '', delai: '' }); }}
                 style={{ ...CARD, cursor: 'pointer', display: 'flex', gap: 16, alignItems: 'center', transition: 'all .15s', borderLeft: `4px solid ${urg.color}` }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>
@@ -255,43 +258,169 @@ export default function ProjetsClients() {
                 ))}
               </div>
 
-              {offreSent ? (
-                /* Confirmation */
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#F0FDF4', border: '2px solid #16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 24 }}>✓</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Offre envoyée !</div>
-                  <div style={{ fontSize: 13, color: DS.muted }}>Le client va recevoir votre proposition et pourra l'accepter.</div>
+              {/* ── ACTIONS ── */}
+              {modalView === 'actions' && <>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Que souhaitez-vous faire ?</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {/* 1. Accepter + devis auto */}
+                  <button onClick={() => {
+                    const b = selected.budget || 0;
+                    setDevisLignes([{ desc: selected.titre || selected.metier, qte: 1, pu: b, tva: 10 }]);
+                    setOffreForm(f => ({ ...f, prix: String(b) }));
+                    envoyerOffre();
+                    setModalView('sent');
+                  }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#F0FDF4', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 12, cursor: 'pointer', textAlign: 'left', fontFamily: DS.font, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(22,163,74,0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#16A34A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✓</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#16A34A' }}>Accepter l'offre + Devis automatique</div>
+                      <div style={{ fontSize: 12, color: DS.muted }}>Freample génère le devis au prix du client ({selected.budget || '?'}€) et l'envoie directement.</div>
+                    </div>
+                  </button>
+
+                  {/* 2. Envoyer devis personnalisé */}
+                  <button onClick={() => {
+                    setDevisLignes([
+                      { desc: 'Main d\'œuvre', qte: 1, pu: Math.round((selected.budget || 0) * 0.6), tva: 20 },
+                      { desc: 'Fournitures et matériaux', qte: 1, pu: Math.round((selected.budget || 0) * 0.3), tva: 10 },
+                      { desc: 'Déplacement', qte: 1, pu: Math.round((selected.budget || 0) * 0.1), tva: 20 },
+                    ]);
+                    setModalView('devis');
+                  }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#EFF6FF', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 12, cursor: 'pointer', textAlign: 'left', fontFamily: DS.font, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(37,99,235,0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#2563EB', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📋</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2563EB' }}>Envoyer un devis personnalisé</div>
+                      <div style={{ fontSize: 12, color: DS.muted }}>Personnalisez les lignes du devis (main d'œuvre, fournitures...) avant envoi.</div>
+                    </div>
+                  </button>
+
+                  {/* 3. Proposer un RDV */}
+                  <button onClick={() => { setRdvForm({ date: '', heure: '09:00', lieu: config.adresse || '', message: '' }); setModalView('rdv'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#FFFBEB', border: '1px solid rgba(217,119,6,0.2)', borderRadius: 12, cursor: 'pointer', textAlign: 'left', fontFamily: DS.font, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(217,119,6,0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#D97706', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📅</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#D97706' }}>Proposer un rendez-vous</div>
+                      <div style={{ fontSize: 12, color: DS.muted }}>Proposez une date de visite ou d'estimation avant de faire un devis.</div>
+                    </div>
+                  </button>
+
+                  {/* 4. Contacter */}
+                  <button onClick={() => { window.open('/patron/dashboard', '_self'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#F8F7F4', border: `1px solid ${DS.border}`, borderRadius: 12, cursor: 'pointer', textAlign: 'left', fontFamily: DS.font, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>💬</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2C2520' }}>Contacter le client</div>
+                      <div style={{ fontSize: 12, color: DS.muted }}>Ouvrir la messagerie pour échanger directement avec {selected.clientNom || selected.client_nom || 'le client'}.</div>
+                    </div>
+                  </button>
                 </div>
-              ) : (
-                /* Formulaire d'offre */
-                <>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Faire une offre</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Votre prix (€) *</label>
-                      <input type="number" value={offreForm.prix} onChange={e => setOffreForm(f => ({ ...f, prix: e.target.value }))} placeholder={String(selected.budget || '')} style={INP} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Date proposée</label>
-                      <input type="date" value={offreForm.date} onChange={e => setOffreForm(f => ({ ...f, date: e.target.value }))} style={INP} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Délai estimé (jours)</label>
-                      <input type="number" value={offreForm.delai} onChange={e => setOffreForm(f => ({ ...f, delai: e.target.value }))} placeholder="5" style={INP} />
-                    </div>
+              </>}
+
+              {/* ── DEVIS PERSONNALISÉ ── */}
+              {modalView === 'devis' && <>
+                <button onClick={() => setModalView('actions')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 12, fontFamily: DS.font }}>← Retour</button>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>📋 Devis personnalisé</div>
+
+                {/* Lignes du devis */}
+                {devisLignes.map((l, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 60px 80px 60px 30px', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+                    <input value={l.desc} onChange={e => { const n = [...devisLignes]; n[i].desc = e.target.value; setDevisLignes(n); }} placeholder="Description" style={{ ...INP, padding: '8px 10px', fontSize: 12 }} />
+                    <input type="number" value={l.qte} onChange={e => { const n = [...devisLignes]; n[i].qte = Number(e.target.value); setDevisLignes(n); }} placeholder="Qté" style={{ ...INP, padding: '8px 6px', fontSize: 12, textAlign: 'center' }} />
+                    <input type="number" value={l.pu} onChange={e => { const n = [...devisLignes]; n[i].pu = Number(e.target.value); setDevisLignes(n); }} placeholder="PU €" style={{ ...INP, padding: '8px 6px', fontSize: 12, textAlign: 'center' }} />
+                    <select value={l.tva} onChange={e => { const n = [...devisLignes]; n[i].tva = Number(e.target.value); setDevisLignes(n); }} style={{ ...INP, padding: '8px 4px', fontSize: 11 }}>
+                      <option value={10}>10%</option><option value={20}>20%</option><option value={0}>0%</option>
+                    </select>
+                    <button onClick={() => setDevisLignes(devisLignes.filter((_, j) => j !== i))} style={{ background: '#FEF2F2', border: 'none', borderRadius: 6, color: '#DC2626', fontSize: 12, cursor: 'pointer', padding: '6px' }}>✕</button>
                   </div>
-                  <div style={{ marginTop: 10 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Message au client</label>
-                    <textarea value={offreForm.message} onChange={e => setOffreForm(f => ({ ...f, message: e.target.value }))} rows={3}
-                      placeholder="Bonjour, je suis disponible pour ce projet. Voici ma proposition..."
+                ))}
+                <button onClick={() => setDevisLignes([...devisLignes, { desc: '', qte: 1, pu: 0, tva: 10 }])}
+                  style={{ fontSize: 12, color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: DS.font, marginBottom: 12 }}>+ Ajouter une ligne</button>
+
+                {/* Totaux */}
+                {(() => {
+                  const ht = devisLignes.reduce((s, l) => s + l.qte * l.pu, 0);
+                  const tva = devisLignes.reduce((s, l) => s + l.qte * l.pu * l.tva / 100, 0);
+                  const ttc = ht + tva;
+                  return (
+                    <div style={{ background: '#F8F7F4', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}><span style={{ color: DS.muted }}>Total HT</span><span style={{ fontWeight: 600 }}>{ht.toLocaleString('fr-FR')} €</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}><span style={{ color: DS.muted }}>TVA</span><span style={{ fontWeight: 600 }}>{tva.toLocaleString('fr-FR')} €</span></div>
+                      <div style={{ height: 1, background: DS.border, margin: '6px 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '3px 0' }}><span style={{ fontWeight: 700 }}>Total TTC</span><span style={{ fontWeight: 800, color: '#2C2520' }}>{ttc.toLocaleString('fr-FR')} €</span></div>
+                    </div>
+                  );
+                })()}
+
+                <button onClick={() => {
+                  const ht = devisLignes.reduce((s, l) => s + l.qte * l.pu, 0);
+                  const tva = devisLignes.reduce((s, l) => s + l.qte * l.pu * l.tva / 100, 0);
+                  setOffreForm(f => ({ ...f, prix: String(ht + tva) }));
+                  envoyerOffre();
+                  // Sauver le devis
+                  try {
+                    const devis = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+                    devis.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, lignes: devisLignes, ht, tva, ttc: ht + tva, date: new Date().toISOString() });
+                    localStorage.setItem('freample_devis', JSON.stringify(devis));
+                  } catch {}
+                  setModalView('sent');
+                }}
+                  style={{ ...BTN, width: '100%', padding: 14, fontSize: 14, background: '#2563EB' }}>
+                  Envoyer le devis →
+                </button>
+              </>}
+
+              {/* ── PROPOSER RDV ── */}
+              {modalView === 'rdv' && <>
+                <button onClick={() => setModalView('actions')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 12, fontFamily: DS.font }}>← Retour</button>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>📅 Proposer un rendez-vous</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Date *</label>
+                    <input type="date" value={rdvForm.date} onChange={e => setRdvForm(f => ({ ...f, date: e.target.value }))} style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Heure</label>
+                    <input type="time" value={rdvForm.heure} onChange={e => setRdvForm(f => ({ ...f, heure: e.target.value }))} style={INP} />
+                  </div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Lieu</label>
+                    <input value={rdvForm.lieu} onChange={e => setRdvForm(f => ({ ...f, lieu: e.target.value }))} placeholder="Adresse du chantier ou de votre dépôt" style={INP} />
+                  </div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Message</label>
+                    <textarea value={rdvForm.message} onChange={e => setRdvForm(f => ({ ...f, message: e.target.value }))} rows={2}
+                      placeholder="Je vous propose un rendez-vous pour évaluer les travaux sur place..."
                       style={{ ...INP, resize: 'vertical' }} />
                   </div>
-                  <button onClick={envoyerOffre} disabled={!offreForm.prix}
-                    style={{ ...BTN, width: '100%', marginTop: 14, padding: 14, fontSize: 14, opacity: offreForm.prix ? 1 : 0.5, background: '#A68B4B' }}>
-                    Envoyer mon offre →
-                  </button>
-                  <div style={{ fontSize: 11, color: DS.muted, textAlign: 'center', marginTop: 8 }}>L'artisan reçoit 100% — commission payée par le client</div>
-                </>
+                </div>
+                <button onClick={() => {
+                  try {
+                    const rdvs = JSON.parse(localStorage.getItem('freample_rdv') || '[]');
+                    rdvs.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, ...rdvForm, statut: 'propose', createdAt: new Date().toISOString() });
+                    localStorage.setItem('freample_rdv', JSON.stringify(rdvs));
+                  } catch {}
+                  setModalView('sent');
+                }} disabled={!rdvForm.date}
+                  style={{ ...BTN, width: '100%', marginTop: 14, padding: 14, fontSize: 14, background: '#D97706', opacity: rdvForm.date ? 1 : 0.5 }}>
+                  Proposer ce rendez-vous →
+                </button>
+              </>}
+
+              {/* ── CONFIRMATION ── */}
+              {modalView === 'sent' && (
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#F0FDF4', border: '2px solid #16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 26 }}>✓</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 6 }}>Envoyé !</div>
+                  <div style={{ fontSize: 13, color: DS.muted, marginBottom: 20, lineHeight: 1.5 }}>Le client va recevoir votre proposition.<br />Vous serez notifié de sa réponse.</div>
+                  <button onClick={() => setSelected(null)} style={{ ...BTN, padding: '10px 28px' }}>Fermer</button>
+                </div>
               )}
             </div>
           </div>
