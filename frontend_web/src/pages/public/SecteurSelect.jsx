@@ -51,14 +51,56 @@ export default function SecteurSelect() {
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {isDev && <button onClick={() => navigate('/immo/demo')} style={{ padding: '6px 12px', background: '#F0FDF4', border: 'none', fontSize: 11, fontWeight: 700, color: '#16A34A', cursor: 'pointer' }}>Demo</button>}
-          <button onClick={() => navigate('/login')} style={{ padding: '8px 20px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font, transition: 'color .15s' }}
-            onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
-            Se connecter
-          </button>
-          <button onClick={() => navigate('/register')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#333'} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
-            S'inscrire
-          </button>
+          {user ? <>
+            <button onClick={() => {
+              const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard', fondateur: '/' };
+              navigate(dest[user.role] || '/');
+            }} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: L.gold, cursor: 'pointer', fontFamily: L.font }}>
+              Mon espace
+            </button>
+            {/* Avatar + menu */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setMenuOpen(!menuOpen)}
+                style={{ width: 38, height: 38, borderRadius: '50%', background: L.gold, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: L.font }}>
+                {(user.nom || 'U').charAt(0).toUpperCase()}
+              </button>
+              {menuOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', border: `1px solid ${L.border}`, borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', minWidth: 220, zIndex: 300, overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 18px', borderBottom: `1px solid ${L.border}` }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: L.text }}>{user.nom}</div>
+                    <div style={{ fontSize: 12, color: L.textSec }}>{user.email}</div>
+                  </div>
+                  {[
+                    { label: 'Mon espace', icon: '📊', action: () => { const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
+                    { label: 'Trouver un artisan', icon: '🔨', action: () => navigate('/btp') },
+                    { label: 'Freample Immo', icon: '🏠', action: () => navigate('/immo') },
+                  ].map(item => (
+                    <button key={item.label} onClick={() => { setMenuOpen(false); item.action(); }}
+                      style={{ width: '100%', padding: '11px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: L.font, fontSize: 13, fontWeight: 500, color: L.text, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'background .1s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                      <span style={{ fontSize: 15 }}>{item.icon}</span> {item.label}
+                    </button>
+                  ))}
+                  <div style={{ borderTop: `1px solid ${L.border}` }}>
+                    <button onClick={async () => { setMenuOpen(false); const { logout } = auth; if (logout) await logout(); navigate('/'); }}
+                      style={{ width: '100%', padding: '11px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: L.font, fontSize: 13, fontWeight: 500, color: '#DC2626', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                      <span style={{ fontSize: 15 }}>🚪</span> Se déconnecter
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </> : <>
+            <button onClick={() => navigate('/login')} style={{ padding: '8px 20px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font, transition: 'color .15s' }}
+              onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
+              Se connecter
+            </button>
+            <button onClick={() => navigate('/register')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#333'} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
+              S'inscrire
+            </button>
+          </>}
         </div>
       </nav>
 

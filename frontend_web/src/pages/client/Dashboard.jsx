@@ -974,6 +974,12 @@ function AccueilTab({ user, navigate, setActiveTab }) {
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: DS.ink, letterSpacing: '-0.03em', marginBottom: 4 }}>Bonjour, {prenom} 👋</h1>
           <p style={{ fontSize: 13.5, color: DS.muted }}>Retrouvez toutes vos activités et dépenses en un seul endroit.</p>
         </div>
+        <button onClick={() => navigate('/btp')}
+          style={{ padding: '12px 28px', background: '#2C2520', color: '#F5EFE0', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font, transition: 'all .2s', flexShrink: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#A68B4B'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#2C2520'; e.currentTarget.style.color = '#F5EFE0'; }}>
+          🔨 Trouver un artisan
+        </button>
       </div>
 
       {/* KPI cards */}
