@@ -36,10 +36,14 @@ export default function ProjetsClients() {
   const [offreSent, setOffreSent] = useState(false);
   const [filtreMet, setFiltreMet] = useState('');
 
-  // Config entreprise — adresse dépôt + rayon
+  // Config entreprise — adresse dépôt + rayon (Nice par défaut pour démo)
   const [config, setConfig] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('freample_entreprise_geo')) || { adresse: '', lat: null, lon: null, rayon: 20 }; }
-    catch { return { adresse: '', lat: null, lon: null, rayon: 20 }; }
+    try {
+      const saved = JSON.parse(localStorage.getItem('freample_entreprise_geo'));
+      if (saved?.lat) return saved;
+    } catch {}
+    // Défaut : Nice pour les comptes démo
+    return { adresse: 'Nice (06)', lat: 43.7102, lon: 7.2620, rayon: 30 };
   });
   const [configEdit, setConfigEdit] = useState(false);
   const [configForm, setConfigForm] = useState({ adresse: config.adresse, rayon: config.rayon });
