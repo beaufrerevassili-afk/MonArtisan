@@ -35,36 +35,23 @@ function IconMoon({ size = 16 }) {
 // Client menus per sector tab
 const CLIENT_TAB_MENUS = {
   accueil: [
-    { label: 'Accueil',          path: '/client/dashboard',                   Icon: IconHome       },
-    { label: 'Freample Com',     path: '/client/com',                         Icon: IconDocument   },
-    { label: 'Paiements',        path: '/client/paiements',                   Icon: IconCreditCard },
-    { label: 'Messagerie',       path: '/client/messagerie',                  Icon: IconMessage    },
-    { label: 'Parrainage',       path: '/client/parrainage',                  Icon: IconGift       },
-    { label: 'Mon profil',       path: '/client/profil',                      Icon: IconUser       },
+    { label: 'Suivi de projets',  path: '/client/dashboard',                   Icon: IconMissions   },
+    { label: 'Paiements',         path: '/client/dashboard',                   Icon: IconCreditCard },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage    },
+    { label: 'Artisans favoris',  path: '/client/dashboard',                   Icon: IconStar       },
+    { label: 'Mon profil',        path: '/client/dashboard',                   Icon: IconUser       },
   ],
   btp: [
-    { label: '← Accueil', path: '/client/dashboard',                  Icon: IconHome,     isBack: true },
-    { label: 'Mes missions',      path: '/client/travaux',                     Icon: IconMissions  },
-    { label: 'Mes devis',         path: '/client/devis',                       Icon: IconDocument  },
-    { label: 'Paiements',         path: '/client/paiements',                   Icon: IconCreditCard},
-    { label: 'Mes avis',          path: '/client/avis',                        Icon: IconStar      },
-    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage   },
-    { label: 'Mon profil',        path: '/client/profil',                      Icon: IconUser      },
-  ],
-  coiffure: [
-    { label: '← Accueil', path: '/client/dashboard',                    Icon: IconHome,     isBack: true },
-    { label: 'Mes rendez-vous',   path: '/client/dashboard?tab=coiffure',       Icon: IconCalendar  },
-    { label: 'Salons favoris',    path: '/client/dashboard?tab=coiffure',       Icon: IconStar      },
-    { label: 'Historique',        path: '/client/travaux',                       Icon: IconMissions  },
-    { label: 'Paiements',         path: '/client/paiements',                    Icon: IconCreditCard},
-    { label: 'Messagerie',        path: '/client/messagerie',                   Icon: IconMessage   },
-    { label: 'Mon profil',        path: '/client/profil',                       Icon: IconUser      },
+    { label: 'Suivi de projets',  path: '/client/dashboard',                   Icon: IconMissions   },
+    { label: 'Paiements',         path: '/client/dashboard',                   Icon: IconCreditCard },
+    { label: 'Messagerie',        path: '/client/messagerie',                  Icon: IconMessage    },
+    { label: 'Artisans favoris',  path: '/client/dashboard',                   Icon: IconStar       },
+    { label: 'Mon profil',        path: '/client/dashboard',                   Icon: IconUser       },
   ],
 };
 
 const SECTOR_HEADERS = {
-  btp:        { label: '🔨 BTP & Travaux',  color: '#5B5BD6', bg: '#EBF5FF' },
-  coiffure:   { label: '✂️ Coiffure',        color: '#E535AB', bg: '#FFF0F8' },
+  btp: { label: '🔨 BTP & Travaux', color: '#5B5BD6', bg: '#EBF5FF' },
 };
 
 const MENUS = {
