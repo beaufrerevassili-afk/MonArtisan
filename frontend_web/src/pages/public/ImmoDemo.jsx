@@ -19,6 +19,7 @@ import AgendaImmoModule from '../../components/immo/AgendaImmoModule';
 import ClesModule from '../../components/immo/ClesModule';
 import SiteWebModule from '../../components/immo/SiteWebModule';
 import ParametresModule from '../../components/immo/ParametresModule';
+import GeorisquesModule from '../../components/immo/GeorisquesModule';
 
 const STORAGE_KEY = 'freample_immo_data';
 const TYPES_BIEN = ['Appartement','Studio','Maison','Local commercial','Parking','Cave','Terrain'];
@@ -229,10 +230,13 @@ export default function ImmoDemo() {
       { id:'annonces', label:'Annonces', icon:'📢' },
       { id:'cles_tab', label:'Clés', icon:'🔑' },
     ]},
+    { id:'projets', label:'Projets immobiliers', icon:'🎯', items:[
+      { id:'strategie', label:'Stratégie & Pilotage', icon:'🎯' },
+      { id:'georisques', label:'Géorisques', icon:'⚠️' },
+    ]},
     { id:'finance', label:'Finances & Compta', icon:'💰', items:[
       { id:'finances', label:'Trésorerie', icon:'💰' },
       { id:'outils', label:'Simulateurs', icon:'🧮' },
-      { id:'strategie', label:'Stratégie', icon:'🎯' },
     ]},
     { id:'communication', label:'Communication', icon:'📣', items:[
       { id:'contrats_tab', label:'Contrats', icon:'📄' },
@@ -1982,6 +1986,9 @@ export default function ImmoDemo() {
           })()}
 
           </>}{/* fin tab==='strategie' */}
+
+          {/* ═══ GÉORISQUES ═══ */}
+          {tab==='georisques' && <GeorisquesModule biens={biens} />}
 
           {/* ═══ ALERTES + MISE EN DEMEURE + PROJECTION ═══ */}
           {tab==='alertes' && <>
