@@ -1,275 +1,358 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useFadeUp, useScaleIn, StaggerChildren } from '../../utils/scrollAnimations';
 import L from '../../design/luxe';
 
+const SECTEURS = [
+  { id: 'btp', emoji: '🏗️', label: 'BTP & Artisans', color: '#8B5CF6' },
+  { id: 'coiffure', emoji: '💇', label: 'Coiffure & Beauté', color: '#EC4899' },
+  { id: 'immo', emoji: '🏠', label: 'Immobilier & SCI', color: '#2563EB' },
+  { id: 'droit', emoji: '⚖️', label: 'Droit & Juridique', color: '#059669' },
+  { id: 'autre', emoji: '💼', label: 'Autre activité', color: '#D97706' },
+];
+
+const ECO = {
+  btp: {
+    center: { icon: '🏗️', label: 'BTP' },
+    modules: [
+      { icon: '📊', label: 'Pipeline commercial', desc: 'Prospects, devis, factures — suivez chaque affaire du premier contact au paiement.', color: '#8B5CF6' },
+      { icon: '👥', label: 'RH & Paie', desc: 'Convention collective BTP, bulletins de paie, indemnités trajet, gestion des congés.', color: '#2563EB' },
+      { icon: '🛡️', label: 'QHSE', desc: 'Audits sécurité, EPI, incidents, BSDD, habilitations — conformité chantier totale.', color: '#16A34A' },
+      { icon: '📍', label: 'Chantiers', desc: 'Planning, affectation, photos, calcul de distance automatique.', color: '#D97706' },
+      { icon: '📢', label: 'Recrutement', desc: 'Publiez des offres, recevez des CV, pipeline d\'embauche complet.', color: '#059669' },
+      { icon: '💰', label: 'Finance', desc: 'Trésorerie, URSSAF, export Sage/EBP, bibliothèque de prix.', color: '#DC2626' },
+    ],
+    phrase: 'Remplace Sage + PayFit + Qualnet en un seul outil.',
+    avant: ['Excel pour les devis', 'PayFit pour la paie', 'Qualnet pour la sécurité', 'Sage pour la compta', 'Papier pour les EPI'],
+    apres: ['Pipeline commercial visuel', 'Paie BTP automatisée', 'Audits QHSE intégrés', 'Export comptable en 1 clic', 'Suivi EPI numérique'],
+  },
+  coiffure: {
+    center: { icon: '💇', label: 'Salon' },
+    modules: [
+      { icon: '📅', label: 'Agenda & RDV', desc: 'Prise de rendez-vous en ligne, rappels automatiques, planning équipe.', color: '#8B5CF6' },
+      { icon: '👥', label: 'Personnel', desc: 'Planning, congés, paie, contrats — adapté aux salons.', color: '#2563EB' },
+      { icon: '💰', label: 'Caisse & Factures', desc: 'Encaissements, historique client, export comptable.', color: '#16A34A' },
+      { icon: '📦', label: 'Stock produits', desc: 'Suivi produits, alertes réapprovisionnement.', color: '#D97706' },
+      { icon: '⭐', label: 'Avis & Fidélité', desc: 'Avis clients, programme de fidélité, communication.', color: '#059669' },
+      { icon: '🎬', label: 'Communication', desc: 'Vidéos réseaux sociaux, branding, présence en ligne.', color: '#DC2626' },
+    ],
+    phrase: 'Gérez votre salon de A à Z sans multiplier les logiciels.',
+    avant: ['Cahier de rendez-vous', 'Logiciel de caisse séparé', 'Comptable externe', 'Pas de fidélisation client', 'Pas de présence en ligne'],
+    apres: ['Agenda en ligne avec rappels', 'Caisse + factures intégrées', 'Export comptable automatique', 'Programme fidélité intégré', 'Vidéos & branding inclus'],
+  },
+  immo: {
+    center: { icon: '🏠', label: 'Immobilier' },
+    modules: [
+      { icon: '🏢', label: 'Gestion locative', desc: 'Baux, quittances, appels de loyer automatisés.', color: '#8B5CF6' },
+      { icon: '💰', label: 'Comptabilité SCI', desc: 'Revenus, charges, amortissements, déclarations.', color: '#2563EB' },
+      { icon: '🔧', label: 'Travaux', desc: 'Suivi interventions, devis artisans, historique par bien.', color: '#16A34A' },
+      { icon: '📄', label: 'Documents', desc: 'Baux, avenants, PV d\'AG générés en un clic.', color: '#D97706' },
+      { icon: '📊', label: 'Rentabilité', desc: 'Rendement par bien, cash-flow, projection.', color: '#059669' },
+      { icon: '👥', label: 'Locataires', desc: 'Fiches locataires, paiements, relances auto.', color: '#DC2626' },
+    ],
+    phrase: 'Pilotez vos biens et SCI depuis un seul tableau de bord.',
+    avant: ['Excel pour les loyers', 'Courriers manuels', 'Comptable pour tout', 'Pas de suivi travaux', 'Relances oubliées'],
+    apres: ['Appels de loyer automatiques', 'Documents générés en 1 clic', 'Comptabilité SCI intégrée', 'Suivi travaux par bien', 'Relances automatiques'],
+  },
+  droit: {
+    center: { icon: '⚖️', label: 'Cabinet' },
+    modules: [
+      { icon: '📁', label: 'Dossiers', desc: 'Suivi des affaires, échéances, pièces jointes.', color: '#8B5CF6' },
+      { icon: '💰', label: 'Facturation', desc: 'Saisie du temps, honoraires, facturation auto.', color: '#2563EB' },
+      { icon: '📄', label: 'Documents', desc: 'Modèles de contrats, actes, courriers.', color: '#16A34A' },
+      { icon: '👥', label: 'Clients & CRM', desc: 'Fiches clients, historique, relances.', color: '#D97706' },
+      { icon: '📅', label: 'Agenda', desc: 'Planning, audiences, rendez-vous.', color: '#059669' },
+      { icon: '🛡️', label: 'Conformité', desc: 'RGPD, archivage sécurisé.', color: '#DC2626' },
+    ],
+    phrase: 'L\'outil de gestion pensé pour les professionnels du droit.',
+    avant: ['Dossiers papier', 'Facturation manuelle', 'Pas de suivi temps', 'Agenda séparé', 'RGPD non maîtrisé'],
+    apres: ['Dossiers numériques complets', 'Facturation automatisée', 'Suivi temps intégré', 'Agenda avec rappels', 'Conformité RGPD intégrée'],
+  },
+  autre: {
+    center: { icon: '💼', label: 'Activité' },
+    modules: [
+      { icon: '📊', label: 'Commercial', desc: 'Pipeline de ventes, devis, factures, suivi clients.', color: '#8B5CF6' },
+      { icon: '👥', label: 'RH & Équipe', desc: 'Gestion du personnel, congés, paie, contrats.', color: '#2563EB' },
+      { icon: '💰', label: 'Finance', desc: 'Trésorerie, comptabilité, déclarations.', color: '#16A34A' },
+      { icon: '📢', label: 'Recrutement', desc: 'Offres d\'emploi, candidatures, embauche.', color: '#D97706' },
+      { icon: '🎬', label: 'Communication', desc: 'Vidéos, branding, réseaux sociaux.', color: '#059669' },
+      { icon: '📄', label: 'Documents', desc: 'Contrats, modèles, génération auto.', color: '#DC2626' },
+    ],
+    phrase: 'Un outil de gestion complet, quel que soit votre métier.',
+    avant: ['Plusieurs logiciels', 'Données dispersées', 'Tâches manuelles', 'Pas de vision globale', 'Perte de temps'],
+    apres: ['Un seul outil', 'Données connectées', 'Automatisation complète', 'Tableau de bord unifié', 'Gain de temps massif'],
+  },
+};
+
+/* ── Schéma circulaire interactif ── */
+function EcoSchema({ secteur, hovered, setHovered }) {
+  const eco = ECO[secteur] || ECO.btp;
+  const modules = eco.modules;
+  const cx = 50, cy = 50, r = 36;
+  const positions = modules.map((_, i) => {
+    const angle = (i / modules.length) * Math.PI * 2 - Math.PI / 2;
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  });
+
+  return (
+    <div style={{ position: 'relative', width: '100%', maxWidth: 420, margin: '0 auto', aspectRatio: '1' }}>
+      <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={0.3} strokeDasharray="2 1.5" />
+        {positions.map((pos, i) => (
+          <line key={i} x1={cx} y1={cy} x2={pos.x} y2={pos.y}
+            stroke={hovered === i ? modules[i].color : 'rgba(255,255,255,0.08)'} strokeWidth={hovered === i ? 0.6 : 0.25}
+            style={{ transition: 'all .3s' }} />
+        ))}
+      </svg>
+      <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 76, height: 76, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+        <span style={{ fontSize: 28 }}>{eco.center.icon}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, marginTop: 2 }}>{eco.center.label}</span>
+      </div>
+      {modules.map((mod, i) => {
+        const pos = positions[i];
+        const active = hovered === i;
+        return (
+          <div key={mod.label} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} onClick={() => setHovered(active ? null : i)}
+            style={{ position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', zIndex: active ? 3 : 1 }}>
+            <div style={{ width: active ? 62 : 52, height: active ? 62 : 52, borderRadius: '50%', background: active ? mod.color : 'rgba(255,255,255,0.08)', border: `2px solid ${active ? mod.color : 'rgba(255,255,255,0.12)'}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: active ? `0 8px 24px ${mod.color}40` : 'none', transition: 'all .25s', backdropFilter: 'blur(4px)' }}>
+              <span style={{ fontSize: active ? 20 : 17 }}>{mod.icon}</span>
+              <span style={{ fontSize: 6.5, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.1, padding: '0 3px', marginTop: 1 }}>{mod.label}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ProLanding() {
   const navigate = useNavigate();
   const auth = useAuth() || {};
   const user = auth.user || null;
   const isPro = user && (user.role === 'patron' || user.role === 'fondateur' || user.role === 'super_admin');
+  const [secteur, setSecteur] = useState('btp');
+  const [hovered, setHovered] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const scrollTo = (id) => { setMenuOpen(false); setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),350); };
+  const scrollTo = (id) => { setMenuOpen(false); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
 
-  const MENU = [
-    {label:'Fonctionnalités',id:'fonctionnalites'},
-    {label:'Secteurs',id:'secteurs'},
-    {label:'Commissions',id:'tarifs-pro'},
-    {label:'FAQ',id:'faq'},
-    {label:'S\'inscrire',action:()=>{setMenuOpen(false);navigate('/register?role=patron&secteur=btp');}},
-  ];
-
-  const s1=useScaleIn(),s2=useScaleIn(0.15),s3=useScaleIn(0.15),s4=useScaleIn(0.15);
-  const r1=useFadeUp(),r2=useFadeUp(0.1),r3=useFadeUp(0.1),r4=useFadeUp(),r5=useFadeUp(),r6=useFadeUp();
+  const r1 = useFadeUp(), r2 = useFadeUp(0.1), r3 = useFadeUp(0.1);
+  const eco = ECO[secteur] || ECO.btp;
+  const modules = eco.modules;
 
   return (
-    <div style={{ minHeight:'100vh', background:L.white, fontFamily:L.font, color:L.text }}>
+    <div style={{ minHeight: '100vh', background: L.white, fontFamily: L.font, color: L.text }}>
 
-      <RecrutementBanner />
-
-      {/* ══ NAVBAR PRO ══ */}
-      <nav style={{ position:'sticky', top:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(20px,4vw,48px)', height:60, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderBottom:`1px solid ${L.border}` }}>
-        <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:800, color:L.text, fontFamily:L.font, letterSpacing:'-0.04em' }}>
-          Freample<span style={{ color:L.gold }}>.</span>
+      {/* ══ NAVBAR ══ */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 60, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${L.border}` }}>
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 800, color: L.text, fontFamily: L.font, letterSpacing: '-0.04em' }}>
+          Freample<span style={{ color: L.gold }}>.</span> <span style={{ fontSize: 12, fontWeight: 400, color: L.textSec }}>Pro</span>
         </button>
-        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button onClick={() => scrollTo('ecosysteme')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Écosystème</button>
+          <button onClick={() => scrollTo('avantages')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Avantages</button>
+          <button onClick={() => scrollTo('faq')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>FAQ</button>
           {isPro ? (
-            <button onClick={()=>navigate('/patron/dashboard')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
-              onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-              Mon espace pro
-            </button>
+            <button onClick={() => navigate('/patron/dashboard')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font }}>Mon espace</button>
           ) : (
-            <>
-              <button onClick={()=>navigate('/login')} style={{ padding:'8px 20px', background:'none', border:`1px solid ${L.border}`, fontSize:13, fontWeight:500, color:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=L.noir;e.currentTarget.style.color=L.noir;}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textSec;}}>
-                Se connecter
-              </button>
-              <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'8px 20px', background:L.noir, border:'none', fontSize:13, fontWeight:600, color:'#fff', cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
-                onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-                S'inscrire gratuitement
-              </button>
-            </>
+            <button onClick={() => navigate(`/register?role=patron&secteur=${secteur}`)} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
+              S'inscrire gratuitement
+            </button>
           )}
         </div>
       </nav>
 
-      {/* ══ HAMBURGER ══ */}
-      <button onClick={()=>setMenuOpen(true)} aria-label="Menu"
-        style={{ position:'fixed', top:72, left:'clamp(16px,3vw,32px)', zIndex:250, width:40, height:40, background:'rgba(255,255,255,0.9)', backdropFilter:'blur(12px)', border:`1px solid rgba(0,0,0,0.06)`, borderRadius:10, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', transition:'all .25s' }}
-        onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)';}} onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';}}>
-        <span style={{ width:16, height:1.5, background:L.noir }}/><span style={{ width:16, height:1.5, background:L.noir }}/>
-      </button>
-
-      {/* ══ FULLSCREEN MENU ══ */}
-      <div style={{ position:'fixed', inset:0, zIndex:2000, background:L.noir, opacity:menuOpen?1:0, pointerEvents:menuOpen?'auto':'none', transition:'opacity .4s', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center' }}>
-        <button onClick={()=>setMenuOpen(false)} style={{ position:'absolute', top:20, right:28, background:'none', border:'none', cursor:'pointer', color:'#fff', fontSize:28, fontWeight:200, transition:'color .2s' }}
-          onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>✕</button>
-        <div style={{ position:'absolute', top:24, left:28, fontSize:14, fontWeight:800, color:'#fff', letterSpacing:'-0.03em' }}>Freample Pro<span style={{color:L.gold}}>.</span></div>
-        <nav style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
-          {MENU.map((item,i)=>(
-            <button key={item.label} onClick={()=>item.action?item.action():scrollTo(item.id)}
-              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:L.serif, fontSize:'clamp(24px,4.5vw,44px)', fontWeight:500, fontStyle:'italic', color:'#fff', padding:'10px 0', opacity:menuOpen?1:0, transform:menuOpen?'translateY(0)':'translateY(20px)', transition:`opacity .4s ${0.1+i*0.05}s, transform .4s ${0.1+i*0.05}s, color .2s` }}
-              onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color='#fff'}>{item.label}</button>
-          ))}
-        </nav>
-      </div>
-
-      {/* ══ HERO ══ */}
-      <header style={{ background:L.noir, padding:'clamp(80px,14vh,140px) 32px clamp(72px,12vh,110px)', textAlign:'center', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', inset:0, backgroundImage:'url(https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1800&q=85)', backgroundSize:'cover', backgroundPosition:'center', opacity:0.2 }} />
-        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.9) 100%)' }} />
-        <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold, zIndex:2 }} />
-        <div style={{ maxWidth:700, margin:'0 auto', position:'relative', zIndex:1 }}>
-          <div ref={s1}>
-            <h1 style={{ fontSize:'clamp(34px,6.5vw,64px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.03em', margin:'0 0 18px' }}>
-              Votre activité,<br/>simplifiée.
+      {/* ══ HERO + SCHÉMA INTERACTIF ══ */}
+      <header id="ecosysteme" style={{ background: L.noir, padding: 'clamp(60px,10vh,100px) 32px clamp(48px,8vh,80px)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 60%)' }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', gap: 'clamp(32px,5vw,64px)', alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          {/* Texte */}
+          <div style={{ flex: '1 1 400px', minWidth: 0 }}>
+            <div style={{ width: 40, height: 2, background: L.gold, marginBottom: 24 }} />
+            <h1 style={{ fontSize: 'clamp(32px,5.5vw,56px)', fontWeight: 800, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.03em', margin: '0 0 16px' }}>
+              Gérez toute votre<br />entreprise en un<br />seul endroit.
             </h1>
+            <p style={{ fontSize: 'clamp(15px,1.6vw,17px)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: '0 0 24px', maxWidth: 420 }}>
+              RH, paie, commercial, conformité, recrutement, communication — un écosystème complet adapté à votre métier.
+            </p>
+
+            {/* Sélecteur secteur */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 28 }}>
+              {SECTEURS.map(s => (
+                <button key={s.id} onClick={() => { setSecteur(s.id); setHovered(null); }}
+                  style={{ padding: '8px 16px', border: `1px solid ${secteur === s.id ? s.color : 'rgba(255,255,255,0.12)'}`, background: secteur === s.id ? s.color + '20' : 'transparent', color: secteur === s.id ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, transition: 'all .2s', borderRadius: 6 }}>
+                  {s.emoji} {s.label}
+                </button>
+              ))}
+            </div>
+
+            <p style={{ fontSize: 14, color: L.gold, fontWeight: 600, fontStyle: 'italic', marginBottom: 28 }}>{eco.phrase}</p>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button onClick={() => navigate(`/register?role=patron&secteur=${secteur}`)} style={{ padding: '14px 36px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.04em', transition: 'background .2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
+                Créer mon espace — Gratuit
+              </button>
+              <button onClick={() => scrollTo('avantages')} style={{ padding: '14px 28px', background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)', fontSize: 13, cursor: 'pointer', fontFamily: L.font, transition: 'all .2s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'}>
+                Voir les avantages
+              </button>
+            </div>
           </div>
-          <p style={{ fontSize:'clamp(15px,1.8vw,17px)', color:'rgba(255,255,255,0.6)', lineHeight:1.65, margin:'0 auto 40px', maxWidth:460, fontWeight:300 }}>
-            Agenda, devis, factures, clients, équipe — tout votre business dans une seule plateforme.
-          </p>
-          <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
-            <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 44px', background:L.white, color:L.noir, border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .3s' }}
-              onMouseEnter={e=>{e.currentTarget.style.background=L.gold;e.currentTarget.style.color='#fff';}} onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.color=L.noir;}}>
-              Créer mon espace — Gratuit
-            </button>
-            <button onClick={()=>scrollTo('fonctionnalites')} style={{ padding:'16px 32px', background:'transparent', color:'#fff', border:'1px solid rgba(255,255,255,0.18)', fontSize:13, fontWeight:400, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'all .3s' }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.5)'} onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.18)'}>
-              Voir les fonctionnalités
-            </button>
+
+          {/* Schéma interactif */}
+          <div style={{ flex: '1 1 400px', minWidth: 0 }}>
+            <EcoSchema secteur={secteur} hovered={hovered} setHovered={setHovered} />
+            {/* Détail au survol */}
+            <div style={{ minHeight: 64, marginTop: 8 }}>
+              {hovered !== null ? (
+                <div style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${modules[hovered].color}60`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, backdropFilter: 'blur(4px)' }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>{modules[hovered].icon}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: modules[hovered].color, marginBottom: 2 }}>{modules[hovered].label}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>{modules[hovered].desc}</div>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Survolez un module pour en savoir plus</p>
+              )}
+            </div>
           </div>
         </div>
-        <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:48, height:1, background:L.gold }} />
       </header>
 
       {/* ══ CHIFFRES ══ */}
-      <section style={{ background:L.cream, padding:'clamp(40px,6vh,64px) 32px' }}>
-        <div style={{ maxWidth:800, margin:'0 auto', display:'flex', justifyContent:'center', gap:'clamp(32px,6vw,80px)', flexWrap:'wrap', textAlign:'center' }}>
-          {[{val:'5 min',label:'Inscription'},{val:'0€',label:'Abonnement'},{val:'24/7',label:'Accessible'}].map(s=>(
+      <section style={{ background: L.cream, padding: 'clamp(36px,5vh,56px) 32px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 'clamp(24px,5vw,64px)', flexWrap: 'wrap', textAlign: 'center' }}>
+          {[{ val: '5 min', label: 'Pour s\'inscrire' }, { val: '0 €', label: 'Abonnement' }, { val: '6+', label: 'Modules intégrés' }, { val: '24/7', label: 'Accessible partout' }].map(s => (
             <div key={s.val}>
-              <div style={{ fontSize:'clamp(28px,4vw,42px)', fontWeight:500, fontFamily:L.serif, letterSpacing:'-0.03em', lineHeight:1 }}>{s.val}</div>
-              <div style={{ fontSize:12, color:L.textSec, marginTop:8 }}>{s.label}</div>
+              <div style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 500, fontFamily: L.serif, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+              <div style={{ fontSize: 12, color: L.textSec, marginTop: 6 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ══ FONCTIONNALITÉS ══ */}
-      <section ref={r1} id="fonctionnalites" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
-        <div style={{ maxWidth:1000, margin:'0 auto' }}>
-          <div ref={s2} style={{ textAlign:'center', marginBottom:52 }}>
-            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
-              Tout ce dont vous avez besoin
-            </h2>
+      {/* ══ AVANT / APRÈS ══ */}
+      <section ref={r1} id="avantages" style={{ background: L.white, padding: 'clamp(64px,9vh,100px) 32px', scrollMarginTop: 20 }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(24px,3.5vw,38px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Avant Freample vs. Avec Freample</h2>
+            <p style={{ fontSize: 15, color: L.textSec }}>Sélectionnez votre secteur ci-dessus pour voir la comparaison.</p>
           </div>
-          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:1, background:L.border }}>
-            {[
-              { title:'Agenda intelligent', desc:'Gérez vos rendez-vous, planifiez vos interventions et recevez des rappels automatiques.' },
-              { title:'Devis & Factures', desc:'Créez des devis professionnels en 2 clics. Transformez-les en factures et suivez les paiements.' },
-              { title:'Gestion clients (CRM)', desc:'Historique complet de chaque client, segmentation RFM, relances automatiques.' },
-              { title:'Gestion d\'équipe', desc:'Assignez des missions, suivez le temps de travail et gérez les plannings.' },
-              { title:'Finance & Trésorerie', desc:'Suivi des entrées/sorties, tableau de bord financier, export comptable.' },
-              { title:'Rapports & Analytics', desc:'Chiffre d\'affaires, rentabilité par projet, performance de l\'équipe en temps réel.' },
-              { title:'Gestion de stock', desc:'Suivi des matériaux, alertes de réapprovisionnement, valorisation en temps réel.' },
-              { title:'Réputation en ligne', desc:'Collectez les avis clients, suivez votre e-réputation, répondez aux feedbacks.' },
-              { title:'Conformité & Juridique', desc:'Rappels d\'échéances légales, URSSAF, assurances, documents obligatoires.' },
-            ].map((f, idx)=>(
-              <div key={f.title} style={{ background:L.white, padding:'32px 28px', transition:'background .2s' }}
-                onMouseEnter={e=>e.currentTarget.style.background=L.cream} onMouseLeave={e=>e.currentTarget.style.background=L.white}>
-                <div style={{ fontSize:11, color:L.textLight, fontWeight:600, marginBottom:10 }}>{String(idx+1).padStart(2,'0')}</div>
-                <h3 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>{f.title}</h3>
-                <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{f.desc}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, border: `1px solid ${L.border}`, borderRadius: 14, overflow: 'hidden' }}>
+            {/* Avant */}
+            <div style={{ padding: 'clamp(24px,4vw,36px)', background: '#FEF2F2' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#DC2626', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>❌ Avant</div>
+              {eco.avant.map(a => (
+                <div key={a} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(220,38,38,0.08)', fontSize: 14, color: '#7F1D1D' }}>
+                  <span style={{ color: '#DC2626', fontSize: 12, flexShrink: 0 }}>✗</span>{a}
+                </div>
+              ))}
+            </div>
+            {/* Après */}
+            <div style={{ padding: 'clamp(24px,4vw,36px)', background: '#F0FDF4' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>✅ Avec Freample</div>
+              {eco.apres.map(a => (
+                <div key={a} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(22,163,74,0.08)', fontSize: 14, color: '#14532D' }}>
+                  <span style={{ color: '#16A34A', fontSize: 12, flexShrink: 0 }}>✓</span>{a}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ MODULES DÉTAILLÉS ══ */}
+      <section ref={r2} style={{ background: L.bg, padding: 'clamp(64px,9vh,100px) 32px', borderTop: `1px solid ${L.border}` }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2 style={{ fontSize: 'clamp(24px,3.5vw,38px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Tout est inclus, rien à ajouter.</h2>
+            <p style={{ fontSize: 15, color: L.textSec }}>Chaque module est conçu pour fonctionner avec les autres. Zéro ressaisie.</p>
+          </div>
+          <StaggerChildren style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {eco.modules.map(mod => (
+              <div key={mod.label} style={{ background: L.white, borderRadius: 14, padding: '24px 20px', border: `1px solid ${L.border}`, transition: 'all .2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = mod.color; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 8px 24px ${mod.color}12`; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = L.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                <div style={{ fontSize: 28, marginBottom: 10 }}>{mod.icon}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: mod.color, margin: '0 0 6px' }}>{mod.label}</h3>
+                <p style={{ fontSize: 13, color: L.textSec, lineHeight: 1.6, margin: 0 }}>{mod.desc}</p>
               </div>
             ))}
           </StaggerChildren>
         </div>
       </section>
 
-      {/* ══ IMAGE BREAK ══ */}
-      <div style={{ height:'clamp(180px,26vh,300px)', backgroundImage:'url(https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1600&q=80)', backgroundSize:'cover', backgroundPosition:'center', backgroundAttachment:'fixed' }} />
-
-      {/* ══ SECTEURS ══ */}
-      <section ref={r2} id="secteurs" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', scrollMarginTop:20 }}>
-        <div style={{ maxWidth:900, margin:'0 auto' }}>
-          <div ref={s3} style={{ textAlign:'center', marginBottom:48 }}>
-            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
-              Adapté à votre métier
-            </h2>
-          </div>
-          <StaggerChildren style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
+      {/* ══ TARIFS ══ */}
+      <section style={{ background: L.white, padding: 'clamp(64px,9vh,100px) 32px', borderTop: `1px solid ${L.border}` }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,38px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Gratuit. Vraiment.</h2>
+          <p style={{ fontSize: 15, color: L.textSec, marginBottom: 36 }}>Pas d'abonnement, pas de frais cachés. La commission est sur le client, pas sur vous.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             {[
-              { title:'BTP & Artisanat', desc:'Plombiers, électriciens, peintres, maçons — gestion de chantiers, devis et suivi client.' },
-              { title:'Communication & Création', desc:'Gestion des projets vidéo, montage, suivi client et facturation.' },
-            ].map(s=>(
-              <div key={s.title} style={{ background:L.cream, padding:'32px 24px', border:`1px solid ${L.border}`, transition:'all .2s' }}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=L.gold;e.currentTarget.style.transform='translateY(-2px)';}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=L.border;e.currentTarget.style.transform='none';}}>
-                <h3 style={{ fontSize:16, fontWeight:700, marginBottom:6 }}>{s.title}</h3>
-                <p style={{ fontSize:13.5, color:L.textSec, lineHeight:1.6, margin:0 }}>{s.desc}</p>
+              { val: '0 €', label: 'Abonnement', desc: 'Inscription et accès complet gratuits' },
+              { val: '100 %', label: 'Pour vous', desc: 'Vous recevez 100% de vos prestations' },
+              { val: '∞', label: 'Illimité', desc: 'Devis, factures, employés, clients' },
+            ].map(t => (
+              <div key={t.val} style={{ background: L.cream, borderRadius: 14, padding: '24px 16px', border: `1px solid ${L.border}` }}>
+                <div style={{ fontSize: 28, fontWeight: 500, fontFamily: L.serif, color: L.gold }}>{t.val}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>{t.label}</div>
+                <div style={{ fontSize: 11, color: L.textSec, marginTop: 4 }}>{t.desc}</div>
               </div>
             ))}
-          </StaggerChildren>
-        </div>
-      </section>
-
-      {/* ══ COMMISSIONS ══ */}
-      <section ref={r4} id="tarifs-pro" style={{ background:L.white, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
-        <div style={{ maxWidth:700, margin:'0 auto' }}>
-          <div ref={s4} style={{ textAlign:'center', marginBottom:44 }}>
-            <h2 style={{ fontSize:'clamp(24px,3.5vw,38px)', fontWeight:800, letterSpacing:'-0.03em', margin:'0 0 12px', lineHeight:1.12 }}>
-              Pas d'abonnement, pas de surprise.
-            </h2>
-            <p style={{ fontSize:15, color:L.textSec }}>La commission est prélevée sur le client, pas sur vous. Vous recevez 100% de votre prestation.</p>
-          </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:0, border:`1px solid ${L.border}` }}>
-            {/* Comment ça marche */}
-            <div style={{ padding:'36px 28px', background:L.cream, borderRight:`1px solid ${L.border}` }}>
-              <div style={{ fontSize:13, fontWeight:700, color:L.text, marginBottom:20 }}>Comment ça marche</div>
-              {[
-                { step:'1', desc:'Le client vous trouve et demande un devis' },
-                { step:'2', desc:'Vous envoyez le devis depuis Freample' },
-                { step:'3', desc:'Le client paie en ligne via la plateforme' },
-                { step:'4', desc:'Une commission est prélevée automatiquement sur le client' },
-              ].map(s=>(
-                <div key={s.step} style={{ display:'flex', gap:12, marginBottom:14, alignItems:'flex-start' }}>
-                  <div style={{ width:24, height:24, background:L.gold, color:'#fff', fontSize:12, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.step}</div>
-                  <div style={{ fontSize:14, color:L.textSec, lineHeight:1.5 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-            {/* Avantages */}
-            <div style={{ padding:'36px 28px', background:L.white }}>
-              <div style={{ fontSize:13, fontWeight:700, color:L.text, marginBottom:20 }}>Ce qui est inclus</div>
-              {['Inscription gratuite','Aucun abonnement','Devis & factures illimités','Agenda & réservations','Gestion clients (CRM)','Gestion d\'équipe','Tableau de bord financier','Support par email'].map(f=>(
-                <div key={f} style={{ fontSize:14, color:L.text, display:'flex', gap:10, padding:'6px 0' }}>
-                  <span style={{ color:L.gold, flexShrink:0 }}>+</span>{f}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ textAlign:'center', marginTop:28 }}>
-            <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 44px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'background .2s' }}
-              onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
-              S'inscrire gratuitement
-            </button>
           </div>
         </div>
       </section>
 
       {/* ══ FAQ ══ */}
-      <section ref={r5} id="faq" style={{ background:L.bg, padding:'clamp(64px,9vh,100px) 32px', borderTop:`1px solid ${L.border}`, scrollMarginTop:20 }}>
-        <div style={{ maxWidth:650, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:40 }}>
-            <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, letterSpacing:'-0.03em', margin:0, lineHeight:1.12 }}>
-              Questions fréquentes
-            </h2>
+      <section ref={r3} id="faq" style={{ background: L.bg, padding: 'clamp(64px,9vh,100px) 32px', borderTop: `1px solid ${L.border}`, scrollMarginTop: 20 }}>
+        <div style={{ maxWidth: 650, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Questions fréquentes</h2>
           </div>
           {[
-            { q:'L\'inscription est-elle gratuite ?', a:'Oui, l\'inscription et l\'accès à toutes les fonctionnalités sont gratuits. Pas d\'abonnement.' },
-            { q:'Comment fonctionne la commission ?', a:'La commission est prélevée sur le client, pas sur le professionnel. Vous recevez 100% du montant de votre prestation.' },
-            { q:'Combien de temps pour s\'inscrire ?', a:'5 minutes. Renseignez votre activité, créez votre profil et commencez à recevoir des demandes.' },
-            { q:'Quels secteurs sont disponibles ?', a:'BTP (plomberie, électricité, peinture…) et communication (montage vidéo, création de contenu). D\'autres secteurs arrivent.' },
-            { q:'Mes données sont-elles sécurisées ?', a:'Oui, hébergement sécurisé, chiffrement SSL, sauvegardes quotidiennes.' },
-          ].map(faq=>(
-            <details key={faq.q} style={{ marginBottom:1 }}>
-              <summary style={{ padding:'18px 20px', background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', fontSize:15, fontWeight:600, color:L.text, listStyle:'none' }}>{faq.q}</summary>
-              <div style={{ padding:'16px 20px', background:L.white, border:`1px solid ${L.border}`, borderTop:'none', fontSize:14, color:L.textSec, lineHeight:1.65 }}>{faq.a}</div>
+            { q: 'L\'inscription est-elle vraiment gratuite ?', a: 'Oui. Inscription, accès à tous les modules et utilisation quotidienne sont gratuits. Aucun abonnement.' },
+            { q: 'Comment Freample gagne de l\'argent ?', a: 'Une commission est prélevée sur le client final lors des transactions, jamais sur le professionnel. Vous recevez 100% de vos prestations.' },
+            { q: 'Combien de temps pour commencer ?', a: '5 minutes. Créez votre compte, choisissez votre secteur, et vous accédez immédiatement à tous les outils.' },
+            { q: 'C\'est adapté à mon métier ?', a: 'Freample est conçu pour le BTP, la coiffure, l\'immobilier, le droit et toute activité nécessitant de la gestion. Les modules s\'adaptent à votre secteur.' },
+            { q: 'Puis-je créer les comptes de mes salariés ?', a: 'Oui. Depuis votre espace, vous créez les comptes employés. Ils reçoivent leurs identifiants et accèdent à leur propre espace (planning, fiches de paie, documents...).' },
+            { q: 'Mes données sont-elles sécurisées ?', a: 'Oui. Hébergement sécurisé, chiffrement SSL, sauvegardes quotidiennes, conformité RGPD.' },
+          ].map(faq => (
+            <details key={faq.q} style={{ marginBottom: 1 }}>
+              <summary style={{ padding: '18px 20px', background: L.white, border: `1px solid ${L.border}`, cursor: 'pointer', fontSize: 15, fontWeight: 600, color: L.text, listStyle: 'none' }}>{faq.q}</summary>
+              <div style={{ padding: '16px 20px', background: L.white, border: `1px solid ${L.border}`, borderTop: 'none', fontSize: 14, color: L.textSec, lineHeight: 1.65 }}>{faq.a}</div>
             </details>
           ))}
         </div>
       </section>
 
       {/* ══ CTA FINAL ══ */}
-      <section ref={r6} style={{ background:L.noir, padding:'clamp(72px,12vh,110px) 32px', textAlign:'center', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)', pointerEvents:'none' }} />
-        <div style={{ position:'relative', zIndex:1, maxWidth:520, margin:'0 auto' }}>
-          <h2 style={{ fontSize:'clamp(28px,5vw,48px)', fontWeight:800, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.08, margin:'0 0 14px' }}>
-            Prêt à développer<br/>votre activité ?
+      <section style={{ background: L.noir, padding: 'clamp(72px,12vh,110px) 32px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(201,169,110,0.06) 0%, transparent 60%)' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 'clamp(28px,5vw,48px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.08, margin: '0 0 14px' }}>
+            Prêt à simplifier<br />votre quotidien ?
           </h2>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.55)', lineHeight:1.6, margin:'0 0 36px', fontWeight:300 }}>
-            Inscription gratuite, aucun abonnement, commencez dès maintenant.
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: '0 0 36px' }}>
+            Inscription gratuite, aucun abonnement, tout inclus.
           </p>
-          <button onClick={()=>navigate('/register?role=patron&secteur=btp')} style={{ padding:'16px 48px', background:L.gold, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, letterSpacing:'0.06em', textTransform:'uppercase', transition:'background .25s' }}
-            onMouseEnter={e=>e.currentTarget.style.background=L.goldDark} onMouseLeave={e=>e.currentTarget.style.background=L.gold}>
+          <button onClick={() => navigate(`/register?role=patron&secteur=${secteur}`)} style={{ padding: '16px 48px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'background .25s' }}
+            onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
             Commencer maintenant
           </button>
         </div>
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ padding:'24px 32px', borderTop:`1px solid ${L.border}`, background:L.white, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
-        <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:L.textLight, fontFamily:L.font, transition:'color .15s' }}
-          onMouseEnter={e=>e.currentTarget.style.color=L.gold} onMouseLeave={e=>e.currentTarget.style.color=L.textLight}>
+      <footer style={{ padding: '24px 32px', borderTop: `1px solid ${L.border}`, background: L.white, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: L.textLight, fontFamily: L.font }}
+          onMouseEnter={e => e.currentTarget.style.color = L.gold} onMouseLeave={e => e.currentTarget.style.color = L.textLight}>
           ← Retour à l'accueil
         </button>
-        <span style={{ fontSize:11, color:L.textLight, letterSpacing:'0.08em', textTransform:'uppercase' }}>© 2026 Freample</span>
+        <span style={{ fontSize: 11, color: L.textLight }}>© 2026 Freample</span>
       </footer>
-
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}`}</style>
     </div>
   );
 }
