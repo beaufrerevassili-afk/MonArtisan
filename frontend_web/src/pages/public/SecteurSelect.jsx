@@ -15,6 +15,8 @@ export default function SecteurSelect() {
   const isDev = user?.email === DEV_EMAIL;
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchMetier, setSearchMetier] = useState('');
+  const [searchVille, setSearchVille] = useState('');
   useEffect(() => { setMounted(true); document.title = 'Freample — Trouvez un artisan de confiance'; }, []);
 
   const scrollTo = (id) => {
@@ -60,47 +62,66 @@ export default function SecteurSelect() {
         </div>
       </nav>
 
-      {/* ══ HERO — Client first, recherche d'artisan ══ */}
+      {/* ══ HERO — Uber/Doctolib style, recherche directe ══ */}
       <section style={{
-        padding: 'clamp(60px,12vh,120px) clamp(20px,4vw,40px) clamp(40px,6vh,64px)',
-        textAlign: 'center', maxWidth: 720, margin: '0 auto',
-        opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(12px)',
-        transition: 'opacity .6s, transform .6s',
+        background: '#2C2520', position: 'relative', overflow: 'hidden',
+        padding: 'clamp(72px,14vh,140px) clamp(20px,4vw,48px) clamp(60px,10vh,100px)',
       }}>
-        <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(34px,6vw,56px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 16px', lineHeight: 1.08 }}>
-          Trouvez un artisan de <span style={{ fontWeight: 700 }}>confiance</span>
-        </h1>
-        <p style={{ fontSize: 16, color: L.textSec, lineHeight: 1.6, margin: '0 0 36px', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' }}>
-          Plombier, électricien, peintre, menuisier — décrivez votre besoin et trouvez le bon professionnel près de chez vous.
-        </p>
-        {/* CTA artisan — mis en valeur, colorimétrie distincte */}
-        <button onClick={() => navigate('/btp')}
-          style={{ padding: '18px 52px', background: '#2C2520', color: '#F5EFE0', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.04em', textTransform: 'uppercase', transition: 'all .3s', boxShadow: '0 4px 20px rgba(44,37,32,0.25)' }}
-          onMouseEnter={e => { e.currentTarget.style.background = L.gold; e.currentTarget.style.color = '#fff'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(166,139,75,0.3)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#2C2520'; e.currentTarget.style.color = '#F5EFE0'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(44,37,32,0.25)'; }}>
-          Rechercher un artisan
-        </button>
-      </section>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(44,37,32,0.4) 0%, rgba(44,37,32,0.95) 100%)' }} />
 
-      {/* ══ ARTISAN — Grande carte mise en valeur ══ */}
-      <section ref={r1} style={{ maxWidth: 960, margin: '0 auto', padding: '0 clamp(20px,4vw,40px) clamp(48px,7vh,72px)' }}>
-        <div onClick={() => navigate('/btp')}
-          style={{ background: '#2C2520', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', overflow: 'hidden', transition: 'all .3s', boxShadow: '0 4px 20px rgba(44,37,32,0.15)' }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 40px rgba(44,37,32,0.25)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(44,37,32,0.15)'; e.currentTarget.style.transform = 'none'; }}>
-          <div style={{ flex: '1 1 360px', minHeight: 300, background: 'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80) center/cover', position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 60%, #2C2520 100%)' }} />
-          </div>
-          <div style={{ flex: '1 1 360px', padding: 'clamp(32px,5vh,52px) clamp(28px,4vw,44px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ width: 40, height: 2, background: L.gold, marginBottom: 20 }} />
-            <h2 style={{ fontSize: 'clamp(24px,3.5vw,34px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', color: '#F5EFE0' }}>Freample Artisans</h2>
-            <p style={{ fontSize: 14, color: 'rgba(245,239,224,0.65)', lineHeight: 1.7, margin: '0 0 24px' }}>
-              Trouvez un artisan certifié près de chez vous, comparez les professionnels et choisissez en toute confiance.
-            </p>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 24 }}>
-              <span>✓ Artisans vérifiés</span><span>✓ Avis clients</span><span>✓ Paiement sécurisé</span>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto', opacity: mounted ? 1 : 0, transform: mounted ? 'none' : 'translateY(16px)', transition: 'opacity .6s, transform .6s' }}>
+          <h1 ref={s1} style={{ fontFamily: L.serif, fontSize: 'clamp(36px,7vw,60px)', fontWeight: 500, letterSpacing: '-0.02em', margin: '0 0 16px', lineHeight: 1.06, color: '#F5EFE0', textAlign: 'center' }}>
+            Trouvez un artisan<br />de <span style={{ fontWeight: 700, color: L.gold }}>confiance</span>
+          </h1>
+          <p style={{ fontSize: 16, color: 'rgba(245,239,224,0.6)', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 460, textAlign: 'center' }}>
+            Plombier, électricien, peintre, menuisier — trouvez le bon professionnel près de chez vous.
+          </p>
+
+          {/* Barre de recherche — 1 clic */}
+          <div style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 40px rgba(0,0,0,0.3)', maxWidth: 620, margin: '0 auto' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none' }}>🔨</span>
+              <select value={searchMetier} onChange={e => setSearchMetier(e.target.value)}
+                style={{ width: '100%', padding: '16px 16px 16px 42px', border: 'none', fontSize: 15, fontFamily: L.font, outline: 'none', background: 'transparent', color: L.text, cursor: 'pointer', appearance: 'none' }}>
+                <option value="">Quel métier ?</option>
+                {['Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture', 'Maçonnerie', 'Chauffage', 'Serrurerie', 'Couverture', 'Isolation', 'Autre'].map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: L.gold }}>Rechercher un artisan →</div>
+            <div style={{ width: 1, background: '#E8E6E1', margin: '10px 0' }} />
+            <div style={{ flex: 1, position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none' }}>📍</span>
+              <input value={searchVille} onChange={e => setSearchVille(e.target.value)} placeholder="Ville ou code postal"
+                style={{ width: '100%', padding: '16px 16px 16px 42px', border: 'none', fontSize: 15, fontFamily: L.font, outline: 'none', background: 'transparent', color: L.text, boxSizing: 'border-box' }}
+                onKeyDown={e => { if (e.key === 'Enter') navigate(`/btp?metier=${searchMetier}&ville=${searchVille}`); }} />
+            </div>
+            <button onClick={() => navigate(`/btp?metier=${searchMetier}&ville=${searchVille}`)}
+              style={{ padding: '14px 28px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, flexShrink: 0, transition: 'background .2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
+              Rechercher
+            </button>
+          </div>
+
+          {/* Métiers rapides */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
+            {[{ m: 'Plomberie', e: '🔧' }, { m: 'Électricité', e: '⚡' }, { m: 'Peinture', e: '🎨' }, { m: 'Maçonnerie', e: '🧱' }, { m: 'Menuiserie', e: '🪚' }, { m: 'Carrelage', e: '🔲' }].map(({ m, e }) => (
+              <button key={m} onClick={() => navigate(`/btp?metier=${m}`)}
+                style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'rgba(245,239,224,0.7)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: L.font, transition: 'all .15s', display: 'flex', alignItems: 'center', gap: 6 }}
+                onMouseEnter={e2 => { e2.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e2.currentTarget.style.color = '#F5EFE0'; }}
+                onMouseLeave={e2 => { e2.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e2.currentTarget.style.color = 'rgba(245,239,224,0.7)'; }}>
+                {e} {m}
+              </button>
+            ))}
+          </div>
+
+          {/* Chiffres */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(24px,5vw,56px)', marginTop: 40 }}>
+            {[{ v: '100%', l: 'Gratuit' }, { v: '✓', l: 'Artisans vérifiés' }, { v: '⭐', l: 'Avis clients' }].map(s => (
+              <div key={s.l} style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 500, fontFamily: L.serif, color: L.gold }}>{s.v}</div>
+                <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.45)', marginTop: 4 }}>{s.l}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
