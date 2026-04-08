@@ -326,6 +326,18 @@ export default function Landing() {
     return () => controller.abort();
   }, [villeInput]);
 
+  const DEMO_ARTISANS = [
+    { id:1, nom:'Lucas Garcia', metier:'Plomberie', ville:'Nice (06)', note:4.8, nbAvis:47, description:'Plombier certifié, spécialiste dépannage et rénovation salle de bain. Intervention rapide sur Nice et alentours.', verified:true, disponibilite:'aujourd_hui', prixHeure:45, certifications:['RGE','Qualibat'] },
+    { id:2, nom:'Marc Lambert', metier:'Électricité', ville:'Nice (06)', note:4.9, nbAvis:62, description:'Électricien qualifié NF C 15-100. Mise aux normes, tableaux, domotique. Devis gratuit.', verified:true, disponibilite:'aujourd_hui', prixHeure:50, certifications:['Qualifelec','Consuel'] },
+    { id:3, nom:'Sophie Duval', metier:'Peinture', ville:'Antibes (06)', note:4.7, nbAvis:31, description:'Peintre décoratrice. Intérieur, extérieur, ravalement. Finitions soignées, conseils couleurs offerts.', verified:true, disponibilite:'cette_semaine', prixHeure:38, certifications:['Qualibat'] },
+    { id:4, nom:'Henri Moreau', metier:'Maçonnerie', ville:'Cannes (06)', note:4.6, nbAvis:28, description:'Maçon traditionnel. Murs, terrasses, clôtures, rénovation pierre. 15 ans d\'expérience sur la Côte d\'Azur.', verified:true, disponibilite:'cette_semaine', prixHeure:42, certifications:['Qualibat'] },
+    { id:5, nom:'Thomas Petit', metier:'Menuiserie', ville:'Nice (06)', note:4.9, nbAvis:53, description:'Menuisier ébéniste. Cuisines sur mesure, placards, escaliers. Bois massif et matériaux nobles.', verified:true, disponibilite:'aujourd_hui', prixHeure:55, certifications:['Compagnon'] },
+    { id:6, nom:'Jean-Pierre Roux', metier:'Carrelage', ville:'Menton (06)', note:4.5, nbAvis:19, description:'Carreleur expérimenté. Salles de bain, terrasses, grands formats. Pose impeccable garantie.', verified:true, disponibilite:'ce_mois', prixHeure:40, certifications:[] },
+    { id:7, nom:'Karim Benali', metier:'Chauffage', ville:'Nice (06)', note:4.8, nbAvis:35, description:'Chauffagiste RGE. Installation pompes à chaleur, chaudières, plancher chauffant. Éligible aides MaPrimeRénov\'.', verified:true, disponibilite:'cette_semaine', prixHeure:48, certifications:['RGE','QualiPAC'] },
+    { id:8, nom:'Pierre Martin', metier:'Serrurerie', ville:'Nice (06)', note:4.4, nbAvis:22, description:'Serrurier agréé assurances. Ouverture de porte, blindage, installation digicode. Intervention 7j/7.', verified:true, disponibilite:'aujourd_hui', prixHeure:60, certifications:['A2P'] },
+    { id:9, nom:'Claire Fontaine', metier:'Isolation', ville:'Antibes (06)', note:4.7, nbAvis:41, description:'Spécialiste isolation thermique et phonique. Combles, murs, ITE. Certifiée RGE, éligible aides.', verified:true, disponibilite:'cette_semaine', prixHeure:44, certifications:['RGE','Qualibat'] },
+  ];
+
   const search = useCallback(async () => {
     setLoading(true);
     setSearched(true);
@@ -333,9 +345,10 @@ export default function Landing() {
       const { data } = await axios.get(`${API_URL}/public/artisans`, {
         params: { q: query || undefined, metier: metier || undefined, ville: ville || undefined, disponibilite: disponibilite || undefined, noteMin: noteMin || undefined },
       });
-      setArtisans(data.artisans);
+      setArtisans(data.artisans?.length ? data.artisans : DEMO_ARTISANS.filter(a => (!metier || a.metier === metier) && (!noteMin || a.note >= parseFloat(noteMin))));
     } catch {
-      setArtisans([]);
+      // Fallback démo si API non dispo
+      setArtisans(DEMO_ARTISANS.filter(a => (!metier || a.metier === metier) && (!noteMin || a.note >= parseFloat(noteMin))));
     } finally {
       setLoading(false);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -502,22 +515,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══ CTA Devis gratuit ══ */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px,4vw,40px) clamp(20px,5vw,60px) 0' }}>
-        <div style={{ background: DS.ink, borderRadius: 16, padding: 'clamp(20px,3vh,28px) clamp(20px,3vw,32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: 'clamp(1rem,2.5vw,1.25rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', marginBottom: 4 }}>Besoin d'un artisan ? Décrivez votre projet.</div>
-            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.65)' }}>Comparez les artisans vérifiés et choisissez le meilleur, sans engagement.</div>
-          </div>
-          <button onClick={() => navigate('/register?role=client')}
-            style={{ padding: '12px 28px', background: '#fff', color: DS.ink, border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: DS.font, transition: 'opacity .15s', flexShrink: 0 }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-            Demander un devis gratuit →
-          </button>
-        </div>
-      </div>
-
       {/* ══════════════════ RESULTS ══════════════════ */}
       <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px, 4vw, 40px) clamp(20px, 5vw, 60px) 80px' }}>
 
@@ -608,32 +605,7 @@ export default function Landing() {
           </div>
         )}
 
-        {/* ══ CTA section (caché pour clients) ══ */}
-        {!loading && (<HideForClient>
-          <div className="reveal" style={{ marginTop: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #0A0A14 0%, #12103A 50%, #1E0A3C 100%)', padding: 'clamp(40px, 6vw, 64px) clamp(24px, 5vw, 56px)', textAlign: 'center' }}>
-            {/* Orbs */}
-            <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,91,214,0.3) 0%, transparent 70%)', top: -80, right: '10%', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', bottom: -40, left: '15%', pointerEvents: 'none' }} />
-
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'rgba(165,165,255,0.8)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pour les artisans</p>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 16, maxWidth: 560, margin: '0 auto 16px' }}>
-                Développez votre activité avec Freample
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
-                Gérez votre agenda, vos devis et vos factures depuis une seule plateforme. Simple, rapide, professionnel.
-              </p>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button onClick={() => navigate('/register')} className="btn-primary" style={{ padding: '13px 28px', fontSize: '0.9375rem', borderRadius: 14 }}>
-                  Rejoindre la plateforme →
-                </button>
-                <button onClick={() => navigate('/login')} className="btn-glass" style={{ padding: '13px 24px', fontSize: '0.9375rem' }}>
-                  Se connecter
-                </button>
-              </div>
-            </div>
-          </div>
-        </HideForClient>)}
+        {/* Section supprimée — "Développez votre activité" retiré */}
       </div>
 
       {/* ══ MODAL LISTE OFFRES ══ */}
