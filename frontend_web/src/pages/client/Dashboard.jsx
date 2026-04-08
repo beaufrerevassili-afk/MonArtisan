@@ -86,8 +86,6 @@ const TABS = [
 
 const SERVICES_GRID = [
   { id:'btp',        icon:'🏗️', label:'BTP & Travaux',   desc:'Artisans, devis, chantiers', color:'#5B5BD6', bg:'#EEF2FF' },
-  { id:'coiffure',   icon:'✂️', label:'Coiffure',         desc:'RDV, salons, beauté',       color:'#E535AB', bg:'#FFF0F8' },
-  { id:'com',        icon:'🎬', label:'Freample Com',     desc:'Montage vidéo, marketing',  color:'#8B5CF6', bg:'#F5F3FF', route:'/client/com' },
 ];
 
 export default function DashboardClient() {
