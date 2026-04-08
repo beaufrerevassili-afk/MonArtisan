@@ -382,7 +382,7 @@ export default function SecteurSelect() {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1px', background:L.border }}>
             {[
               { title:'Simplicité', desc:'Zéro jargon. Chaque parcours est pensé pour être compris en 30 secondes.' },
-              { title:'Rapidité', desc:'Devis en 24h, montage en 72h, documents juridiques en quelques minutes.' },
+              { title:'Rapidité', desc:'Montage vidéo en 72h, documents juridiques en quelques minutes, gestion instantanée.' },
               { title:'Accessibilité', desc:'Des services premium à des tarifs justes, pour les particuliers comme les entreprises.' },
               { title:'Écosystème', desc:'Artisans, communication, immobilier, droit — tout est connecté dans une seule plateforme.' },
             ].map((o, i) => (
