@@ -114,7 +114,8 @@ export default function InvestirJugeModule({ data, setData, showToast }) {
   const [profilRisque, setProfilRisque] = useState('equilibre');
   const [geoLoading, setGeoLoading] = useState(false);
   const [analyseDossier, setAnalyseDossier] = useState(null);
-  const [activeDoc, setActiveDoc] = useState('jugement'); // 'jugement' | 'banque'
+  const [activeDoc, setActiveDoc] = useState('jugement'); // 'jugement' | 'banque' | 'checklist'
+  const [checkedDocs, setCheckedDocs] = useState({});
 
   const dossiers = data.dossiers || [];
 
@@ -293,8 +294,9 @@ export default function InvestirJugeModule({ data, setData, showToast }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{dos.nom}</h2>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => setActiveDoc('jugement')} style={activeDoc === 'jugement' ? BTN : BTN_O}>📊 Verdict d'opportunité</button>
-            <button onClick={() => setActiveDoc('banque')} style={activeDoc === 'banque' ? BTN : BTN_O}>🏦 Dossier bancaire</button>
+            <button onClick={() => setActiveDoc('jugement')} style={activeDoc === 'jugement' ? BTN : BTN_O}>📊 Verdict</button>
+            <button onClick={() => setActiveDoc('banque')} style={activeDoc === 'banque' ? BTN : BTN_O}>🏦 Profil banque</button>
+            <button onClick={() => setActiveDoc('checklist')} style={activeDoc === 'checklist' ? BTN : BTN_O}>📋 Dossier complet</button>
           </div>
         </div>
 
@@ -445,6 +447,129 @@ export default function InvestirJugeModule({ data, setData, showToast }) {
             </div>
           </div>
         </>}
+
+        {/* ══ DOC 3 : DOSSIER BANCAIRE COMPLET — CHECKLIST ══ */}
+        {activeDoc === 'checklist' && (() => {
+          const b = dos.banque || {};
+          const hasSCI = dos.strategie?.includes('SCI') || data.scis?.length > 0;
+          const hasLocsExistants = (b.nbBiensExistants || 0) > 0;
+          const isIndep = ['Indépendant', 'Profession libérale'].includes(b.situationPro);
+          const isCDD = b.situationPro === 'CDD';
+          const hasTravaux = dos.travaux > 0;
+          const hasCopro = true; // par défaut on inclut
+
+          const DOSSIER_SECTIONS = [
+            { id: 'identite', title: 'Pièces d\'identité', icon: '🪪', items: [
+              { id: 'cni', label: 'Carte nationale d\'identité ou passeport (recto-verso, en cours de validité)', auto: false },
+              { id: 'domicile', label: 'Justificatif de domicile < 3 mois (facture EDF, eau ou quittance de loyer)', auto: false },
+              { id: 'famille', label: 'Livret de famille ou certificat de PACS (si co-emprunteur)', auto: false, optional: true },
+            ]},
+            { id: 'revenus', title: 'Justificatifs de revenus', icon: '💼', items: [
+              { id: 'bulletins', label: '3 derniers bulletins de salaire (chaque emprunteur)', auto: false },
+              { id: 'avis_impo', label: '2 derniers avis d\'imposition (impots.gouv.fr)', auto: false },
+              { id: 'contrat_travail', label: `Contrat de travail — ${b.situationPro || 'CDI'}${isCDD ? ' + historique de missions' : ''}`, auto: !!b.situationPro, autoValue: b.situationPro },
+              { id: 'attestation_emp', label: `Attestation employeur (contrat, ancienneté${b.anciennete ? ` : ${b.anciennete} an(s)` : ''}, salaire${b.revenusMensuels ? ` : ${b.revenusMensuels}€` : ''})`, auto: !!(b.anciennete || b.revenusMensuels), autoValue: `${b.situationPro} · ${b.anciennete || '?'} ans · ${b.revenusMensuels || '?'}€/mois` },
+              ...(hasLocsExistants ? [{ id: 'baux_existants', label: `Baux en cours + relevés de loyers perçus (${b.nbBiensExistants} bien(s), ${b.loyersPercus || 0}€/mois)`, auto: true, autoValue: `${b.nbBiensExistants} biens · ${b.loyersPercus}€/mois` }] : []),
+              ...(isIndep ? [{ id: 'bilans', label: '3 derniers bilans comptables + liasse fiscale', auto: false }] : []),
+            ]},
+            { id: 'comptes', title: 'Relevés de comptes et épargne', icon: '🏦', items: [
+              { id: 'releves_courant', label: '3 derniers relevés de tous les comptes courants (gestion saine, sans découvert)', auto: false },
+              { id: 'releves_epargne', label: `Relevés d'épargne (livret A, PEL, assurance-vie…) — ${b.epargne ? `${b.epargne.toLocaleString()}€ disponibles` : 'à joindre'}`, auto: !!b.epargne, autoValue: `${b.epargne?.toLocaleString() || 0}€` },
+              { id: 'apport', label: `Justificatif d'apport personnel — ${b.apport ? `${b.apport.toLocaleString()}€ (${dos.prix > 0 ? Math.round(b.apport / dos.prix * 100) : 0}% du prix)` : 'virement ou attestation notariale'}`, auto: !!b.apport, autoValue: `${b.apport?.toLocaleString() || 0}€ · ${dos.prix > 0 ? Math.round((b.apport || 0) / dos.prix * 100) : 0}% du prix` },
+              ...(b.autresCredits > 0 ? [{ id: 'amortissement', label: `Tableaux d'amortissement des crédits en cours (${b.autresCredits}€/mois)`, auto: true, autoValue: `${b.autresCredits}€/mois` }] : []),
+            ]},
+            { id: 'bien', title: 'Documents sur le bien', icon: '🏠', items: [
+              { id: 'compromis', label: 'Compromis de vente signé — pièce centrale du dossier', auto: false },
+              { id: 'diagnostics', label: 'Diagnostics techniques obligatoires (DPE, amiante, plomb, termites…)', auto: false },
+              { id: 'plan', label: 'Plan du bien avec superficie loi Carrez', auto: false },
+              ...(hasTravaux ? [{ id: 'devis_travaux', label: `Devis artisans pour travaux prévus (${dos.travaux.toLocaleString()}€)${dos.strategie?.includes('éco') ? ' — artisans RGE pour éco-PTZ' : ''}`, auto: true, autoValue: `${dos.travaux.toLocaleString()}€` }] : []),
+              ...(hasCopro ? [
+                { id: 'pv_ag', label: '3 derniers PV d\'assemblée générale de copropriété', auto: false },
+                { id: 'reglement_copro', label: 'Règlement de copropriété', auto: false },
+              ] : []),
+            ]},
+            { id: 'analyse', title: 'Analyse financière du projet', icon: '📊', items: [
+              { id: 'note_presentation', label: `Note de présentation (1-2 pages) : localisation, stratégie ${dos.strategie || 'locative'}, loyer visé ${dos.loyer}€, profil locataire`, auto: true, autoValue: `${dos.nom} · ${dos.adresse || '—'} · ${dos.strategie} · ${dos.loyer}€/mois` },
+              { id: 'tableau_renta', label: `Tableau de rentabilité : brut ${s.rdtBrut}%, net ${s.rdtNet}%, cashflow ${s.cfMois >= 0 ? '+' : ''}${s.cfMois}€/mois, effort ${s.effort}%`, auto: true, autoValue: 'Généré automatiquement par Freample' },
+              { id: 'etude_marche', label: 'Étude de marché locatif : loyers comparables, tension locative du secteur', auto: false },
+              { id: 'simulation', label: `Simulation de financement : ${(s.prixTotal - (b.apport || 0)).toLocaleString()}€ empruntés, ${dos.mensualite}€/mois, reste à vivre ${bk.resteAVivre}€`, auto: true, autoValue: 'Généré automatiquement' },
+              ...(hasLocsExistants ? [{ id: 'bail_existant', label: 'Bail en cours avec quittances de loyer', auto: false }] : [{ id: 'modele_bail', label: 'Modèle de bail envisagé', auto: false }]),
+            ]},
+            ...(hasSCI ? [{ id: 'juridique', title: 'Montage juridique et fiscal', icon: '⚖️', items: [
+              { id: 'statuts_sci', label: 'Statuts de la SCI + Kbis + répartition des parts', auto: false },
+              { id: 'regime_fiscal', label: `Régime fiscal choisi : ${dos.strategie || '—'} — impact fiscal estimé`, auto: !!dos.strategie, autoValue: dos.strategie },
+              { id: 'justif_apport', label: `Justificatif apport : ${(b.apport || 0).toLocaleString()}€ (virement ou attestation notariale) — visez ${dos.prix > 0 && (b.apport || 0) / dos.prix < 0.1 ? '⚠️ < 10%, augmentez si possible' : (b.apport || 0) / dos.prix >= 0.2 ? '✅ > 20%, excellent' : '10-20%'}`, auto: !!b.apport },
+            ]}] : [{ id: 'juridique', title: 'Montage juridique et fiscal', icon: '⚖️', items: [
+              { id: 'regime_fiscal', label: `Régime fiscal : ${dos.strategie || '—'}`, auto: !!dos.strategie, autoValue: dos.strategie },
+              { id: 'justif_apport', label: `Justificatif apport : ${(b.apport || 0).toLocaleString()}€ — visez min. 10% du prix`, auto: !!b.apport },
+            ]}]),
+          ];
+
+          const totalItems = DOSSIER_SECTIONS.reduce((s, sec) => s + sec.items.length, 0);
+          const autoItems = DOSSIER_SECTIONS.reduce((s, sec) => s + sec.items.filter(it => it.auto).length, 0);
+          const checkedCount = Object.values(checkedDocs).filter(Boolean).length;
+          const pct = Math.round((checkedCount + autoItems) / totalItems * 100);
+
+          return <>
+            <div style={{ textAlign: 'right', marginBottom: 12 }}>
+              <button onClick={() => exportPDF(`Dossier Bancaire Complet - ${dos.nom}`, 'pdf-checklist')} style={{ ...BTN, fontSize: 11, padding: '6px 14px' }}
+                onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>🖨️ Exporter / Imprimer</button>
+            </div>
+            <div id="pdf-checklist">
+              {/* Progression */}
+              <div style={{ ...CARD, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700 }}>Dossier bancaire — {dos.nom}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: pct === 100 ? L.green : L.gold }}>{checkedCount + autoItems}/{totalItems} pièces</span>
+                  </div>
+                  <div style={{ height: 6, background: '#E8E6E1', borderRadius: 3 }}>
+                    <div style={{ height: 6, background: pct === 100 ? L.green : L.gold, borderRadius: 3, width: `${pct}%`, transition: 'width .3s' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11 }}>
+                    <span style={{ color: L.green }}>✓ {autoItems} pré-remplis automatiquement</span>
+                    <span style={{ color: L.gold }}>{checkedCount} validés manuellement</span>
+                    <span style={{ color: L.textSec }}>{totalItems - autoItems - checkedCount} restants</span>
+                  </div>
+                </div>
+                <span style={{ fontSize: 24, fontWeight: 500, fontFamily: L.serif, color: pct === 100 ? L.green : L.text }}>{pct}%</span>
+              </div>
+
+              {/* Sections */}
+              {DOSSIER_SECTIONS.map(sec => (
+                <div key={sec.id} style={{ ...CARD, marginBottom: 10 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>{sec.icon}</span> {sec.title}
+                    <span style={{ fontSize: 10, color: L.textSec, fontWeight: 400, marginLeft: 'auto' }}>{sec.items.filter(it => it.auto || checkedDocs[it.id]).length}/{sec.items.length}</span>
+                  </div>
+                  {sec.items.map(it => {
+                    const done = it.auto || checkedDocs[it.id];
+                    return (
+                      <div key={it.id} onClick={() => { if (!it.auto) setCheckedDocs(prev => ({ ...prev, [it.id]: !prev[it.id] })); }}
+                        style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', borderBottom: `1px solid ${L.border}`, cursor: it.auto ? 'default' : 'pointer', background: done ? '#F0FDF408' : 'transparent', transition: 'background .15s' }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${done ? L.green : '#E8E6E1'}`, background: done ? L.green : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1, transition: 'all .15s' }}>
+                          {done ? '✓' : ''}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: 12, color: done ? L.green : L.text, textDecoration: done ? 'line-through' : 'none' }}>{it.label}</span>
+                          {it.auto && <div style={{ fontSize: 10, color: L.gold, fontWeight: 600, marginTop: 2 }}>⚡ Pré-rempli depuis votre dossier Freample{it.autoValue ? ` : ${it.autoValue}` : ''}</div>}
+                          {it.optional && <span style={{ fontSize: 9, color: L.textSec, marginLeft: 6 }}>(si applicable)</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+
+              {/* Conseil final */}
+              <div style={{ borderLeft: `3px solid ${L.gold}`, paddingLeft: 16, marginTop: 16 }}>
+                <p style={{ fontSize: 13, fontStyle: 'italic', color: L.text, lineHeight: 1.7, margin: 0 }}>
+                  Un dossier complet et bien présenté fait gagner du temps à votre conseiller bancaire et augmente vos chances d'obtenir un taux favorable. Les éléments marqués ⚡ sont déjà calculés par Freample — imprimez ce document et joignez les pièces restantes.
+                </p>
+              </div>
+            </div>
+          </>;
+        })()}
       </div>
     );
   }
