@@ -885,16 +885,27 @@ export default function Register() {
             {/* Colonne gauche : formulaire */}
             <div style={showSideEco ? { flex: '1 1 400px', minWidth: 0 } : {}}>
               <div className="reg-card">
-                {isPro && (
+                {isArtisan && (
                   <div style={{ background: DS.accentMuted, border: `1px solid ${DS.accentLight}`, borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
                     <span style={{ flexShrink: 0, fontSize: '1rem' }}>ℹ️</span>
                     <p style={{ fontSize: '0.8125rem', color: DS.accent, lineHeight: 1.5 }}>
-                      {isArtisan
-                        ? <><strong>Processus de vérification obligatoire</strong> — Pour garantir la sécurité de nos clients, chaque artisan est vérifié avant activation : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.</>
-                        : secteur === 'coiffure'
-                        ? <><strong>Vérification du salon</strong> — Kbis, RC Pro, diplôme de coiffure requis pour activer votre espace.</>
-                        : <><strong>Processus de vérification obligatoire</strong> — Pièce d'identité, Kbis, RC Pro et attestation URSSAF requis pour activer votre compte.</>
-                      }
+                      <strong>Vérification obligatoire</strong> — Pour garantir la sécurité des clients, chaque artisan est vérifié : pièce d'identité, Kbis, RC Pro, attestation URSSAF et diplôme.
+                    </p>
+                  </div>
+                )}
+                {isPatron && entrepriseType === 'sci' && (
+                  <div style={{ background: '#EFF6FF', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
+                    <span style={{ flexShrink: 0, fontSize: '1rem' }}>🏠</span>
+                    <p style={{ fontSize: '0.8125rem', color: '#2563EB', lineHeight: 1.5 }}>
+                      <strong>Espace SCI</strong> — Après inscription, vous accéderez à Freample Immo pour gérer vos SCI, biens et locataires.
+                    </p>
+                  </div>
+                )}
+                {isPatron && entrepriseType === 'classique' && (
+                  <div style={{ background: '#FFFBEB', border: '1px solid rgba(217,119,6,0.15)', borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
+                    <span style={{ flexShrink: 0, fontSize: '1rem' }}>🏢</span>
+                    <p style={{ fontSize: '0.8125rem', color: '#92400E', lineHeight: 1.5 }}>
+                      <strong>Espace entreprise</strong> — Vous pourrez recevoir des projets clients et gérer votre activité. Un Kbis pourra être demandé ultérieurement pour la vérification.
                     </p>
                   </div>
                 )}
