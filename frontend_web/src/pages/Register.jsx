@@ -776,42 +776,63 @@ export default function Register() {
           </button>
           <div style={{ fontSize:11, fontWeight:600, color:'#A68B4B', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:10 }}>Inscription</div>
           <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,34px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#1A1A1A', marginBottom:6, lineHeight:1.1 }}>
-            {role==='patron' && entrepriseType==='sci' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>SCI</span></>
+            {entrepriseType==='sci' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>SCI</span></>
               : role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></>
+              : clientType==='entreprise' ? <>Créer un compte <span style={{fontWeight:700,fontStyle:'normal'}}>entreprise</span></>
               : clientType==='multiproprio' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>propriétaire</span></>
               : <>Créer votre <span style={{fontWeight:700,fontStyle:'normal'}}>compte</span></>}
           </h1>
           <p style={{ color: '#4A4A4A', fontSize: '0.9375rem' }}>
-            {role==='client' && clientType==='multiproprio' ? 'Gérez vos biens et trouvez des artisans.'
-              : role==='client' ? 'Un seul compte pour tous les services.'
-              : role==='patron' && entrepriseType==='sci' ? 'Gérez vos SCI, biens et locataires.'
-              : role==='patron' ? ({btp:'Gérez vos chantiers et recevez des projets'}[secteur] || 'Créez votre espace professionnel')
-              : 'Créez votre compte Freample.'}
+            {clientType==='multiproprio' ? 'Gérez vos biens et trouvez des artisans.'
+              : clientType==='entreprise' ? 'Payez vos travaux depuis votre société.'
+              : entrepriseType==='sci' ? 'Gérez vos SCI, biens et locataires.'
+              : role==='patron' ? 'Recevez des projets clients et gérez votre activité.'
+              : 'Un seul compte pour tous les services.'}
           </p>
         </div>
 
-        {/* ══ STEP 0 — Choix type de compte ══ */}
+        {/* ══ STEP 0 — Choix type de compte CLIENT ══ */}
         {step === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Vous êtes...</div>
 
-            {/* Particulier ou Entreprise */}
-            {!role || (role !== 'client' && role !== 'patron') ? (
-              <div style={{ display: 'flex', gap: 10 }}>
-                {[
-                  { value: 'client', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez un projet' },
-                  { value: 'patron', icon: '🏢', label: 'Entreprise', desc: 'Gérez votre activité, recevez des projets' },
-                ].map(r => (
-                  <button key={r.value} onClick={() => { setRole(r.value); setError(''); }}
-                    style={{ flex: 1, padding: '20px 16px', border: `1px solid #E8E6E1`, background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>{r.icon}</div>
-                    <div style={{ fontSize: 15, fontWeight: 700 }}>{r.label}</div>
-                    <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>{r.desc}</div>
+            {/* Choix principal : Particulier / Entreprise / SCI */}
+            {!clientType && !entrepriseType ? (
+              <>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'particulier', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez un projet' },
+                    { id: 'entreprise', icon: '🏢', label: 'Entreprise', desc: 'Payez depuis votre société' },
+                    { id: 'sci', icon: '🏠', label: 'SCI', desc: 'Gérez vos biens et SCI' },
+                  ].map(c => (
+                    <button key={c.id} onClick={() => {
+                      if (c.id === 'particulier') { setRole('client'); setClientType(''); }
+                      else if (c.id === 'entreprise') { setRole('client'); setClientType('entreprise'); }
+                      else { setRole('patron'); setEntrepriseType('sci'); setSecteur('immo'); }
+                    }}
+                      style={{ flex: '1 1 140px', padding: '20px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700 }}>{c.label}</div>
+                      <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>{c.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Lien vers inscription pro / artisan */}
+                <div style={{ marginTop: 16, padding: '14px 18px', background: '#F8F7F4', borderRadius: 10, border: '1px solid #E8E6E1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>Vous êtes artisan ou chef d'entreprise ?</div>
+                    <div style={{ fontSize: 12, color: '#636363' }}>Recevez des projets clients et gérez votre activité.</div>
+                  </div>
+                  <button onClick={() => navigate('/register?role=patron&secteur=btp')}
+                    style={{ padding: '8px 18px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0, transition: 'background .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
+                    Créer un compte pro →
                   </button>
-                ))}
-              </div>
+                </div>
+              </>
             ) : role === 'client' && !clientType ? (
               /* Particulier : simple ou multipropriétaire */
               <>
@@ -834,28 +855,8 @@ export default function Register() {
                   </button>
                 </div>
               </>
-            ) : role === 'patron' && !entrepriseType ? (
-              /* Entreprise : type de structure */
-              <>
-                <button onClick={() => { setRole(''); setClientType(''); setEntrepriseType(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, textAlign: 'left', marginBottom: 4 }}>← Retour</button>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Quel type de structure ?</div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {[
-                    { id: 'classique', icon: '🏢', label: 'Entreprise', desc: 'SARL, SAS, EI, micro...', secteur: 'btp' },
-                    { id: 'sci', icon: '🏠', label: 'SCI', desc: 'Gestion immobilière', secteur: 'immo' },
-                  ].map(t => (
-                    <button key={t.id} onClick={() => { setEntrepriseType(t.id); setSecteur(t.secteur); setStep(1); }}
-                      style={{ flex: '1 1 140px', padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
-                      <div style={{ fontSize: 24, marginBottom: 6 }}>{t.icon}</div>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{t.label}</div>
-                      <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>{t.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </>
             ) : (
-              /* Si déjà sélectionné mais step encore 0, avancer */
+              /* Entreprise ou SCI déjà sélectionné → avancer */
               (() => { setStep(1); return null; })()
             )}
           </div>
