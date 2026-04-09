@@ -14,7 +14,9 @@ const SECTEUR_COMPTES = {
 };
 const GENERIC_DEMO = [
   CLIENT_DEMO,
-  { role:"Chef d'entreprise", email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏢' },
+  { role:'Client entreprise', email:'demo-entreprise@freample.fr', motdepasse:'demo', icon:'🏢' },
+  { role:'Gestion SCI', email:'demo-sci@freample.fr', motdepasse:'demo', icon:'🏠' },
+  { role:"Chef d'entreprise BTP", email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏗️' },
   { role:'Employé', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
 ];
 const SECTOR_CONFIG = {
@@ -39,7 +41,9 @@ export default function Login() {
   const [demoSector, setDemoSector] = useState(null);
   const [pendingRole, setPendingRole] = useState(null);
 
-  const getDestination = (role) => {
+  const getDestination = (role, userData) => {
+    // SCI → gestion immo
+    if (userData?.entrepriseType === 'sci' || userData?.secteur === 'immo') return '/immo/gestion';
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
     return REDIRECTIONS[role] || '/';
   };
@@ -51,7 +55,7 @@ export default function Login() {
         <div style={{ fontSize:18, fontWeight:800, marginBottom:8 }}>Déjà connecté</div>
         <div style={{ fontSize:14, color:L.textSec, marginBottom:24 }}>Vous êtes connecté en tant que <strong>{user.nom}</strong> ({user.role})</div>
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-          <button onClick={() => navigate(getDestination(user.role))}
+          <button onClick={() => navigate(getDestination(user.role, user))}
             style={{ padding:'14px 24px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:L.font, transition:'background .15s' }}
             onMouseEnter={e=>e.currentTarget.style.background='#333'} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>
             Continuer vers mon espace →
@@ -70,7 +74,7 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true);
-    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role)); }
+    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role, data)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }
@@ -79,7 +83,7 @@ export default function Login() {
     const isGeneric = !compte.universal && !activeSector && ["Chef d'entreprise",'Employé'].includes(compte.role);
     if (isGeneric) { setPendingRole(compte.role === "Chef d'entreprise" ? 'patron' : 'artisan'); return; }
     setError(''); setLoading(true);
-    try { const data = await login(compte.email, compte.motdepasse); navigate(getDestination(data.role)); }
+    try { const data = await login(compte.email, compte.motdepasse); navigate(getDestination(data.role, data)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }
