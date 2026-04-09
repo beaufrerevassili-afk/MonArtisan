@@ -27,10 +27,10 @@ export default function ProLanding() {
             <button onClick={() => navigate('/patron/dashboard')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font }}>Mon espace →</button>
           ) : (
             <>
-              <button onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Se connecter</button>
+              <button onClick={() => navigate('/login?from=btp')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Se connecter</button>
               <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' }}
                 onMouseEnter={e => e.currentTarget.style.background = L.gold} onMouseLeave={e => e.currentTarget.style.background = L.noir}>
-                S'inscrire gratuitement
+                Devenir artisan Freample
               </button>
             </>
           )}
@@ -51,7 +51,7 @@ export default function ProLanding() {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '14px 36px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, transition: 'background .2s' }}
               onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
-              Créer mon espace pro — Gratuit
+              Devenir artisan Freample — Gratuit
             </button>
             {isPro && <button onClick={() => navigate('/patron/projets')} style={{ padding: '14px 28px', background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: L.font }}>
               Voir les projets disponibles →
@@ -191,7 +191,7 @@ export default function ProLanding() {
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: '0 0 32px' }}>Inscription gratuite, aucun abonnement, commencez dès maintenant.</p>
           <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '16px 48px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'background .25s' }}
             onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
-            Commencer maintenant
+            Devenir artisan Freample
           </button>
         </div>
       </section>
