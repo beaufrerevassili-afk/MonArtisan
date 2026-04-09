@@ -51,8 +51,9 @@ ensureTables().catch(e => console.error('projets ensureTables:', e.message));
 function calcCommission(montant) {
   return Math.max(1, Math.round(montant * 0.01 * 100) / 100);
 }
-function calcFraisStripe(montant) {
-  return Math.round((montant * 0.015 + 0.25) * 100) / 100;
+// GoCardless SEPA : 0.2% + 0.20€, plafonné à 2€
+function calcFraisPaiement(montant) {
+  return Math.min(2, Math.round((montant * 0.002 + 0.20) * 100) / 100);
 }
 
 // ═══════════════════════════════════════════════════
@@ -97,11 +98,11 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!titre || !description || !metier) return res.status(400).json({ erreur: 'Titre, description et métier requis' });
     const budget = parseFloat(budgetEstime) || 0;
     const commission = calcCommission(budget);
-    const fraisStripe = calcFraisStripe(budget);
+    const fraisPaiement = calcFraisPaiement(budget);
     const { rows } = await db.query(`
       INSERT INTO projets_clients (client_id, titre, description, metier, ville, adresse, budget_estime, budget_ajuste, commission, urgence, pieces, date_souhaitee)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$7,$8,$9,$10,$11) RETURNING *
-    `, [req.user.id, titre, description, metier, ville || null, adresse || null, budget, commission + fraisStripe, urgence || 'normal', pieces || null, dateSouhaitee || null]);
+    `, [req.user.id, titre, description, metier, ville || null, adresse || null, budget, commission + fraisPaiement, urgence || 'normal', pieces || null, dateSouhaitee || null]);
     res.status(201).json({ projet: rows[0], message: 'Projet publié' });
   } catch (err) {
     console.error('POST /projets:', err.message);

@@ -35,10 +35,10 @@ export default function SecteurSelect() {
         // Publier automatiquement
         const budget = Number(p.budget) || 0;
         const commission = Math.max(1, Math.round(budget * 0.01 * 100) / 100);
-        const fraisStripe = Math.round((budget * 0.015 + 0.25) * 100) / 100;
-        const total = Math.round((budget + commission + fraisStripe) * 100) / 100;
+        const fraisPaiement = Math.round((budget * 0.015 + 0.25) * 100) / 100;
+        const total = Math.round((budget + commission + fraisPaiement) * 100) / 100;
         const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
-        projets.push({ id: Date.now(), ...p, budget, commission, fraisStripe, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
+        projets.push({ id: Date.now(), ...p, budget, commission, fraisPaiement, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
         localStorage.setItem('freample_projets', JSON.stringify(projets));
         setProjet(p);
         setShowProjet(true);
@@ -277,8 +277,8 @@ export default function SecteurSelect() {
               {projetStep === 4 && (() => {
                 const budget = Number(projet.budget) || 0;
                 const commission = Math.max(1, Math.round(budget * 0.01 * 100) / 100);
-                const fraisStripe = Math.round((budget * 0.015 + 0.25) * 100) / 100;
-                const total = Math.round((budget + commission + fraisStripe) * 100) / 100;
+                const fraisPaiement = Math.min(2, Math.round((budget * 0.002 + 0.20) * 100) / 100);
+                const total = Math.round((budget + commission + fraisPaiement) * 100) / 100;
                 return <>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Votre budget</div>
                 <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 16 }}>Indiquez votre budget, la commission Freample est calculée automatiquement.</p>
@@ -300,8 +300,8 @@ export default function SecteurSelect() {
                       <span style={{ fontWeight: 600 }}>{commission.toLocaleString('fr-FR')} €</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13, color: 'rgba(245,239,224,0.6)' }}>
-                      <span>Frais sécurisation paiement (1,5% + 0,25€)</span>
-                      <span style={{ fontWeight: 600 }}>{fraisStripe.toLocaleString('fr-FR')} €</span>
+                      <span>Frais sécurisation paiement (0,2% + 0,20€, max 2€)</span>
+                      <span style={{ fontWeight: 600 }}>{fraisPaiement.toLocaleString('fr-FR')} €</span>
                     </div>
                     <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 16, color: L.gold }}>
@@ -309,7 +309,7 @@ export default function SecteurSelect() {
                       <span style={{ fontWeight: 800 }}>{total.toLocaleString('fr-FR')} €</span>
                     </div>
                     <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.35)', marginTop: 6 }}>
-                      L'artisan reçoit 100% du budget travaux ({budget.toLocaleString('fr-FR')}€). Les frais couvrent la plateforme et la sécurisation des paiements via Stripe.
+                      L'artisan reçoit 100% du budget travaux ({budget.toLocaleString('fr-FR')}€). Les frais couvrent la plateforme et la sécurisation des paiements via prélèvement SEPA.
                     </div>
                   </div>
                 )}
@@ -317,7 +317,7 @@ export default function SecteurSelect() {
                 {/* Récap */}
                 <div style={{ marginTop: 16, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Récapitulatif</div>
-                  {[['Métier', projet.metier], ['Description', projet.description?.slice(0, 60) + (projet.description?.length > 60 ? '...' : '')], ['Ville', projet.ville], ['Urgence', { urgent: 'Urgent (48h)', normal: 'Normal (2 sem.)', flexible: 'Flexible' }[projet.urgence]], ['Budget', budget > 0 ? `${budget.toLocaleString('fr-FR')}€` : 'Non défini'], ['Commission (1%)', budget > 0 ? `${commission}€` : '—'], ['Frais paiement', budget > 0 ? `${fraisStripe}€` : '—'], ['Total', budget > 0 ? `${total.toLocaleString('fr-FR')}€` : '—']].map(([k, v]) => (
+                  {[['Métier', projet.metier], ['Description', projet.description?.slice(0, 60) + (projet.description?.length > 60 ? '...' : '')], ['Ville', projet.ville], ['Urgence', { urgent: 'Urgent (48h)', normal: 'Normal (2 sem.)', flexible: 'Flexible' }[projet.urgence]], ['Budget', budget > 0 ? `${budget.toLocaleString('fr-FR')}€` : 'Non défini'], ['Commission (1%)', budget > 0 ? `${commission}€` : '—'], ['Frais paiement', budget > 0 ? `${fraisPaiement}€` : '—'], ['Total', budget > 0 ? `${total.toLocaleString('fr-FR')}€` : '—']].map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 }}>
                       <span style={{ color: 'rgba(245,239,224,0.5)' }}>{k}</span>
                       <span style={{ color: '#F5EFE0', fontWeight: 600 }}>{v}</span>
@@ -334,7 +334,7 @@ export default function SecteurSelect() {
                   }
                   try {
                     const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
-                    projets.push({ id: Date.now(), ...projet, budget, commission, fraisStripe, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
+                    projets.push({ id: Date.now(), ...projet, budget, commission, fraisPaiement, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
                     localStorage.setItem('freample_projets', JSON.stringify(projets));
                   } catch {}
                   setProjetSent(true);
