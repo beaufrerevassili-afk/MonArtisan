@@ -23,10 +23,10 @@ function crudRoutes(table, mapFn) {
     }
   });
 
-  // GET by id
+  // GET by id (vérifie ownership via patron_id)
   router.get(`/${table}/:id`, async (req, res) => {
     try {
-      const { rows } = await db.query(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+      const { rows } = await db.query(`SELECT * FROM ${table} WHERE id = $1 AND patron_id = $2`, [req.params.id, req.user?.id]);
       if (rows.length === 0) return res.status(404).json({ erreur: 'Non trouvé' });
       res.json(mapFn ? mapFn(rows[0]) : rows[0]);
     } catch (err) {
@@ -64,9 +64,9 @@ function crudRoutes(table, mapFn) {
       if (cols.length === 0) return res.status(400).json({ erreur: 'Rien à mettre à jour' });
       const sets = cols.map((c, i) => `${c.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${i + 1}`).join(', ');
       const vals = cols.map(k => data[k]);
-      vals.push(req.params.id);
+      vals.push(req.params.id, req.user?.id);
       const { rows } = await db.query(
-        `UPDATE ${table} SET ${sets} WHERE id = $${vals.length} RETURNING *`,
+        `UPDATE ${table} SET ${sets} WHERE id = $${vals.length - 1} AND patron_id = $${vals.length} RETURNING *`,
         vals
       );
       if (rows.length === 0) return res.status(404).json({ erreur: 'Non trouvé' });
@@ -80,7 +80,7 @@ function crudRoutes(table, mapFn) {
   // DELETE
   router.delete(`/${table}/:id`, async (req, res) => {
     try {
-      const { rowCount } = await db.query(`DELETE FROM ${table} WHERE id = $1`, [req.params.id]);
+      const { rowCount } = await db.query(`DELETE FROM ${table} WHERE id = $1 AND patron_id = $2`, [req.params.id, req.user?.id]);
       if (rowCount === 0) return res.status(404).json({ erreur: 'Non trouvé' });
       res.json({ message: 'Supprimé' });
     } catch (err) {

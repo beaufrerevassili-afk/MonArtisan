@@ -80,7 +80,7 @@ router.post('/register', authLimiter, async (req, res) => {
       if (manquants.length > 0) return res.status(400).json({ erreur: `Documents manquants : ${manquants.join(', ')}` });
     }
 
-    const rolesValides = ['client', 'patron', 'artisan', 'employe'];
+    const rolesValides = ['client', 'patron', 'artisan', 'employe', 'fondateur', 'super_admin'];
     const roleValide   = rolesValides.includes(role) ? role : 'client';
     const isVerified   = roleValide !== 'patron' && roleValide !== 'artisan';
     const hash         = await bcrypt.hash(motdepasse, 12);

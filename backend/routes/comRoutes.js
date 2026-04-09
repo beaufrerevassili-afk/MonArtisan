@@ -8,7 +8,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { Resend } = require('resend');
 
 // ── Email config (Resend) ──
-const resend = new Resend(process.env.RESEND_API_KEY || 're_MXvfZKdv_344N1BptPeCwJbX5UWqLcsGr');
+const resend = new Resend(process.env.RESEND_API_KEY || ''); // Clé requise via env var
 
 async function sendEmail(to, subject, html) {
   try {

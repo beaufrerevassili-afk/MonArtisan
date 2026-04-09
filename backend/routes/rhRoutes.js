@@ -147,24 +147,26 @@ function mapBulletin(row) {
 // GET /rh/employes — Liste des employés
 router.get('/employes', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM employes ORDER BY nom, prenom');
+    const patronId = req.user?.id;
+    const result = await db.query('SELECT * FROM employes WHERE patron_id = $1 ORDER BY nom, prenom', [patronId]);
     const liste = result.rows.map(mapEmploye);
     res.json({ total: liste.length, employes: liste });
   } catch (err) {
     console.error('GET /employes error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
-// GET /rh/employes/:id — Fiche employé
+// GET /rh/employes/:id — Fiche employé (vérifie ownership)
 router.get('/employes/:id', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM employes WHERE id = $1', [req.params.id]);
+    const patronId = req.user?.id;
+    const result = await db.query('SELECT * FROM employes WHERE id = $1 AND patron_id = $2', [req.params.id, patronId]);
     if (result.rows.length === 0) return res.status(404).json({ erreur: 'Employé introuvable' });
     res.json(mapEmploye(result.rows[0]));
   } catch (err) {
     console.error('GET /employes/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -227,8 +229,8 @@ router.post('/employes', async (req, res) => {
 router.put('/employes/:id/depart', async (req, res) => {
   try {
     const result = await db.query(
-      `UPDATE employes SET statut = 'parti', patron_id = NULL, modifie_le = NOW() WHERE id = $1 RETURNING *`,
-      [req.params.id]
+      `UPDATE employes SET statut = 'parti', patron_id = NULL, modifie_le = NOW() WHERE id = $1 AND patron_id = $2 RETURNING *`,
+      [req.params.id, req.user?.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ erreur: 'Employé non trouvé' });
     res.json({ message: 'Employé marqué comme parti — son compte reste actif', employe: mapEmploye(result.rows[0]) });
