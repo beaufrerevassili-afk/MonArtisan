@@ -486,7 +486,7 @@ router.post('/patron/candidatures/:id/creer-employe', authenticateToken, async (
 
     // Créer le compte utilisateur
     const bcrypt = require('bcrypt');
-    const tempPassword = Math.random().toString(36).slice(-8);
+    const tempPassword = require('crypto').randomBytes(6).toString('hex');
     const hash = await bcrypt.hash(tempPassword, 12);
 
     let userId;
@@ -554,7 +554,7 @@ router.post('/patron/candidatures/:id/creer-employe', authenticateToken, async (
     });
   } catch (err) {
     console.error('POST creer-employe:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 

@@ -68,6 +68,7 @@ router.post('/register', authLimiter, async (req, res) => {
   try {
     const { nom, email, motdepasse, role, telephone, metier, siret, adresse, ville, experience, description, documents } = req.body;
     if (!nom || !email || !motdepasse) return res.status(400).json({ erreur: 'nom, email, motdepasse requis' });
+    if (motdepasse.length < 8) return res.status(400).json({ erreur: 'Le mot de passe doit contenir au moins 8 caractères' });
 
     const { rows: existing } = await db.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.length > 0) return res.status(400).json({ erreur: 'Cet email est déjà utilisé' });
@@ -152,6 +153,7 @@ router.post('/reset-password', async (req, res) => {
   try {
     const { token, motdepasse } = req.body;
     if (!token || !motdepasse) return res.status(400).json({ erreur: 'Token et nouveau mot de passe requis' });
+    if (motdepasse.length < 8) return res.status(400).json({ erreur: 'Le mot de passe doit contenir au moins 8 caractères' });
 
     const entry = resetTokens.get(token);
     if (!entry) return res.status(400).json({ erreur: 'Token invalide ou déjà utilisé' });

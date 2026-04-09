@@ -52,7 +52,7 @@ function crudRoutes(table, mapFn) {
       res.status(201).json({ message: 'Créé', item: mapFn ? mapFn(rows[0]) : rows[0] });
     } catch (err) {
       console.error(`POST /${table} error:`, err.message);
-      res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+      res.status(500).json({ erreur: 'Erreur serveur' });
     }
   });
 
@@ -73,7 +73,7 @@ function crudRoutes(table, mapFn) {
       res.json({ message: 'Mis à jour', item: mapFn ? mapFn(rows[0]) : rows[0] });
     } catch (err) {
       console.error(`PUT /${table}/:id error:`, err.message);
-      res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+      res.status(500).json({ erreur: 'Erreur serveur' });
     }
   });
 

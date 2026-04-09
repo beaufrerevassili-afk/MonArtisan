@@ -223,7 +223,7 @@ function immoCrud(table, responseKey) {
       const colNames = cols.map(c => c.replace(/([A-Z])/g, '_$1').toLowerCase()).join(',');
       const { rows } = await db.query(`INSERT INTO ${table} (${colNames}) VALUES (${placeholders}) RETURNING *`, vals);
       res.status(201).json({ message: 'Créé', item: rows[0] });
-    } catch (err) { console.error(`POST /immo/${key}:`, err.message); res.status(500).json({ erreur: 'Erreur serveur', detail: err.message }); }
+    } catch (err) { console.error(`POST /immo/${key}:`, err.message); res.status(500).json({ erreur: 'Erreur serveur' }); }
   });
 
   router.put(`/${key}/:id`, async (req, res) => {
@@ -237,7 +237,7 @@ function immoCrud(table, responseKey) {
       const { rows } = await db.query(`UPDATE ${table} SET ${sets} WHERE id = $${vals.length - 1} AND patron_id = $${vals.length} RETURNING *`, vals);
       if (!rows[0]) return res.status(404).json({ erreur: 'Non trouvé' });
       res.json({ message: 'Mis à jour', item: rows[0] });
-    } catch (err) { console.error(`PUT /immo/${key}/:id:`, err.message); res.status(500).json({ erreur: 'Erreur serveur', detail: err.message }); }
+    } catch (err) { console.error(`PUT /immo/${key}/:id:`, err.message); res.status(500).json({ erreur: 'Erreur serveur' }); }
   });
 
   router.delete(`/${key}/:id`, async (req, res) => {

@@ -6,7 +6,12 @@
 
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { authenticateToken } = require('../middleware/auth');
+
+// Rate limit : 30 requêtes/minute par IP
+const calcLimiter = rateLimit({ windowMs: 60000, max: 30, message: { erreur: 'Trop de requêtes, réessayez dans une minute' } });
+router.use(calcLimiter);
 const paie = require('../services/paieService');
 const geo = require('../services/geoService');
 const scoring = require('../services/scoringService');

@@ -184,7 +184,7 @@ router.post('/employes', async (req, res) => {
     // Créer un compte utilisateur si demandé (par défaut oui)
     if (creerCompte !== false) {
       const bcrypt = require('bcrypt');
-      const tempPassword = Math.random().toString(36).slice(-8);
+      const tempPassword = require('crypto').randomBytes(6).toString('hex');
       const hash = await bcrypt.hash(tempPassword, 12);
 
       const existing = await db.query('SELECT id, role FROM users WHERE email = $1', [email]);
@@ -221,7 +221,7 @@ router.post('/employes', async (req, res) => {
     res.status(201).json({ message: 'Fiche employé créée avec compte', employe: mapEmploye(result.rows[0]) });
   } catch (err) {
     console.error('POST /employes error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -303,7 +303,7 @@ router.put('/employes/:id', async (req, res) => {
     res.json({ message: 'Fiche employé mise à jour', employe: mapEmploye(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /employes/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -326,7 +326,7 @@ router.get('/planning', async (req, res) => {
     res.json({ total: liste.length, planning: liste });
   } catch (err) {
     console.error('GET /planning error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -358,7 +358,7 @@ router.post('/planning', async (req, res) => {
     res.status(201).json({ message: 'Créneau ajouté au planning', creneau: mapPlanning(result.rows[0]) });
   } catch (err) {
     console.error('POST /planning error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -381,7 +381,7 @@ router.get('/conges', async (req, res) => {
     res.json({ total: liste.length, conges: liste });
   } catch (err) {
     console.error('GET /conges error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -413,7 +413,7 @@ router.post('/conges', async (req, res) => {
     res.status(201).json({ message: 'Demande de congés envoyée', conge: mapConge(result.rows[0]) });
   } catch (err) {
     console.error('POST /conges error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -436,7 +436,7 @@ router.put('/conges/:id/valider', async (req, res) => {
     res.json({ message: `Congé ${decision}`, conge: mapConge(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /conges/:id/valider error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -459,7 +459,7 @@ router.get('/notes-frais', async (req, res) => {
     res.json({ total: liste.length, notesFrais: liste });
   } catch (err) {
     console.error('GET /notes-frais error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -490,7 +490,7 @@ router.post('/notes-frais', async (req, res) => {
     res.status(201).json({ message: 'Note de frais soumise', noteFrais: mapNoteFrais(result.rows[0]) });
   } catch (err) {
     console.error('POST /notes-frais error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -513,7 +513,7 @@ router.put('/notes-frais/:id/valider', async (req, res) => {
     res.json({ message: `Note de frais ${decision}`, noteFrais: mapNoteFrais(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /notes-frais/:id/valider error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -565,7 +565,7 @@ router.get('/tableau-de-bord', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /tableau-de-bord error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -599,7 +599,7 @@ router.get('/habilitations', async (req, res) => {
     res.json({ total: liste.length, habilitations: liste });
   } catch (err) {
     console.error('GET /habilitations error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -637,7 +637,7 @@ router.post('/habilitations', async (req, res) => {
     res.status(201).json({ message: 'Habilitation ajoutée', habilitation: mapHabilitation(result.rows[0]) });
   } catch (err) {
     console.error('POST /habilitations error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -685,7 +685,7 @@ router.put('/habilitations/:id', async (req, res) => {
     res.json({ message: 'Habilitation mise à jour', habilitation: mapHabilitation(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /habilitations/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -697,7 +697,7 @@ router.delete('/habilitations/:id', async (req, res) => {
     res.json({ message: 'Habilitation supprimée' });
   } catch (err) {
     console.error('DELETE /habilitations/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -730,7 +730,7 @@ router.get('/bulletins-paie', async (req, res) => {
     res.json({ total: liste.length, bulletins: liste });
   } catch (err) {
     console.error('GET /bulletins-paie error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -818,7 +818,7 @@ router.post('/bulletins-paie', async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('POST /bulletins-paie error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   } finally {
     client.release();
   }
@@ -871,7 +871,7 @@ router.get('/masse-salariale', async (req, res) => {
     res.json({ annee, parMois, totalAnnee });
   } catch (err) {
     console.error('GET /masse-salariale error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 

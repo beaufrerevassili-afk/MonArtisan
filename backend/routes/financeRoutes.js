@@ -124,7 +124,7 @@ router.get('/devis', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /devis error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -136,7 +136,7 @@ router.get('/devis/:id', async (req, res) => {
     res.json(mapDevis(result.rows[0]));
   } catch (err) {
     console.error('GET /devis/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -192,7 +192,7 @@ router.post('/devis', async (req, res) => {
     res.status(201).json({ message: 'Devis créé', devis: mapDevis(insertResult.rows[0]) });
   } catch (err) {
     console.error('POST /devis error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -213,7 +213,7 @@ router.put('/devis/:id/envoyer', async (req, res) => {
     res.json({ message: 'Devis envoyé au client', devis: mapDevis(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /devis/:id/envoyer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -280,7 +280,7 @@ router.put('/devis/:id/signer', async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('PUT /devis/:id/signer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   } finally {
     client.release();
   }
@@ -320,7 +320,7 @@ router.get('/factures', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /factures error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -332,7 +332,7 @@ router.get('/factures/:id', async (req, res) => {
     res.json(mapFacture(result.rows[0]));
   } catch (err) {
     console.error('GET /factures/:id error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -352,7 +352,7 @@ router.put('/factures/:id/payer', async (req, res) => {
     res.json({ message: 'Facture marquée comme payée', facture: mapFacture(updated.rows[0]) });
   } catch (err) {
     console.error('PUT /factures/:id/payer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -370,7 +370,7 @@ router.put('/factures/:id/relancer', async (req, res) => {
     res.json({ message: `Relance ${facture.relances} envoyée par email et SMS`, facture });
   } catch (err) {
     console.error('PUT /factures/:id/relancer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -393,7 +393,7 @@ router.get('/employes', async (req, res) => {
     res.json({ total: employes.length, employes });
   } catch (err) {
     console.error('GET /employes error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -412,7 +412,7 @@ router.get('/salaires', async (req, res) => {
     res.json({ total: liste.length, salaires: liste });
   } catch (err) {
     console.error('GET /salaires error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -474,7 +474,7 @@ router.post('/salaires/calculer', async (req, res) => {
     });
   } catch (err) {
     console.error('POST /salaires/calculer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -524,7 +524,7 @@ router.post('/salaires/payer', async (req, res) => {
     });
   } catch (err) {
     console.error('POST /salaires/payer error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -540,7 +540,7 @@ router.get('/depenses', async (req, res) => {
     res.json({ total: liste.length, depenses: liste });
   } catch (err) {
     console.error('GET /depenses error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -570,7 +570,7 @@ router.post('/depenses', async (req, res) => {
     res.status(201).json({ message: 'Dépense enregistrée', depense: mapDepense(result.rows[0]) });
   } catch (err) {
     console.error('POST /depenses error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -636,7 +636,7 @@ router.get('/tableau-de-bord', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /tableau-de-bord error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
@@ -663,7 +663,7 @@ router.get('/export', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /export error:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur', detail: err.message });
+    res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });
 
