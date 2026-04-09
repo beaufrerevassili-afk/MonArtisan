@@ -460,10 +460,12 @@ export default function Register() {
   const urlSecteur = searchParams.get('secteur') || 'btp';
   const [role, setRole]     = useState(urlRole);
   const [secteur, setSecteur] = useState(urlSecteur);
-  const [step, setStep]   = useState(1);
+  const [step, setStep]   = useState(urlRole ? 1 : 0); // step 0 = choix type de compte
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [clientType, setClientType] = useState(''); // '' | 'particulier' | 'multiproprio'
+  const [entrepriseType, setEntrepriseType] = useState(''); // '' | 'classique' | 'sci'
 
   // Données compte
   const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '', confirmMotdepasse: '' });
@@ -639,15 +641,22 @@ export default function Register() {
 
       const { data } = await api.post('/register', payload);
 
+      // Sauvegarder le type de compte pour le dashboard
+      localStorage.setItem('freample_account_type', JSON.stringify({ clientType, entrepriseType, secteur }));
+
       if (role === 'artisan') {
         setStep(5); // Page de confirmation, compte en attente de vérification
+      } else if (role === 'patron' && entrepriseType === 'sci') {
+        await login(compte.email, compte.motdepasse);
+        navigate('/immo/demo'); // Dashboard Freample Immo
       } else if (role === 'patron') {
         await login(compte.email, compte.motdepasse);
         navigate('/patron/dashboard');
       } else {
-        // Client universel → auto-login
+        // Client → auto-login, redirige selon redirect param ou homepage
         await login(compte.email, compte.motdepasse);
-        navigate('/app'); // /app gère la redirection selon le rôle
+        const redirect = searchParams.get('redirect');
+        navigate(redirect || '/');
       }
     } catch (err) {
       setError(err.message);
@@ -767,32 +776,93 @@ export default function Register() {
           </button>
           <div style={{ fontSize:11, fontWeight:600, color:'#A68B4B', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:10 }}>Inscription</div>
           <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,34px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#1A1A1A', marginBottom:6, lineHeight:1.1 }}>
-            {role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></> : <>Créer votre <span style={{fontWeight:700,fontStyle:'normal'}}>compte</span></>}
+            {role==='patron' && entrepriseType==='sci' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>SCI</span></>
+              : role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></>
+              : clientType==='multiproprio' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>propriétaire</span></>
+              : <>Créer votre <span style={{fontWeight:700,fontStyle:'normal'}}>compte</span></>}
           </h1>
           <p style={{ color: '#4A4A4A', fontSize: '0.9375rem' }}>
-            {role==='client' ? 'Un seul compte pour tous les services.'
-              : role==='patron' ? ({btp:'Gérez vos chantiers et devis en ligne', coiffure:'Gérez votre salon en ligne'}[secteur] || 'Créez votre espace professionnel')
-              : 'Développez votre activité avec Freample.'}
+            {role==='client' && clientType==='multiproprio' ? 'Gérez vos biens et trouvez des artisans.'
+              : role==='client' ? 'Un seul compte pour tous les services.'
+              : role==='patron' && entrepriseType==='sci' ? 'Gérez vos SCI, biens et locataires.'
+              : role==='patron' ? ({btp:'Gérez vos chantiers et recevez des projets'}[secteur] || 'Créez votre espace professionnel')
+              : 'Créez votre compte Freample.'}
           </p>
         </div>
 
-        {/* Sélecteur rôle (seulement step 1, masqué si vient de /pro) */}
-        {step === 1 && !searchParams.get('role') && (
-          <div style={{ padding:0, marginBottom:16, display:'flex', gap:8 }}>
-            {[
-              { value:'client', label:'👤 Client' },
-              { value:'patron', label:"🏢 Entreprise" },
-            ].map(r => (
-              <button key={r.value} onClick={()=>{setRole(r.value);setError('');}}
-                style={{ flex:1, padding:'12px', border:`1px solid ${role===r.value?'#A68B4B':'#E8E6E1'}`, background:role===r.value?'#F5EFE0':'transparent', color:role===r.value?'#7A6232':'#4A4A4A', fontSize:'0.8125rem', fontWeight:600, cursor:'pointer', transition:'all .2s', fontFamily:DS.font }}>
-                {r.label}
-              </button>
-            ))}
+        {/* ══ STEP 0 — Choix type de compte ══ */}
+        {step === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Vous êtes...</div>
+
+            {/* Particulier ou Entreprise */}
+            {!role || (role !== 'client' && role !== 'patron') ? (
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[
+                  { value: 'client', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez un projet' },
+                  { value: 'patron', icon: '🏢', label: 'Entreprise', desc: 'Gérez votre activité, recevez des projets' },
+                ].map(r => (
+                  <button key={r.value} onClick={() => { setRole(r.value); setError(''); }}
+                    style={{ flex: 1, padding: '20px 16px', border: `1px solid #E8E6E1`, background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>{r.icon}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{r.label}</div>
+                    <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>{r.desc}</div>
+                  </button>
+                ))}
+              </div>
+            ) : role === 'client' && !clientType ? (
+              /* Particulier : simple ou multipropriétaire */
+              <>
+                <button onClick={() => { setRole(''); setClientType(''); setEntrepriseType(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, textAlign: 'left', marginBottom: 4 }}>← Retour</button>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Êtes-vous multipropriétaire ?</div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => { setClientType('particulier'); setStep(1); }}
+                    style={{ flex: 1, padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>🏠</div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Non</div>
+                    <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>Compte client classique</div>
+                  </button>
+                  <button onClick={() => { setClientType('multiproprio'); setStep(1); }}
+                    style={{ flex: 1, padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>🏘️</div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Oui</div>
+                    <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>Avec gestion de biens intégrée</div>
+                  </button>
+                </div>
+              </>
+            ) : role === 'patron' && !entrepriseType ? (
+              /* Entreprise : type de structure */
+              <>
+                <button onClick={() => { setRole(''); setClientType(''); setEntrepriseType(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, textAlign: 'left', marginBottom: 4 }}>← Retour</button>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Quel type de structure ?</div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'classique', icon: '🏢', label: 'Entreprise', desc: 'SARL, SAS, EI, micro...', secteur: 'btp' },
+                    { id: 'sci', icon: '🏠', label: 'SCI', desc: 'Gestion immobilière', secteur: 'immo' },
+                  ].map(t => (
+                    <button key={t.id} onClick={() => { setEntrepriseType(t.id); setSecteur(t.secteur); setStep(1); }}
+                      style={{ flex: '1 1 140px', padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
+                      <div style={{ fontSize: 24, marginBottom: 6 }}>{t.icon}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{t.label}</div>
+                      <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>{t.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              /* Si déjà sélectionné mais step encore 0, avancer */
+              (() => { setStep(1); return null; })()
+            )}
           </div>
         )}
 
-        {/* Sélecteur secteur (sans schéma — le schéma est à droite) */}
-        {step === 1 && isPatron && !searchParams.get('secteur') && (
+        {/* Sélecteur secteur pour patron classique (step 1, non SCI) */}
+        {step === 1 && isPatron && entrepriseType === 'classique' && !searchParams.get('secteur') && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4A4A4A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
