@@ -454,7 +454,6 @@ export default function Landing() {
             Freample<span style={{ color: '#A68B4B' }}>.</span>
           </button>
           <button onClick={() => navigate('/pro')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Professionnel</button>
-          <button onClick={() => navigate('/immo')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Freample Immo</button>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {user ? <>

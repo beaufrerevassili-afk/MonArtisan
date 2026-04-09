@@ -71,10 +71,6 @@ export default function SecteurSelect() {
               onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
               Professionnel
             </button>
-            <button onClick={() => navigate('/immo')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font, transition: 'color .15s' }}
-              onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
-              Freample Immo
-            </button>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -101,7 +97,6 @@ export default function SecteurSelect() {
                   {[
                     { label: 'Mon espace', icon: '📊', action: () => { const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
                     { label: 'Trouver un artisan', icon: '🔨', action: () => navigate('/btp') },
-                    { label: 'Freample Immo', icon: '🏠', action: () => navigate('/immo') },
                   ].map(item => (
                     <button key={item.label} onClick={() => { setMenuOpen(false); item.action(); }}
                       style={{ width: '100%', padding: '11px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: L.font, fontSize: 13, fontWeight: 500, color: L.text, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'background .1s' }}
@@ -479,7 +474,7 @@ export default function SecteurSelect() {
       {/* ══ Footer ══ */}
       <footer style={{ padding: '28px 32px', textAlign: 'center', borderTop: `1px solid ${L.border}` }}>
         <nav style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 14, flexWrap: 'wrap' }}>
-          {[{ label: 'Artisans', href: '/btp' }, { label: 'Espace pro', href: '/pro' }, { label: 'Freample Immo', href: '/immo' }, { label: 'Recrutement', href: '/recrutement' }, { label: 'CGU', href: '/cgu' }].map(l => (
+          {[{ label: 'Artisans', href: '/btp' }, { label: 'Espace pro', href: '/pro' }, { label: 'Recrutement', href: '/recrutement' }, { label: 'CGU', href: '/cgu' }].map(l => (
             <a key={l.label} href={l.href} style={{ fontSize: 12, color: L.textSec, textDecoration: 'none', transition: 'color .15s' }}
               onMouseEnter={e => e.currentTarget.style.color = L.gold} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>{l.label}</a>
           ))}

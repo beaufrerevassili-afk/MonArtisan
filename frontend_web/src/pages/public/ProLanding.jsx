@@ -21,7 +21,6 @@ export default function ProLanding() {
             Freample<span style={{ color: L.gold }}>.</span> <span style={{ fontSize: 12, fontWeight: 400, color: L.textSec }}>Pro</span>
           </button>
           <button onClick={() => navigate('/')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Accueil</button>
-          <button onClick={() => navigate('/immo')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Freample Immo</button>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {isPro ? (

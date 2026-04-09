@@ -143,9 +143,8 @@ function AppRoutes() {
       <Route path="/com/portfolio" element={<PortfolioCom />} />
       <Route path="/pro" element={<ProLanding />} />
       <Route path="/admin/stats" element={<StatsAdmin />} />
-      <Route path="/immo" element={<FreampleImmo />} />
-      <Route path="/immo/logement" element={<FreampleLogement />} />
-      <Route path="/immo/erp" element={<FreampleImmoERP />} />
+      <Route path="/immo" element={<Navigate to="/immo/gestion" replace />} />
+      <Route path="/immo/gestion" element={<ImmoDemo />} />
       <Route path="/immo/demo" element={<ImmoDemo />} />
       <Route path="/droit" element={<FreampleDroit />} />
       <Route path="/suivi/:token" element={<SuiviCommande />} />

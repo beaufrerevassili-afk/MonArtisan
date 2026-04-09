@@ -648,7 +648,7 @@ export default function Register() {
         setStep(5); // Page de confirmation, compte en attente de vérification
       } else if (role === 'patron' && entrepriseType === 'sci') {
         await login(compte.email, compte.motdepasse);
-        navigate('/immo/demo'); // Dashboard Freample Immo
+        navigate('/immo/gestion'); // Dashboard Gestion SCI
       } else if (role === 'patron') {
         await login(compte.email, compte.motdepasse);
         navigate('/patron/dashboard');
