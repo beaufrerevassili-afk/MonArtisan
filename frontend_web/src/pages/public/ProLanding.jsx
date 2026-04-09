@@ -126,7 +126,7 @@ export default function ProLanding() {
       {/* ══ CHIFFRES ══ */}
       <section style={{ background: L.cream, padding: 'clamp(36px,5vh,56px) 32px', borderTop: `1px solid ${L.border}`, borderBottom: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 'clamp(32px,6vw,80px)', flexWrap: 'wrap', textAlign: 'center' }}>
-          {[{ val: '0 €', label: 'Abonnement' }, { val: '1%', label: 'Commission client' }, { val: '100%', label: 'Pour vous' }, { val: '∞', label: 'Projets illimités' }].map(s => (
+          {[{ val: '0 €', label: 'Abonnement' }, { val: '100%', label: 'Pour vous' }, { val: '0 €', label: 'Frais artisan' }, { val: '∞', label: 'Projets illimités' }].map(s => (
             <div key={s.val}>
               <div style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 500, fontFamily: L.serif, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
               <div style={{ fontSize: 12, color: L.textSec, marginTop: 6 }}>{s.label}</div>
