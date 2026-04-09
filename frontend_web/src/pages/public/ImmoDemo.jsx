@@ -310,11 +310,9 @@ export default function ImmoDemo() {
       {/* SOUS-NAV APPLE */}
       <div style={{ display:'flex', justifyContent:'center', gap:0, background:L.white, borderBottom:`1px solid ${L.border}`, flexShrink:0 }}>
         {[
-          { label:'Freample Immo', href:'/immo/demo', active:true },
-          { label:'Freample Logement', href:'/immo/logement' },
+          { label:'Gestion SCI', href:'/immo/gestion', active:true },
           { label:'Freample Artisans', href:'/btp' },
-          { label:'Freample Com', href:'/com' },
-          { label:'ERP & Diagnostics', href:'/immo/erp' },
+          { label:'Espace pro', href:'/pro' },
         ].map(item=>(
           <button key={item.label} onClick={()=>navigate(item.href)}
             style={{ padding:'10px 20px', background:'none', border:'none', borderBottom:`2px solid ${item.active?L.noir:'transparent'}`, fontSize:12, fontWeight:item.active?700:400, color:item.active?L.text:L.textSec, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}

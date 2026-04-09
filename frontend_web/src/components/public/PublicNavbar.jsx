@@ -6,11 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 const DEV_EMAIL = 'freamplecom@gmail.com';
 const NAV_PUBLIC = [
   { label:'Freample Artisans', href:'/btp' },
-  { label:'Freample Com', href:'/com' },
-  { label:'Freample Immo', href:'/immo' },
-  { label:'Freample Logement', href:'/immo/logement' },
-  { label:'Freample Droit', href:'/droit' },
-  { label:'Freample Beauté', href:'/coiffure' },
   { label:'Recrutement', href:'/recrutement' },
   { label:'Espace pro', href:'/pro' },
 ];

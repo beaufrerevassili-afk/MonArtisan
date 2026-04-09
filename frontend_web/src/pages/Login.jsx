@@ -20,7 +20,7 @@ const GENERIC_DEMO = [
 const SECTOR_CONFIG = {
   btp: { label:'BTP', icon:'🏗️' },
 };
-const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/' };
+const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/patron/dashboard' };
 const PUBLIC_SECTORS = ['btp'];
 
 const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };

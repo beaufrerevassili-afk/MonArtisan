@@ -464,8 +464,13 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [clientType, setClientType] = useState(''); // '' | 'particulier' | 'multiproprio'
-  const [entrepriseType, setEntrepriseType] = useState(''); // '' | 'classique' | 'sci'
+  const [clientType, setClientType] = useState('');
+  const [entrepriseType, setEntrepriseType] = useState('');
+
+  // Auto-avancer step 0 → 1 quand type entreprise/SCI sélectionné
+  useEffect(() => {
+    if (step === 0 && (entrepriseType === 'sci' || clientType === 'entreprise')) setStep(1);
+  }, [step, entrepriseType, clientType]);
 
   // Données compte
   const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '', confirmMotdepasse: '' });
@@ -626,16 +631,19 @@ export default function Register() {
         email:      compte.email,
         motdepasse: compte.motdepasse,
         role,
-        ...(role === 'artisan' && {
+        secteur,
+        clientType,
+        entrepriseType,
+        ...((role === 'artisan' || isPatron) && {
           telephone:    compte.telephone,
           metier:       profil.metier,
-          siret:        profil.siret.replace(/\s/g, ''),
+          siret:        profil.siret?.replace(/\s/g, '') || '',
           adresse:      profil.adresse,
           ville:        profil.ville,
           experience:   profil.experience,
           description:  profil.description,
           documents:    docsMetadata,
-          statut_verification: 'en_attente',
+          statut_verification: role === 'artisan' ? 'en_attente' : 'actif',
         }),
       };
 
@@ -659,7 +667,7 @@ export default function Register() {
         navigate(redirect || '/');
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.erreur || err.message || 'Erreur lors de l\'inscription');
     } finally {
       setLoading(false);
     }
@@ -855,10 +863,7 @@ export default function Register() {
                   </button>
                 </div>
               </>
-            ) : (
-              /* Entreprise ou SCI déjà sélectionné → avancer */
-              (() => { setStep(1); return null; })()
-            )}
+            ) : null}
           </div>
         )}
 
