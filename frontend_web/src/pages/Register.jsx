@@ -456,7 +456,7 @@ export default function Register() {
   const { login }   = useAuth();
   const navigate    = useNavigate();
   const [searchParams]    = useSearchParams();
-  const urlRole    = searchParams.get('role') || 'client';
+  const urlRole    = searchParams.get('role') || '';
   const urlSecteur = searchParams.get('secteur') || 'btp';
   const [role, setRole]     = useState(urlRole);
   const [secteur, setSecteur] = useState(urlSecteur);
