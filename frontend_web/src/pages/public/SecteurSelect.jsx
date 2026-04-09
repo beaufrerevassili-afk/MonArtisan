@@ -77,6 +77,7 @@ export default function SecteurSelect() {
           {isDev && <button onClick={() => navigate('/immo/demo')} style={{ padding: '6px 12px', background: '#F0FDF4', border: 'none', fontSize: 11, fontWeight: 700, color: '#16A34A', cursor: 'pointer' }}>Demo</button>}
           {user ? <>
             <button onClick={() => {
+              if (user.secteur === 'immo' || user.entrepriseType === 'sci') { navigate('/immo/gestion'); return; }
               const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard', fondateur: '/' };
               navigate(dest[user.role] || '/');
             }} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: L.gold, cursor: 'pointer', fontFamily: L.font }}>
@@ -95,7 +96,7 @@ export default function SecteurSelect() {
                     <div style={{ fontSize: 12, color: L.textSec }}>{user.email}</div>
                   </div>
                   {[
-                    { label: 'Mon espace', icon: '📊', action: () => { const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
+                    { label: 'Mon espace', icon: '📊', action: () => { if (user.secteur === 'immo' || user.entrepriseType === 'sci') { navigate('/immo/gestion'); return; } const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
                     { label: 'Trouver un artisan', icon: '🔨', action: () => navigate('/btp') },
                   ].map(item => (
                     <button key={item.label} onClick={() => { setMenuOpen(false); item.action(); }}

@@ -155,7 +155,10 @@ export default function ImmoDemo() {
     }).catch(() => {});
   }, []);
 
-  if (!user || user.email !== 'freamplecom@gmail.com') { navigate('/'); return null; }
+  // Accès : fondateur (dev), comptes SCI (secteur immo), ou entrepriseType sci
+  const accountType = (() => { try { return JSON.parse(localStorage.getItem('freample_account_type')); } catch { return null; } })();
+  const isSCIUser = user?.secteur === 'immo' || user?.entrepriseType === 'sci' || accountType?.entrepriseType === 'sci';
+  if (!user || (!isSCIUser && user.email !== 'freamplecom@gmail.com')) { navigate('/'); return null; }
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 3000); };
   const genId = () => { const id = data.nextId; setData(d=>({...d, nextId:d.nextId+1})); return id; };
