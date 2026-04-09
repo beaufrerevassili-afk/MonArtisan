@@ -93,7 +93,7 @@ router.post('/briefs', async (req, res) => {
         </div>
         <div style="margin:20px 0;padding:20px;background:#0F0A1A;border-radius:12px;text-align:center;">
           <p style="color:rgba(255,255,255,0.7);margin:0 0 12px;font-size:14px;">Suivez votre commande en temps réel :</p>
-          <a href="${process.env.FRONTEND_URL || 'https://frontendweb-ruby.vercel.app'}/suivi/${suiviToken}"
+          <a href="${process.env.FRONTEND_URL || 'https://mon-artisan-fawn.vercel.app'}/suivi/${suiviToken}"
              style="display:inline-block;padding:12px 28px;background:#8B5CF6;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;">
             📦 Suivre ma commande
           </a>
