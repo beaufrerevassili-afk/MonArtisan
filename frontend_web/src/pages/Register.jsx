@@ -801,9 +801,9 @@ export default function Register() {
               <>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {[
-                    { id: 'particulier', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez un projet' },
-                    { id: 'entreprise', icon: '🏢', label: 'Entreprise', desc: 'Payez depuis votre société' },
-                    { id: 'sci', icon: '🏠', label: 'SCI', desc: 'Gérez vos biens et SCI' },
+                    { id: 'particulier', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez votre projet' },
+                    { id: 'entreprise', icon: '🏢', label: 'Entreprise', desc: 'Trouvez un artisan, publiez votre projet' },
+                    { id: 'sci', icon: '🏠', label: 'SCI', desc: 'Gestion immobilière intégrée gratuite : biens, locataires, comptabilité SCI, déclarations fiscales' },
                   ].map(c => (
                     <button key={c.id} onClick={() => {
                       if (c.id === 'particulier') { setRole('client'); setClientType(''); }
