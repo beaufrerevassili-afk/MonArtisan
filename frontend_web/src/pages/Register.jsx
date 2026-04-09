@@ -673,7 +673,7 @@ export default function Register() {
   const isPro      = isArtisan || isPatron; // SCI n'est PAS pro (pas de documents)
   const currentDocs = DOCUMENTS_REQUIS;
   const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
-  const showSideEco = isPatron && step === 1;
+  const showSideEco = (isPatron || isSCI) && step === 1;
   const maxWidth   = showSideEco ? 960 : (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
