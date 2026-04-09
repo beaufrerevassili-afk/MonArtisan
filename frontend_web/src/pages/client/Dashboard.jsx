@@ -25,9 +25,18 @@ const DEMO_PROJETS = [
   { id: 3, metier: 'Électricité', titre: 'Mise aux normes tableau', description: 'Remplacement tableau électrique vétuste.', ville: 'Antibes', budget: 800, commission: null, urgence: 'urgent', statut: 'termine', date: '2026-03-15', nbOffres: 1, artisan: 'Marc Lambert' },
 ];
 
+const STATUT_PAIEMENT = {
+  acompte_bloque: { label: 'Acompte bloqué (30%)', color: '#2563EB', bg: '#EFF6FF', icon: '🔒' },
+  en_cours: { label: 'Travaux en cours', color: '#D97706', bg: '#FFFBEB', icon: '🏗️' },
+  validation: { label: 'En attente de validation', color: '#8B5CF6', bg: '#F5F3FF', icon: '✋' },
+  libere: { label: 'Paiement libéré', color: '#16A34A', bg: '#F0FDF4', icon: '✓' },
+  litige: { label: 'Litige en cours', color: '#DC2626', bg: '#FEF2F2', icon: '⚠️' },
+};
+
 const DEMO_PAIEMENTS = [
-  { id: 1, projetTitre: 'Peinture salon + chambre', artisan: 'Sophie Duval', montant: 1200, commission: 12, total: 1212, date: '2026-04-02', statut: 'paye' },
-  { id: 2, projetTitre: 'Mise aux normes tableau', artisan: 'Marc Lambert', montant: 800, commission: 8, total: 808, date: '2026-03-20', statut: 'paye' },
+  { id: 1, projetTitre: 'Peinture salon + chambre', artisan: 'Sophie Duval', montant: 1200, acompte: 360, solde: 840, commission: 12, fraisPaiement: 2, total: 1214, date: '2026-04-02', statut: 'validation', dateLimiteValidation: '2026-04-09' },
+  { id: 2, projetTitre: 'Mise aux normes tableau', artisan: 'Marc Lambert', montant: 800, acompte: 240, solde: 560, commission: 8, fraisPaiement: 1.80, total: 809.80, date: '2026-03-20', statut: 'libere', dateValidation: '2026-03-25' },
+  { id: 3, projetTitre: 'Rénovation salle de bain', artisan: 'Lucas Garcia', montant: 3500, acompte: 1050, solde: 2450, commission: 35, fraisPaiement: 2, total: 3537, date: '2026-04-06', statut: 'en_cours' },
 ];
 
 const DEMO_FAVORIS = [
@@ -151,29 +160,116 @@ export default function DashboardClient() {
           </div>
         )}
 
-        {/* ═══ PAIEMENTS ═══ */}
+        {/* ═══ PAIEMENTS — SÉQUESTRE ═══ */}
         {tab === 'paiements' && (
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Paiements</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Paiements sécurisés</h2>
+            </div>
+
+            {/* Explication séquestre */}
+            <div style={{ ...CARD, marginBottom: 16, borderLeft: '4px solid #2563EB', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Paiement sécurisé par séquestre</div>
+                <div style={{ fontSize: 12, color: DS.muted, lineHeight: 1.6 }}>
+                  Vos paiements sont bloqués sur un compte sécurisé (GoCardless). L'artisan ne reçoit les fonds qu'après votre validation. En cas de litige, Freample intervient comme arbitre.
+                </div>
+                <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: DS.muted }}>
+                  <span>🔒 30% bloqué au démarrage</span>
+                  <span>✓ 70% libéré après validation</span>
+                  <span>⏱️ Auto-libéré après 7 jours</span>
+                </div>
+              </div>
+            </div>
+
             {paiements.length === 0 ? (
               <div style={{ ...CARD, textAlign: 'center', padding: 48, color: DS.muted }}>Aucun paiement pour le moment.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {paiements.map(p => (
-                  <div key={p.id} style={{ ...CARD, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{p.projetTitre}</div>
-                      <div style={{ fontSize: 12, color: DS.muted }}>🔨 {p.artisan} · {new Date(p.date).toLocaleDateString('fr-FR')}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {paiements.map(p => {
+                  const st = STATUT_PAIEMENT[p.statut] || STATUT_PAIEMENT.en_cours;
+                  return (
+                    <div key={p.id} style={{ ...CARD, borderLeft: `4px solid ${st.color}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700 }}>{p.projetTitre}</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 6 }}>{st.icon} {st.label}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: DS.muted }}>🔨 {p.artisan} · {new Date(p.date).toLocaleDateString('fr-FR')}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 18, fontWeight: 800 }}>{p.total}€</div>
+                          <div style={{ fontSize: 10, color: DS.muted }}>total TTC</div>
+                        </div>
+                      </div>
+
+                      {/* Barre de progression paiement */}
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+                        <div style={{ flex: 30, height: 6, borderRadius: 3, background: ['acompte_bloque', 'en_cours', 'validation', 'libere'].includes(p.statut) ? '#2563EB' : '#E5E7EB' }} />
+                        <div style={{ flex: 70, height: 6, borderRadius: 3, background: p.statut === 'libere' ? '#16A34A' : p.statut === 'validation' ? '#8B5CF6' : '#E5E7EB' }} />
+                      </div>
+
+                      {/* Détail */}
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 11 }}>
+                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
+                          <span style={{ color: DS.muted }}>Acompte (30%)</span> <strong>{p.acompte}€</strong>
+                        </div>
+                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
+                          <span style={{ color: DS.muted }}>Solde (70%)</span> <strong>{p.solde}€</strong>
+                        </div>
+                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
+                          <span style={{ color: DS.muted }}>Commission</span> <strong>{p.commission}€</strong>
+                        </div>
+                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
+                          <span style={{ color: DS.muted }}>Frais paiement</span> <strong>{p.fraisPaiement}€</strong>
+                        </div>
+                      </div>
+
+                      {/* Actions selon statut */}
+                      {p.statut === 'validation' && (
+                        <div style={{ marginTop: 12, padding: '12px 14px', background: '#F5F3FF', borderRadius: 10, border: '1px solid rgba(139,92,246,0.15)' }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#8B5CF6', marginBottom: 6 }}>✋ Les travaux sont terminés ?</div>
+                          <div style={{ fontSize: 12, color: DS.muted, marginBottom: 10 }}>
+                            Confirmez la bonne exécution pour libérer le paiement à {p.artisan}.
+                            {p.dateLimiteValidation && <span> Auto-libération le {new Date(p.dateLimiteValidation).toLocaleDateString('fr-FR')}.</span>}
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button onClick={() => {
+                              setPaiements(prev => prev.map(x => x.id === p.id ? { ...x, statut: 'libere', dateValidation: new Date().toISOString() } : x));
+                            }} style={{ padding: '8px 18px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                              ✓ Valider — Libérer le paiement
+                            </button>
+                            <button onClick={() => {
+                              setPaiements(prev => prev.map(x => x.id === p.id ? { ...x, statut: 'litige' } : x));
+                            }} style={{ padding: '8px 18px', background: '#FEF2F2', color: '#DC2626', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                              Signaler un problème
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {p.statut === 'libere' && (
+                        <div style={{ marginTop: 10, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>
+                          ✓ Paiement libéré à {p.artisan}{p.dateValidation ? ` le ${new Date(p.dateValidation).toLocaleDateString('fr-FR')}` : ''}
+                        </div>
+                      )}
+
+                      {p.statut === 'litige' && (
+                        <div style={{ marginTop: 10, padding: '10px 14px', background: '#FEF2F2', borderRadius: 8, fontSize: 12, color: '#DC2626' }}>
+                          ⚠️ Litige en cours — Freample analyse les preuves (photos, devis, messages) et vous recontactera sous 48h.
+                        </div>
+                      )}
+
+                      {p.statut === 'en_cours' && (
+                        <div style={{ marginTop: 10, fontSize: 12, color: '#D97706' }}>
+                          🏗️ Travaux en cours — l'acompte de {p.acompte}€ est bloqué sur le compte séquestre.
+                        </div>
+                      )}
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 16, fontWeight: 700 }}>{p.total}€</div>
-                      <div style={{ fontSize: 10, color: DS.muted }}>{p.montant}€ + {p.commission}€ commission</div>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: p.statut === 'paye' ? '#16A34A' : '#D97706', background: p.statut === 'paye' ? '#F0FDF4' : '#FFFBEB', padding: '2px 6px', borderRadius: 4 }}>
-                        {p.statut === 'paye' ? '✓ Payé' : 'En attente'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
