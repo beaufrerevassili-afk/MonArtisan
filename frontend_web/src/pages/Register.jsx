@@ -668,10 +668,10 @@ export default function Register() {
   // ─── Rendu principal ─────────────────────────────────────────────────────────
 
   const isArtisan  = role === 'artisan';
-  const isPatron   = role === 'patron';
-  const isPro      = isArtisan || isPatron;
-  const currentDocs = secteur === 'coiffure' ? DOCUMENTS_COIFFURE
-    : DOCUMENTS_REQUIS;
+  const isPatron   = role === 'patron' && entrepriseType !== 'sci';
+  const isSCI      = entrepriseType === 'sci';
+  const isPro      = isArtisan || isPatron; // SCI n'est PAS pro (pas de documents)
+  const currentDocs = DOCUMENTS_REQUIS;
   const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
   const showSideEco = isPatron && step === 1;
   const maxWidth   = showSideEco ? 960 : (isPro && step === 3) ? 600 : 440;
@@ -894,11 +894,11 @@ export default function Register() {
                     </p>
                   </div>
                 )}
-                {isPatron && entrepriseType === 'sci' && (
+                {isSCI && (
                   <div style={{ background: '#EFF6FF', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
                     <span style={{ flexShrink: 0, fontSize: '1rem' }}>🏠</span>
                     <p style={{ fontSize: '0.8125rem', color: '#2563EB', lineHeight: 1.5 }}>
-                      <strong>Espace SCI</strong> — Après inscription, vous accéderez à Freample Immo pour gérer vos SCI, biens et locataires.
+                      <strong>Espace SCI gratuit</strong> — Gestion de biens, locataires, comptabilité SCI et déclarations fiscales. Accessible immédiatement après inscription.
                     </p>
                   </div>
                 )}
