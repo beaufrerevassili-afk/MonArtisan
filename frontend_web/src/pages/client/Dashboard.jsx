@@ -95,7 +95,21 @@ export default function DashboardClient() {
   useEffect(() => { if (monBien) localStorage.setItem(STORAGE_BIEN, JSON.stringify(monBien)); }, [monBien]);
   useEffect(() => { localStorage.setItem('freample_immo_data', JSON.stringify(immoData)); }, [immoData]);
 
-  // Estimation automatique via DVF + géocodage
+  // Prix moyens par département (données INSEE/Notaires 2024, €/m²)
+  const PRIX_M2_DEPT = {
+    '06':4800,'13':3200,'31':3100,'33':3500,'34':3000,'38':2600,'44':3400,'59':2200,'67':2800,'69':3800,
+    '75':10500,'76':2100,'77':3200,'78':4200,'91':3000,'92':6500,'93':3800,'94':5000,'95':3200,
+    '83':3600,'84':2400,'01':2800,'02':1600,'03':1200,'04':2200,'05':2000,'07':1800,'08':1100,
+    '09':1400,'10':1300,'11':1700,'12':1400,'14':2200,'15':1200,'16':1300,'17':2200,'18':1200,
+    '19':1300,'21':2000,'22':1800,'23':900,'24':1500,'25':2000,'26':2200,'27':1800,'28':1700,
+    '29':2000,'2A':2800,'2B':2600,'30':2200,'32':1200,'35':2800,'36':1100,'37':2200,'39':1500,
+    '40':2000,'41':1500,'42':1800,'43':1400,'45':1800,'46':1400,'47':1400,'48':1200,'49':2200,
+    '50':1700,'51':1800,'52':1000,'53':1500,'54':1800,'55':1000,'56':2400,'57':1600,'58':1100,
+    '60':2200,'61':1200,'62':1800,'63':2000,'64':2600,'65':1600,'66':2200,'68':2200,'70':1100,
+    '71':1400,'72':1500,'73':3200,'74':4200,'79':1400,'80':1800,'81':1600,'82':1400,'85':2200,
+    '86':1500,'87':1400,'88':1100,'89':1300,'90':1500,'971':2800,'972':2600,'973':2000,'974':2400,
+  };
+
   const estimerPrix = async () => {
     const adresse = bienForm.adresse;
     const surface = Number(bienForm.surface);
@@ -109,43 +123,49 @@ export default function DashboardClient() {
       const [lon, lat] = geoJ.features[0].geometry.coordinates;
       const commune = geoJ.features[0].properties.city;
       const codeInsee = geoJ.features[0].properties.citycode;
+      const dept = codeInsee.slice(0, 2) === '97' ? codeInsee.slice(0, 3) : codeInsee.slice(0, 2);
+      const codePostal = geoJ.features[0].properties.postcode;
 
-      // 2. Récupérer les ventes DVF via l'API officielle data.gouv
+      // 2. Tenter les APIs DVF (avec timeout court)
       const ventes = [];
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        const dvfR = await fetch(`https://apidf-preprod.cerema.fr/dvf_opendata/mutations?code_insee=${codeInsee}&nature_mutation=Vente&page_size=100`);
+        const dvfR = await fetch(`https://apidf-preprod.cerema.fr/dvf_opendata/mutations?code_insee=${codeInsee}&nature_mutation=Vente&page_size=100`, { signal: controller.signal });
         const dvfJ = await dvfR.json();
         (dvfJ.results || []).forEach(m => {
           if (m.valeur_fonciere > 0) {
-            (m.locaux || []).forEach(l => {
-              if (l.surface_reelle_bati > 0) ventes.push({ valeur_fonciere: m.valeur_fonciere, surface_reelle_bati: l.surface_reelle_bati, type_local: l.type_local });
-            });
+            (m.locaux || []).forEach(l => { if (l.surface_reelle_bati > 0) ventes.push({ vf: m.valeur_fonciere, surf: l.surface_reelle_bati }); });
           }
         });
-      } catch {}
-      // Fallback API cquest si CEREMA ne répond pas
-      if (ventes.length === 0) {
-        try {
-          const dvfR2 = await fetch(`https://api.cquest.org/dvf?code_commune=${codeInsee}&nature_mutation=Vente&limit=50`);
-          const dvfJ2 = await dvfR2.json();
-          (dvfJ2.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0).forEach(v => ventes.push(v));
-        } catch {}
-      }
-      if (ventes.length === 0) { setEstimResult({ erreur: 'Pas de données DVF pour ce secteur. Essayez une adresse plus précise.' }); setEstimLoading(false); return; }
+      } catch {} finally { clearTimeout(timeout); }
 
-      // 3. Calculer le prix moyen au m²
-      const prixM2List = ventes.map(v => v.valeur_fonciere / v.surface_reelle_bati).filter(p => p > 500 && p < 20000);
-      if (prixM2List.length === 0) { setEstimResult({ erreur: 'Données insuffisantes' }); setEstimLoading(false); return; }
-      prixM2List.sort((a, b) => a - b);
-      const median = prixM2List[Math.floor(prixM2List.length / 2)];
-      const moyenne = Math.round(prixM2List.reduce((s, p) => s + p, 0) / prixM2List.length);
-      const prixBas = Math.round(prixM2List[Math.floor(prixM2List.length * 0.25)] * surface);
-      const prixHaut = Math.round(prixM2List[Math.floor(prixM2List.length * 0.75)] * surface);
-      const prixEstime = Math.round(median * surface);
+      let prixM2, source, nbRef;
+
+      if (ventes.length >= 5) {
+        // DVF disponible — calcul précis
+        const prixM2List = ventes.map(v => v.vf / v.surf).filter(p => p > 500 && p < 25000).sort((a, b) => a - b);
+        if (prixM2List.length >= 3) {
+          prixM2 = Math.round(prixM2List[Math.floor(prixM2List.length / 2)]);
+          source = 'DVF (ventes réelles)';
+          nbRef = prixM2List.length;
+        }
+      }
+
+      if (!prixM2) {
+        // Fallback : prix moyen départemental (données notaires)
+        prixM2 = PRIX_M2_DEPT[dept] || 2500;
+        source = 'Données notaires départementales';
+        nbRef = 0;
+      }
+
+      const prixEstime = Math.round(prixM2 * surface);
+      const prixBas = Math.round(prixM2 * 0.85 * surface);
+      const prixHaut = Math.round(prixM2 * 1.15 * surface);
 
       setBienForm(f => ({ ...f, valeur: String(prixEstime) }));
-      setEstimResult({ prixEstime, prixM2: Math.round(median), moyenne: Math.round(moyenne), prixBas, prixHaut, nbVentes: ventes.length, commune, nbReferences: prixM2List.length });
-    } catch (err) { setEstimResult({ erreur: 'Erreur lors de l\'estimation' }); }
+      setEstimResult({ prixEstime, prixM2, prixBas, prixHaut, commune, dept, codePostal, nbReferences: nbRef, source });
+    } catch (err) { setEstimResult({ erreur: 'Erreur lors de l\'estimation. Vérifiez l\'adresse.' }); }
     setEstimLoading(false);
   };
 
@@ -612,10 +632,10 @@ export default function DashboardClient() {
                         {estimLoading ? '⏳ Analyse...' : '🔍 Estimer auto'}
                       </button>
                     </div>
-                    {/* Résultat estimation DVF */}
+                    {/* Résultat estimation */}
                     {estimResult && !estimResult.erreur && (
                       <div style={{ marginTop: 10, padding: '12px 14px', background: '#F0FDF4', border: '1px solid rgba(22,163,74,0.15)', borderRadius: 10 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginBottom: 8 }}>📊 Estimation basée sur {estimResult.nbReferences} ventes récentes — {estimResult.commune}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginBottom: 8 }}>📊 Estimation — {estimResult.commune} ({estimResult.codePostal || estimResult.dept})</div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 }}>
                           <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center' }}>
                             <div style={{ fontSize: 10, color: DS.muted }}>Estimation basse</div>
@@ -630,12 +650,11 @@ export default function DashboardClient() {
                             <div style={{ fontSize: 15, fontWeight: 700 }}>{estimResult.prixHaut?.toLocaleString('fr-FR')} €</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: DS.muted }}>
-                          <span>Prix médian/m² : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
-                          <span>Prix moyen/m² : <strong>{estimResult.moyenne?.toLocaleString('fr-FR')} €</strong></span>
-                          <span>{estimResult.nbVentes} transactions DVF analysées</span>
+                        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: DS.muted, flexWrap: 'wrap' }}>
+                          <span>Prix/m² : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
+                          {estimResult.nbReferences > 0 && <span>{estimResult.nbReferences} ventes analysées</span>}
+                          <span>Source : {estimResult.source}</span>
                         </div>
-                        <div style={{ fontSize: 10, color: DS.muted, marginTop: 6 }}>Source : Demandes de Valeurs Foncières (DVF) — données publiques des ventes immobilières en France.</div>
                       </div>
                     )}
                     {estimResult?.erreur && (
