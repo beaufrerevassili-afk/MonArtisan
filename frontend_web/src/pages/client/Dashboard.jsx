@@ -69,6 +69,8 @@ export default function DashboardClient() {
   const [monBien, setMonBien] = useState(() => { try { return JSON.parse(localStorage.getItem(STORAGE_BIEN)) || null; } catch { return null; } });
   const [bienForm, setBienForm] = useState({});
   const [bienEdit, setBienEdit] = useState(false);
+  const [estimLoading, setEstimLoading] = useState(false);
+  const [estimResult, setEstimResult] = useState(null);
   // Données pour InvestirJugeModule (partagées avec l'onglet investir)
   const [immoData, setImmoData] = useState(() => { try { return JSON.parse(localStorage.getItem('freample_immo_data')) || { scis: [], biens: monBien ? [monBien] : [], dossiers: [], nextId: 10 }; } catch { return { scis: [], biens: [], dossiers: [], nextId: 10 }; } });
 
@@ -92,6 +94,51 @@ export default function DashboardClient() {
   // Persister mon bien
   useEffect(() => { if (monBien) localStorage.setItem(STORAGE_BIEN, JSON.stringify(monBien)); }, [monBien]);
   useEffect(() => { localStorage.setItem('freample_immo_data', JSON.stringify(immoData)); }, [immoData]);
+
+  // Estimation automatique via DVF + géocodage
+  const estimerPrix = async () => {
+    const adresse = bienForm.adresse;
+    const surface = Number(bienForm.surface);
+    if (!adresse || !surface) { setEstimResult({ erreur: 'Adresse et surface requises' }); return; }
+    setEstimLoading(true); setEstimResult(null);
+    try {
+      // 1. Géocoder l'adresse
+      const geoR = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`);
+      const geoJ = await geoR.json();
+      if (!geoJ.features?.length) { setEstimResult({ erreur: 'Adresse non trouvée' }); setEstimLoading(false); return; }
+      const [lon, lat] = geoJ.features[0].geometry.coordinates;
+      const commune = geoJ.features[0].properties.city;
+      const codeInsee = geoJ.features[0].properties.citycode;
+
+      // 2. Récupérer les ventes DVF récentes dans un rayon de 500m
+      const dvfR = await fetch(`https://api.cquest.org/dvf?lat=${lat}&lon=${lon}&dist=500`);
+      const dvfJ = await dvfR.json();
+      const ventes = (dvfJ.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0 && v.type_local && v.type_local !== 'Dépendance');
+
+      if (ventes.length === 0) {
+        // Fallback : chercher par commune entière
+        const dvfR2 = await fetch(`https://api.cquest.org/dvf?code_commune=${codeInsee}&nature_mutation=Vente&limit=50`);
+        const dvfJ2 = await dvfR2.json();
+        const ventes2 = (dvfJ2.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0);
+        if (ventes2.length === 0) { setEstimResult({ erreur: 'Pas de données DVF pour ce secteur' }); setEstimLoading(false); return; }
+        ventes.push(...ventes2);
+      }
+
+      // 3. Calculer le prix moyen au m²
+      const prixM2List = ventes.map(v => v.valeur_fonciere / v.surface_reelle_bati).filter(p => p > 500 && p < 20000);
+      if (prixM2List.length === 0) { setEstimResult({ erreur: 'Données insuffisantes' }); setEstimLoading(false); return; }
+      prixM2List.sort((a, b) => a - b);
+      const median = prixM2List[Math.floor(prixM2List.length / 2)];
+      const moyenne = Math.round(prixM2List.reduce((s, p) => s + p, 0) / prixM2List.length);
+      const prixBas = Math.round(prixM2List[Math.floor(prixM2List.length * 0.25)] * surface);
+      const prixHaut = Math.round(prixM2List[Math.floor(prixM2List.length * 0.75)] * surface);
+      const prixEstime = Math.round(median * surface);
+
+      setBienForm(f => ({ ...f, valeur: String(prixEstime) }));
+      setEstimResult({ prixEstime, prixM2: Math.round(median), moyenne: Math.round(moyenne), prixBas, prixHaut, nbVentes: ventes.length, commune, nbReferences: prixM2List.length });
+    } catch (err) { setEstimResult({ erreur: 'Erreur lors de l\'estimation' }); }
+    setEstimLoading(false);
+  };
 
   const sauverBien = () => {
     const b = { id: 1, nom: bienForm.nom || 'Ma maison', adresse: bienForm.adresse || '', surface: Number(bienForm.surface) || 0, pieces: Number(bienForm.pieces) || 0, valeur: Number(bienForm.valeur) || 0, dpe: bienForm.dpe || 'D', anneeAchat: bienForm.anneeAchat || '', prixAchat: Number(bienForm.prixAchat) || 0, creditMensuel: Number(bienForm.creditMensuel) || 0, taxeFonciere: Number(bienForm.taxeFonciere) || 0, assurance: Number(bienForm.assurance) || 0, travaux: [] };
@@ -154,11 +201,44 @@ export default function DashboardClient() {
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
 
         {/* ═══ SUIVI DE PROJETS ═══ */}
-        {tab === 'projets' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Mes projets ({projets.length})</h2>
+        {tab === 'projets' && (() => {
+          const PIPELINE = [
+            { id: 'publie', label: 'Publié', icon: '📋', color: '#2563EB' },
+            { id: 'en_cours', label: 'En cours', icon: '🏗️', color: '#D97706' },
+            { id: 'termine', label: 'Terminé', icon: '✅', color: '#16A34A' },
+          ];
+          const [projetOpen, setProjetOpen] = useState(null);
+          const [editMode, setEditMode] = useState(false);
+          const [editForm, setEditForm] = useState({});
+
+          const saveEdit = (id) => {
+            const updated = projets.map(p => p.id === id ? { ...p, ...editForm } : p);
+            setProjets(updated);
+            localStorage.setItem('freample_projets', JSON.stringify(updated));
+            setEditMode(false);
+          };
+          const removeProjet = (id) => {
+            if (!window.confirm('Retirer ce projet ?')) return;
+            const updated = projets.filter(x => x.id !== id);
+            setProjets(updated);
+            localStorage.setItem('freample_projets', JSON.stringify(updated));
+            setProjetOpen(null);
+          };
+
+          return <div>
+            {/* KPI rapides */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
+              {PIPELINE.map(s => {
+                const count = projets.filter(p => p.statut === s.id).length;
+                return <div key={s.id} style={{ ...CARD, textAlign: 'center', borderTop: `3px solid ${s.color}`, cursor: 'pointer' }}
+                  onClick={() => {}}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: s.color }}>{count}</div>
+                  <div style={{ fontSize: 12, color: DS.muted, marginTop: 2 }}>{s.icon} {s.label}</div>
+                </div>;
+              })}
             </div>
+
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 12px' }}>Mes projets</h2>
             {projets.length === 0 ? (
               <div style={{ ...CARD, textAlign: 'center', padding: 48 }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
@@ -167,36 +247,83 @@ export default function DashboardClient() {
                 <button onClick={() => navigate('/')} style={BTN}>Proposer un projet</button>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {projets.map(p => {
                   const st = STATUT_PROJET[p.statut] || STATUT_PROJET.publie;
+                  const isOpen = projetOpen === p.id;
                   return (
-                    <div key={p.id} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 16, borderLeft: `4px solid ${st.color}` }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 15, fontWeight: 700 }}>{p.metier} — {p.titre || p.description?.slice(0, 40)}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 6 }}>{st.label}</span>
+                    <div key={p.id}>
+                      <div onClick={() => setProjetOpen(isOpen ? null : p.id)}
+                        style={{ ...CARD, cursor: 'pointer', borderLeft: `4px solid ${st.color}`, transition: 'all .15s' }}
+                        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'}
+                        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                              <span style={{ fontSize: 14, fontWeight: 700 }}>{p.metier} — {p.titre || p.description?.slice(0, 40)}</span>
+                              <span style={{ fontSize: 9, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 6 }}>{st.label}</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: DS.muted }}>📍 {p.ville} · 💰 {p.budget || '?'}€ · {new Date(p.date || p.created_at).toLocaleDateString('fr-FR')}</div>
+                          </div>
+                          <div style={{ fontSize: 12, color: isOpen ? '#2C2520' : DS.muted }}>{isOpen ? '▼' : '▶'}</div>
                         </div>
-                        <div style={{ fontSize: 12, color: DS.muted }}>
-                          📍 {p.ville} · 💰 {p.budget || p.budget_ajuste || '?'}€ · {p.urgence === 'urgent' ? '🚨 Urgent' : p.urgence === 'flexible' ? '🕐 Flexible' : '📅 Normal'}
+                      </div>
+
+                      {/* Détail ouvert */}
+                      {isOpen && (
+                        <div style={{ background: '#fff', border: `1px solid ${DS.border}`, borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px 20px' }}>
+                          {/* Barre de progression */}
+                          <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+                            {PIPELINE.map((s, i) => {
+                              const pIdx = PIPELINE.findIndex(x => x.id === p.statut);
+                              const done = i <= pIdx;
+                              return <div key={s.id} style={{ flex: 1, textAlign: 'center' }}>
+                                <div style={{ height: 4, borderRadius: 2, background: done ? s.color : '#E5E7EB', marginBottom: 4, transition: 'background .3s' }} />
+                                <span style={{ fontSize: 9, fontWeight: 600, color: done ? s.color : DS.muted }}>{s.icon} {s.label}</span>
+                              </div>;
+                            })}
+                          </div>
+
+                          {!editMode ? <>
+                            {/* Infos */}
+                            <div style={{ fontSize: 13, color: '#333', lineHeight: 1.6, marginBottom: 12 }}>{p.description}</div>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                              {[['Métier', p.metier], ['Ville', p.ville], ['Budget', `${p.budget || '?'}€`], ['Urgence', p.urgence === 'urgent' ? '🚨 Urgent' : p.urgence === 'flexible' ? '🕐 Flexible' : '📅 Normal']].map(([k, v]) => (
+                                <div key={k} style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6, fontSize: 11 }}>
+                                  <span style={{ color: DS.muted }}>{k} : </span><strong>{v}</strong>
+                                </div>
+                              ))}
+                            </div>
+                            {p.artisan && <div style={{ fontSize: 13, color: '#16A34A', fontWeight: 600, marginBottom: 8 }}>🔨 Artisan assigné : {p.artisan}</div>}
+                            {p.nbOffres > 0 && <div style={{ fontSize: 12, color: '#2563EB', fontWeight: 600, marginBottom: 8 }}>📩 {p.nbOffres} offre{p.nbOffres > 1 ? 's' : ''} reçue{p.nbOffres > 1 ? 's' : ''}</div>}
+                            <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+                              <button onClick={() => { setEditForm({ metier: p.metier, description: p.description, ville: p.ville, budget: p.budget, urgence: p.urgence }); setEditMode(true); }}
+                                style={{ padding: '8px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✏️ Modifier</button>
+                              <button onClick={() => removeProjet(p.id)}
+                                style={{ padding: '8px 16px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Retirer</button>
+                            </div>
+                          </> : <>
+                            {/* Formulaire de modification */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                              <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Description</label><textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: DS.font }} /></div>
+                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Ville</label><input value={editForm.ville || ''} onChange={e => setEditForm(f => ({ ...f, ville: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} /></div>
+                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Budget (€)</label><input type="number" value={editForm.budget || ''} onChange={e => setEditForm(f => ({ ...f, budget: Number(e.target.value) }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} /></div>
+                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Urgence</label><select value={editForm.urgence || 'normal'} onChange={e => setEditForm(f => ({ ...f, urgence: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }}><option value="urgent">Urgent</option><option value="normal">Normal</option><option value="flexible">Flexible</option></select></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                              <button onClick={() => saveEdit(p.id)} style={{ padding: '8px 16px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✓ Enregistrer</button>
+                              <button onClick={() => setEditMode(false)} style={{ padding: '8px 16px', background: '#F2F2F7', color: DS.muted, border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
+                            </div>
+                          </>}
                         </div>
-                        {p.artisan && <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: 4 }}>🔨 Artisan : {p.artisan}</div>}
-                        <div style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>Publié le {new Date(p.date || p.created_at).toLocaleDateString('fr-FR')}</div>
-                      </div>
-                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                        {p.nbOffres > 0 && <div style={{ fontSize: 13, fontWeight: 700, color: '#2563EB' }}>{p.nbOffres} offre{p.nbOffres > 1 ? 's' : ''}</div>}
-                        <div style={{ fontSize: 11, color: DS.muted }}>Commission (1%) : {p.commission || Math.max(1, Math.round((p.budget || 0) * 0.01))}€</div>
-                        <button onClick={e => { e.stopPropagation(); if (window.confirm('Retirer ce projet ?')) { const updated = projets.filter(x => x.id !== p.id); setProjets(updated); localStorage.setItem('freample_projets', JSON.stringify(updated)); } }}
-                          style={{ padding: '4px 10px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
-                          Retirer
-                        </button>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
             )}
-          </div>
+          </div>;
+        })()
         )}
 
         {/* ═══ PAIEMENTS — SÉQUESTRE ═══ */}
@@ -393,7 +520,45 @@ export default function DashboardClient() {
                   <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => setBienForm(f => ({ ...f, adresse: e.target.value }))} placeholder="12 rue de la Liberté, 06000 Nice" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Surface (m²)</label><input type="number" value={bienForm.surface || ''} onChange={e => setBienForm(f => ({ ...f, surface: e.target.value }))} placeholder="85" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Pièces</label><input type="number" value={bienForm.pieces || ''} onChange={e => setBienForm(f => ({ ...f, pieces: e.target.value }))} placeholder="4" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Valeur estimée (€)</label><input type="number" value={bienForm.valeur || ''} onChange={e => setBienForm(f => ({ ...f, valeur: e.target.value }))} placeholder="250000" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Valeur estimée (€)</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input type="number" value={bienForm.valeur || ''} onChange={e => setBienForm(f => ({ ...f, valeur: e.target.value }))} placeholder="250000" style={{ flex: 1, padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                      <button onClick={estimerPrix} disabled={estimLoading}
+                        style={{ padding: '10px 16px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: estimLoading ? 'wait' : 'pointer', whiteSpace: 'nowrap', opacity: estimLoading ? 0.6 : 1 }}>
+                        {estimLoading ? '⏳ Analyse...' : '🔍 Estimer auto'}
+                      </button>
+                    </div>
+                    {/* Résultat estimation DVF */}
+                    {estimResult && !estimResult.erreur && (
+                      <div style={{ marginTop: 10, padding: '12px 14px', background: '#F0FDF4', border: '1px solid rgba(22,163,74,0.15)', borderRadius: 10 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginBottom: 8 }}>📊 Estimation basée sur {estimResult.nbReferences} ventes récentes — {estimResult.commune}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 }}>
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: DS.muted }}>Estimation basse</div>
+                            <div style={{ fontSize: 15, fontWeight: 700 }}>{estimResult.prixBas?.toLocaleString('fr-FR')} €</div>
+                          </div>
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center', border: '2px solid #16A34A' }}>
+                            <div style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>Estimation médiane</div>
+                            <div style={{ fontSize: 17, fontWeight: 800, color: '#16A34A' }}>{estimResult.prixEstime?.toLocaleString('fr-FR')} €</div>
+                          </div>
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: DS.muted }}>Estimation haute</div>
+                            <div style={{ fontSize: 15, fontWeight: 700 }}>{estimResult.prixHaut?.toLocaleString('fr-FR')} €</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: DS.muted }}>
+                          <span>Prix médian/m² : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
+                          <span>Prix moyen/m² : <strong>{estimResult.moyenne?.toLocaleString('fr-FR')} €</strong></span>
+                          <span>{estimResult.nbVentes} transactions DVF analysées</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: DS.muted, marginTop: 6 }}>Source : Demandes de Valeurs Foncières (DVF) — données publiques des ventes immobilières en France.</div>
+                      </div>
+                    )}
+                    {estimResult?.erreur && (
+                      <div style={{ marginTop: 8, fontSize: 12, color: '#DC2626', padding: '8px 12px', background: '#FEF2F2', borderRadius: 6 }}>{estimResult.erreur}</div>
+                    )}
+                  </div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>DPE</label><select value={bienForm.dpe || 'D'} onChange={e => setBienForm(f => ({ ...f, dpe: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>{'ABCDEFG'.split('').map(d => <option key={d}>{d}</option>)}</select></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix d'achat (€)</label><input type="number" value={bienForm.prixAchat || ''} onChange={e => setBienForm(f => ({ ...f, prixAchat: e.target.value }))} placeholder="200000" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Année d'achat</label><input value={bienForm.anneeAchat || ''} onChange={e => setBienForm(f => ({ ...f, anneeAchat: e.target.value }))} placeholder="2020" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
