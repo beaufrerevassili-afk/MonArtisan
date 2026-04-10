@@ -775,6 +775,30 @@ export default function DashboardClient() {
                   </div>
                 )}
 
+                {/* Alerte DPE passoire */}
+                {(monBien.dpe === 'F' || monBien.dpe === 'G') && (
+                  <div style={{ ...CARD, marginTop: 12, background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderColor: '#2C2520' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>⚠️ Passoire énergétique — DPE {monBien.dpe}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)', marginTop: 2 }}>
+                        Votre bien perd {monBien.dpe === 'G' ? '20' : '12'}% de sa valeur à cause du DPE. Des travaux de rénovation énergétique (isolation, chauffage, fenêtres) peuvent récupérer cette valeur et réduire vos factures. Artisans certifiés RGE éligibles MaPrimeRénov'.
+                      </div>
+                    </div>
+                    <button onClick={() => navigate('/')}
+                      style={{ padding: '10px 18px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      Trouver un artisan RGE →
+                    </button>
+                  </div>
+                )}
+
+                {/* DPE bon */}
+                {monBien.dpe && ['A', 'B'].includes(monBien.dpe) && (
+                  <div style={{ ...CARD, marginTop: 12, borderLeft: '4px solid #16A34A' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>✅ DPE {monBien.dpe} — Excellent</div>
+                    <div style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>Votre bien bénéficie d'un bonus de {monBien.dpe === 'A' ? '12' : '6'}% sur sa valeur grâce à sa performance énergétique.</div>
+                  </div>
+                )}
+
                 {/* Coûts annuels */}
                 <div style={{ ...CARD, marginTop: 12 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Coûts annuels</div>
