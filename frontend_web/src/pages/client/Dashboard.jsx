@@ -192,7 +192,7 @@ export default function DashboardClient() {
   };
 
   const sauverBien = () => {
-    const b = { id: 1, nom: bienForm.nom || 'Ma maison', adresse: bienForm.adresse || '', surface: Number(bienForm.surface) || 0, pieces: Number(bienForm.pieces) || 0, valeur: Number(bienForm.valeur) || 0, dpe: bienForm.dpe || 'D', anneeAchat: bienForm.anneeAchat || '', prixAchat: Number(bienForm.prixAchat) || 0, creditMensuel: Number(bienForm.creditMensuel) || 0, taxeFonciere: Number(bienForm.taxeFonciere) || 0, assurance: Number(bienForm.assurance) || 0, travaux: [] };
+    const b = { id: 1, nom: bienForm.nom || 'Ma maison', ville: bienForm.ville || '', arrondissement: bienForm.arrondissement || '', adresse: bienForm.adresse || '', surface: Number(bienForm.surface) || 0, pieces: Number(bienForm.pieces) || 0, valeur: Number(bienForm.valeur) || 0, dpe: bienForm.dpe || 'D', anneeAchat: bienForm.anneeAchat || '', prixAchat: Number(bienForm.prixAchat) || 0, creditMensuel: Number(bienForm.creditMensuel) || 0, taxeFonciere: Number(bienForm.taxeFonciere) || 0, assurance: Number(bienForm.assurance) || 0, travaux: [] };
     setMonBien(b);
     setImmoData(d => ({ ...d, biens: [b] }));
     setBienEdit(false);
@@ -733,7 +733,7 @@ export default function DashboardClient() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 800 }}>{monBien.nom}</div>
-                      <div style={{ fontSize: 13, color: DS.muted }}>📍 {monBien.adresse || '—'}</div>
+                      <div style={{ fontSize: 13, color: DS.muted }}>📍 {[monBien.adresse, monBien.arrondissement ? `${monBien.arrondissement}e arr.` : '', monBien.ville].filter(Boolean).join(', ') || '—'}</div>
                     </div>
                     <button onClick={() => { setBienForm({ ...monBien }); setBienEdit(true); }} style={{ ...BTN, padding: '6px 14px', fontSize: 11 }}>✏️ Modifier</button>
                   </div>
