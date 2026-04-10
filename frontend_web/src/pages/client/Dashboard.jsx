@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import DS from '../../design/ds';
 import { useAuth } from '../../context/AuthContext';
+import InvestirJugeModule from '../../components/immo/InvestirJugeModule';
+
+const STORAGE_BIEN = 'freample_mon_bien';
 
 const TABS = [
   { id: 'projets', label: 'Suivi de projets', icon: '📋' },
   { id: 'paiements', label: 'Paiements', icon: '💳' },
   { id: 'messagerie', label: 'Messagerie', icon: '💬' },
   { id: 'favoris', label: 'Artisans favoris', icon: '⭐' },
+  { id: 'bien', label: 'Mon bien', icon: '🏠' },
+  { id: 'investir', label: 'Investir', icon: '📊' },
   { id: 'profil', label: 'Mon profil', icon: '👤' },
 ];
 
@@ -61,6 +66,11 @@ export default function DashboardClient() {
   const [paiements, setPaiements] = useState(DEMO_PAIEMENTS);
   const [favoris, setFavoris] = useState([]);
   const [messages, setMessages] = useState(DEMO_MESSAGES);
+  const [monBien, setMonBien] = useState(() => { try { return JSON.parse(localStorage.getItem(STORAGE_BIEN)) || null; } catch { return null; } });
+  const [bienForm, setBienForm] = useState({});
+  const [bienEdit, setBienEdit] = useState(false);
+  // Données pour InvestirJugeModule (partagées avec l'onglet investir)
+  const [immoData, setImmoData] = useState(() => { try { return JSON.parse(localStorage.getItem('freample_immo_data')) || { scis: [], biens: monBien ? [monBien] : [], dossiers: [], nextId: 10 }; } catch { return { scis: [], biens: [], dossiers: [], nextId: 10 }; } });
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
@@ -78,6 +88,17 @@ export default function DashboardClient() {
       setFavoris(fav.length > 0 ? fav : DEMO_FAVORIS);
     } catch { setFavoris(DEMO_FAVORIS); }
   }, []);
+
+  // Persister mon bien
+  useEffect(() => { if (monBien) localStorage.setItem(STORAGE_BIEN, JSON.stringify(monBien)); }, [monBien]);
+  useEffect(() => { localStorage.setItem('freample_immo_data', JSON.stringify(immoData)); }, [immoData]);
+
+  const sauverBien = () => {
+    const b = { id: 1, nom: bienForm.nom || 'Ma maison', adresse: bienForm.adresse || '', surface: Number(bienForm.surface) || 0, pieces: Number(bienForm.pieces) || 0, valeur: Number(bienForm.valeur) || 0, dpe: bienForm.dpe || 'D', anneeAchat: bienForm.anneeAchat || '', prixAchat: Number(bienForm.prixAchat) || 0, creditMensuel: Number(bienForm.creditMensuel) || 0, taxeFonciere: Number(bienForm.taxeFonciere) || 0, assurance: Number(bienForm.assurance) || 0, travaux: [] };
+    setMonBien(b);
+    setImmoData(d => ({ ...d, biens: [b] }));
+    setBienEdit(false);
+  };
 
   const removeFavori = (id) => {
     const updated = favoris.filter(f => f.id !== id);
@@ -337,6 +358,120 @@ export default function DashboardClient() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══ MON BIEN ═══ */}
+        {tab === 'bien' && (
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Mon bien</h2>
+
+            {!monBien || bienEdit ? (
+              <div style={{ ...CARD }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>{monBien ? '✏️ Modifier mon bien' : '🏠 Renseignez votre logement'}</div>
+                <p style={{ fontSize: 12, color: DS.muted, marginBottom: 16 }}>Ces informations vous aident à suivre votre patrimoine et à trouver les bons artisans.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Nom du bien</label><input value={bienForm.nom || ''} onChange={e => setBienForm(f => ({ ...f, nom: e.target.value }))} placeholder="Ma maison, Mon appartement..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => setBienForm(f => ({ ...f, adresse: e.target.value }))} placeholder="12 rue de la Liberté, 06000 Nice" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Surface (m²)</label><input type="number" value={bienForm.surface || ''} onChange={e => setBienForm(f => ({ ...f, surface: e.target.value }))} placeholder="85" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Pièces</label><input type="number" value={bienForm.pieces || ''} onChange={e => setBienForm(f => ({ ...f, pieces: e.target.value }))} placeholder="4" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Valeur estimée (€)</label><input type="number" value={bienForm.valeur || ''} onChange={e => setBienForm(f => ({ ...f, valeur: e.target.value }))} placeholder="250000" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>DPE</label><select value={bienForm.dpe || 'D'} onChange={e => setBienForm(f => ({ ...f, dpe: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>{'ABCDEFG'.split('').map(d => <option key={d}>{d}</option>)}</select></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix d'achat (€)</label><input type="number" value={bienForm.prixAchat || ''} onChange={e => setBienForm(f => ({ ...f, prixAchat: e.target.value }))} placeholder="200000" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Année d'achat</label><input value={bienForm.anneeAchat || ''} onChange={e => setBienForm(f => ({ ...f, anneeAchat: e.target.value }))} placeholder="2020" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Crédit mensuel (€)</label><input type="number" value={bienForm.creditMensuel || ''} onChange={e => setBienForm(f => ({ ...f, creditMensuel: e.target.value }))} placeholder="850" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Taxe foncière/an (€)</label><input type="number" value={bienForm.taxeFonciere || ''} onChange={e => setBienForm(f => ({ ...f, taxeFonciere: e.target.value }))} placeholder="1200" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Assurance habitation/an (€)</label><input type="number" value={bienForm.assurance || ''} onChange={e => setBienForm(f => ({ ...f, assurance: e.target.value }))} placeholder="600" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <button onClick={sauverBien} style={{ ...BTN, flex: 1 }}>Enregistrer</button>
+                  {monBien && <button onClick={() => setBienEdit(false)} style={{ ...BTN, flex: 1, background: 'transparent', color: DS.ink, border: `1px solid ${DS.border}` }}>Annuler</button>}
+                </div>
+              </div>
+            ) : (
+              <div>
+                {/* Fiche bien */}
+                <div style={{ ...CARD, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800 }}>{monBien.nom}</div>
+                      <div style={{ fontSize: 13, color: DS.muted }}>📍 {monBien.adresse || '—'}</div>
+                    </div>
+                    <button onClick={() => { setBienForm({ ...monBien }); setBienEdit(true); }} style={{ ...BTN, padding: '6px 14px', fontSize: 11 }}>✏️ Modifier</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
+                    {[
+                      ['Surface', `${monBien.surface || '?'} m²`],
+                      ['Pièces', monBien.pieces || '?'],
+                      ['DPE', monBien.dpe || '?'],
+                      ['Valeur', `${(monBien.valeur || 0).toLocaleString('fr-FR')} €`],
+                      ['Prix d\'achat', `${(monBien.prixAchat || 0).toLocaleString('fr-FR')} €`],
+                      ['Année', monBien.anneeAchat || '?'],
+                      ['Crédit/mois', `${(monBien.creditMensuel || 0).toLocaleString('fr-FR')} €`],
+                      ['Taxe foncière/an', `${(monBien.taxeFonciere || 0).toLocaleString('fr-FR')} €`],
+                      ['Assurance/an', `${(monBien.assurance || 0).toLocaleString('fr-FR')} €`],
+                    ].map(([k, v]) => (
+                      <div key={k} style={{ background: '#F8F7F4', borderRadius: 8, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: DS.muted }}>{k}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Plus-value estimée */}
+                {monBien.prixAchat > 0 && monBien.valeur > 0 && (
+                  <div style={{ ...CARD, borderLeft: `4px solid ${monBien.valeur > monBien.prixAchat ? '#16A34A' : '#DC2626'}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>Plus-value latente</div>
+                        <div style={{ fontSize: 12, color: DS.muted }}>Valeur actuelle - prix d'achat</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: monBien.valeur > monBien.prixAchat ? '#16A34A' : '#DC2626' }}>
+                          {monBien.valeur > monBien.prixAchat ? '+' : ''}{(monBien.valeur - monBien.prixAchat).toLocaleString('fr-FR')} €
+                        </div>
+                        <div style={{ fontSize: 11, color: DS.muted }}>{monBien.prixAchat > 0 ? `${((monBien.valeur - monBien.prixAchat) / monBien.prixAchat * 100).toFixed(1)}%` : ''}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Coûts annuels */}
+                <div style={{ ...CARD, marginTop: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Coûts annuels</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {[
+                      ['Crédit immobilier', (monBien.creditMensuel || 0) * 12],
+                      ['Taxe foncière', monBien.taxeFonciere || 0],
+                      ['Assurance habitation', monBien.assurance || 0],
+                    ].map(([k, v]) => (
+                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${DS.border}`, fontSize: 13 }}>
+                        <span style={{ color: DS.muted }}>{k}</span>
+                        <span style={{ fontWeight: 600 }}>{v.toLocaleString('fr-FR')} €</span>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 14, fontWeight: 800 }}>
+                      <span>Total annuel</span>
+                      <span>{((monBien.creditMensuel || 0) * 12 + (monBien.taxeFonciere || 0) + (monBien.assurance || 0)).toLocaleString('fr-FR')} €</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bouton trouver artisan */}
+                <button onClick={() => navigate('/btp')} style={{ ...BTN, width: '100%', marginTop: 12, padding: 14, fontSize: 14 }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
+                  🔨 Trouver un artisan pour des travaux
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ INVESTIR ═══ */}
+        {tab === 'investir' && (
+          <div>
+            <InvestirJugeModule data={immoData} setData={setImmoData} showToast={() => {}} />
           </div>
         )}
 
