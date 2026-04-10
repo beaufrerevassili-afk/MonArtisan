@@ -110,19 +110,28 @@ export default function DashboardClient() {
       const commune = geoJ.features[0].properties.city;
       const codeInsee = geoJ.features[0].properties.citycode;
 
-      // 2. Récupérer les ventes DVF récentes dans un rayon de 500m
-      const dvfR = await fetch(`https://api.cquest.org/dvf?lat=${lat}&lon=${lon}&dist=500`);
-      const dvfJ = await dvfR.json();
-      const ventes = (dvfJ.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0 && v.type_local && v.type_local !== 'Dépendance');
-
+      // 2. Récupérer les ventes DVF via l'API officielle data.gouv
+      const ventes = [];
+      try {
+        const dvfR = await fetch(`https://apidf-preprod.cerema.fr/dvf_opendata/mutations?code_insee=${codeInsee}&nature_mutation=Vente&page_size=100`);
+        const dvfJ = await dvfR.json();
+        (dvfJ.results || []).forEach(m => {
+          if (m.valeur_fonciere > 0) {
+            (m.locaux || []).forEach(l => {
+              if (l.surface_reelle_bati > 0) ventes.push({ valeur_fonciere: m.valeur_fonciere, surface_reelle_bati: l.surface_reelle_bati, type_local: l.type_local });
+            });
+          }
+        });
+      } catch {}
+      // Fallback API cquest si CEREMA ne répond pas
       if (ventes.length === 0) {
-        // Fallback : chercher par commune entière
-        const dvfR2 = await fetch(`https://api.cquest.org/dvf?code_commune=${codeInsee}&nature_mutation=Vente&limit=50`);
-        const dvfJ2 = await dvfR2.json();
-        const ventes2 = (dvfJ2.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0);
-        if (ventes2.length === 0) { setEstimResult({ erreur: 'Pas de données DVF pour ce secteur' }); setEstimLoading(false); return; }
-        ventes.push(...ventes2);
+        try {
+          const dvfR2 = await fetch(`https://api.cquest.org/dvf?code_commune=${codeInsee}&nature_mutation=Vente&limit=50`);
+          const dvfJ2 = await dvfR2.json();
+          (dvfJ2.resultats || []).filter(v => v.valeur_fonciere > 0 && v.surface_reelle_bati > 0).forEach(v => ventes.push(v));
+        } catch {}
       }
+      if (ventes.length === 0) { setEstimResult({ erreur: 'Pas de données DVF pour ce secteur. Essayez une adresse plus précise.' }); setEstimLoading(false); return; }
 
       // 3. Calculer le prix moyen au m²
       const prixM2List = ventes.map(v => v.valeur_fonciere / v.surface_reelle_bati).filter(p => p > 500 && p < 20000);
