@@ -323,8 +323,7 @@ export default function DashboardClient() {
               </div>
             )}
           </div>;
-        })()
-        )}
+        })()}
 
         {/* ═══ PAIEMENTS — SÉQUESTRE ═══ */}
         {tab === 'paiements' && (
