@@ -820,8 +820,57 @@ export default function DashboardClient() {
                   </div>
                 </div>
 
+                {/* Travaux réalisés — connectés aux projets terminés */}
+                {(() => {
+                  const travauxTermines = projets.filter(p => p.statut === 'termine' || p.statut === 'en_cours');
+                  const totalInvesti = travauxTermines.reduce((s, p) => s + (Number(p.budget) || 0), 0);
+                  const totalAchat = (monBien.prixAchat || 0) + totalInvesti;
+                  return (
+                    <div style={{ ...CARD, marginTop: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>🔨 Travaux réalisés</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#A68B4B' }}>{totalInvesti.toLocaleString('fr-FR')} € investis</div>
+                      </div>
+                      {travauxTermines.length === 0 ? (
+                        <div style={{ fontSize: 12, color: DS.muted, padding: '8px 0' }}>Aucun travaux pour le moment. Vos projets terminés apparaîtront ici automatiquement.</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {travauxTermines.map(t => (
+                            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#F8F7F4', borderRadius: 6, fontSize: 12 }}>
+                              <div>
+                                <span style={{ fontWeight: 600 }}>{t.metier}</span>
+                                <span style={{ color: DS.muted, marginLeft: 6 }}>{t.titre || t.description?.slice(0, 30)}</span>
+                                {t.artisan && <span style={{ color: '#16A34A', marginLeft: 6 }}>· {t.artisan}</span>}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontWeight: 700 }}>{(Number(t.budget) || 0).toLocaleString('fr-FR')} €</span>
+                                <span style={{ fontSize: 9, fontWeight: 600, color: t.statut === 'termine' ? '#16A34A' : '#D97706', background: t.statut === 'termine' ? '#F0FDF4' : '#FFFBEB', padding: '2px 6px', borderRadius: 4 }}>{t.statut === 'termine' ? '✓ Terminé' : '🏗️ En cours'}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Récap investissement total */}
+                      <div style={{ marginTop: 10, padding: '10px 12px', background: '#2C2520', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)' }}>Investissement total dans le bien</div>
+                          <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.4)', marginTop: 1 }}>Prix d'achat + travaux</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0' }}>{totalAchat.toLocaleString('fr-FR')} €</div>
+                          {monBien.valeur > 0 && totalAchat > 0 && (
+                            <div style={{ fontSize: 10, color: monBien.valeur > totalAchat ? '#16A34A' : '#DC2626' }}>
+                              {monBien.valeur > totalAchat ? '+' : ''}{(monBien.valeur - totalAchat).toLocaleString('fr-FR')} € ({monBien.valeur > totalAchat ? '+' : ''}{((monBien.valeur - totalAchat) / totalAchat * 100).toFixed(1)}%)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Bouton trouver artisan */}
-                <button onClick={() => navigate('/btp')} style={{ ...BTN, width: '100%', marginTop: 12, padding: 14, fontSize: 14 }}
+                <button onClick={() => navigate('/')} style={{ ...BTN, width: '100%', marginTop: 12, padding: 14, fontSize: 14 }}
                   onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
                   🔨 Trouver un artisan pour des travaux
                 </button>
