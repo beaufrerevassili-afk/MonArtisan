@@ -106,44 +106,58 @@ export default function DashboardClient() {
     localStorage.setItem('freample_favoris', JSON.stringify(updated));
   };
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
       {/* Header */}
-      <div style={{ background: '#fff', borderBottom: `1px solid ${DS.border}`, padding: '16px clamp(20px,4vw,40px)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: DS.ink, margin: 0, letterSpacing: '-0.03em' }}>Bonjour, {prenom} 👋</h1>
-            <p style={{ fontSize: 13, color: DS.muted, margin: '2px 0 0' }}>Votre espace client Freample</p>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => navigate('/')} style={{ ...BTN, background: '#2C2520' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
-              📋 Proposer un projet
+      <div style={{ background: '#2C2520', padding: '0 clamp(20px,4vw,40px)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* Burger */}
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6 }}>
+            <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
+            <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
+          </button>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
+            Freample<span style={{ color: '#A68B4B' }}>.</span>
+          </button>
+        </div>
+        <div style={{ color: '#F5EFE0', fontSize: 13, fontWeight: 500 }}>Bonjour, {prenom}</div>
+        <button onClick={() => navigate('/')} style={{ padding: '8px 20px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font }}>
+          + Nouveau projet
+        </button>
+      </div>
+
+      {/* Sidebar mobile */}
+      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 }} />}
+      <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, background: '#fff', zIndex: 1000, transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform .3s', boxShadow: menuOpen ? '4px 0 20px rgba(0,0,0,0.1)' : 'none', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>Mon espace</span>
+          <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
+        </div>
+        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => { setTab(t.id); setMenuOpen(false); }}
+              style={{ width: '100%', padding: '12px 20px', background: tab === t.id ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === t.id ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? DS.ink : DS.muted, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
+              onMouseEnter={e => { if (tab !== t.id) e.currentTarget.style.background = '#FAFAF8'; }}
+              onMouseLeave={e => { if (tab !== t.id) e.currentTarget.style.background = 'none'; }}>
+              <span style={{ fontSize: 16 }}>{t.icon}</span> {t.label}
             </button>
-            <button onClick={() => navigate('/btp')} style={{ ...BTN, background: 'transparent', color: DS.ink, border: `1px solid ${DS.border}` }}>
-              🔍 Trouver un artisan
-            </button>
-          </div>
+          ))}
+        </nav>
+        <div style={{ padding: '12px 20px', borderTop: `1px solid ${DS.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <button onClick={() => { setMenuOpen(false); navigate('/'); }} style={{ width: '100%', padding: '10px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>📋 Proposer un projet</button>
+          <button onClick={() => { setMenuOpen(false); navigate('/btp'); }} style={{ width: '100%', padding: '10px', background: 'transparent', color: DS.ink, border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>🔍 Trouver un artisan</button>
         </div>
       </div>
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 24, overflowX: 'auto', borderBottom: `1px solid ${DS.border}`, paddingBottom: 0 }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              style={{ padding: '10px 18px', background: 'none', border: 'none', borderBottom: `2px solid ${tab === t.id ? '#2C2520' : 'transparent'}`, fontSize: 13, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? DS.ink : DS.muted, cursor: 'pointer', fontFamily: DS.font, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 15 }}>{t.icon}</span> {t.label}
-            </button>
-          ))}
-        </div>
 
         {/* ═══ SUIVI DE PROJETS ═══ */}
         {tab === 'projets' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Mes projets ({projets.length})</h2>
-              <button onClick={() => navigate('/')} style={BTN}>+ Nouveau projet</button>
             </div>
             {projets.length === 0 ? (
               <div style={{ ...CARD, textAlign: 'center', padding: 48 }}>
