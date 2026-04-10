@@ -116,9 +116,10 @@ export default function DashboardClient() {
   const VILLES_ARRONDISSEMENTS = { 'Paris': PRIX_ARR_PARIS, 'Lyon': PRIX_ARR_LYON, 'Marseille': PRIX_ARR_MARSEILLE };
 
   const estimerPrix = async () => {
-    const adresse = bienForm.adresse;
+    const ville = bienForm.ville;
+    const adresse = bienForm.adresse ? `${bienForm.adresse}, ${ville}` : ville;
     const surface = Number(bienForm.surface);
-    if (!adresse || !surface) { setEstimResult({ erreur: 'Adresse et surface requises' }); return; }
+    if (!ville || !surface) { setEstimResult({ erreur: 'Ville et surface requises' }); return; }
     setEstimLoading(true); setEstimResult(null);
     try {
       // 1. Géocoder l'adresse
@@ -635,17 +636,20 @@ export default function DashboardClient() {
                 <p style={{ fontSize: 12, color: DS.muted, marginBottom: 16 }}>Ces informations vous aident à suivre votre patrimoine et à trouver les bons artisans.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Nom du bien</label><input value={bienForm.nom || ''} onChange={e => setBienForm(f => ({ ...f, nom: e.target.value }))} placeholder="Ma maison, Mon appartement..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => { setBienForm(f => ({ ...f, adresse: e.target.value })); setEstimResult(null); }} placeholder="12 rue de la Liberté, 06000 Nice" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  {/* Arrondissement — affiché uniquement pour Paris, Lyon, Marseille */}
-                  {(() => { const addr = (bienForm.adresse || '').toLowerCase(); const isArr = addr.includes('paris') || addr.includes('lyon') || addr.includes('marseille'); return isArr ? (
+                  {/* Ville */}
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Ville</label><input value={bienForm.ville || ''} onChange={e => { setBienForm(f => ({ ...f, ville: e.target.value, arrondissement: '' })); setEstimResult(null); }} placeholder="Nice, Paris, Lyon..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  {/* Arrondissement — apparaît auto pour Paris, Lyon, Marseille */}
+                  {(() => { const v = (bienForm.ville || '').toLowerCase().trim(); const isArr = v.includes('paris') || v === 'lyon' || v.includes('marseille'); return isArr ? (
                     <div><label style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', display: 'block', marginBottom: 4 }}>Arrondissement</label>
                       <select value={bienForm.arrondissement || ''} onChange={e => setBienForm(f => ({ ...f, arrondissement: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #A68B4B', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#FFFBEB' }}>
-                        <option value="">Sélectionner...</option>
-                        {(addr.includes('paris') ? Array.from({length:20},(_,i)=>i+1) : addr.includes('lyon') ? Array.from({length:9},(_,i)=>i+1) : Array.from({length:16},(_,i)=>i+1)).map(n => <option key={n} value={n}>{n}{n===1?'er':'e'} arrondissement</option>)}
+                        <option value="">Sélectionner l'arrondissement...</option>
+                        {(v.includes('paris') ? Array.from({length:20},(_,i)=>i+1) : v === 'lyon' ? Array.from({length:9},(_,i)=>i+1) : Array.from({length:16},(_,i)=>i+1)).map(n => <option key={n} value={n}>{n}{n===1?'er':'e'} arrondissement</option>)}
                       </select>
-                      <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 3 }}>Le prix varie significativement selon l'arrondissement. Précisez pour une estimation plus fiable.</div>
+                      <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 3 }}>Le prix varie selon l'arrondissement.</div>
                     </div>
                   ) : null; })()}
+                  {/* Adresse */}
+                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => setBienForm(f => ({ ...f, adresse: e.target.value }))} placeholder="12 rue de la Liberté" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Surface (m²)</label><input type="number" value={bienForm.surface || ''} onChange={e => setBienForm(f => ({ ...f, surface: e.target.value }))} placeholder="85" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Pièces</label><input type="number" value={bienForm.pieces || ''} onChange={e => setBienForm(f => ({ ...f, pieces: e.target.value }))} placeholder="4" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div style={{ gridColumn: '1/-1' }}>
