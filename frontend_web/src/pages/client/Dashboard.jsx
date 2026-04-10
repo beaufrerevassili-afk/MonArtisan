@@ -284,7 +284,23 @@ export default function DashboardClient() {
                             })}
                           </div>
 
-                          {!editMode ? <>
+                          {!editMode ? (() => {
+                            // Charger les offres pour ce projet
+                            const allOffres = (() => { try { return JSON.parse(localStorage.getItem('freample_offres') || '[]'); } catch { return []; } })();
+                            const offres = allOffres.filter(o => o.projetId === p.id);
+                            const devis = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]'); } catch { return []; } })().filter(d => d.projetId === p.id);
+
+                            const accepterOffre = (offre) => {
+                              // Mettre à jour le projet
+                              const updated = projets.map(x => x.id === p.id ? { ...x, statut: 'en_cours', artisan: offre.artisanNom, nbOffres: offres.length } : x);
+                              setProjets(updated);
+                              localStorage.setItem('freample_projets', JSON.stringify(updated));
+                              // Marquer l'offre comme acceptée
+                              const updOffres = allOffres.map(o => o.id === offre.id ? { ...o, statut: 'acceptee' } : o.projetId === p.id ? { ...o, statut: 'refusee' } : o);
+                              localStorage.setItem('freample_offres', JSON.stringify(updOffres));
+                            };
+
+                            return <>
                             {/* Infos */}
                             <div style={{ fontSize: 13, color: '#333', lineHeight: 1.6, marginBottom: 12 }}>{p.description}</div>
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -295,14 +311,74 @@ export default function DashboardClient() {
                               ))}
                             </div>
                             {p.artisan && <div style={{ fontSize: 13, color: '#16A34A', fontWeight: 600, marginBottom: 8 }}>🔨 Artisan assigné : {p.artisan}</div>}
-                            {p.nbOffres > 0 && <div style={{ fontSize: 12, color: '#2563EB', fontWeight: 600, marginBottom: 8 }}>📩 {p.nbOffres} offre{p.nbOffres > 1 ? 's' : ''} reçue{p.nbOffres > 1 ? 's' : ''}</div>}
-                            <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+
+                            {/* Offres reçues */}
+                            {offres.length > 0 && (
+                              <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#2563EB' }}>📩 {offres.length} offre{offres.length > 1 ? 's' : ''} reçue{offres.length > 1 ? 's' : ''}</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {offres.map(o => (
+                                    <div key={o.id} style={{ background: '#F8F7F4', borderRadius: 10, padding: '12px 14px', border: o.statut === 'acceptee' ? '2px solid #16A34A' : `1px solid ${DS.border}` }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                                        <div>
+                                          <div style={{ fontSize: 13, fontWeight: 700 }}>🔨 {o.artisanNom}</div>
+                                          <div style={{ fontSize: 11, color: DS.muted }}>{o.date ? `Disponible le ${new Date(o.date).toLocaleDateString('fr-FR')}` : ''}{o.delai ? ` · ${o.delai} jours` : ''}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                          <div style={{ fontSize: 17, fontWeight: 800, color: '#2C2520' }}>{Number(o.prix).toLocaleString('fr-FR')} €</div>
+                                          {o.statut === 'acceptee' && <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '2px 6px', borderRadius: 4 }}>✓ Acceptée</span>}
+                                          {o.statut === 'refusee' && <span style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', background: '#FEF2F2', padding: '2px 6px', borderRadius: 4 }}>Refusée</span>}
+                                        </div>
+                                      </div>
+                                      {o.message && <div style={{ fontSize: 12, color: '#555', lineHeight: 1.5, marginBottom: 8, fontStyle: 'italic' }}>"{o.message}"</div>}
+                                      {(!o.statut || o.statut === 'proposee') && p.statut === 'publie' && (
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                          <button onClick={() => accepterOffre(o)}
+                                            style={{ padding: '7px 14px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Accepter cette offre</button>
+                                          <button onClick={() => { const upd = allOffres.map(x => x.id === o.id ? { ...x, statut: 'refusee' } : x); localStorage.setItem('freample_offres', JSON.stringify(upd)); setProjets([...projets]); }}
+                                            style={{ padding: '7px 14px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Refuser</button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Devis reçus */}
+                            {devis.length > 0 && (
+                              <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#A68B4B' }}>📋 {devis.length} devis reçu{devis.length > 1 ? 's' : ''}</div>
+                                {devis.map(d => (
+                                  <div key={d.id} style={{ background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 10, padding: '12px 14px', marginBottom: 6 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                                      <div style={{ fontSize: 12, fontWeight: 600 }}>Devis de {d.client || 'Artisan'}</div>
+                                      <div style={{ fontSize: 15, fontWeight: 800 }}>{d.ttc?.toLocaleString('fr-FR') || '?'} € TTC</div>
+                                    </div>
+                                    {d.lignes?.map((l, i) => (
+                                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: DS.muted, padding: '2px 0' }}>
+                                        <span>{l.desc || l.description}</span>
+                                        <span>{(l.qte || l.quantite || 1)} × {(l.pu || l.prixUnitaireHT || 0)}€</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {offres.length === 0 && devis.length === 0 && p.statut === 'publie' && (
+                              <div style={{ padding: '12px 14px', background: '#FFFBEB', borderRadius: 8, border: '1px solid rgba(217,119,6,0.15)', fontSize: 12, color: '#92400E', marginBottom: 12 }}>
+                                ⏳ En attente d'offres — les artisans de votre zone verront votre projet et vous enverront leurs propositions.
+                              </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                               <button onClick={() => { setEditForm({ metier: p.metier, description: p.description, ville: p.ville, budget: p.budget, urgence: p.urgence }); setEditMode(true); }}
                                 style={{ padding: '8px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✏️ Modifier</button>
                               <button onClick={() => removeProjet(p.id)}
                                 style={{ padding: '8px 16px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Retirer</button>
                             </div>
-                          </> : <>
+                          </>; })() : <>
                             {/* Formulaire de modification */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                               <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Description</label><textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: DS.font }} /></div>
