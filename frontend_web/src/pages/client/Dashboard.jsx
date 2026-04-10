@@ -183,9 +183,13 @@ export default function DashboardClient() {
                         {p.artisan && <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: 4 }}>🔨 Artisan : {p.artisan}</div>}
                         <div style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>Publié le {new Date(p.date || p.created_at).toLocaleDateString('fr-FR')}</div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
+                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                         {p.nbOffres > 0 && <div style={{ fontSize: 13, fontWeight: 700, color: '#2563EB' }}>{p.nbOffres} offre{p.nbOffres > 1 ? 's' : ''}</div>}
                         <div style={{ fontSize: 11, color: DS.muted }}>Commission (1%) : {p.commission || Math.max(1, Math.round((p.budget || 0) * 0.01))}€</div>
+                        <button onClick={e => { e.stopPropagation(); if (window.confirm('Retirer ce projet ?')) { const updated = projets.filter(x => x.id !== p.id); setProjets(updated); localStorage.setItem('freample_projets', JSON.stringify(updated)); } }}
+                          style={{ padding: '4px 10px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
+                          Retirer
+                        </button>
                       </div>
                     </div>
                   );
