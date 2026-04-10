@@ -152,22 +152,11 @@ function AppRoutes() {
       {/* ── Client ── */}
       <Route path="/client/*" element={
         <ProtectedRoute roles={['client']}>
-          <Layout>
-            <Routes>
-              <Route path="dashboard"   element={<DashboardClient />} />
-              <Route path="devis"       element={<DevisClient />} />
-              <Route path="travaux"     element={<TravauxPasses />} />
-              <Route path="avis"        element={<AvisClient />} />
-              <Route path="recherche"   element={<RechercheArtisan />} />
-              <Route path="messagerie"  element={<Messagerie />} />
-              <Route path="paiements"   element={<PaiementsClient />} />
-              <Route path="parrainage"  element={<ParrainageClient />} />
-              <Route path="profil"      element={<ProfilClient />} />
-              <Route path="missions"    element={<Navigate to="/client/travaux" replace />} />
-              <Route path="com"        element={<ComClient />} />
-              <Route path="*"           element={<Navigate to="dashboard" replace />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            <Route path="dashboard"   element={<DashboardClient />} />
+            <Route path="messagerie"  element={<Messagerie />} />
+            <Route path="*"           element={<Navigate to="dashboard" replace />} />
+          </Routes>
         </ProtectedRoute>
       } />
 
