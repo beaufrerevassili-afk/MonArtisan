@@ -109,6 +109,11 @@ export default function DashboardClient() {
     '71':1400,'72':1500,'73':3200,'74':4200,'79':1400,'80':1800,'81':1600,'82':1400,'85':2200,
     '86':1500,'87':1400,'88':1100,'89':1300,'90':1500,'971':2800,'972':2600,'973':2000,'974':2400,
   };
+  // Prix/m² par arrondissement (données notaires 2024)
+  const PRIX_ARR_PARIS = { 1:12500,2:11000,3:11500,4:12800,5:11800,6:14500,7:14000,8:12000,9:10500,10:9800,11:10200,12:9500,13:8500,14:10000,15:10200,16:11800,17:10000,18:8200,19:7500,20:8000 };
+  const PRIX_ARR_LYON = { 1:4800,2:5200,3:4500,4:4200,5:3800,6:5500,7:4000,8:3600,9:3200 };
+  const PRIX_ARR_MARSEILLE = { 1:2800,2:3200,3:2200,4:2400,5:2600,6:3800,7:4200,8:4500,9:3000,10:2600,11:2400,12:2800,13:2200,14:2000,15:2000,16:2600 };
+  const VILLES_ARRONDISSEMENTS = { 'Paris': PRIX_ARR_PARIS, 'Lyon': PRIX_ARR_LYON, 'Marseille': PRIX_ARR_MARSEILLE };
 
   const estimerPrix = async () => {
     const adresse = bienForm.adresse;
@@ -141,9 +146,9 @@ export default function DashboardClient() {
       } catch {} finally { clearTimeout(timeout); }
 
       let prixM2, source, nbRef;
+      const arr = Number(bienForm.arrondissement) || 0;
 
       if (ventes.length >= 5) {
-        // DVF disponible — calcul précis
         const prixM2List = ventes.map(v => v.vf / v.surf).filter(p => p > 500 && p < 25000).sort((a, b) => a - b);
         if (prixM2List.length >= 3) {
           prixM2 = Math.round(prixM2List[Math.floor(prixM2List.length / 2)]);
@@ -153,9 +158,19 @@ export default function DashboardClient() {
       }
 
       if (!prixM2) {
-        // Fallback : prix moyen départemental (données notaires)
-        prixM2 = PRIX_M2_DEPT[dept] || 2500;
-        source = 'Données notaires départementales';
+        // Vérifier si c'est une ville à arrondissements
+        const villeArr = Object.keys(VILLES_ARRONDISSEMENTS).find(v => commune?.toLowerCase().includes(v.toLowerCase()));
+        if (villeArr && arr > 0 && VILLES_ARRONDISSEMENTS[villeArr][arr]) {
+          prixM2 = VILLES_ARRONDISSEMENTS[villeArr][arr];
+          source = `Données notaires — ${villeArr} ${arr}e arr.`;
+        } else if (villeArr) {
+          const arrPrix = Object.values(VILLES_ARRONDISSEMENTS[villeArr]);
+          prixM2 = Math.round(arrPrix.reduce((s, p) => s + p, 0) / arrPrix.length);
+          source = `Moyenne ${villeArr} (précisez l'arrondissement pour affiner)`;
+        } else {
+          prixM2 = PRIX_M2_DEPT[dept] || 2500;
+          source = 'Données notaires départementales';
+        }
         nbRef = 0;
       }
 
@@ -620,7 +635,17 @@ export default function DashboardClient() {
                 <p style={{ fontSize: 12, color: DS.muted, marginBottom: 16 }}>Ces informations vous aident à suivre votre patrimoine et à trouver les bons artisans.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Nom du bien</label><input value={bienForm.nom || ''} onChange={e => setBienForm(f => ({ ...f, nom: e.target.value }))} placeholder="Ma maison, Mon appartement..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => setBienForm(f => ({ ...f, adresse: e.target.value }))} placeholder="12 rue de la Liberté, 06000 Nice" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => { setBienForm(f => ({ ...f, adresse: e.target.value })); setEstimResult(null); }} placeholder="12 rue de la Liberté, 06000 Nice" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
+                  {/* Arrondissement — affiché uniquement pour Paris, Lyon, Marseille */}
+                  {(() => { const addr = (bienForm.adresse || '').toLowerCase(); const isArr = addr.includes('paris') || addr.includes('lyon') || addr.includes('marseille'); return isArr ? (
+                    <div><label style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', display: 'block', marginBottom: 4 }}>Arrondissement</label>
+                      <select value={bienForm.arrondissement || ''} onChange={e => setBienForm(f => ({ ...f, arrondissement: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #A68B4B', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#FFFBEB' }}>
+                        <option value="">Sélectionner...</option>
+                        {(addr.includes('paris') ? Array.from({length:20},(_,i)=>i+1) : addr.includes('lyon') ? Array.from({length:9},(_,i)=>i+1) : Array.from({length:16},(_,i)=>i+1)).map(n => <option key={n} value={n}>{n}{n===1?'er':'e'} arrondissement</option>)}
+                      </select>
+                      <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 3 }}>Le prix varie significativement selon l'arrondissement. Précisez pour une estimation plus fiable.</div>
+                    </div>
+                  ) : null; })()}
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Surface (m²)</label><input type="number" value={bienForm.surface || ''} onChange={e => setBienForm(f => ({ ...f, surface: e.target.value }))} placeholder="85" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Pièces</label><input type="number" value={bienForm.pieces || ''} onChange={e => setBienForm(f => ({ ...f, pieces: e.target.value }))} placeholder="4" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
                   <div style={{ gridColumn: '1/-1' }}>
