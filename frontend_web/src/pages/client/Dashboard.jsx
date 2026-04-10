@@ -692,9 +692,20 @@ export default function DashboardClient() {
                           <span>Source : {estimResult.source}</span>
                         </div>
                         {estimResult.impactDpe !== undefined && estimResult.impactDpe !== 0 && (
-                          <div style={{ marginTop: 6, padding: '6px 10px', background: estimResult.impactDpe > 0 ? '#F0FDF4' : '#FEF2F2', borderRadius: 6, fontSize: 11, color: estimResult.impactDpe > 0 ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
+                          <div style={{ marginTop: 6, padding: '8px 12px', background: estimResult.impactDpe > 0 ? '#F0FDF4' : '#FEF2F2', borderRadius: 8, fontSize: 11, color: estimResult.impactDpe > 0 ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
                             DPE {estimResult.dpe} → {estimResult.impactDpe > 0 ? '+' : ''}{estimResult.impactDpe}% sur le prix
-                            {estimResult.impactDpe < -10 && ' ⚠️ Passoire énergétique — travaux de rénovation recommandés'}
+                          </div>
+                        )}
+                        {estimResult.impactDpe < -10 && (
+                          <div style={{ marginTop: 6, padding: '12px 14px', background: '#2C2520', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#F5EFE0' }}>⚠️ Passoire énergétique — DPE {estimResult.dpe}</div>
+                              <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)', marginTop: 2 }}>Des travaux de rénovation peuvent augmenter la valeur de votre bien de {Math.abs(estimResult.impactDpe)}% et réduire vos factures d'énergie. Artisans certifiés RGE éligibles MaPrimeRénov'.</div>
+                            </div>
+                            <button onClick={() => navigate('/')}
+                              style={{ padding: '8px 16px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                              Trouver un artisan RGE →
+                            </button>
                           </div>
                         )}
                       </div>
