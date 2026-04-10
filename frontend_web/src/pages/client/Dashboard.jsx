@@ -154,6 +154,9 @@ export default function DashboardClient() {
   };
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [projetOpen, setProjetOpen] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({});
 
   return (
     <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
@@ -207,10 +210,6 @@ export default function DashboardClient() {
             { id: 'en_cours', label: 'En cours', icon: '🏗️', color: '#D97706' },
             { id: 'termine', label: 'Terminé', icon: '✅', color: '#16A34A' },
           ];
-          const [projetOpen, setProjetOpen] = useState(null);
-          const [editMode, setEditMode] = useState(false);
-          const [editForm, setEditForm] = useState({});
-
           const saveEdit = (id) => {
             const updated = projets.map(p => p.id === id ? { ...p, ...editForm } : p);
             setProjets(updated);
