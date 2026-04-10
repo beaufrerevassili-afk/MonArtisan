@@ -175,12 +175,18 @@ export default function DashboardClient() {
         nbRef = 0;
       }
 
-      const prixEstime = Math.round(prixM2 * surface);
-      const prixBas = Math.round(prixM2 * 0.85 * surface);
-      const prixHaut = Math.round(prixM2 * 1.15 * surface);
+      // Ajustement DPE (impact prix réel, données notaires + loi Climat)
+      const DPE_IMPACT = { A: 1.12, B: 1.06, C: 1.03, D: 1, E: 0.95, F: 0.88, G: 0.80 };
+      const dpe = bienForm.dpe || 'D';
+      const coefDpe = DPE_IMPACT[dpe] || 1;
+      const prixM2Ajuste = Math.round(prixM2 * coefDpe);
+      const prixEstime = Math.round(prixM2Ajuste * surface);
+      const prixBas = Math.round(prixM2Ajuste * 0.85 * surface);
+      const prixHaut = Math.round(prixM2Ajuste * 1.15 * surface);
+      const impactDpe = Math.round((coefDpe - 1) * 100);
 
       setBienForm(f => ({ ...f, valeur: String(prixEstime) }));
-      setEstimResult({ prixEstime, prixM2, prixBas, prixHaut, commune, dept, codePostal, nbReferences: nbRef, source });
+      setEstimResult({ prixEstime, prixM2: prixM2Ajuste, prixM2Base: prixM2, prixBas, prixHaut, commune, dept, codePostal, nbReferences: nbRef, source, dpe, impactDpe });
     } catch (err) { setEstimResult({ erreur: 'Erreur lors de l\'estimation. Vérifiez l\'adresse.' }); }
     setEstimLoading(false);
   };
@@ -680,10 +686,17 @@ export default function DashboardClient() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: 12, fontSize: 11, color: DS.muted, flexWrap: 'wrap' }}>
-                          <span>Prix/m² : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
-                          {estimResult.nbReferences > 0 && <span>{estimResult.nbReferences} ventes analysées</span>}
+                          <span>Prix/m² ajusté : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
+                          {estimResult.prixM2Base && estimResult.prixM2Base !== estimResult.prixM2 && <span>Base : {estimResult.prixM2Base?.toLocaleString('fr-FR')} €/m²</span>}
+                          {estimResult.nbReferences > 0 && <span>{estimResult.nbReferences} ventes</span>}
                           <span>Source : {estimResult.source}</span>
                         </div>
+                        {estimResult.impactDpe !== undefined && estimResult.impactDpe !== 0 && (
+                          <div style={{ marginTop: 6, padding: '6px 10px', background: estimResult.impactDpe > 0 ? '#F0FDF4' : '#FEF2F2', borderRadius: 6, fontSize: 11, color: estimResult.impactDpe > 0 ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
+                            DPE {estimResult.dpe} → {estimResult.impactDpe > 0 ? '+' : ''}{estimResult.impactDpe}% sur le prix
+                            {estimResult.impactDpe < -10 && ' ⚠️ Passoire énergétique — travaux de rénovation recommandés'}
+                          </div>
+                        )}
                       </div>
                     )}
                     {estimResult?.erreur && (
