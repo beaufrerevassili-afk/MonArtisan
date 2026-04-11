@@ -137,7 +137,7 @@ app.post('/analytics/visit', (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
   const ua = req.headers['user-agent'] || '';
   const ref = req.headers['referer'] || '';
-  db.query('INSERT INTO analytics_visits (page, referrer, user_agent, ip) VALUES ($1,$2,$3,$4)', [page, ref, ua, ip]).catch(()=>{});
+  db.query('INSERT INTO analytics_visits (page, referrer, user_agent, ip) VALUES ($1,$2,$3,$4)', [page, ref, ua, ip]).catch(e => console.error('Analytics write failed:', e.message));
   res.json({ ok:true });
 });
 
