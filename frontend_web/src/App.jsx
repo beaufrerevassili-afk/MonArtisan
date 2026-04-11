@@ -203,12 +203,10 @@ function AppRoutes() {
       {/* ── Employé ── */}
       <Route path="/employe/*" element={
         <ProtectedRoute roles={['employe']}>
-          <Layout>
-            <Routes>
-              <Route path="dashboard" element={<DashboardEmploye />} />
-              <Route path="*" element={<Navigate to="dashboard" replace />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            <Route path="dashboard" element={<DashboardEmploye />} />
+            <Route path="*" element={<Navigate to="dashboard" replace />} />
+          </Routes>
         </ProtectedRoute>
       } />
 

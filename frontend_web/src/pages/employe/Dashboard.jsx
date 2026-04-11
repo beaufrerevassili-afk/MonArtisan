@@ -109,19 +109,45 @@ export default function DashboardEmploye() {
     setModal(null); setForm({});
   };
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font, padding: 'clamp(16px,3vw,32px)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontSize: 'clamp(1.25rem,3vw,1.75rem)', fontWeight: 800, color: DS.ink, margin: 0, letterSpacing: '-0.03em' }}>Espace salarié</h1>
-          <p style={{ fontSize: 13, color: DS.muted, margin: '4px 0 0' }}>{profil.prenom} {profil.nom} · {profil.poste}</p>
+    <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
+      {/* Header sombre */}
+      <div style={{ background: '#2C2520', padding: '0 clamp(20px,4vw,40px)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6 }}>
+            <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
+            <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
+          </button>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
+            Freample<span style={{ color: '#A68B4B' }}>.</span>
+          </button>
         </div>
-        {hasEntreprise && <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 12, color: DS.muted }}>Entreprise</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{patron?.nom}</div>
-        </div>}
+        <div style={{ color: '#F5EFE0', fontSize: 13 }}>{profil.prenom} {profil.nom} · {profil.poste}</div>
+        {hasEntreprise && <div style={{ fontSize: 12, color: '#A68B4B', fontWeight: 600 }}>{patron?.nom}</div>}
       </div>
+
+      {/* Sidebar burger */}
+      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 }} />}
+      <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, background: '#fff', zIndex: 1000, transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform .3s', boxShadow: menuOpen ? '4px 0 20px rgba(0,0,0,0.1)' : 'none', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '18px 20px', borderBottom: '1px solid #E8E6E1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>Espace salarié</span>
+          <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
+        </div>
+        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
+          {TABS.map((t, i) => (
+            <button key={t} onClick={() => { setTab(i); setMenuOpen(false); }}
+              style={{ width: '100%', padding: '12px 20px', background: tab === i ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === i ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === i ? 700 : 400, color: tab === i ? DS.ink : DS.muted, textAlign: 'left', transition: 'all .1s' }}
+              onMouseEnter={e => { if (tab !== i) e.currentTarget.style.background = '#FAFAF8'; }}
+              onMouseLeave={e => { if (tab !== i) e.currentTarget.style.background = 'none'; }}>
+              {t}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
 
       {/* Banner si pas d'entreprise */}
       {!hasEntreprise && profil.statut === 'parti' && (
@@ -133,13 +159,6 @@ export default function DashboardEmploye() {
           <button onClick={() => navigate('/recrutement')} style={{ ...BTN, background: '#D97706' }}>Voir les offres</button>
         </div>
       )}
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, overflowX: 'auto', borderBottom: '1px solid #E8E6E1', paddingBottom: 0 }}>
-        {TABS.map((t, i) => (
-          <button key={t} onClick={() => setTab(i)} style={{ padding: '10px 16px', background: 'none', border: 'none', borderBottom: `2px solid ${tab === i ? DS.accent : 'transparent'}`, fontSize: 12, fontWeight: tab === i ? 700 : 400, color: tab === i ? DS.ink : DS.muted, cursor: 'pointer', fontFamily: DS.font, whiteSpace: 'nowrap' }}>{t}</button>
-        ))}
-      </div>
 
       {/* ═══ TABLEAU DE BORD ═══ */}
       {tab === 0 && <>
@@ -407,6 +426,8 @@ export default function DashboardEmploye() {
           </div>
         </div>
       </>}
+
+      </div>{/* fin maxWidth container */}
 
       {/* ═══ MODALS ═══ */}
       {modal && (
