@@ -148,21 +148,21 @@ export default function SecteurSelect() {
             <div style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
               {/* Carte 1 — Proposer mon projet */}
               <div onClick={() => { setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
-                style={{ flex: '1 1 280px', background: L.gold, borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s', boxShadow: '0 4px 20px rgba(166,139,75,0.3)' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(166,139,75,0.3)'; }}>
+                style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .3s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = L.gold; e.currentTarget.style.borderColor = L.gold; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Proposer mon projet</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, marginBottom: 16 }}>Décrivez vos travaux, fixez votre budget. Des artisans vous envoient leurs offres.</div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 6 }}>Proposer mon projet</div>
+                <div style={{ fontSize: 13, color: 'rgba(245,239,224,0.6)', lineHeight: 1.5, marginBottom: 16 }}>Décrivez vos travaux, fixez votre budget. Des artisans vous envoient leurs offres.</div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(245,239,224,0.4)' }}>
                   <span>📋 Publiez</span><span>🔔 Recevez</span><span>✅ Choisissez</span>
                 </div>
               </div>
               {/* Carte 2 — Trouver un artisan */}
               <div onClick={() => navigate('/btp')}
-                style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .25s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'none'; }}>
+                style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .3s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = L.gold; e.currentTarget.style.borderColor = L.gold; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 6 }}>Trouver un artisan</div>
                 <div style={{ fontSize: 13, color: 'rgba(245,239,224,0.6)', lineHeight: 1.5, marginBottom: 16 }}>Dépannage urgent ou artisan de confiance — trouvez le bon professionnel directement.</div>
