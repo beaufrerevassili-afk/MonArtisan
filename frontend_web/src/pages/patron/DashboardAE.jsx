@@ -33,6 +33,12 @@ export default function DashboardAE() {
   const [tab, setTab] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
   const [aeData, setAeData] = useState(loadAE);
+  // States pour les onglets (déclarés au top level pour respecter les règles des hooks React)
+  const [showDevisForm, setShowDevisForm] = useState(false);
+  const [devisForm, setDevisForm] = useState({ client: '', objet: '', montant: '' });
+  const [showStockAdd, setShowStockAdd] = useState(false);
+  const [stockForm, setStockForm] = useState({ nom: '', categorie: '', quantite: '', seuil: '' });
+  const [vehiculeForm, setVehiculeForm] = useState(null);
 
   // Sous-données
   const activite = aeData.activite || 'services';
@@ -205,23 +211,20 @@ export default function DashboardAE() {
         </>}
 
         {/* ═══ DEVIS & FACTURES ═══ */}
-        {tab === 'devis' && (() => {
-          const [showForm, setShowForm] = useState(false);
-          const [form, setForm] = useState({ client: '', objet: '', montant: '' });
-          return <>
+        {tab === 'devis' && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Devis & Factures</h2>
-              <button onClick={() => setShowForm(!showForm)} style={BTN}>{showForm ? 'Annuler' : '+ Nouvelle facture'}</button>
+              <button onClick={() => setShowDevisForm(!showDevisForm)} style={BTN}>{showDevisForm ? 'Annuler' : '+ Nouvelle facture'}</button>
             </div>
-            {showForm && (
+            {showDevisForm && (
               <div style={{ ...CARD, marginBottom: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Client</label><input value={form.client} onChange={e => setForm(f => ({ ...f, client: e.target.value }))} placeholder="Nom du client" style={INP} /></div>
-                  <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Objet</label><input value={form.objet} onChange={e => setForm(f => ({ ...f, objet: e.target.value }))} placeholder="Travaux de plomberie" style={INP} /></div>
-                  <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Montant (€)</label><input type="number" value={form.montant} onChange={e => setForm(f => ({ ...f, montant: e.target.value }))} placeholder="500" style={INP} /></div>
+                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Client</label><input value={devisForm.client} onChange={e => setDevisForm(f => ({ ...f, client: e.target.value }))} placeholder="Nom du client" style={INP} /></div>
+                  <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Objet</label><input value={devisForm.objet} onChange={e => setDevisForm(f => ({ ...f, objet: e.target.value }))} placeholder="Travaux de plomberie" style={INP} /></div>
+                  <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Montant (€)</label><input type="number" value={devisForm.montant} onChange={e => setDevisForm(f => ({ ...f, montant: e.target.value }))} placeholder="500" style={INP} /></div>
                 </div>
                 <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 8 }}>Mention obligatoire : "TVA non applicable, article 293 B du CGI"</div>
-                <button onClick={() => { if (form.client && form.montant) { addFacture({ client: form.client, objet: form.objet, montant: Number(form.montant), description: form.objet }); setForm({ client: '', objet: '', montant: '' }); setShowForm(false); } }} style={{ ...BTN, marginTop: 10 }}>Créer la facture</button>
+                <button onClick={() => { if (devisForm.client && devisForm.montant) { addFacture({ client: devisForm.client, objet: devisForm.objet, montant: Number(devisForm.montant), description: devisForm.objet }); setDevisForm({ client: '', objet: '', montant: '' }); setShowDevisForm(false); } }} style={{ ...BTN, marginTop: 10 }}>Créer la facture</button>
               </div>
             )}
             {factures.length === 0 ? (
@@ -240,25 +243,21 @@ export default function DashboardAE() {
                 </div>
               </div>
             ))}
-          </>;
-        })()}
+        </>}
 
         {/* ═══ STOCK ═══ */}
-        {tab === 'stock' && (() => {
-          const [showAdd, setShowAdd] = useState(false);
-          const [sf, setSf] = useState({ nom: '', categorie: '', quantite: '', seuil: '' });
-          return <>
+        {tab === 'stock' && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Stock & Matériel ({stock.length})</h2>
-              <button onClick={() => setShowAdd(!showAdd)} style={BTN}>{showAdd ? 'Annuler' : '+ Ajouter'}</button>
+              <button onClick={() => setShowStockAdd(!showStockAdd)} style={BTN}>{showStockAdd ? 'Annuler' : '+ Ajouter'}</button>
             </div>
-            {showAdd && (
+            {showStockAdd && (
               <div style={{ ...CARD, marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Article</label><input value={sf.nom} onChange={e => setSf(f => ({ ...f, nom: e.target.value }))} placeholder="Tube cuivre 22mm" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Catégorie</label><input value={sf.categorie} onChange={e => setSf(f => ({ ...f, categorie: e.target.value }))} placeholder="Plomberie" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Quantité</label><input type="number" value={sf.quantite} onChange={e => setSf(f => ({ ...f, quantite: e.target.value }))} style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Seuil alerte</label><input type="number" value={sf.seuil} onChange={e => setSf(f => ({ ...f, seuil: e.target.value }))} style={INP} /></div>
-                <button onClick={() => { if (sf.nom) { setAeData(d => ({ ...d, stock: [...(d.stock || []), { id: Date.now(), ...sf, quantite: Number(sf.quantite), seuil: Number(sf.seuil) }] })); setSf({ nom: '', categorie: '', quantite: '', seuil: '' }); setShowAdd(false); } }} style={{ ...BTN, gridColumn: '1/-1' }}>Ajouter</button>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Article</label><input value={stockForm.nom} onChange={e => setStockForm(f => ({ ...f, nom: e.target.value }))} placeholder="Tube cuivre 22mm" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Catégorie</label><input value={stockForm.categorie} onChange={e => setStockForm(f => ({ ...f, categorie: e.target.value }))} placeholder="Plomberie" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Quantité</label><input type="number" value={stockForm.quantite} onChange={e => setStockForm(f => ({ ...f, quantite: e.target.value }))} style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Seuil alerte</label><input type="number" value={stockForm.seuil} onChange={e => setStockForm(f => ({ ...f, seuil: e.target.value }))} style={INP} /></div>
+                <button onClick={() => { if (stockForm.nom) { setAeData(d => ({ ...d, stock: [...(d.stock || []), { id: Date.now(), ...stockForm, quantite: Number(stockForm.quantite), seuil: Number(stockForm.seuil) }] })); setStockForm({ nom: '', categorie: '', quantite: '', seuil: '' }); setShowStockAdd(false); } }} style={{ ...BTN, gridColumn: '1/-1' }}>Ajouter</button>
               </div>
             )}
             {stock.length === 0 ? (
@@ -276,39 +275,38 @@ export default function DashboardAE() {
                 </div>
               </div>
             ))}
-          </>;
-        })()}
+        </>}
 
         {/* ═══ VÉHICULE ═══ */}
         {tab === 'vehicule' && (() => {
-          const [vf, setVf] = useState(vehicule || { marque: '', modele: '', immat: '', km: '', prochainCT: '', prochaineVidange: '', assuranceExpire: '' });
+          const vf = vehiculeForm || vehicule || { marque: '', modele: '', immat: '', km: '', prochainCT: '', prochaineVidange: '', assuranceExpire: '' };
+          const setVf = (fn) => setVehiculeForm(typeof fn === 'function' ? fn(vf) : fn);
+          if (!vehiculeForm && vehicule) setVehiculeForm(vehicule);
+          else if (!vehiculeForm) setVehiculeForm(vf);
           const sauverVehicule = () => { setAeData(d => ({ ...d, vehicule: { ...vf, km: Number(vf.km) } })); };
+          const today = new Date().toISOString().slice(0, 10);
+          const alertes = [];
+          if (vehicule?.prochainCT && vehicule.prochainCT < today) alertes.push({ msg: 'Contrôle technique expiré !', color: '#DC2626' });
+          else if (vehicule?.prochainCT && new Date(vehicule.prochainCT) - new Date() < 30 * 86400000) alertes.push({ msg: `CT dans moins de 30 jours (${new Date(vehicule.prochainCT).toLocaleDateString('fr-FR')})`, color: '#D97706' });
+          if (vehicule?.assuranceExpire && vehicule.assuranceExpire < today) alertes.push({ msg: 'Assurance expirée !', color: '#DC2626' });
+          if (vehicule?.prochaineVidange && vehicule.prochaineVidange < today) alertes.push({ msg: 'Vidange à faire !', color: '#D97706' });
           return <>
             <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Mon véhicule</h2>
             <div style={{ ...CARD, marginBottom: 16 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Marque</label><input value={vf.marque} onChange={e => setVf(f => ({ ...f, marque: e.target.value }))} placeholder="Renault" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Modèle</label><input value={vf.modele} onChange={e => setVf(f => ({ ...f, modele: e.target.value }))} placeholder="Master" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Immatriculation</label><input value={vf.immat} onChange={e => setVf(f => ({ ...f, immat: e.target.value }))} placeholder="AB-123-CD" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Kilométrage</label><input type="number" value={vf.km} onChange={e => setVf(f => ({ ...f, km: e.target.value }))} placeholder="85000" style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Prochain CT</label><input type="date" value={vf.prochainCT} onChange={e => setVf(f => ({ ...f, prochainCT: e.target.value }))} style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Prochaine vidange</label><input type="date" value={vf.prochaineVidange} onChange={e => setVf(f => ({ ...f, prochaineVidange: e.target.value }))} style={INP} /></div>
-                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Assurance expire le</label><input type="date" value={vf.assuranceExpire} onChange={e => setVf(f => ({ ...f, assuranceExpire: e.target.value }))} style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Marque</label><input value={vf.marque || ''} onChange={e => setVf(f => ({ ...f, marque: e.target.value }))} placeholder="Renault" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Modèle</label><input value={vf.modele || ''} onChange={e => setVf(f => ({ ...f, modele: e.target.value }))} placeholder="Master" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Immatriculation</label><input value={vf.immat || ''} onChange={e => setVf(f => ({ ...f, immat: e.target.value }))} placeholder="AB-123-CD" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Kilométrage</label><input type="number" value={vf.km || ''} onChange={e => setVf(f => ({ ...f, km: e.target.value }))} placeholder="85000" style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Prochain CT</label><input type="date" value={vf.prochainCT || ''} onChange={e => setVf(f => ({ ...f, prochainCT: e.target.value }))} style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Prochaine vidange</label><input type="date" value={vf.prochaineVidange || ''} onChange={e => setVf(f => ({ ...f, prochaineVidange: e.target.value }))} style={INP} /></div>
+                <div><label style={{ fontSize: 10, fontWeight: 600, color: '#8E8E93', display: 'block', marginBottom: 3 }}>Assurance expire le</label><input type="date" value={vf.assuranceExpire || ''} onChange={e => setVf(f => ({ ...f, assuranceExpire: e.target.value }))} style={INP} /></div>
               </div>
               <button onClick={sauverVehicule} style={{ ...BTN, marginTop: 12, width: '100%' }}>Enregistrer</button>
             </div>
-            {/* Alertes véhicule */}
-            {vehicule && (() => {
-              const today = new Date().toISOString().slice(0, 10);
-              const alertes = [];
-              if (vehicule.prochainCT && vehicule.prochainCT < today) alertes.push({ msg: 'Contrôle technique expiré !', color: '#DC2626' });
-              else if (vehicule.prochainCT && new Date(vehicule.prochainCT) - new Date() < 30 * 86400000) alertes.push({ msg: `CT dans moins de 30 jours (${new Date(vehicule.prochainCT).toLocaleDateString('fr-FR')})`, color: '#D97706' });
-              if (vehicule.assuranceExpire && vehicule.assuranceExpire < today) alertes.push({ msg: 'Assurance expirée !', color: '#DC2626' });
-              if (vehicule.prochaineVidange && vehicule.prochaineVidange < today) alertes.push({ msg: 'Vidange à faire !', color: '#D97706' });
-              return alertes.length > 0 ? <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {alertes.map((a, i) => <div key={i} style={{ ...CARD, borderLeft: `4px solid ${a.color}`, fontSize: 13, color: a.color, fontWeight: 600 }}>⚠️ {a.msg}</div>)}
-              </div> : <div style={{ ...CARD, color: '#16A34A', fontSize: 13, fontWeight: 600 }}>✅ Véhicule à jour</div>;
-            })()}
+            {vehicule && (alertes.length > 0 ? <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {alertes.map((a, i) => <div key={i} style={{ ...CARD, borderLeft: `4px solid ${a.color}`, fontSize: 13, color: a.color, fontWeight: 600 }}>⚠️ {a.msg}</div>)}
+            </div> : <div style={{ ...CARD, color: '#16A34A', fontSize: 13, fontWeight: 600 }}>✅ Véhicule à jour</div>)}
           </>;
         })()}
 
