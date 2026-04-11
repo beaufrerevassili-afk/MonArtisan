@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
     'demo-entreprise@freample.fr': { id:904, nom:'SAS Dupont & Fils', role:'client', secteur:null, clientType:'entreprise' },
     'demo-sci@freample.fr': { id:905, nom:'SCI Riviera', role:'patron', secteur:'immo', entrepriseType:'sci' },
     'demo-patron@freample.fr': { id:901, nom:'Jean Martin BTP', role:'patron', secteur:'btp' },
+    'demo-ae@freample.fr': { id:906, nom:'Thomas Petit Plomberie', role:'patron', secteur:'btp', entrepriseType:'ae' },
     'demo-employe@freample.fr': { id:902, nom:'Lucas Garcia', role:'employe', secteur:'btp', patronId:901 },
     'demo-artisan@freample.fr': { id:903, nom:'Marc Lambert', role:'artisan', secteur:'btp' },
   };

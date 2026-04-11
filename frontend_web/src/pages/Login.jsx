@@ -17,6 +17,7 @@ const GENERIC_DEMO = [
   { role:'Client entreprise', email:'demo-entreprise@freample.fr', motdepasse:'demo', icon:'🏢' },
   { role:'Gestion SCI', email:'demo-sci@freample.fr', motdepasse:'demo', icon:'🏠' },
   { role:"Chef d'entreprise BTP", email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏗️' },
+  { role:'Auto-entrepreneur', email:'demo-ae@freample.fr', motdepasse:'demo', icon:'👤' },
   { role:'Employé', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
 ];
 const SECTOR_CONFIG = {
@@ -44,6 +45,7 @@ export default function Login() {
   const getDestination = (role, userData) => {
     // SCI → gestion immo
     if (userData?.entrepriseType === 'sci' || userData?.secteur === 'immo') return '/immo/gestion';
+    if (userData?.entrepriseType === 'ae') return '/ae/dashboard';
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
     return REDIRECTIONS[role] || '/';
   };

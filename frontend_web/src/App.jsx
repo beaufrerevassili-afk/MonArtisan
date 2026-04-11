@@ -16,6 +16,7 @@ import ComClient from './pages/client/ComClient';
 import ProfilClient from './pages/client/Profil';
 import DashboardPatron from './pages/patron/Dashboard';
 import ProjetsClients from './pages/patron/ProjetsClients';
+import DashboardAE from './pages/patron/DashboardAE';
 import DashboardCoiffure from './pages/patron/DashboardCoiffure';
 import DashboardCom from './pages/patron/DashboardCom';
 import FreampleCom from './pages/public/FreampleCom';
@@ -185,6 +186,16 @@ function AppRoutes() {
               <Route path="profil"           element={<ProfilPatron />} />
             </Routes>
           </Layout>
+        </ProtectedRoute>
+      } />
+
+      {/* ── Auto-entrepreneur ── */}
+      <Route path="/ae/*" element={
+        <ProtectedRoute roles={['patron']}>
+          <Routes>
+            <Route path="dashboard" element={<DashboardAE />} />
+            <Route path="*" element={<Navigate to="dashboard" replace />} />
+          </Routes>
         </ProtectedRoute>
       } />
 
