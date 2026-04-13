@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import DS from '../../design/ds';
+import NotificationBell from '../../components/ui/NotificationBell';
+import { IconHome, IconMissions, IconDocument, IconChart, IconBank, IconBox, IconMapPin, IconCalendar, IconMessage, IconUser } from '../../components/ui/Icons';
 
 const TABS = [
-  { id: 'dashboard', label: 'Tableau de bord', icon: '📊' },
-  { id: 'projets', label: 'Projets clients', icon: '📋' },
-  { id: 'devis', label: 'Devis & Factures', icon: '📄' },
-  { id: 'ca', label: 'Mon CA', icon: '💰' },
-  { id: 'urssaf', label: 'URSSAF', icon: '🏛️' },
-  { id: 'stock', label: 'Stock & Matériel', icon: '📦' },
-  { id: 'vehicule', label: 'Mon véhicule', icon: '🚗' },
-  { id: 'agenda', label: 'Mon agenda', icon: '📅' },
-  { id: 'messagerie', label: 'Messagerie', icon: '💬' },
-  { id: 'profil', label: 'Mon profil', icon: '👤' },
+  { id: 'dashboard', label: 'Tableau de bord', Icon: IconHome },
+  { id: 'projets', label: 'Projets', Icon: IconMissions },
+  { id: 'devis', label: 'Devis & Factures', Icon: IconDocument },
+  { id: 'ca', label: 'Mon CA', Icon: IconChart },
+  { id: 'urssaf', label: 'URSSAF', Icon: IconBank },
+  { id: 'stock', label: 'Stock', Icon: IconBox },
+  { id: 'vehicule', label: 'Véhicule', Icon: IconMapPin },
+  { id: 'agenda', label: 'Agenda', Icon: IconCalendar },
+  { id: 'messagerie', label: 'Messages', Icon: IconMessage },
+  { id: 'profil', label: 'Profil', Icon: IconUser },
 ];
 
 const CARD = { background: '#fff', border: '1px solid #E8E6E1', borderRadius: 14, padding: '16px 20px' };
@@ -27,9 +29,16 @@ const TAUX_COTISATIONS = { services: 21.1, commerce: 12.3 };
 const STORAGE_AE = 'freample_ae_data';
 function loadAE() { try { return JSON.parse(localStorage.getItem(STORAGE_AE)) || {}; } catch { return {}; } }
 
+function useIsMobile(bp = 640) {
+  const [m, setM] = useState(() => window.innerWidth <= bp);
+  useEffect(() => { const h = () => setM(window.innerWidth <= bp); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, [bp]);
+  return m;
+}
+
 export default function DashboardAE() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
   const [aeData, setAeData] = useState(loadAE);
@@ -39,6 +48,15 @@ export default function DashboardAE() {
   const [showStockAdd, setShowStockAdd] = useState(false);
   const [stockForm, setStockForm] = useState({ nom: '', categorie: '', quantite: '', seuil: '' });
   const [vehiculeForm, setVehiculeForm] = useState(null);
+  // Devis & Factures filters
+  const [factureSearch, setFactureSearch] = useState('');
+  const [factureStatusFilter, setFactureStatusFilter] = useState('tous');
+  // PDF print modal
+  const [printFacture, setPrintFacture] = useState(null);
+  // URSSAF declaration states
+  const [urssafPeriodType, setUrssafPeriodType] = useState('trimestriel'); // 'mensuel' or 'trimestriel'
+  const [urssafVersementLib, setUrssafVersementLib] = useState(false);
+  const [urssafCopied, setUrssafCopied] = useState(false);
 
   // Sous-données
   const activite = aeData.activite || 'services';
@@ -55,23 +73,34 @@ export default function DashboardAE() {
 
   useEffect(() => { localStorage.setItem(STORAGE_AE, JSON.stringify(aeData)); }, [aeData]);
 
+  // Overdue detection (30+ days, not paid)
+  const today = new Date();
+  const facturesEnRetard = factures.filter(f => f.statut !== 'payee' && f.date && (today - new Date(f.date)) > 30 * 86400000);
+
   // Helpers
-  const addFacture = (f) => setAeData(d => ({ ...d, factures: [{ id: Date.now(), ...f, date: new Date().toISOString().slice(0, 10), statut: 'en_attente' }, ...(d.factures || [])] }));
+  const addFacture = (f) => setAeData(d => {
+    const nextNum = (d.factures || []).length + 1;
+    const numero = `FAC-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`;
+    return { ...d, factures: [{ id: Date.now(), numero, ...f, date: new Date().toISOString().slice(0, 10), statut: 'en_attente' }, ...(d.factures || [])] };
+  });
   const updateFacture = (id, updates) => setAeData(d => ({ ...d, factures: (d.factures || []).map(f => f.id === id ? { ...f, ...updates } : f) }));
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAF8', fontFamily: DS.font }}>
       {/* Header */}
-      <div style={{ background: '#2C2520', padding: '0 clamp(20px,4vw,40px)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6 }}>
+      <div style={{ background: '#2C2520', padding: isMobile ? '0 12px' : '0 clamp(20px,4vw,40px)', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6, flexShrink: 0 }}>
             <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} /><span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
           </button>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
-            Freample<span style={{ color: '#A68B4B' }}>.</span> <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.6 }}>Auto-entrepreneur</span>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? 14 : 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em', whiteSpace: 'nowrap' }}>
+            Freample<span style={{ color: '#A68B4B' }}>.</span>{!isMobile && <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.6 }}> Auto-entrepreneur</span>}
           </button>
         </div>
-        <div style={{ color: '#F5EFE0', fontSize: 13 }}>Bonjour, {prenom}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {!isMobile && <span style={{ color: '#F5EFE0', fontSize: 13 }}>Bonjour, {prenom}</span>}
+          <NotificationBell dark />
+        </div>
       </div>
 
       {/* Sidebar */}
@@ -87,7 +116,7 @@ export default function DashboardAE() {
               style={{ width: '100%', padding: '12px 20px', background: tab === t.id ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === t.id ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? '#1A1A1A' : '#8E8E93', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
               onMouseEnter={e => { if (tab !== t.id) e.currentTarget.style.background = '#FAFAF8'; }}
               onMouseLeave={e => { if (tab !== t.id) e.currentTarget.style.background = 'none'; }}>
-              <span style={{ fontSize: 16 }}>{t.icon}</span> {t.label}
+              <t.Icon size={16} /> {t.label}
             </button>
           ))}
         </nav>
@@ -123,6 +152,7 @@ export default function DashboardAE() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16 }}>
             {[
               { l: 'Factures en attente', v: factures.filter(f => f.statut === 'en_attente').length, c: '#D97706' },
+              { l: 'En retard (+30j)', v: facturesEnRetard.length, c: '#DC2626' },
               { l: 'CA ce mois', v: `${factures.filter(f => f.statut === 'payee' && f.date?.startsWith(new Date().toISOString().slice(0, 7))).reduce((s, f) => s + (f.montant || 0), 0).toLocaleString('fr-FR')}€`, c: '#16A34A' },
               { l: 'Cotisations URSSAF', v: `${Math.round(caTotal * tauxCotis / 100).toLocaleString('fr-FR')}€`, c: '#2563EB' },
               { l: 'Stock articles', v: stock.length, c: '#8B5CF6' },
@@ -174,28 +204,208 @@ export default function DashboardAE() {
 
           {/* Livre des recettes */}
           <div style={{ ...CARD }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Livre des recettes</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>Livre des recettes</div>
+              {factures.filter(f => f.statut === 'payee').length > 0 && (
+                <button onClick={() => {
+                  const recettes = factures.filter(f => f.statut === 'payee');
+                  const header = 'Date,N° Facture,Client,Nature de la prestation,Montant,Mode de paiement';
+                  const rows = recettes.map(f => [f.date || '', f.numero || '', f.client || '', f.description || f.objet || '', f.montant || 0, f.modePaiement || 'Virement'].join(','));
+                  const csv = [header, ...rows].join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a'); a.href = url; a.download = `livre-recettes-${new Date().getFullYear()}.csv`; a.click(); URL.revokeObjectURL(url);
+                }} style={{ ...BTN, fontSize: 11, padding: '6px 14px', background: '#16A34A' }}>Exporter CSV</button>
+              )}
+            </div>
             {factures.filter(f => f.statut === 'payee').length === 0 ? (
               <div style={{ fontSize: 12, color: '#8E8E93', textAlign: 'center', padding: 20 }}>Aucune recette enregistrée.</div>
-            ) : factures.filter(f => f.statut === 'payee').map(f => (
-              <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #E8E6E1', fontSize: 12 }}>
-                <div><span style={{ fontWeight: 600 }}>{f.client || 'Client'}</span> — {f.description || f.objet || '—'}</div>
-                <div style={{ fontWeight: 700 }}>{(f.montant || 0).toLocaleString('fr-FR')} €</div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #E8E6E1', textAlign: 'left' }}>
+                      {['Date', 'N° Facture', 'Client', 'Nature de la prestation', 'Montant', 'Mode de paiement'].map(h => (
+                        <th key={h} style={{ padding: '8px 6px', fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {factures.filter(f => f.statut === 'payee').map(f => (
+                      <tr key={f.id} style={{ borderBottom: '1px solid #E8E6E1' }}>
+                        <td style={{ padding: '8px 6px' }}>{f.date || '—'}</td>
+                        <td style={{ padding: '8px 6px', fontWeight: 600 }}>{f.numero || '—'}</td>
+                        <td style={{ padding: '8px 6px' }}>{f.client || '—'}</td>
+                        <td style={{ padding: '8px 6px' }}>{f.description || f.objet || '—'}</td>
+                        <td style={{ padding: '8px 6px', fontWeight: 700 }}>{(f.montant || 0).toLocaleString('fr-FR')} €</td>
+                        <td style={{ padding: '8px 6px' }}>{f.modePaiement || 'Virement'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            )}
+            <div style={{ marginTop: 10, fontSize: 10, color: '#8E8E93', fontStyle: 'italic' }}>Conformément à l'article L123-28 du Code de commerce</div>
           </div>
         </>}
 
         {/* ═══ URSSAF ═══ */}
-        {tab === 'urssaf' && <>
-          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Cotisations URSSAF</h2>
+        {tab === 'urssaf' && (() => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth(); // 0-indexed
+
+          // Determine current period
+          let periodLabel = '';
+          let periodStart, periodEnd;
+          if (urssafPeriodType === 'mensuel') {
+            const moisNoms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+            periodLabel = `${moisNoms[month]} ${year}`;
+            periodStart = new Date(year, month, 1);
+            periodEnd = new Date(year, month + 1, 0);
+          } else {
+            const trimestre = Math.floor(month / 3) + 1;
+            const moisTrim = [['Janvier','Février','Mars'],['Avril','Mai','Juin'],['Juillet','Août','Septembre'],['Octobre','Novembre','Décembre']];
+            periodLabel = `T${trimestre} ${year} : ${moisTrim[trimestre - 1][0]}-${moisTrim[trimestre - 1][2]}`;
+            periodStart = new Date(year, (trimestre - 1) * 3, 1);
+            periodEnd = new Date(year, trimestre * 3, 0);
+          }
+
+          // CA of the period from paid invoices
+          const caPeriode = factures.filter(f => {
+            if (f.statut !== 'payee' || !f.date) return false;
+            const d = new Date(f.date);
+            return d >= periodStart && d <= periodEnd;
+          }).reduce((s, f) => s + (f.montant || 0), 0);
+
+          // Cotisations calculation
+          const cotisations = Math.round(caPeriode * tauxCotis / 100);
+          const tauxVL = activite === 'services' ? 1.0 : 1.7;
+          const versementLib = urssafVersementLib ? Math.round(caPeriode * tauxVL / 100) : 0;
+          const totalAPayer = cotisations + versementLib;
+
+          // Next deadline
+          let nextDeadline;
+          if (urssafPeriodType === 'mensuel') {
+            // Due on last day of the following month
+            nextDeadline = new Date(year, month + 2, 0);
+          } else {
+            // Quarterly deadlines: 30/04, 31/07, 31/10, 31/01+1
+            const trimestre = Math.floor(month / 3) + 1;
+            const deadlines = [new Date(year, 3, 30), new Date(year, 6, 31), new Date(year, 9, 31), new Date(year + 1, 0, 31)];
+            nextDeadline = deadlines[trimestre - 1];
+          }
+          const daysUntilDeadline = Math.max(0, Math.ceil((nextDeadline - now) / 86400000));
+
+          const handleCopy = () => {
+            const text = [
+              `Déclaration URSSAF — ${periodLabel}`,
+              `Type d'activité : ${activite === 'services' ? 'Prestations de services' : 'Vente de marchandises'}`,
+              `Chiffre d'affaires de la période : ${caPeriode.toLocaleString('fr-FR')} €`,
+              `Taux de cotisations : ${tauxCotis}%`,
+              `Cotisations sociales : ${cotisations.toLocaleString('fr-FR')} €`,
+              urssafVersementLib ? `Versement libératoire IR (${tauxVL}%) : ${versementLib.toLocaleString('fr-FR')} €` : null,
+              `Total à payer : ${totalAPayer.toLocaleString('fr-FR')} €`,
+              `Date limite : ${nextDeadline.toLocaleDateString('fr-FR')}`,
+            ].filter(Boolean).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+              setUrssafCopied(true);
+              setTimeout(() => setUrssafCopied(false), 2500);
+            });
+          };
+
+          return <>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Déclaration URSSAF</h2>
+
+          {/* Period selector */}
           <div style={{ ...CARD, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Simulation cotisations {new Date().getFullYear()}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Périodicité de déclaration</div>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              {[['mensuel', 'Mensuel'], ['trimestriel', 'Trimestriel']].map(([val, label]) => (
+                <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+                  <input type="radio" name="urssaf-period" checked={urssafPeriodType === val} onChange={() => setUrssafPeriodType(val)} style={{ accentColor: '#2C2520' }} />
+                  <span style={{ fontWeight: urssafPeriodType === val ? 700 : 400 }}>{label}</span>
+                </label>
+              ))}
+            </div>
+            <div style={{ background: '#F8F7F4', padding: '10px 14px', borderRadius: 8, fontSize: 14, fontWeight: 700, color: '#2C2520' }}>
+              Période en cours : {periodLabel}
+            </div>
+          </div>
+
+          {/* Pre-filled declaration */}
+          <div style={{ ...CARD, marginBottom: 16, borderLeft: '4px solid #2563EB' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Déclaration pré-remplie</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+              <div style={{ background: '#F8F7F4', padding: '10px 12px', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: '#8E8E93' }}>CA de la période</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{caPeriode.toLocaleString('fr-FR')} €</div>
+              </div>
+              <div style={{ background: '#F8F7F4', padding: '10px 12px', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: '#8E8E93' }}>Taux cotisations ({activite})</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{tauxCotis}%</div>
+              </div>
+              <div style={{ background: '#EFF6FF', padding: '10px 12px', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: '#2563EB' }}>Cotisations sociales</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#2563EB' }}>{cotisations.toLocaleString('fr-FR')} €</div>
+                <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 2 }}>{caPeriode.toLocaleString('fr-FR')} × {tauxCotis}%</div>
+              </div>
+              {urssafVersementLib && (
+                <div style={{ background: '#FFF7ED', padding: '10px 12px', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: '#D97706' }}>Versement libératoire IR</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#D97706' }}>{versementLib.toLocaleString('fr-FR')} €</div>
+                  <div style={{ fontSize: 10, color: '#8E8E93', marginTop: 2 }}>{caPeriode.toLocaleString('fr-FR')} × {tauxVL}%</div>
+                </div>
+              )}
+            </div>
+
+            {/* Versement libératoire toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#F8F7F4', borderRadius: 8, marginBottom: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flex: 1 }}>
+                <div onClick={() => setUrssafVersementLib(!urssafVersementLib)} style={{ width: 38, height: 20, borderRadius: 10, background: urssafVersementLib ? '#16A34A' : '#D1D5DB', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: urssafVersementLib ? 20 : 2, transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600 }}>Versement libératoire de l'impôt sur le revenu</div>
+                  <div style={{ fontSize: 10, color: '#8E8E93' }}>{activite === 'services' ? '1% pour prestations de services' : '1,7% pour vente de marchandises'}</div>
+                </div>
+              </label>
+            </div>
+
+            {/* Total */}
+            <div style={{ background: '#2C2520', padding: '14px 16px', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 10, color: '#A68B4B', fontWeight: 600, textTransform: 'uppercase' }}>Total à payer</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#F5EFE0' }}>{totalAPayer.toLocaleString('fr-FR')} €</div>
+              </div>
+              <button onClick={handleCopy} style={{ ...BTN, background: urssafCopied ? '#16A34A' : '#A68B4B', fontSize: 12, padding: '10px 18px' }}>
+                {urssafCopied ? 'Copié !' : 'Copier pour déclaration'}
+              </button>
+            </div>
+          </div>
+
+          {/* Deadline reminder */}
+          <div style={{ ...CARD, marginBottom: 16, borderLeft: `4px solid ${daysUntilDeadline <= 7 ? '#DC2626' : daysUntilDeadline <= 30 ? '#D97706' : '#16A34A'}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>Prochaine échéance</div>
+                <div style={{ fontSize: 15, fontWeight: 800, marginTop: 4 }}>{nextDeadline.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px 16px', background: daysUntilDeadline <= 7 ? '#FEF2F2' : daysUntilDeadline <= 30 ? '#FFF7ED' : '#F0FDF4', borderRadius: 8 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: daysUntilDeadline <= 7 ? '#DC2626' : daysUntilDeadline <= 30 ? '#D97706' : '#16A34A' }}>{daysUntilDeadline}</div>
+                <div style={{ fontSize: 10, color: '#8E8E93' }}>jours restants</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Annual simulation (kept from original) */}
+          <div style={{ ...CARD, marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Simulation annuelle {year}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
-                ['CA encaissé', `${caTotal.toLocaleString('fr-FR')} €`],
+                ['CA encaissé (année)', `${caTotal.toLocaleString('fr-FR')} €`],
                 ['Taux cotisations', `${tauxCotis}%`],
-                ['Cotisations dues', `${Math.round(caTotal * tauxCotis / 100).toLocaleString('fr-FR')} €`],
+                ['Cotisations annuelles', `${Math.round(caTotal * tauxCotis / 100).toLocaleString('fr-FR')} €`],
                 ['Revenu net estimé', `${Math.round(caTotal * (1 - tauxCotis / 100)).toLocaleString('fr-FR')} €`],
               ].map(([k, v]) => (
                 <div key={k} style={{ background: '#F8F7F4', padding: '10px 12px', borderRadius: 8 }}>
@@ -208,10 +418,22 @@ export default function DashboardAE() {
               TVA non applicable, article 293 B du CGI (si CA &lt; seuils de franchise).
             </div>
           </div>
-        </>}
+        </>;
+        })()}
 
         {/* ═══ DEVIS & FACTURES ═══ */}
-        {tab === 'devis' && <>
+        {tab === 'devis' && (() => {
+            const isOverdue = (f) => f.statut !== 'payee' && f.date && (today - new Date(f.date)) > 30 * 86400000;
+            let filtered = [...factures];
+            if (factureSearch) {
+              const q = factureSearch.toLowerCase();
+              filtered = filtered.filter(f => (f.client || '').toLowerCase().includes(q) || (f.description || f.objet || '').toLowerCase().includes(q));
+            }
+            if (factureStatusFilter === 'en_attente') filtered = filtered.filter(f => f.statut === 'en_attente' && !isOverdue(f));
+            else if (factureStatusFilter === 'payee') filtered = filtered.filter(f => f.statut === 'payee');
+            else if (factureStatusFilter === 'en_retard') filtered = filtered.filter(f => isOverdue(f));
+            filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            return <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Devis & Factures</h2>
               <button onClick={() => setShowDevisForm(!showDevisForm)} style={BTN}>{showDevisForm ? 'Annuler' : '+ Nouvelle facture'}</button>
@@ -227,23 +449,41 @@ export default function DashboardAE() {
                 <button onClick={() => { if (devisForm.client && devisForm.montant) { addFacture({ client: devisForm.client, objet: devisForm.objet, montant: Number(devisForm.montant), description: devisForm.objet }); setDevisForm({ client: '', objet: '', montant: '' }); setShowDevisForm(false); } }} style={{ ...BTN, marginTop: 10 }}>Créer la facture</button>
               </div>
             )}
-            {factures.length === 0 ? (
-              <div style={{ ...CARD, textAlign: 'center', padding: 40, color: '#8E8E93' }}>Aucune facture. Cliquez sur "+ Nouvelle facture".</div>
-            ) : factures.map(f => (
-              <div key={f.id} style={{ ...CARD, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+            {/* Search & Filters */}
+            <div style={{ ...CARD, marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+              <input value={factureSearch} onChange={e => setFactureSearch(e.target.value)} placeholder="Rechercher par client ou description..." style={{ ...INP, flex: '1 1 200px', maxWidth: 320 }} />
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {[['tous', 'Tous'], ['en_attente', 'En attente'], ['payee', 'Payée'], ['en_retard', 'En retard']].map(([val, label]) => (
+                  <button key={val} onClick={() => setFactureStatusFilter(val)}
+                    style={{ padding: '5px 12px', background: factureStatusFilter === val ? (val === 'en_retard' ? '#DC2626' : '#2C2520') : 'transparent', color: factureStatusFilter === val ? '#F5EFE0' : '#8E8E93', border: `1px solid ${factureStatusFilter === val ? 'transparent' : '#E8E6E1'}`, borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>{label}</button>
+                ))}
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div style={{ ...CARD, textAlign: 'center', padding: 40, color: '#8E8E93' }}>Aucune facture trouvée.</div>
+            ) : filtered.map(f => {
+              const overdue = isOverdue(f);
+              return (
+              <div key={f.id} style={{ ...CARD, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: overdue ? '3px solid #DC2626' : undefined }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{f.client}</div>
-                  <div style={{ fontSize: 12, color: '#8E8E93' }}>{f.objet || '—'} · {f.date}</div>
+                  <div style={{ fontSize: 12, color: '#8E8E93' }}>{f.numero && <span style={{ fontWeight: 600, color: '#2C2520' }}>{f.numero}</span>}{f.numero && ' · '}{f.objet || '—'} · {f.date}</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   <span style={{ fontSize: 16, fontWeight: 800 }}>{(f.montant || 0).toLocaleString('fr-FR')} €</span>
-                  {f.statut === 'en_attente' ? (
+                  {overdue && <span style={{ fontSize: 9, fontWeight: 700, color: '#DC2626', background: '#FEF2F2', padding: '2px 6px', borderRadius: 4 }}>En retard</span>}
+                  {f.statut === 'en_attente' && !overdue ? (
                     <button onClick={() => updateFacture(f.id, { statut: 'payee' })} style={{ padding: '4px 10px', background: '#F0FDF4', color: '#16A34A', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Marquer payée</button>
-                  ) : <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '3px 8px', borderRadius: 4 }}>✓ Payée</span>}
+                  ) : f.statut === 'payee' ? <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '3px 8px', borderRadius: 4 }}>Payée</span>
+                  : overdue && <button onClick={() => updateFacture(f.id, { statut: 'payee' })} style={{ padding: '4px 10px', background: '#F0FDF4', color: '#16A34A', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Marquer payée</button>}
+                  <button onClick={() => setPrintFacture(f)} style={{ padding: '4px 10px', background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>PDF</button>
                 </div>
               </div>
-            ))}
-        </>}
+            );})}
+        </>;
+        })()}
 
         {/* ═══ STOCK ═══ */}
         {tab === 'stock' && <>
@@ -345,6 +585,67 @@ export default function DashboardAE() {
         </div>}
 
       </div>
+
+      {/* Print CSS */}
+      <style>{`@media print { body * { visibility: hidden !important; } #ae-facture-print, #ae-facture-print * { visibility: visible !important; } #ae-facture-print { position: fixed; top: 0; left: 0; width: 100%; background: #fff; z-index: 99999; } }`}</style>
+
+      {/* PDF / Print modal */}
+      {printFacture && (
+        <>
+          <div onClick={() => setPrintFacture(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999, width: '90%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.15)' }}>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid #E8E6E1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Aperçu facture</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => window.print()} style={{ ...BTN, fontSize: 11, padding: '6px 14px', background: '#2563EB' }}>Imprimer / PDF</button>
+                <button onClick={() => setPrintFacture(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#8E8E93' }}>×</button>
+              </div>
+            </div>
+            <div id="ae-facture-print" style={{ padding: '32px 28px', fontFamily: DS.font, color: '#0A0A0A' }}>
+              <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' }}>FACTURE</div>
+                <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{printFacture.numero || '—'}</div>
+                <div style={{ fontSize: 12, color: '#8E8E93', marginTop: 2 }}>Date : {printFacture.date || '—'}</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, gap: 20 }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', marginBottom: 4 }}>Émetteur</div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>{user?.nom || '—'}</div>
+                  <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>Auto-entrepreneur</div>
+                  <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 4, fontStyle: 'italic' }}>TVA non applicable, art. 293 B du CGI</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', marginBottom: 4 }}>Client</div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>{printFacture.client || '—'}</div>
+                </div>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #2C2520' }}>
+                    <th style={{ textAlign: 'left', padding: '8px 0', fontSize: 11, fontWeight: 700 }}>Description</th>
+                    <th style={{ textAlign: 'right', padding: '8px 0', fontSize: 11, fontWeight: 700 }}>Montant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #E8E6E1' }}>
+                    <td style={{ padding: '10px 0', fontSize: 13 }}>{printFacture.description || printFacture.objet || '—'}</td>
+                    <td style={{ padding: '10px 0', fontSize: 13, textAlign: 'right', fontWeight: 600 }}>{(printFacture.montant || 0).toLocaleString('fr-FR')} €</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                <div style={{ background: '#F8F7F4', padding: '12px 20px', borderRadius: 8, textAlign: 'right' }}>
+                  <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600 }}>TOTAL</div>
+                  <div style={{ fontSize: 22, fontWeight: 900 }}>{(printFacture.montant || 0).toLocaleString('fr-FR')} €</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 9, color: '#8E8E93', textAlign: 'center', borderTop: '1px solid #E8E6E1', paddingTop: 12 }}>
+                {user?.nom || '—'} — Auto-entrepreneur — TVA non applicable, article 293 B du CGI
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
