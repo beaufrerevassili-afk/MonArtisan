@@ -13,17 +13,10 @@ import URSSAF from './URSSAF';
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
 
 const TABS = [
-  { id: 'tableau-de-bord', label: "Vue d'ensemble" },
-  { id: 'pipeline',        label: 'Pipeline'        },
-  { id: 'facturation',     label: 'Facturation'     },
-  { id: 'tresorerie',      label: 'Trésorerie'      },
-  { id: 'compta',          label: 'Comptabilité'    },
-  { id: 'urssaf',          label: 'URSSAF'          },
-  { id: 'salaires',        label: 'Salaires'        },
-  { id: 'bareme-paiement', label: 'Barème paiement' },
-  { id: 'prix',            label: 'Bibliothèque prix' },
-  { id: 'suivi-paie',      label: 'Suivi de paie'    },
-  { id: 'simulateur',      label: 'Simulateur trajet' },
+  { id: 'vue-ensemble',   label: 'Vue d\'ensemble' },
+  { id: 'tva-urssaf',     label: 'TVA & URSSAF' },
+  { id: 'comptabilite',   label: 'Comptabilité' },
+  { id: 'paie',           label: 'Paie' },
 ];
 
 const STATUT_DEVIS = {
@@ -103,18 +96,18 @@ const DEMO_SALARIES = {
   resume: { totalBrut: 10_450, totalNet: 8_360, totalChargesPatronales: 4_390 },
 };
 
-const FINANCE_TAB_MAP = { tresorerie:'tresorerie', facturation:'facturation', urssaf:'urssaf', salaires:'salaires', bareme:'bareme-paiement', pipeline:'pipeline', compta:'compta', prix:'prix', 'suivi-paie':'suivi-paie', simulateur:'simulateur' };
+const FINANCE_TAB_MAP = { facturation:'vue-ensemble', factures:'vue-ensemble', tresorerie:'vue-ensemble', pipeline:'vue-ensemble', rapprochement:'comptabilite', urssaf:'tva-urssaf', tva:'tva-urssaf', salaires:'paie', bareme:'comptabilite', compta:'comptabilite', bilan:'comptabilite', prix:'comptabilite', 'suivi-paie':'paie', simulateur:'paie' };
 
 export default function Finance() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const onglet = searchParams.get('onglet');
-  const [tab, setTab] = useState(FINANCE_TAB_MAP[onglet] || 'tableau-de-bord');
+  const [tab, setTab] = useState(FINANCE_TAB_MAP[onglet] || 'vue-ensemble');
 
   useEffect(() => {
     const o = searchParams.get('onglet');
     if (o && FINANCE_TAB_MAP[o]) setTab(FINANCE_TAB_MAP[o]);
-    else if (!o) setTab('tableau-de-bord');
+    else if (!o) setTab('vue-ensemble');
   }, [searchParams]);
   const [data, setData]       = useState(null);
   const [devis, setDevis]     = useState([]);
@@ -183,193 +176,242 @@ export default function Finance() {
         </div>
       ) : (
         <>
-          {/* Vue d'ensemble */}
-          {tab === 'tableau-de-bord' && (() => {
-            const d = data || DEMO_FINANCE;
-            const isDemo = !data;
-            const caTrend = d.chiffreAffaires?.totalPrecedent > 0
-              ? ((d.chiffreAffaires.total - d.chiffreAffaires.totalPrecedent) / d.chiffreAffaires.totalPrecedent * 100).toFixed(1)
-              : null;
-            const margeTrend = d.margePrecedente > 0
-              ? ((d.marge - d.margePrecedente) / d.margePrecedente * 100).toFixed(1)
-              : null;
-            const txTrend = d.devis?.tauxPrecedent != null
-              ? (d.devis.tauxConversion - d.devis.tauxPrecedent)
-              : null;
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {isDemo && (
-                  <div style={{ background: 'rgba(255,149,0,0.08)', borderRadius: 10, padding: '10px 16px', fontSize: '0.8125rem', color: '#7A5C00', display: 'flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,149,0,0.2)' }}>
-                    <span>📊</span> Données de démonstration — connectez l'API pour afficher vos chiffres réels.
-                  </div>
-                )}
-
-                {/* Raccourcis */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                  {[
-                    { label: 'Devis Pro', sub: 'Créer et gérer vos devis', icon: <IconDocument size={18} />, path: '/patron/devis-pro', bg: 'var(--primary-light)', fg: 'var(--primary)', border: 'rgba(91,91,214,0.2)' },
-                    { label: 'Facturation', sub: 'Suivre vos factures', icon: <IconCheck size={18} />, path: '/patron/facturation', bg: 'rgba(52,199,89,0.08)', fg: '#1A7A3C', border: 'rgba(52,199,89,0.2)' },
-                    { label: 'Trésorerie', sub: 'Flux entrants / sortants', icon: <IconTrendUp size={18} />, path: null, onClick: () => setTab('tresorerie'), bg: 'rgba(124,58,237,0.08)', fg: '#7C3AED', border: 'rgba(124,58,237,0.2)' },
-                  ].map(({ label, sub, icon, path, onClick, bg, fg, border }) => (
-                    <button key={label} onClick={onClick || (() => navigate(path))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: bg, border: `1px solid ${border}`, borderRadius: 12, cursor: 'pointer', textAlign: 'left' }}>
-                      <span style={{ color: fg }}>{icon}</span>
-                      <div>
-                        <p style={{ fontWeight: 700, color: fg, fontSize: '0.875rem' }}>{label}</p>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{sub} →</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* KPI grid avec tendances */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 14 }}>
-                  <KpiCard label="CA Total (12 mois)" valeur={`${(d.chiffreAffaires?.total || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="blue" trend={caTrend} trendLabel="vs période préc." />
-                  <KpiCard label="Factures émises"    valeur={d.chiffreAffaires?.facturesEmises || 0}                          Icon={IconDocument} color="blue" />
-                  <KpiCard label="En attente paiement" valeur={`${(d.chiffreAffaires?.montantEnAttente || 0).toLocaleString('fr-FR')} €`} Icon={IconAlert} color="red" />
-                  <KpiCard label="Taux de conversion" valeur={`${d.devis?.tauxConversion || 0} %`} Icon={IconFinance} color={d.devis?.tauxConversion >= 60 ? 'green' : 'orange'} trend={txTrend} trendLabel="pts vs période préc." trendUnit="pts" />
-                  <KpiCard label="Marge brute"        valeur={`${(d.marge || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="green" trend={margeTrend} trendLabel="vs période préc." />
-                  <KpiCard label="Taux de marge"      valeur={d.chiffreAffaires?.total > 0 ? `${(d.marge / d.chiffreAffaires.total * 100).toFixed(1)} %` : '—'} Icon={IconTrendUp} color="blue" />
-                </div>
-
-                {/* Charts row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
-                  {/* CA + Charges mensuel */}
-                  <div className="card" style={{ padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)' }}>CA vs Charges (6 mois)</div>
-                      <div style={{ display: 'flex', gap: 14, fontSize: '0.75rem' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
-                          <div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--primary)' }} /> CA
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
-                          <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(255,59,48,0.5)' }} /> Charges
-                        </span>
-                      </div>
+          {/* ── Vue d'ensemble : tableau de bord + pipeline + trésorerie ── */}
+          {tab === 'vue-ensemble' && (<>
+            {(() => {
+              const d = data || DEMO_FINANCE;
+              const isDemo = !data;
+              const caTrend = d.chiffreAffaires?.totalPrecedent > 0
+                ? ((d.chiffreAffaires.total - d.chiffreAffaires.totalPrecedent) / d.chiffreAffaires.totalPrecedent * 100).toFixed(1)
+                : null;
+              const margeTrend = d.margePrecedente > 0
+                ? ((d.marge - d.margePrecedente) / d.margePrecedente * 100).toFixed(1)
+                : null;
+              const txTrend = d.devis?.tauxPrecedent != null
+                ? (d.devis.tauxConversion - d.devis.tauxPrecedent)
+                : null;
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {isDemo && (
+                    <div style={{ background: 'rgba(255,149,0,0.08)', borderRadius: 10, padding: '10px 16px', fontSize: '0.8125rem', color: '#7A5C00', display: 'flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,149,0,0.2)' }}>
+                      <span>📊</span> Données de démonstration — connectez l'API pour afficher vos chiffres réels.
                     </div>
-                    {d.mensuel && (
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 130 }}>
-                        {d.mensuel.map((item, i) => {
-                          const maxVal = Math.max(...d.mensuel.map(x => x.ca));
-                          const hCa = Math.round((item.ca / maxVal) * 100);
-                          const hCh = Math.round(((item.charges || 0) / maxVal) * 100);
-                          const marge = item.ca - (item.charges || 0);
-                          return (
-                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                              <div style={{ fontSize: '0.625rem', color: marge >= 0 ? '#1A7A3C' : '#FF3B30', fontWeight: 700 }}>
-                                {marge >= 0 ? '+' : ''}{(marge / 1000).toFixed(0)}k
-                              </div>
-                              <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 1, height: 100 }}>
-                                <div style={{ flex: 1, height: `${hCa}%`, background: i === d.mensuel.length - 1 ? 'var(--primary)' : 'rgba(91,91,214,0.35)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
-                                <div style={{ flex: 1, height: `${hCh}%`, background: 'rgba(255,59,48,0.4)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
-                              </div>
-                              <div style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>{item.mois}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                  )}
+
+                  {/* Raccourcis */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                    {[
+                      { label: 'Devis Pro', sub: 'Créer et gérer vos devis', icon: <IconDocument size={18} />, path: '/patron/devis-pro', bg: 'var(--primary-light)', fg: 'var(--primary)', border: 'rgba(91,91,214,0.2)' },
+                      { label: 'Facturation', sub: 'Suivre vos factures', icon: <IconCheck size={18} />, path: '/patron/facturation', bg: 'rgba(52,199,89,0.08)', fg: '#1A7A3C', border: 'rgba(52,199,89,0.2)' },
+                      { label: 'Trésorerie', sub: 'Flux entrants / sortants', icon: <IconTrendUp size={18} />, path: null, onClick: () => {}, bg: 'rgba(124,58,237,0.08)', fg: '#7C3AED', border: 'rgba(124,58,237,0.2)' },
+                    ].map(({ label, sub, icon, path, onClick, bg, fg, border }) => (
+                      <button key={label} onClick={onClick || (() => navigate(path))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: bg, border: `1px solid ${border}`, borderRadius: 12, cursor: 'pointer', textAlign: 'left' }}>
+                        <span style={{ color: fg }}>{icon}</span>
+                        <div>
+                          <p style={{ fontWeight: 700, color: fg, fontSize: '0.875rem' }}>{label}</p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{sub} →</p>
+                        </div>
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Répartition par activité */}
-                  <div className="card" style={{ padding: 20 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)', marginBottom: 16 }}>Répartition par activité</div>
-                    {d.repartition && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {d.repartition.map((r, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
-                            <div style={{ fontSize: '0.8125rem', color: 'var(--text)', width: 90, flexShrink: 0, fontWeight: 500 }}>{r.label}</div>
-                            <div style={{ flex: 1, height: 6, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden' }}>
-                              <div style={{ width: `${r.pct}%`, height: '100%', background: r.color, borderRadius: 3, transition: 'width 0.6s' }} />
-                            </div>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', width: 36, textAlign: 'right', flexShrink: 0 }}>{r.pct}%</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {d.chiffreAffaires?.total > 0 && (
-                      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
-                        Total : <strong style={{ color: 'var(--text)' }}>{(d.chiffreAffaires.total).toLocaleString('fr-FR')} €</strong>
-                      </div>
-                    )}
+                  {/* KPI grid avec tendances */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 14 }}>
+                    <KpiCard label="CA Total (12 mois)" valeur={`${(d.chiffreAffaires?.total || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="blue" trend={caTrend} trendLabel="vs période préc." />
+                    <KpiCard label="Factures émises"    valeur={d.chiffreAffaires?.facturesEmises || 0}                          Icon={IconDocument} color="blue" />
+                    <KpiCard label="En attente paiement" valeur={`${(d.chiffreAffaires?.montantEnAttente || 0).toLocaleString('fr-FR')} €`} Icon={IconAlert} color="red" />
+                    <KpiCard label="Taux de conversion" valeur={`${d.devis?.tauxConversion || 0} %`} Icon={IconFinance} color={d.devis?.tauxConversion >= 60 ? 'green' : 'orange'} trend={txTrend} trendLabel="pts vs période préc." trendUnit="pts" />
+                    <KpiCard label="Marge brute"        valeur={`${(d.marge || 0).toLocaleString('fr-FR')} €`} Icon={IconFinance} color="green" trend={margeTrend} trendLabel="vs période préc." />
+                    <KpiCard label="Taux de marge"      valeur={d.chiffreAffaires?.total > 0 ? `${(d.marge / d.chiffreAffaires.total * 100).toFixed(1)} %` : '—'} Icon={IconTrendUp} color="blue" />
                   </div>
-                </div>
 
-                {/* Top clients */}
-                {d.topClients?.length > 0 && (
-                  <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-                    <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 className="section-title">Top clients (12 mois)</h3>
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>Par CA généré</span>
+                  {/* Charts row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
+                    {/* CA + Charges mensuel */}
+                    <div className="card" style={{ padding: 20 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)' }}>CA vs Charges (6 mois)</div>
+                        <div style={{ display: 'flex', gap: 14, fontSize: '0.75rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--primary)' }} /> CA
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-secondary)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(255,59,48,0.5)' }} /> Charges
+                          </span>
+                        </div>
+                      </div>
+                      {d.mensuel && (
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 130 }}>
+                          {d.mensuel.map((item, i) => {
+                            const maxVal = Math.max(...d.mensuel.map(x => x.ca));
+                            const hCa = Math.round((item.ca / maxVal) * 100);
+                            const hCh = Math.round(((item.charges || 0) / maxVal) * 100);
+                            const marge = item.ca - (item.charges || 0);
+                            return (
+                              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                                <div style={{ fontSize: '0.625rem', color: marge >= 0 ? '#1A7A3C' : '#FF3B30', fontWeight: 700 }}>
+                                  {marge >= 0 ? '+' : ''}{(marge / 1000).toFixed(0)}k
+                                </div>
+                                <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 1, height: 100 }}>
+                                  <div style={{ flex: 1, height: `${hCa}%`, background: i === d.mensuel.length - 1 ? 'var(--primary)' : 'rgba(91,91,214,0.35)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
+                                  <div style={{ flex: 1, height: `${hCh}%`, background: 'rgba(255,59,48,0.4)', borderRadius: '3px 3px 0 0', minHeight: 3 }} />
+                                </div>
+                                <div style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>{item.mois}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Client</th>
-                          <th>Ville</th>
-                          <th style={{ textAlign: 'right' }}>CA généré</th>
-                          <th style={{ textAlign: 'right' }}>Factures</th>
-                          <th>Taux paiement</th>
-                          <th style={{ textAlign: 'right' }}>% du CA total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {d.topClients.map((c, i) => {
-                          const pct = d.chiffreAffaires?.total > 0 ? (c.ca / d.chiffreAffaires.total * 100).toFixed(1) : 0;
-                          return (
-                            <tr key={i}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', fontWeight: 700, flexShrink: 0 }}>
-                                    {i + 1}
-                                  </div>
-                                  <span style={{ fontWeight: 600 }}>{c.nom}</span>
-                                </div>
-                              </td>
-                              <td style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>{c.ville}</td>
-                              <td style={{ textAlign: 'right', fontWeight: 700 }}>{c.ca.toLocaleString('fr-FR')} €</td>
-                              <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{c.factures}</td>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                  <div style={{ flex: 1, height: 5, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden', minWidth: 60 }}>
-                                    <div style={{ width: `${c.taux}%`, height: '100%', background: c.taux >= 90 ? '#34C759' : c.taux >= 60 ? '#FF9500' : '#FF3B30', borderRadius: 3 }} />
-                                  </div>
-                                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: c.taux >= 90 ? '#1A7A3C' : c.taux >= 60 ? '#7A5C00' : '#CC3B2F', width: 32 }}>{c.taux}%</span>
-                                </div>
-                              </td>
-                              <td style={{ textAlign: 'right' }}>
-                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{pct}%</span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+
+                    {/* Répartition par activité */}
+                    <div className="card" style={{ padding: 20 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)', marginBottom: 16 }}>Répartition par activité</div>
+                      {d.repartition && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {d.repartition.map((r, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                              <div style={{ fontSize: '0.8125rem', color: 'var(--text)', width: 90, flexShrink: 0, fontWeight: 500 }}>{r.label}</div>
+                              <div style={{ flex: 1, height: 6, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ width: `${r.pct}%`, height: '100%', background: r.color, borderRadius: 3, transition: 'width 0.6s' }} />
+                              </div>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', width: 36, textAlign: 'right', flexShrink: 0 }}>{r.pct}%</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {d.chiffreAffaires?.total > 0 && (
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
+                          Total : <strong style={{ color: 'var(--text)' }}>{(d.chiffreAffaires.total).toLocaleString('fr-FR')} €</strong>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })()}
 
-          {/* Trésorerie */}
-          {tab === 'tresorerie' && <TrésorerieView />}
+                  {/* Top clients */}
+                  {d.topClients?.length > 0 && (
+                    <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+                      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 className="section-title">Top clients (12 mois)</h3>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>Par CA généré</span>
+                      </div>
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Client</th>
+                            <th>Ville</th>
+                            <th style={{ textAlign: 'right' }}>CA généré</th>
+                            <th style={{ textAlign: 'right' }}>Factures</th>
+                            <th>Taux paiement</th>
+                            <th style={{ textAlign: 'right' }}>% du CA total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {d.topClients.map((c, i) => {
+                            const pct = d.chiffreAffaires?.total > 0 ? (c.ca / d.chiffreAffaires.total * 100).toFixed(1) : 0;
+                            return (
+                              <tr key={i}>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', fontWeight: 700, flexShrink: 0 }}>
+                                      {i + 1}
+                                    </div>
+                                    <span style={{ fontWeight: 600 }}>{c.nom}</span>
+                                  </div>
+                                </td>
+                                <td style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>{c.ville}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 700 }}>{c.ca.toLocaleString('fr-FR')} €</td>
+                                <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{c.factures}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ flex: 1, height: 5, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden', minWidth: 60 }}>
+                                      <div style={{ width: `${c.taux}%`, height: '100%', background: c.taux >= 90 ? '#34C759' : c.taux >= 60 ? '#FF9500' : '#FF3B30', borderRadius: 3 }} />
+                                    </div>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: c.taux >= 90 ? '#1A7A3C' : c.taux >= 60 ? '#7A5C00' : '#CC3B2F', width: 32 }}>{c.taux}%</span>
+                                  </div>
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{pct}%</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
 
-          {/* Facturation (composant importé) */}
-          {tab === 'facturation' && <Facturation />}
+                  {/* Retenues de garantie */}
+                  <RetenuesDeGarantie />
+                </div>
+              );
+            })()}
 
-          {/* URSSAF (composant importé) */}
-          {tab === 'urssaf' && <URSSAF />}
+            {/* Pipeline commercial */}
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Pipeline commercial</h3>
+              <PipelineCommercial />
+            </div>
 
-          {/* Salaires */}
-          {tab === 'salaires' && <SalairesView />}
+            {/* Trésorerie */}
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Trésorerie</h3>
+              <TrésorerieView />
+            </div>
+          </>)}
 
-          {/* Barème de paiement */}
-          {tab === 'bareme-paiement' && <BaremePaiementView />}
-          {tab === 'pipeline' && <PipelineCommercial />}
-          {tab === 'compta' && <ExportCompta />}
-          {tab === 'prix' && <BiblothequePrix />}
-          {tab === 'suivi-paie' && <SuiviPaieModule />}
-          {tab === 'simulateur' && <SimulateurTrajetModule />}
+          {/* ── TVA & URSSAF ── */}
+          {tab === 'tva-urssaf' && (<>
+            <div>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>TVA (CA3)</h3>
+              <DeclarationTVACA3 />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>URSSAF</h3>
+              <URSSAF />
+            </div>
+          </>)}
+
+          {/* ── Comptabilité ── */}
+          {tab === 'comptabilite' && (<>
+            <div>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Export comptable</h3>
+              <ExportCompta />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Bilan & Résultat</h3>
+              <BilanResultatView />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Rapprochement bancaire</h3>
+              <RapprochementBancaireView />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Barème de paiement</h3>
+              <BaremePaiementView />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Bibliothèque de prix</h3>
+              <BiblothequePrix />
+            </div>
+          </>)}
+
+          {/* ── Paie ── */}
+          {tab === 'paie' && (<>
+            <div>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Salaires</h3>
+              <SalairesView />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Suivi de paie</h3>
+              <SuiviPaieModule />
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <h3 className="section-title" style={{ marginBottom: 12 }}>Simulateur trajet</h3>
+              <SimulateurTrajetModule />
+            </div>
+          </>)}
         </>
       )}
     </div>
@@ -888,6 +930,19 @@ function SalairesView() {
     try {
       await api.post('/finance/salaires/payer', { mois, annee });
     } catch { /* demo mode */ }
+    // Écriture comptable auto — salaires
+    const totalBrut = calcul?.resume?.totalBrut || 0;
+    const totalNets = calcul?.resume?.totalNet || 0;
+    const totalChPat = calcul?.resume?.totalChargesPatronales || 0;
+    const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+    const ref = `SAL-${String(annee)}-${String(mois).padStart(2, '0')}`;
+    ecritures.push(
+      { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '641000', libelle: 'Salaires bruts', debit: totalBrut, credit: 0 },
+      { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '645000', libelle: 'Charges sociales patronales', debit: totalChPat, credit: 0 },
+      { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '512000', libelle: 'Virement salaires nets', debit: 0, credit: totalNets },
+      { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '401000', libelle: 'Organismes sociaux', debit: 0, credit: totalBrut + totalChPat - totalNets },
+    );
+    localStorage.setItem('freample_ecritures', JSON.stringify(ecritures));
     setPaid(true);
   }
 
@@ -1279,6 +1334,284 @@ function BaremePaiementView() {
   );
 }
 
+/* ── Retenues de garantie ── */
+function RetenuesDeGarantie() {
+  const DEMO_RETENUES = [
+    { id: 1, client: 'SCI Les Acacias', chantier: 'Rénovation halls A & B', montantFacture: 28_400, dateReception: '2025-01-15' },
+    { id: 2, client: 'Résidence du Parc', chantier: 'Ravalement façade', montantFacture: 19_800, dateReception: '2025-03-20' },
+    { id: 3, client: 'SARL Dupont Immo', chantier: 'Mise aux normes élec.', montantFacture: 12_900, dateReception: '2024-11-05' },
+    { id: 4, client: 'Copropriété Voltaire', chantier: 'Réfection toiture', montantFacture: 9_200, dateReception: '2024-02-10' },
+    { id: 5, client: 'M. & Mme Bertrand', chantier: 'Extension véranda', montantFacture: 14_500, dateReception: '2023-12-01' },
+  ];
+
+  const today = new Date();
+  const retenues = DEMO_RETENUES.map(r => {
+    const dateLib = new Date(r.dateReception);
+    dateLib.setFullYear(dateLib.getFullYear() + 1);
+    const liberee = today >= dateLib;
+    return { ...r, retenue5: r.montantFacture * 0.05, dateLiberation: dateLib.toISOString().slice(0, 10), liberee };
+  });
+
+  const totalEnCours = retenues.filter(r => !r.liberee).reduce((s, r) => s + r.retenue5, 0);
+
+  return (
+    <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 className="section-title" style={{ margin: 0 }}>Retenues de garantie (5%)</h3>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#D97706' }}>En cours : {totalEnCours.toLocaleString('fr-FR')} €</span>
+      </div>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Chantier</th>
+            <th style={{ textAlign: 'right' }}>Montant facturé</th>
+            <th style={{ textAlign: 'right' }}>Retenue 5%</th>
+            <th>Date libération</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          {retenues.map(r => (
+            <tr key={r.id}>
+              <td style={{ fontWeight: 600 }}>{r.client}</td>
+              <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{r.chantier}</td>
+              <td style={{ textAlign: 'right' }}>{r.montantFacture.toLocaleString('fr-FR')} €</td>
+              <td style={{ textAlign: 'right', fontWeight: 700, color: r.liberee ? '#1A7A3C' : '#D97706' }}>{r.retenue5.toLocaleString('fr-FR')} €</td>
+              <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{new Date(r.dateLiberation).toLocaleDateString('fr-FR')}</td>
+              <td>
+                {r.liberee
+                  ? <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700, background: 'rgba(52,199,89,0.1)', color: '#1A7A3C' }}>Libérée</span>
+                  : <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700, background: 'rgba(255,149,0,0.1)', color: '#D97706' }}>Retenue</span>
+                }
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ padding: '10px 20px', background: 'var(--bg)', borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+        Art. 1 loi n°71-584 du 16 juillet 1971 — La retenue de garantie de 5% est libérable 1 an après la réception des travaux, sauf réserves non levées.
+      </div>
+    </div>
+  );
+}
+
+/* ── Déclaration TVA CA3 ── */
+function DeclarationTVACA3() {
+  const now = new Date();
+  const [moisTVA, setMoisTVA] = useState(now.getMonth());
+  const [anneeTVA, setAnneeTVA] = useState(now.getFullYear());
+
+  const [l08Base, setL08Base] = useState(54264);
+  const [l09Base, setL09Base] = useState(25704);
+  const [l9bBase, setL9bBase] = useState(11424);
+
+  const [l19, setL19] = useState(8200);
+  const [l20, setL20] = useState(3400);
+
+  const [sousTraitanceHT, setSousTraitanceHT] = useState(6500);
+
+  const tva08 = Math.round(l08Base * 0.20 * 100) / 100;
+  const tva09 = Math.round(l09Base * 0.10 * 100) / 100;
+  const tva9b = Math.round(l9bBase * 0.055 * 100) / 100;
+  const totalCollectee = tva08 + tva09 + tva9b;
+
+  const totalDeductible = l19 + l20;
+  const autoLiqTVA = Math.round(sousTraitanceHT * 0.20 * 100) / 100;
+  const tvaNette = totalCollectee + autoLiqTVA - totalDeductible;
+
+  const fmt = (n) => Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function handleExport() {
+    const moisLabel = new Date(anneeTVA, moisTVA).toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+    const lines = [
+      `Déclaration TVA CA3 — ${moisLabel}`,
+      '',
+      'TVA COLLECTÉE',
+      `Ligne 08 — Opérations à 20% : Base HT ${fmt(l08Base)} € | TVA ${fmt(tva08)} €`,
+      `Ligne 09 — Opérations à 10% : Base HT ${fmt(l09Base)} € | TVA ${fmt(tva09)} €`,
+      `Ligne 9B — Opérations à 5,5% : Base HT ${fmt(l9bBase)} € | TVA ${fmt(tva9b)} €`,
+      `Total TVA collectée : ${fmt(totalCollectee)} €`,
+      '',
+      'TVA DÉDUCTIBLE',
+      `Ligne 19 — Achats et frais généraux : ${fmt(l19)} €`,
+      `Ligne 20 — Immobilisations : ${fmt(l20)} €`,
+      `Total TVA déductible : ${fmt(totalDeductible)} €`,
+      '',
+      'AUTOLIQUIDATION SOUS-TRAITANCE BTP',
+      `Montant HT sous-traitance : ${fmt(sousTraitanceHT)} €`,
+      `TVA auto-liquidée (20%) : ${fmt(autoLiqTVA)} €`,
+      '',
+      `TVA NETTE : ${fmt(tvaNette)} € ${tvaNette >= 0 ? '(TVA à reverser)' : '(Crédit de TVA)'}`,
+    ];
+    navigator.clipboard.writeText(lines.join('\n')).then(() => alert('Valeurs copiées dans le presse-papier.'));
+  }
+
+  const inputStyle = { width: 130, padding: '6px 10px', textAlign: 'right', border: '1px solid var(--border-light)', borderRadius: 8, fontSize: '0.875rem', fontFamily: 'inherit', outline: 'none' };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800 }}>Déclaration TVA — CA3</h2>
+          <p style={{ margin: '4px 0 0', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>Formulaire mensuel de TVA (régime réel normal)</p>
+        </div>
+        <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+          <IconDownload size={14} /> Exporter / Copier
+        </button>
+      </div>
+
+      {/* Période */}
+      <div className="card" style={{ padding: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Période :</span>
+        <select className="select" style={{ width: 160 }} value={moisTVA} onChange={e => setMoisTVA(Number(e.target.value))}>
+          {Array.from({ length: 12 }, (_, i) => (
+            <option key={i} value={i}>{new Date(0, i).toLocaleString('fr-FR', { month: 'long' })}</option>
+          ))}
+        </select>
+        <input type="number" className="input" style={{ width: 90 }} value={anneeTVA} onChange={e => setAnneeTVA(Number(e.target.value))} />
+      </div>
+
+      {/* TVA Collectée */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', background: 'rgba(91,91,214,0.04)' }}>
+          <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>TVA Collectée (ventes)</h3>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg)' }}>
+              <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Ligne</th>
+              <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Description</th>
+              <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Base HT</th>
+              <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>TVA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+              <td style={{ padding: '12px 16px', fontWeight: 700 }}>08</td>
+              <td style={{ padding: '12px 16px' }}>Opérations taxables à 20%</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right' }}><input type="number" style={inputStyle} value={l08Base} onChange={e => setL08Base(Number(e.target.value))} /></td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700 }}>{fmt(tva08)} €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+              <td style={{ padding: '12px 16px', fontWeight: 700 }}>09</td>
+              <td style={{ padding: '12px 16px' }}>Opérations taxables à 10%</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right' }}><input type="number" style={inputStyle} value={l09Base} onChange={e => setL09Base(Number(e.target.value))} /></td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700 }}>{fmt(tva09)} €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+              <td style={{ padding: '12px 16px', fontWeight: 700 }}>9B</td>
+              <td style={{ padding: '12px 16px' }}>Opérations taxables à 5,5%</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right' }}><input type="number" style={inputStyle} value={l9bBase} onChange={e => setL9bBase(Number(e.target.value))} /></td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700 }}>{fmt(tva9b)} €</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style={{ background: 'var(--bg)' }}>
+              <td colSpan={3} style={{ padding: '12px 16px', fontWeight: 800 }}>Total TVA collectée</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, fontSize: '1rem', color: 'var(--primary)' }}>{fmt(totalCollectee)} €</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* TVA Déductible */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', background: 'rgba(52,199,89,0.04)' }}>
+          <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>TVA Déductible (achats)</h3>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg)' }}>
+              <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Ligne</th>
+              <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Description</th>
+              <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Montant TVA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+              <td style={{ padding: '12px 16px', fontWeight: 700 }}>19</td>
+              <td style={{ padding: '12px 16px' }}>Achats et frais généraux</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right' }}><input type="number" style={inputStyle} value={l19} onChange={e => setL19(Number(e.target.value))} /></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
+              <td style={{ padding: '12px 16px', fontWeight: 700 }}>20</td>
+              <td style={{ padding: '12px 16px' }}>Immobilisations</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right' }}><input type="number" style={inputStyle} value={l20} onChange={e => setL20(Number(e.target.value))} /></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style={{ background: 'var(--bg)' }}>
+              <td colSpan={2} style={{ padding: '12px 16px', fontWeight: 800 }}>Total TVA déductible</td>
+              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, fontSize: '1rem', color: '#1A7A3C' }}>{fmt(totalDeductible)} €</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Autoliquidation sous-traitance BTP */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', background: 'rgba(255,149,0,0.04)' }}>
+          <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>TVA auto-liquidée — Sous-traitance BTP</h3>
+          <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Art. 283-2 nonies du CGI</p>
+        </div>
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.875rem' }}>Montant HT des prestations de sous-traitance reçues</span>
+            <input type="number" style={inputStyle} value={sousTraitanceHT} onChange={e => setSousTraitanceHT(Number(e.target.value))} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg)', borderRadius: 8 }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>TVA auto-liquidée (20%)</span>
+            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#D97706' }}>{fmt(autoLiqTVA)} €</span>
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', padding: '8px 12px', background: 'rgba(255,149,0,0.06)', borderRadius: 8, lineHeight: 1.6 }}>
+            En tant que donneur d'ordre BTP, vous déclarez et payez la TVA à la place du sous-traitant. Cette TVA est à la fois collectée (ligne 02 du CA3) et déductible (ligne 20), l'opération est donc neutre sur votre trésorerie.
+          </div>
+        </div>
+      </div>
+
+      {/* Solde */}
+      <div className="card" style={{ padding: 22 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: '0.9375rem', fontWeight: 700 }}>Solde TVA du mois</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div style={{ padding: '12px 14px', background: 'rgba(91,91,214,0.06)', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4 }}>Collectée</div>
+            <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--primary)' }}>{fmt(totalCollectee)} €</div>
+          </div>
+          <div style={{ padding: '12px 14px', background: 'rgba(255,149,0,0.06)', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4 }}>Auto-liquidée</div>
+            <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#D97706' }}>{fmt(autoLiqTVA)} €</div>
+          </div>
+          <div style={{ padding: '12px 14px', background: 'rgba(52,199,89,0.06)', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4 }}>Déductible</div>
+            <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#1A7A3C' }}>- {fmt(totalDeductible)} €</div>
+          </div>
+          <div style={{ padding: '12px 14px', background: tvaNette >= 0 ? 'rgba(255,59,48,0.06)' : 'rgba(52,199,89,0.06)', borderRadius: 10, textAlign: 'center', border: `2px solid ${tvaNette >= 0 ? 'rgba(255,59,48,0.2)' : 'rgba(52,199,89,0.2)'}` }}>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4 }}>TVA nette</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: tvaNette >= 0 ? 'var(--danger)' : '#1A7A3C' }}>{fmt(tvaNette)} €</div>
+          </div>
+        </div>
+        <div style={{ padding: '12px 16px', borderRadius: 10, background: tvaNette >= 0 ? 'rgba(255,59,48,0.06)' : 'rgba(52,199,89,0.06)', border: `1px solid ${tvaNette >= 0 ? 'rgba(255,59,48,0.15)' : 'rgba(52,199,89,0.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.9375rem', fontWeight: 700, color: tvaNette >= 0 ? 'var(--danger)' : '#1A7A3C' }}>
+            {tvaNette >= 0 ? 'TVA à reverser au Trésor public' : 'Crédit de TVA à reporter'}
+          </span>
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: tvaNette >= 0 ? 'var(--danger)' : '#1A7A3C' }}>
+            {fmt(Math.abs(tvaNette))} €
+          </span>
+        </div>
+      </div>
+
+      {/* Note légale */}
+      <div style={{ background: 'var(--bg)', borderRadius: 12, padding: '14px 18px', fontSize: '0.8125rem', color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
+        <strong style={{ color: 'var(--text-secondary)' }}>Rappel :</strong><br />
+        • La CA3 doit être déposée avant le 19 du mois suivant la période (ou le 24 selon votre calendrier fiscal).<br />
+        • L'autoliquidation BTP (art. 283-2 nonies CGI) s'applique aux travaux immobiliers réalisés par un sous-traitant pour le compte d'un donneur d'ordre assujetti.<br />
+        • Les montants affichés sont indicatifs et doivent être vérifiés avec votre comptable avant télédéclaration.
+      </div>
+    </div>
+  );
+}
+
 function KpiCard({ label, valeur, Icon, color = 'blue', trend, trendLabel, trendUnit = '%' }) {
   const colors = {
     blue:   { bg: 'var(--primary-light)',  fg: 'var(--primary)' },
@@ -1312,6 +1645,136 @@ function KpiCard({ label, valeur, Icon, color = 'blue', trend, trendLabel, trend
       {trendLabel && trend != null && (
         <p style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary)', marginTop: 3 }}>{trendLabel}</p>
       )}
+    </div>
+  );
+}
+
+/* ── Bilan & Compte de résultat simplifié ── */
+function BilanResultatView() {
+  const fin = DEMO_FINANCE;
+  const sal = DEMO_SALARIES;
+  const tres = DEMO_TRESORERIE;
+
+  // Produits
+  const caPrestation = fin.chiffreAffaires.total;
+  const autresProduits = 2_400;
+  const totalProduits = caPrestation + autresProduits;
+
+  // Charges
+  const achatsMatieresEtFournitures = 18_600;
+  const sousTraitance = 12_400;
+  const chargesPersonnel = sal.resume.totalBrut * 12;
+  const chargesSocialesPatronales = sal.resume.totalChargesPatronales * 12;
+  const dotationsAmortissements = 6_800;
+  const autresCharges = 4_200;
+  const totalCharges = achatsMatieresEtFournitures + sousTraitance + chargesPersonnel + chargesSocialesPatronales + dotationsAmortissements + autresCharges;
+
+  const resultatNet = totalProduits - totalCharges;
+
+  // Bilan
+  const immobilisations = 45_000;
+  const creancesClients = fin.chiffreAffaires.montantEnAttente;
+  const tresorerie = tres.soldeActuel;
+  const totalActif = immobilisations + creancesClients + tresorerie;
+
+  const capitauxPropres = 30_000;
+  const resultatExercice = resultatNet;
+  const dettesFournisseurs = 12_000;
+  const emprunts = 25_000;
+  const totalPassif = capitauxPropres + resultatExercice + dettesFournisseurs + emprunts;
+
+  const cellStyle = { padding: '8px 14px', fontSize: 13, fontVariantNumeric: 'tabular-nums', borderBottom: '1px solid var(--border)' };
+  const headerCell = { ...cellStyle, fontWeight: 700, fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--bg)' };
+  const totalRow = { ...cellStyle, fontWeight: 800, fontSize: 14, borderTop: '3px double var(--text)', borderBottom: '3px double var(--text)', background: 'var(--bg)' };
+  const amountRight = { textAlign: 'right', fontVariantNumeric: 'tabular-nums' };
+
+  const fmt = (v) => v.toLocaleString('fr-FR') + ' \u20AC';
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 20 }}>Bilan & Compte de r\u00E9sultat</h2>
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>Exercice en cours \u2014 donn\u00E9es de d\u00E9monstration</p>
+
+      {/* BILAN SIMPLIFIE */}
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, paddingBottom: 6, borderBottom: '2px solid var(--text)' }}>Bilan simplifi\u00E9</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 32 }}>
+        {/* ACTIF */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
+            <thead>
+              <tr><th colSpan={2} style={{ ...headerCell, textAlign: 'center', fontSize: 13, fontWeight: 800, background: '#EBF5FF', color: '#1D4ED8' }}>ACTIF</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style={cellStyle}>Immobilisations (mat\u00E9riel, v\u00E9hicules)</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(immobilisations)}</td></tr>
+              <tr><td style={cellStyle}>Cr\u00E9ances clients (factures en attente)</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(creancesClients)}</td></tr>
+              <tr><td style={cellStyle}>Tr\u00E9sorerie (banque)</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(tresorerie)}</td></tr>
+              <tr><td style={totalRow}>TOTAL ACTIF</td><td style={{ ...totalRow, ...amountRight }}>{fmt(totalActif)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* PASSIF */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
+            <thead>
+              <tr><th colSpan={2} style={{ ...headerCell, textAlign: 'center', fontSize: 13, fontWeight: 800, background: '#FEF3C7', color: '#92400E' }}>PASSIF</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style={cellStyle}>Capitaux propres</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(capitauxPropres)}</td></tr>
+              <tr><td style={cellStyle}>R\u00E9sultat de l'exercice</td><td style={{ ...cellStyle, ...amountRight, color: resultatExercice >= 0 ? '#16A34A' : '#DC2626' }}>{fmt(resultatExercice)}</td></tr>
+              <tr><td style={cellStyle}>Dettes fournisseurs</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(dettesFournisseurs)}</td></tr>
+              <tr><td style={cellStyle}>Emprunts</td><td style={{ ...cellStyle, ...amountRight }}>{fmt(emprunts)}</td></tr>
+              <tr><td style={totalRow}>TOTAL PASSIF</td><td style={{ ...totalRow, ...amountRight }}>{fmt(totalPassif)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {totalActif !== totalPassif && (
+        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 'var(--radius)', padding: '10px 16px', marginBottom: 20, fontSize: 12, color: '#991B1B' }}>
+          Ecart Actif/Passif : {fmt(totalActif - totalPassif)} \u2014 les estimations de capitaux propres peuvent n\u00E9cessiter un ajustement.
+        </div>
+      )}
+
+      {/* COMPTE DE RESULTAT */}
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, paddingBottom: 6, borderBottom: '2px solid var(--text)' }}>Compte de r\u00E9sultat simplifi\u00E9</h3>
+      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 24 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
+          <thead>
+            <tr>
+              <th style={headerCell}>Libell\u00E9</th>
+              <th style={{ ...headerCell, ...amountRight }}>Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Produits */}
+            <tr><td colSpan={2} style={{ ...cellStyle, fontWeight: 800, fontSize: 12, background: '#F0FDF4', color: '#166534', letterSpacing: '0.03em' }}>PRODUITS</td></tr>
+            <tr><td style={cellStyle}>CA prestations de services</td><td style={{ ...cellStyle, ...amountRight, color: '#16A34A' }}>{fmt(caPrestation)}</td></tr>
+            <tr><td style={cellStyle}>Autres produits</td><td style={{ ...cellStyle, ...amountRight, color: '#16A34A' }}>{fmt(autresProduits)}</td></tr>
+            <tr><td style={{ ...cellStyle, fontWeight: 700, background: '#F0FDF4' }}>Total produits</td><td style={{ ...cellStyle, ...amountRight, fontWeight: 700, background: '#F0FDF4', color: '#16A34A' }}>{fmt(totalProduits)}</td></tr>
+
+            {/* Charges */}
+            <tr><td colSpan={2} style={{ ...cellStyle, fontWeight: 800, fontSize: 12, background: '#FEF2F2', color: '#991B1B', letterSpacing: '0.03em' }}>CHARGES</td></tr>
+            <tr><td style={cellStyle}>Achats mati\u00E8res et fournitures</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(achatsMatieresEtFournitures)}</td></tr>
+            <tr><td style={cellStyle}>Sous-traitance</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(sousTraitance)}</td></tr>
+            <tr><td style={cellStyle}>Charges de personnel</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(chargesPersonnel)}</td></tr>
+            <tr><td style={cellStyle}>Charges sociales patronales</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(chargesSocialesPatronales)}</td></tr>
+            <tr><td style={cellStyle}>Dotations aux amortissements</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(dotationsAmortissements)}</td></tr>
+            <tr><td style={cellStyle}>Autres charges</td><td style={{ ...cellStyle, ...amountRight, color: '#DC2626' }}>{fmt(autresCharges)}</td></tr>
+            <tr><td style={{ ...cellStyle, fontWeight: 700, background: '#FEF2F2' }}>Total charges</td><td style={{ ...cellStyle, ...amountRight, fontWeight: 700, background: '#FEF2F2', color: '#DC2626' }}>{fmt(totalCharges)}</td></tr>
+
+            {/* Resultat */}
+            <tr>
+              <td style={{ ...totalRow, fontSize: 15 }}>R\u00C9SULTAT NET</td>
+              <td style={{ ...totalRow, ...amountRight, fontSize: 15, color: resultatNet >= 0 ? '#16A34A' : '#DC2626' }}>{resultatNet >= 0 ? '+' : ''}{fmt(resultatNet)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+        Donn\u00E9es de d\u00E9monstration \u2014 Les montants estim\u00E9s (immobilisations, emprunts, capitaux propres) sont indicatifs et doivent \u00EAtre ajust\u00E9s selon votre comptabilit\u00E9 r\u00E9elle.
+      </div>
     </div>
   );
 }

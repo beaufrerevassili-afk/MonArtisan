@@ -3,8 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
 import DS from '../../design/ds';
+import NotificationBell from '../../components/ui/NotificationBell';
+import { IconHome, IconBuilding, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser } from '../../components/ui/Icons';
 
-const TABS = ['Tableau de bord', 'Mes chantiers', 'Mon planning', 'Fiches de paie', 'Congés', 'Notes de frais', 'Mes documents', 'Mon profil'];
+const TABS = [
+  { label: 'Tableau de bord', Icon: IconHome },
+  { label: 'Chantiers', Icon: IconBuilding },
+  { label: 'Planning', Icon: IconCalendar },
+  { label: 'Fiches de paie', Icon: IconCreditCard },
+  { label: 'Congés', Icon: IconClock },
+  { label: 'Notes de frais', Icon: IconDocument },
+  { label: 'Documents', Icon: IconBox },
+  { label: 'Profil', Icon: IconUser },
+];
 
 const DOCUMENTS_REQUIS = [
   { id: 'piece_identite',      label: 'Pièce d\'identité (CNI ou passeport)', icon: '🪪' },
@@ -62,9 +73,16 @@ const BTN = { padding:'10px 20px', background:'#0A0A0A', color:'#fff', border:'n
 const BTN_O = { ...BTN, background:'transparent', color:'#0A0A0A', border:'1px solid #E8E6E1' };
 const INP = { width:'100%', padding:'10px 12px', border:'1px solid #E8E6E1', borderRadius:8, fontSize:13, fontFamily:DS.font, outline:'none', boxSizing:'border-box' };
 
+function useIsMobile(bp = 640) {
+  const [m, setM] = useState(() => window.innerWidth <= bp);
+  useEffect(() => { const h = () => setM(window.innerWidth <= bp); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, [bp]);
+  return m;
+}
+
 export default function DashboardEmploye() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState(0);
   const [chantiers, setChantiers] = useState(DEMO_CHANTIERS);
   const [bulletins, setBulletins] = useState(DEMO_BULLETINS);
@@ -76,6 +94,17 @@ export default function DashboardEmploye() {
   const [form, setForm] = useState({});
   const [mesDocs, setMesDocs] = useState([]);
   const [uploadingDoc, setUploadingDoc] = useState('');
+  const [bulletinPreview, setBulletinPreview] = useState(null);
+  const [pointages, setPointages] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('freample_pointage') || '[]'); } catch { return []; }
+  });
+
+  // Stock management states
+  const [stockExpandedChantier, setStockExpandedChantier] = useState(null); // { chantierId, section: 'stock'|'achat'|'surplus' }
+  const [stockQties, setStockQties] = useState({}); // { articleId: qty }
+  const [achatForm, setAchatForm] = useState({ fournisseur: '', description: '', montantHT: '', tva: '20' });
+  const [surplusForm, setSurplusForm] = useState({ article: '', quantite: '', prixUnitaire: '' });
+  const [stockConfirmation, setStockConfirmation] = useState(null);
 
   const patronId = user?.patronId;
   const hasEntreprise = !!patronId;
@@ -109,23 +138,54 @@ export default function DashboardEmploye() {
     setModal(null); setForm({});
   };
 
+  const recordPointage = (type) => {
+    const now = new Date();
+    const entry = { date: now.toISOString().slice(0, 10), type, heure: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
+    const updated = [...pointages, entry];
+    setPointages(updated);
+    localStorage.setItem('freample_pointage', JSON.stringify(updated));
+  };
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayPointages = pointages.filter(p => p.date === todayStr);
+  const todayArrivees = todayPointages.filter(p => p.type === 'arrivee');
+  const todayDeparts = todayPointages.filter(p => p.type === 'depart');
+  const todayHoursWorked = (() => {
+    let total = 0;
+    for (let i = 0; i < todayPointages.length; i++) {
+      const a = todayPointages.find((p, j) => j >= i && p.type === 'arrivee');
+      if (!a) break;
+      const aIdx = todayPointages.indexOf(a);
+      const d = todayPointages.find((p, j) => j > aIdx && p.type === 'depart');
+      if (!d) break;
+      const [ah, am] = a.heure.split(':').map(Number);
+      const [dh, dm] = d.heure.split(':').map(Number);
+      total += (dh * 60 + dm) - (ah * 60 + am);
+      i = todayPointages.indexOf(d);
+    }
+    return total > 0 ? `${Math.floor(total / 60)}h${String(total % 60).padStart(2, '0')}` : '0h00';
+  })();
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
       {/* Header sombre */}
-      <div style={{ background: '#2C2520', padding: '0 clamp(20px,4vw,40px)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6 }}>
+      <div style={{ background: '#2C2520', padding: isMobile ? '0 12px' : '0 clamp(20px,4vw,40px)', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6, flexShrink: 0 }}>
             <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
             <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
           </button>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? 14 : 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
             Freample<span style={{ color: '#A68B4B' }}>.</span>
           </button>
         </div>
-        <div style={{ color: '#F5EFE0', fontSize: 13 }}>{profil.prenom} {profil.nom} · {profil.poste}</div>
-        {hasEntreprise && <div style={{ fontSize: 12, color: '#A68B4B', fontWeight: 600 }}>{patron?.nom}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {!isMobile && <span style={{ color: '#F5EFE0', fontSize: 13 }}>{profil.prenom} {profil.nom}</span>}
+          <NotificationBell dark />
+          {hasEntreprise && !isMobile && <span style={{ fontSize: 12, color: '#A68B4B', fontWeight: 600 }}>{patron?.nom}</span>}
+        </div>
       </div>
 
       {/* Sidebar burger */}
@@ -137,14 +197,17 @@ export default function DashboardEmploye() {
         </div>
         <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
           {TABS.map((t, i) => (
-            <button key={t} onClick={() => { setTab(i); setMenuOpen(false); }}
-              style={{ width: '100%', padding: '12px 20px', background: tab === i ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === i ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === i ? 700 : 400, color: tab === i ? DS.ink : DS.muted, textAlign: 'left', transition: 'all .1s' }}
+            <button key={t.label} onClick={() => { setTab(i); setMenuOpen(false); }}
+              style={{ width: '100%', padding: '12px 20px', background: tab === i ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === i ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === i ? 700 : 400, color: tab === i ? DS.ink : DS.muted, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
               onMouseEnter={e => { if (tab !== i) e.currentTarget.style.background = '#FAFAF8'; }}
               onMouseLeave={e => { if (tab !== i) e.currentTarget.style.background = 'none'; }}>
-              {t}
+              <t.Icon size={16} /> {t.label}
             </button>
           ))}
         </nav>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #E8E6E1' }}>
+          <button onClick={async () => { await logout(); navigate('/login'); }} style={{ width: '100%', padding: '10px 16px', background: 'transparent', color: '#DC2626', border: '1px solid #DC2626', borderRadius: 8, cursor: 'pointer', fontFamily: DS.font, fontSize: 13, fontWeight: 600 }}>Se déconnecter</button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
@@ -162,6 +225,26 @@ export default function DashboardEmploye() {
 
       {/* ═══ TABLEAU DE BORD ═══ */}
       {tab === 0 && <>
+        {/* Pointage */}
+        <div style={{ ...CARD, marginBottom: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: DS.ink }}>Pointage du jour</div>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+            <button onClick={() => recordPointage('arrivee')} style={{ ...BTN, background: '#16A34A', fontSize: 15, padding: '14px 28px' }}>🟢 Arrivée</button>
+            <button onClick={() => recordPointage('depart')} style={{ ...BTN, background: '#DC2626', fontSize: 15, padding: '14px 28px' }}>🔴 Départ</button>
+          </div>
+          {todayPointages.length > 0 ? (
+            <div style={{ fontSize: 13, color: DS.ink }}>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 6 }}>
+                {todayArrivees.length > 0 && <span>Arrivée : {todayArrivees.map(a => a.heure).join(', ')}</span>}
+                {todayDeparts.length > 0 && <span>Départ : {todayDeparts.map(d => d.heure).join(', ')}</span>}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: DS.accent }}>Total travaillé aujourd'hui : {todayHoursWorked}</div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 12, color: DS.muted }}>Aucun pointage aujourd'hui</div>
+          )}
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 20 }}>
           {[
             { l: 'Chantiers assignés', v: chantiers.filter(c => c.statut !== 'complete').length, c: '#2563EB' },
@@ -203,17 +286,201 @@ export default function DashboardEmploye() {
       {/* ═══ MES CHANTIERS ═══ */}
       {tab === 1 && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Mes chantiers ({chantiers.length})</h2>
-        {chantiers.map(c => (
-          <div key={c.id} style={{ ...CARD, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                <span style={{ fontSize: 14, fontWeight: 700 }}>{c.titre}</span>
-                <span style={{ fontSize: 10, fontWeight: 600, color: statutColors[c.statut], background: `${statutColors[c.statut]}15`, padding: '2px 8px', borderRadius: 6 }}>{statutLabels[c.statut]}</span>
+        {chantiers.map(c => {
+          const isExpanded = stockExpandedChantier?.chantierId === c.id;
+          const activeSection = isExpanded ? stockExpandedChantier.section : null;
+          const toggleSection = (section) => {
+            if (isExpanded && activeSection === section) {
+              setStockExpandedChantier(null);
+              setStockQties({});
+              setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
+              setSurplusForm({ article: '', quantite: '', prixUnitaire: '' });
+              setStockConfirmation(null);
+            } else {
+              setStockExpandedChantier({ chantierId: c.id, section });
+              setStockQties({});
+              setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
+              setSurplusForm({ article: '', quantite: '', prixUnitaire: '' });
+              setStockConfirmation(null);
+            }
+          };
+          return (
+          <div key={c.id} style={{ ...CARD, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>{c.titre}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: statutColors[c.statut], background: `${statutColors[c.statut]}15`, padding: '2px 8px', borderRadius: 6 }}>{statutLabels[c.statut]}</span>
+                </div>
+                <div style={{ fontSize: 12, color: DS.muted }}>{c.adresse} · {c.dateDebut} → {c.dateFin} · Chef: {c.chef}</div>
               </div>
-              <div style={{ fontSize: 12, color: DS.muted }}>{c.adresse} · {c.dateDebut} → {c.dateFin} · Chef: {c.chef}</div>
             </div>
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              <button onClick={() => toggleSection('stock')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'stock' ? '#0A0A0A' : 'transparent', color: activeSection === 'stock' ? '#fff' : '#0A0A0A' }}>Utiliser le stock</button>
+              <button onClick={() => toggleSection('achat')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'achat' ? '#0A0A0A' : 'transparent', color: activeSection === 'achat' ? '#fff' : '#0A0A0A' }}>Achat fournisseur</button>
+              <button onClick={() => toggleSection('surplus')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'surplus' ? '#0A0A0A' : 'transparent', color: activeSection === 'surplus' ? '#fff' : '#0A0A0A' }}>Surplus à retourner</button>
+            </div>
+
+            {/* Confirmation message */}
+            {stockConfirmation && isExpanded && (
+              <div style={{ marginTop: 10, padding: '8px 12px', background: '#16A34A18', border: '1px solid #16A34A40', borderRadius: 8, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>{stockConfirmation}</div>
+            )}
+
+            {/* ── Utiliser le stock ── */}
+            {activeSection === 'stock' && (() => {
+              const articles = JSON.parse(localStorage.getItem('freample_stock_articles') || '[]');
+              return (
+                <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Stock disponible</div>
+                  {articles.length === 0 && <div style={{ fontSize: 12, color: DS.muted }}>Aucun article en stock</div>}
+                  {articles.map((art, idx) => (
+                    <div key={art.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: idx < articles.length - 1 ? '1px solid #E8E6E1' : 'none', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 140 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{art.designation}</div>
+                        <div style={{ fontSize: 11, color: DS.muted }}>Dispo: {art.quantite} {art.unite} · {art.prixUnitaire != null ? `${art.prixUnitaire}€/u` : ''}</div>
+                      </div>
+                      <input type="number" min="0" max={art.quantite} placeholder="Qté" value={stockQties[art.id || idx] || ''} onChange={e => setStockQties(prev => ({ ...prev, [art.id || idx]: e.target.value }))} style={{ ...INP, width: 80 }} />
+                    </div>
+                  ))}
+                  {articles.length > 0 && (
+                    <button onClick={() => {
+                      const arts = JSON.parse(localStorage.getItem('freample_stock_articles') || '[]');
+                      const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
+                      const matieres = JSON.parse(localStorage.getItem(`freample_matieres_stock_${c.id}`) || '[]');
+                      let count = 0;
+                      const today = new Date().toISOString().slice(0, 10);
+                      arts.forEach((art, idx) => {
+                        const key = art.id || idx;
+                        const qty = Number(stockQties[key]);
+                        if (!qty || qty <= 0) return;
+                        const realQty = Math.min(qty, art.quantite);
+                        art.quantite = art.quantite - realQty;
+                        matieres.push({ id: Date.now() + idx, articleId: art.id, designation: art.designation, quantite: realQty, unite: art.unite, prixUnitaire: art.prixUnitaire || 0, total: realQty * (art.prixUnitaire || 0), date: today });
+                        mouvements.push({ id: Date.now() + idx + 1000, type: 'sortie', article: art.designation, quantite: realQty, unite: art.unite, prixUnitaire: art.prixUnitaire || 0, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
+                        count += realQty;
+                      });
+                      if (count > 0) {
+                        localStorage.setItem('freample_stock_articles', JSON.stringify(arts));
+                        localStorage.setItem('freample_stock_mouvements', JSON.stringify(mouvements));
+                        localStorage.setItem(`freample_matieres_stock_${c.id}`, JSON.stringify(matieres));
+                        setStockQties({});
+                        setStockConfirmation(`${count} article${count > 1 ? 's' : ''} sorti${count > 1 ? 's' : ''} du stock`);
+                      }
+                    }} style={{ ...BTN, marginTop: 12, fontSize: 12 }}>Valider</button>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── Achat fournisseur ── */}
+            {activeSection === 'achat' && (
+              <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Nouvel achat fournisseur</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Fournisseur</label>
+                    <input value={achatForm.fournisseur} onChange={e => setAchatForm(f => ({ ...f, fournisseur: e.target.value }))} style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Description</label>
+                    <input value={achatForm.description} onChange={e => setAchatForm(f => ({ ...f, description: e.target.value }))} style={INP} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Montant HT (€)</label>
+                    <input type="number" value={achatForm.montantHT} onChange={e => setAchatForm(f => ({ ...f, montantHT: e.target.value }))} style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>TVA %</label>
+                    <select value={achatForm.tva} onChange={e => setAchatForm(f => ({ ...f, tva: e.target.value }))} style={INP}>
+                      <option value="0">0%</option>
+                      <option value="5.5">5.5%</option>
+                      <option value="10">10%</option>
+                      <option value="20">20%</option>
+                    </select>
+                  </div>
+                </div>
+                <button onClick={() => {
+                  const montantHT = Number(achatForm.montantHT);
+                  if (!achatForm.fournisseur || !achatForm.description || !montantHT) return;
+                  const tva = Number(achatForm.tva);
+                  const montantTTC = montantHT * (1 + tva / 100);
+                  const today = new Date().toISOString().slice(0, 10);
+                  const achats = JSON.parse(localStorage.getItem(`freample_matieres_achat_${c.id}`) || '[]');
+                  const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
+                  const entry = { id: Date.now(), fournisseur: achatForm.fournisseur, description: achatForm.description, montantHT, tva, montantTTC: Math.round(montantTTC * 100) / 100, date: today, chantierId: c.id };
+                  achats.push(entry);
+                  mouvements.push({ id: Date.now() + 1, type: 'achat', article: achatForm.description, fournisseur: achatForm.fournisseur, montantHT, tva, montantTTC: Math.round(montantTTC * 100) / 100, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
+                  localStorage.setItem(`freample_matieres_achat_${c.id}`, JSON.stringify(achats));
+                  localStorage.setItem('freample_stock_mouvements', JSON.stringify(mouvements));
+                  // Écriture comptable auto — achat matériaux (employé)
+                  const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+                  const montantTVA = Math.round(montantHT * tva / 100);
+                  const refCompta = `ACH-${Date.now()}`;
+                  ecritures.push(
+                    { date: today, journal: 'HA', piece: refCompta, compte: '601000', libelle: `Achat ${achatForm.description} — Chantier`, debit: montantHT, credit: 0 },
+                    { date: today, journal: 'HA', piece: refCompta, compte: '445660', libelle: 'TVA déductible', debit: montantTVA, credit: 0 },
+                    { date: today, journal: 'HA', piece: refCompta, compte: '401000', libelle: `Fournisseur ${achatForm.fournisseur}`, debit: 0, credit: montantHT + montantTVA },
+                  );
+                  localStorage.setItem('freample_ecritures', JSON.stringify(ecritures));
+                  setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
+                  setStockConfirmation(`Achat enregistré : ${achatForm.description} — ${montantHT}€ HT chez ${achatForm.fournisseur}`);
+                }} style={{ ...BTN, fontSize: 12 }}>Valider</button>
+              </div>
+            )}
+
+            {/* ── Surplus à retourner ── */}
+            {activeSection === 'surplus' && (
+              <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Retourner du surplus au stock</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Article</label>
+                    <input value={surplusForm.article} onChange={e => setSurplusForm(f => ({ ...f, article: e.target.value }))} style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Quantité</label>
+                    <input type="number" value={surplusForm.quantite} onChange={e => setSurplusForm(f => ({ ...f, quantite: e.target.value }))} style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix unitaire (€)</label>
+                    <input type="number" value={surplusForm.prixUnitaire} onChange={e => setSurplusForm(f => ({ ...f, prixUnitaire: e.target.value }))} style={INP} />
+                  </div>
+                </div>
+                <button onClick={() => {
+                  const qty = Number(surplusForm.quantite);
+                  const prix = Number(surplusForm.prixUnitaire);
+                  if (!surplusForm.article || !qty || qty <= 0) return;
+                  const today = new Date().toISOString().slice(0, 10);
+                  // Increment stock
+                  const articles = JSON.parse(localStorage.getItem('freample_stock_articles') || '[]');
+                  const existing = articles.find(a => a.designation.toLowerCase() === surplusForm.article.toLowerCase());
+                  if (existing) {
+                    existing.quantite = (existing.quantite || 0) + qty;
+                    if (prix) existing.prixUnitaire = prix;
+                  } else {
+                    articles.push({ id: Date.now(), designation: surplusForm.article, quantite: qty, unite: 'u', prixUnitaire: prix || 0 });
+                  }
+                  localStorage.setItem('freample_stock_articles', JSON.stringify(articles));
+                  // Negative entry on chantier budget
+                  const matieres = JSON.parse(localStorage.getItem(`freample_matieres_stock_${c.id}`) || '[]');
+                  matieres.push({ id: Date.now() + 1, designation: surplusForm.article, quantite: -qty, unite: 'u', prixUnitaire: prix || 0, total: -(qty * (prix || 0)), date: today, type: 'surplus' });
+                  localStorage.setItem(`freample_matieres_stock_${c.id}`, JSON.stringify(matieres));
+                  // Mouvement
+                  const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
+                  mouvements.push({ id: Date.now() + 2, type: 'surplus', article: surplusForm.article, quantite: qty, prixUnitaire: prix || 0, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
+                  localStorage.setItem('freample_stock_mouvements', JSON.stringify(mouvements));
+                  setSurplusForm({ article: '', quantite: '', prixUnitaire: '' });
+                  setStockConfirmation(`${qty} ${surplusForm.article} retourné${qty > 1 ? 's' : ''} au stock`);
+                }} style={{ ...BTN, fontSize: 12 }}>Retourner au stock</button>
+              </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </>}
 
       {/* ═══ MON PLANNING ═══ */}
@@ -243,7 +510,7 @@ export default function DashboardEmploye() {
                 <div style={{ fontSize: 14, fontWeight: 700 }}>{b.periode}</div>
                 <div style={{ fontSize: 12, color: DS.muted }}>Brut: {b.brut}€ · Net: {b.net}€ · Versé le {b.date}</div>
               </div>
-              <button onClick={() => alert(`Téléchargement bulletin ${b.periode}`)} style={BTN_O}>Télécharger</button>
+              <button onClick={() => setBulletinPreview(b)} style={BTN_O}>Télécharger</button>
             </div>
           ))}
         </div>
@@ -267,7 +534,17 @@ export default function DashboardEmploye() {
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{c.debut} → {c.fin} ({c.jours} jour{c.jours > 1 ? 's' : ''})</div>
                 <div style={{ fontSize: 11, color: DS.muted }}>{c.type} · {c.commentaire}</div>
               </div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: statutColors[c.statut], background: `${statutColors[c.statut]}15`, padding: '3px 10px', borderRadius: 6 }}>{statutLabels[c.statut]}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {c.statut === 'en_attente' && <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#D97706', animation: 'pulse-dot 1.5s ease-in-out infinite' }} />}
+                {c.statut === 'approuve' && <span style={{ color: '#16A34A', fontSize: 14 }}>✓</span>}
+                {c.statut === 'rejete' && <span style={{ color: '#DC2626', fontSize: 14 }}>✕</span>}
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: statutColors[c.statut], background: `${statutColors[c.statut]}15`, padding: '3px 10px', borderRadius: 6, display: 'inline-block' }}>{statutLabels[c.statut]}</span>
+                  {c.statut === 'en_attente' && <div style={{ fontSize: 10, color: '#D97706', marginTop: 2 }}>En attente d'approbation par {patron.nom}</div>}
+                  {c.statut === 'approuve' && <div style={{ fontSize: 10, color: '#16A34A', marginTop: 2 }}>Approuvé</div>}
+                  {c.statut === 'rejete' && <div style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>Refusé{c.raison ? ` — ${c.raison}` : ''}</div>}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -288,7 +565,15 @@ export default function DashboardEmploye() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 700 }}>{f.montant.toFixed(2)}€</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: statutColors[f.statut], background: `${statutColors[f.statut]}15`, padding: '3px 10px', borderRadius: 6 }}>{statutLabels[f.statut]}</span>
+                {f.statut === 'en_attente' && <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#D97706', animation: 'pulse-dot 1.5s ease-in-out infinite' }} />}
+                {f.statut === 'approuve' && <span style={{ color: '#16A34A', fontSize: 14 }}>✓</span>}
+                {f.statut === 'rejete' && <span style={{ color: '#DC2626', fontSize: 14 }}>✕</span>}
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: statutColors[f.statut], background: `${statutColors[f.statut]}15`, padding: '3px 10px', borderRadius: 6, display: 'inline-block' }}>{statutLabels[f.statut]}</span>
+                  {f.statut === 'en_attente' && <div style={{ fontSize: 10, color: '#D97706', marginTop: 2 }}>En attente d'approbation par {patron.nom}</div>}
+                  {f.statut === 'approuve' && <div style={{ fontSize: 10, color: '#16A34A', marginTop: 2 }}>Approuvé</div>}
+                  {f.statut === 'rejete' && <div style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>Refusé{f.raison ? ` — ${f.raison}` : ''}</div>}
+                </div>
               </div>
             </div>
           ))}
@@ -456,6 +741,41 @@ export default function DashboardEmploye() {
           </div>
         </div>
       )}
+      {/* ═══ BULLETIN PREVIEW MODAL ═══ */}
+      {bulletinPreview && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setBulletinPreview(null)}>
+          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 540, padding: '28px 24px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Bulletin de paie</h3>
+              <button onClick={() => setBulletinPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
+            </div>
+            <div id="bulletin-print" style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8, background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 10, padding: 24 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 16, borderBottom: '2px solid #0A0A0A', paddingBottom: 12 }}>BULLETIN DE PAIE — {bulletinPreview.periode}</div>
+              <div style={{ marginBottom: 12 }}>
+                <div><strong>Employeur :</strong> {patron.nom} | <strong>SIRET :</strong> {patron.siret}</div>
+                <div><strong>Salarié :</strong> {profil.prenom} {profil.nom} | <strong>Poste :</strong> {profil.poste}</div>
+              </div>
+              <div style={{ borderTop: '1px dashed #ccc', borderBottom: '1px dashed #ccc', padding: '12px 0', margin: '12px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Salaire brut</span><span>{bulletinPreview.brut.toFixed(2)} €</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#DC2626' }}><span>Cotisations salariales (~22%)</span><span>-{(bulletinPreview.brut * 0.22).toFixed(2)} €</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 15, marginTop: 8 }}><span>NET À PAYER</span><span>{bulletinPreview.net.toFixed(2)} €</span></div>
+              </div>
+              <div><strong>Date de versement :</strong> {bulletinPreview.date}</div>
+              <div><strong>Mode :</strong> Virement bancaire</div>
+            </div>
+            <div style={{ marginTop: 16, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setBulletinPreview(null)} style={BTN_O}>Fermer</button>
+              <button onClick={() => window.print()} style={BTN}>Imprimer / PDF</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Print CSS + pulse animation */}
+      <style>{`
+        @media print { body * { visibility: hidden !important; } #bulletin-print, #bulletin-print * { visibility: visible !important; } #bulletin-print { position: fixed; top: 0; left: 0; width: 100%; padding: 24px; background: #fff; } }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
+      `}</style>
     </div>
   );
 }
