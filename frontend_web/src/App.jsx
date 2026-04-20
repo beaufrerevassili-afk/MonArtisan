@@ -42,6 +42,7 @@ const DocumentView = React.lazy(() => import('./pages/public/DocumentView'));
 const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
 const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
 const Support = React.lazy(() => import('./pages/public/Support'));
+const CompteSuspendu = React.lazy(() => import('./pages/public/CompteSuspendu'));
 const DevisFactures = React.lazy(() => import('./pages/patron/DevisFactures'));
 const DashboardEmploye = React.lazy(() => import('./pages/employe/Dashboard'));
 
@@ -146,6 +147,7 @@ function ProtectedRoute({ children, roles }) {
     </div>
   );
   if (!user) return <Navigate to="/login" replace />;
+  if (user?.suspendu) return <Navigate to="/compte-suspendu" replace />;
   if (roles && user?.role !== 'fondateur' && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
   return children;
 }
@@ -175,6 +177,7 @@ function AppRoutes() {
       <Route path="/droit" element={<Navigate to="/" replace />} />
       <Route path="/pro" element={<ProLanding />} />
       <Route path="/support" element={<Support />} />
+      <Route path="/compte-suspendu" element={<CompteSuspendu />} />
       <Route path="/suivi/:token" element={<SuiviCommande />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />

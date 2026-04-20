@@ -44,8 +44,8 @@ router.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (re
     const valide = await bcrypt.compare(motdepasse, user.motdepasse);
     if (!valide) return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });
 
-    // Vérifier si le compte est suspendu
-    if (user.suspendu) return res.status(403).json({ erreur: 'Compte suspendu', motif: user.motif_suspension || null, suspendu: true });
+    // Compte suspendu — on laisse se connecter mais on marque le token
+    const isSuspendu = !!user.suspendu;
 
     // Si employé, récupérer le patron_id
     let patronId = null;
@@ -54,8 +54,8 @@ router.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (re
       patronId = empResult.rows[0]?.patron_id || null;
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom, secteur: user.secteur || null, patronId }, SECRET, { expiresIn: '8h' });
-    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, secteur: user.secteur || null, userId: user.id, nom: user.nom, email: user.email, patronId });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, nom: user.nom, secteur: user.secteur || null, patronId, suspendu: isSuspendu }, SECRET, { expiresIn: '8h' });
+    res.json({ message: `Bienvenue ${user.nom} !`, token, role: user.role, secteur: user.secteur || null, userId: user.id, nom: user.nom, email: user.email, patronId, suspendu: isSuspendu, motifSuspension: isSuspendu ? (user.motif_suspension || null) : null });
   } catch (err) {
     console.error('Erreur /login :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });

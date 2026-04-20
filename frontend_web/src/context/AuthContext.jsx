@@ -15,18 +15,8 @@ export function AuthProvider({ children }) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         if (payload.exp * 1000 > Date.now()) {
-          setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role, secteur: payload.secteur || null, patronId: payload.patronId || null });
+          setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role, secteur: payload.secteur || null, patronId: payload.patronId || null, suspendu: payload.suspendu || false });
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          // Vérifier si le compte est toujours actif (pas suspendu)
-          if (!token.endsWith('.dev')) {
-            api.get('/notifications').catch(err => {
-              if (err.response?.status === 403 && err.response?.data?.erreur === 'Compte suspendu') {
-                localStorage.removeItem('token');
-                setToken(null);
-                setUser(null);
-              }
-            });
-          }
         } else {
           localStorage.removeItem('token');
           setToken(null);
@@ -99,7 +89,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', data.token);
     setToken(data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role, secteur: data.secteur || null, patronId: data.patronId || null });
+    setUser({ id: data.userId, nom: data.nom, email: data.email, role: data.role, secteur: data.secteur || null, patronId: data.patronId || null, suspendu: data.suspendu || false, motifSuspension: data.motifSuspension || null });
     return data;
   }
 

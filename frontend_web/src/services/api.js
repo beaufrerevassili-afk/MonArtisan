@@ -42,12 +42,7 @@ api.interceptors.response.use(
       const status = error.response?.status;
       const msg = error.response?.data?.erreur || error.response?.data?.message;
       if (status === 403 && msg === 'Compte suspendu') {
-        // Ne pas rediriger si on est déjà sur login (laisser Login.jsx gérer)
-        if (!window.location.pathname.includes('/login')) {
-          _errorToast('Votre compte a été suspendu', 'error');
-          localStorage.removeItem('token');
-          setTimeout(() => { window.location.href = '/login'; }, 1500);
-        }
+        // Redirigé vers /compte-suspendu via le router (ProtectedRoute)
       } else if (status === 403) {
         _errorToast('Accès refusé', 'error');
       } else if (status === 404) {

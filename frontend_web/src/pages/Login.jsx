@@ -69,16 +69,7 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true); setSuspendedEmail('');
     try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role, data)); }
-    catch(err) {
-      if (err.response?.data?.suspendu) {
-        const motif = err.response.data.motif || '';
-        setError(`Compte suspendu${motif ? ' : ' + motif : ''}`);
-        setSuspendedEmail(form.email);
-        setSuspendedMotif(motif);
-      } else {
-        setError(err.response?.data?.erreur || 'Identifiants incorrects');
-      }
-    }
+    catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }
 
