@@ -863,6 +863,22 @@ function SupportTab() {
       .then(r => r.json()).then(d => { if (d.tickets) setTickets(d.tickets); }).catch(() => {});
   }, []);
 
+  const refreshTickets = async () => {
+    const token = localStorage.getItem('token');
+    if (!token || token.endsWith('.dev')) return;
+    try {
+      const r = await fetch(`${API}/support/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json();
+      if (d.tickets) setTickets(d.tickets);
+    } catch {}
+  };
+
+  // Polling toutes les 15s pour voir les nouveaux messages
+  useEffect(() => {
+    const interval = setInterval(refreshTickets, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   const repondre = async (ticketId) => {
     if (!reponse.trim()) return;
     setSending(true);
@@ -871,9 +887,9 @@ function SupportTab() {
       const r = await fetch(`${API}/support/tickets/${ticketId}/reply`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reponse }) });
       const data = await r.json();
       if (data.ticket) {
-        setTickets(prev => prev.map(t => t.id === ticketId ? data.ticket : t));
         setSelectedTicket(data.ticket);
         setReponse('');
+        refreshTickets();
       }
     } catch {} finally { setSending(false); }
   };
@@ -883,8 +899,8 @@ function SupportTab() {
     const r = await fetch(`${API}/support/tickets/${ticketId}/close`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
     const data = await r.json();
     if (data.ticket) {
-      setTickets(prev => prev.map(t => t.id === ticketId ? data.ticket : t));
       setSelectedTicket(data.ticket);
+      refreshTickets();
     }
   };
 

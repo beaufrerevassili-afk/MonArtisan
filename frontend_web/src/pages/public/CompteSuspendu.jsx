@@ -19,36 +19,49 @@ export default function CompteSuspendu() {
   const email = user?.email || '';
   const motif = user?.motifSuspension || '';
 
-  useEffect(() => {
+  // Charger les tickets + polling toutes les 10s
+  const chargerTickets = async () => {
     if (!email) return;
-    fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`)
-      .then(r => r.json()).then(d => { if (d.tickets) setTickets(d.tickets); }).catch(() => {});
-  }, [email, sent]);
+    try {
+      const r = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`);
+      const d = await r.json();
+      if (d.tickets) {
+        setTickets(d.tickets);
+        // Si on est dans un ticket détaillé, le rafraîchir aussi
+        if (viewTicket) {
+          const updated = d.tickets.find(t => t.id === viewTicket.id);
+          if (updated) setViewTicket(updated);
+        }
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    chargerTickets();
+    const interval = setInterval(chargerTickets, 10000); // Polling toutes les 10s
+    return () => clearInterval(interval);
+  }, [email]);
 
   const envoyerTicket = async () => {
     if (!newMessage.trim()) return;
-    await fetch(`${API}/support/ticket`, {
+    const r = await fetch(`${API}/support/ticket`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, nom: user?.nom || '', sujet: 'Compte suspendu', message: newMessage })
     });
+    if (!r.ok) return; // Ne pas vider si échec
     setNewMessage('');
-    // Recharger immédiatement les tickets
-    const r = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`);
-    const d = await r.json();
-    if (d.tickets) setTickets(d.tickets);
+    chargerTickets();
   };
 
   const envoyerReponse = async (ticketId) => {
     if (!reponseForm.trim()) return;
-    await fetch(`${API}/support/tickets/${ticketId}/user-reply`, {
+    const r = await fetch(`${API}/support/tickets/${ticketId}/user-reply`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, reponse: reponseForm })
     });
+    if (!r.ok) return; // Ne pas vider si échec
     setReponseForm('');
-    // Recharger immédiatement
-    const r = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`);
-    const d = await r.json();
-    if (d.tickets) { setTickets(d.tickets); setViewTicket(d.tickets.find(t => t.id === ticketId) || null); }
+    chargerTickets();
   };
 
   const handleLogout = async () => {

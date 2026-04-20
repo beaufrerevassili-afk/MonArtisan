@@ -8,7 +8,7 @@ const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /support/ticket — Créer un ticket (public, pas besoin d'auth)
+// POST /support/ticket — Créer un ticket OU ajouter à un ticket existant
 router.post('/ticket', async (req, res) => {
   try {
     const { email, nom, sujet, message } = req.body;
@@ -19,12 +19,29 @@ router.post('/ticket', async (req, res) => {
     const userId = userResult.rows[0]?.id || null;
     const motifSuspension = userResult.rows[0]?.motif_suspension || null;
 
-    const { rows } = await db.query(
-      'INSERT INTO support_tickets (user_id, email, nom, sujet, message, motif_suspension) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [userId, email, nom || '', sujet || 'Demande de support', message, motifSuspension]
+    // Vérifier si un ticket ouvert existe déjà pour cet email
+    const { rows: existing } = await db.query(
+      "SELECT * FROM support_tickets WHERE email = $1 AND statut = 'ouvert' ORDER BY cree_le DESC LIMIT 1",
+      [email]
     );
 
-    res.json({ message: 'Ticket créé. Nous reviendrons vers vous rapidement.', ticket: rows[0] });
+    if (existing[0]) {
+      // Ajouter le message comme réponse au ticket existant
+      const reponses = existing[0].reponses || [];
+      reponses.push({ auteur: nom || email, message, date: new Date().toISOString() });
+      const { rows } = await db.query(
+        "UPDATE support_tickets SET reponses = $1, modifie_le = NOW() WHERE id = $2 RETURNING *",
+        [JSON.stringify(reponses), existing[0].id]
+      );
+      res.json({ message: 'Message ajouté à votre conversation.', ticket: rows[0] });
+    } else {
+      // Créer un nouveau ticket
+      const { rows } = await db.query(
+        'INSERT INTO support_tickets (user_id, email, nom, sujet, message, motif_suspension) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [userId, email, nom || '', sujet || 'Demande de support', message, motifSuspension]
+      );
+      res.json({ message: 'Ticket créé. Nous reviendrons vers vous rapidement.', ticket: rows[0] });
+    }
   } catch (err) {
     console.error('Erreur POST /support/ticket :', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
