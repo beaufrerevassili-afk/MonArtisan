@@ -32,7 +32,10 @@ export default function CompteSuspendu() {
       body: JSON.stringify({ email, nom: user?.nom || '', sujet: 'Compte suspendu', message: newMessage })
     });
     setNewMessage('');
-    setSent(!sent);
+    // Recharger immédiatement les tickets
+    const r = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`);
+    const d = await r.json();
+    if (d.tickets) setTickets(d.tickets);
   };
 
   const envoyerReponse = async (ticketId) => {
@@ -42,11 +45,10 @@ export default function CompteSuspendu() {
       body: JSON.stringify({ email, reponse: reponseForm })
     });
     setReponseForm('');
-    setSent(!sent);
-    // Refresh
+    // Recharger immédiatement
     const r = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(email)}`);
     const d = await r.json();
-    if (d.tickets) { setTickets(d.tickets); setViewTicket(d.tickets.find(t => t.id === ticketId)); }
+    if (d.tickets) { setTickets(d.tickets); setViewTicket(d.tickets.find(t => t.id === ticketId) || null); }
   };
 
   const handleLogout = async () => {
