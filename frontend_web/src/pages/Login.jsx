@@ -63,10 +63,22 @@ export default function Login() {
 
   const demoAccounts = DEMO_COMPTES;
 
+  const [suspendedEmail, setSuspendedEmail] = useState('');
+  const [suspendedMotif, setSuspendedMotif] = useState('');
+
   async function handleSubmit(e) {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault(); setError(''); setLoading(true); setSuspendedEmail('');
     try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role, data)); }
-    catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
+    catch(err) {
+      if (err.response?.data?.suspendu) {
+        const motif = err.response.data.motif || '';
+        setError(`Compte suspendu${motif ? ' : ' + motif : ''}`);
+        setSuspendedEmail(form.email);
+        setSuspendedMotif(motif);
+      } else {
+        setError(err.response?.data?.erreur || 'Identifiants incorrects');
+      }
+    }
     finally { setLoading(false); }
   }
 
@@ -130,7 +142,17 @@ export default function Login() {
             </div>
 
             {error && (
-              <div style={{ background:L.redBg, border:'1px solid rgba(220,38,38,0.3)', padding:'10px 14px', fontSize:13, color:L.red }}>{error}</div>
+              <div style={{ background:L.redBg, border:'1px solid rgba(220,38,38,0.3)', padding:'10px 14px', fontSize:13, color:L.red, borderRadius:8 }}>
+                {error}
+                {suspendedEmail && (
+                  <div style={{ marginTop:8 }}>
+                    <a href={`/support?email=${encodeURIComponent(suspendedEmail)}&motif=${encodeURIComponent(suspendedMotif)}`}
+                      style={{ color:'#2563EB', fontWeight:700, textDecoration:'underline' }}>
+                      Contacter le support →
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
 
             <button type="submit" disabled={loading}

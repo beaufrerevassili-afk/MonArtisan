@@ -67,6 +67,7 @@ const DEMO_USERS = [
 const TABS = [
   { id:'overview',    label:'Vue d\'ensemble', Icon: IconHome },
   { id:'users',       label:'Utilisateurs',    Icon: IconTeam },
+  { id:'support',     label:'Support',          Icon: IconMessage },
   { id:'transactions',label:'Transactions',     Icon: IconCreditCard },
   { id:'moderation',  label:'Moderation',       Icon: IconShield },
   { id:'entreprise',  label:'Freample SAS',     Icon: IconBuilding },
@@ -255,10 +256,15 @@ function Utilisateurs({ users, setUsers }) {
   const toggleSuspend = async (id) => {
     const token = localStorage.getItem('token');
     const isDemo = token && token.endsWith('.dev');
+    const user = users.find(u => u.id === id);
+    let motif = '';
+    if (user?.actif) {
+      motif = prompt('Motif de suspension (visible par l\'utilisateur) :') || '';
+    }
     if (!isDemo) {
       try {
         const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
-        const r = await fetch(`${API}/admin/toggle-suspend/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+        const r = await fetch(`${API}/admin/toggle-suspend/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ motif }) });
         const data = await r.json();
         if (data.user) {
           setUsers(prev => prev.map(u => u.id === id ? { ...u, actif: !data.user.suspendu } : u));
@@ -840,6 +846,151 @@ function EntrepriseFreample({ data, backendStats }) {
 }
 
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// ── TAB : SUPPORT ──
+// ══════════════════════════════════════════════════
+function SupportTab() {
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [reponse, setReponse] = useState('');
+  const [sending, setSending] = useState(false);
+  const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || token.endsWith('.dev')) return;
+    fetch(`${API}/support/tickets`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => { if (d.tickets) setTickets(d.tickets); }).catch(() => {});
+  }, []);
+
+  const repondre = async (ticketId) => {
+    if (!reponse.trim()) return;
+    setSending(true);
+    try {
+      const token = localStorage.getItem('token');
+      const r = await fetch(`${API}/support/tickets/${ticketId}/reply`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reponse }) });
+      const data = await r.json();
+      if (data.ticket) {
+        setTickets(prev => prev.map(t => t.id === ticketId ? data.ticket : t));
+        setSelectedTicket(data.ticket);
+        setReponse('');
+      }
+    } catch {} finally { setSending(false); }
+  };
+
+  const fermerTicket = async (ticketId) => {
+    const token = localStorage.getItem('token');
+    const r = await fetch(`${API}/support/tickets/${ticketId}/close`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+    const data = await r.json();
+    if (data.ticket) {
+      setTickets(prev => prev.map(t => t.id === ticketId ? data.ticket : t));
+      setSelectedTicket(data.ticket);
+    }
+  };
+
+  const ouverts = tickets.filter(t => t.statut === 'ouvert');
+  const fermes = tickets.filter(t => t.statut === 'ferme');
+
+  if (selectedTicket) {
+    const t = selectedTicket;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <button onClick={() => setSelectedTicket(null)} style={BTN_GHOST}>← Retour aux tickets</button>
+        <div style={CARD}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: DS.text }}>{t.sujet || 'Demande de support'}</div>
+              <div style={{ fontSize: 12, color: DS.subtle, marginTop: 2 }}>{t.email} · {t.nom || '—'} · {new Date(t.cree_le).toLocaleDateString('fr-FR')}</div>
+            </div>
+            <span style={BADGE(t.statut === 'ouvert' ? DS.orangeBg : DS.greenBg, t.statut === 'ouvert' ? DS.orange : DS.green)}>{t.statut}</span>
+          </div>
+
+          {t.motif_suspension && (
+            <div style={{ padding: '10px 14px', background: DS.redBg, borderRadius: 8, marginBottom: 12, fontSize: 12, color: DS.red }}>
+              <strong>Motif de suspension :</strong> {t.motif_suspension}
+            </div>
+          )}
+
+          {/* Message initial */}
+          <div style={{ padding: '14px 16px', background: DS.bgSoft, borderRadius: 10, marginBottom: 16, borderLeft: `4px solid ${DS.orange}` }}>
+            <div style={{ fontSize: 11, color: DS.subtle, marginBottom: 4 }}>{t.nom || t.email} — {new Date(t.cree_le).toLocaleString('fr-FR')}</div>
+            <div style={{ fontSize: 13, color: DS.text, lineHeight: 1.6 }}>{t.message}</div>
+          </div>
+
+          {/* Réponses */}
+          {(t.reponses || []).map((r, i) => (
+            <div key={i} style={{ padding: '12px 16px', background: DS.goldLight, borderRadius: 10, marginBottom: 8, borderLeft: `4px solid ${DS.gold}` }}>
+              <div style={{ fontSize: 11, color: DS.gold, fontWeight: 700, marginBottom: 4 }}>{r.auteur} — {new Date(r.date).toLocaleString('fr-FR')}</div>
+              <div style={{ fontSize: 13, color: DS.text, lineHeight: 1.6 }}>{r.message}</div>
+            </div>
+          ))}
+
+          {/* Formulaire réponse */}
+          {t.statut === 'ouvert' && (
+            <div style={{ marginTop: 16 }}>
+              <textarea value={reponse} onChange={e => setReponse(e.target.value)} rows={3}
+                placeholder="Votre réponse au client..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: DS.font }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button onClick={() => repondre(t.id)} disabled={sending || !reponse.trim()} style={{ ...BTN_PRIMARY, opacity: (sending || !reponse.trim()) ? 0.5 : 1 }}>
+                  {sending ? 'Envoi...' : 'Répondre'}
+                </button>
+                <button onClick={() => fermerTicket(t.id)} style={BTN_GHOST}>Fermer le ticket</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={KPI_GRID}>
+        <KpiCard label="Tickets ouverts" value={fmtN(ouverts.length)} color={ouverts.length > 0 ? DS.orange : DS.green} />
+        <KpiCard label="Tickets fermés" value={fmtN(fermes.length)} color={DS.green} />
+        <KpiCard label="Total" value={fmtN(tickets.length)} />
+      </div>
+
+      {tickets.length === 0 && (
+        <div style={{ ...CARD, textAlign: 'center', padding: 40 }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: DS.text }}>Aucun ticket de support</p>
+          <p style={{ fontSize: 13, color: DS.subtle }}>Les demandes des utilisateurs apparaîtront ici.</p>
+        </div>
+      )}
+
+      {ouverts.map(t => (
+        <div key={t.id} onClick={() => setSelectedTicket(t)} style={{ ...CARD, cursor: 'pointer', borderLeft: `4px solid ${DS.orange}`, transition: 'all .15s' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: DS.text }}>{t.sujet || 'Demande de support'}</div>
+              <div style={{ fontSize: 12, color: DS.subtle, marginTop: 2 }}>{t.email} · {new Date(t.cree_le).toLocaleDateString('fr-FR')}</div>
+              <div style={{ fontSize: 12, color: DS.text, marginTop: 6, lineHeight: 1.5 }}>{(t.message || '').slice(0, 100)}{t.message?.length > 100 ? '...' : ''}</div>
+            </div>
+            <span style={BADGE(DS.orangeBg, DS.orange)}>Ouvert</span>
+          </div>
+        </div>
+      ))}
+
+      {fermes.length > 0 && (
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: DS.subtle, marginBottom: 8 }}>Fermés ({fermes.length})</p>
+          {fermes.map(t => (
+            <div key={t.id} onClick={() => setSelectedTicket(t)} style={{ ...CARD, cursor: 'pointer', marginBottom: 8, opacity: 0.6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 13, color: DS.text }}>{t.sujet} — {t.email}</div>
+                <span style={BADGE(DS.greenBg, DS.green)}>Fermé</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── TAB 6 : PARAMETRES ──
 // ══════════════════════════════════════════════════
 function Parametres() {
@@ -1005,6 +1156,7 @@ export default function DashboardAdmin() {
       {/* Content */}
       {tab === 'overview' && <VueEnsemble data={data} users={users} backendStats={backendStats} />}
       {tab === 'users' && <Utilisateurs users={users} setUsers={setUsers} />}
+      {tab === 'support' && <SupportTab />}
       {tab === 'transactions' && <Transactions data={data} />}
       {tab === 'moderation' && <Moderation data={data} />}
       {tab === 'entreprise' && <EntrepriseFreample data={data} backendStats={backendStats} />}

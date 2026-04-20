@@ -101,16 +101,17 @@ router.get('/users', authenticateToken, authorizeRole(...ADMIN_ROLES), async (re
   }
 });
 
-// PUT /admin/toggle-suspend/:id — Suspendre/réactiver un compte
+// PUT /admin/toggle-suspend/:id — Suspendre/réactiver un compte (avec motif)
 router.put('/toggle-suspend/:id', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
   try {
+    const { motif } = req.body || {};
     const { rows: existing } = await db.query('SELECT id, suspendu FROM users WHERE id = $1', [parseInt(req.params.id)]);
     if (!existing[0]) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
 
     const newSuspendu = !existing[0].suspendu;
     const { rows: updated } = await db.query(
-      'UPDATE users SET suspendu = $1, suspendu_le = $2 WHERE id = $3 RETURNING id, nom, email, role, suspendu',
-      [newSuspendu, newSuspendu ? new Date() : null, parseInt(req.params.id)]
+      'UPDATE users SET suspendu = $1, suspendu_le = $2, motif_suspension = $3 WHERE id = $4 RETURNING id, nom, email, role, suspendu, motif_suspension',
+      [newSuspendu, newSuspendu ? new Date() : null, newSuspendu ? (motif || null) : null, parseInt(req.params.id)]
     );
 
     res.json({ message: `Compte ${newSuspendu ? 'suspendu' : 'réactivé'}`, user: updated[0] });

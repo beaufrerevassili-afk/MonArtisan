@@ -45,7 +45,7 @@ router.post('/login', process.env.NODE_ENV === 'production' ? loginLimiter : (re
     if (!valide) return res.status(401).json({ erreur: 'Email ou mot de passe incorrect' });
 
     // Vérifier si le compte est suspendu
-    if (user.suspendu) return res.status(403).json({ erreur: 'Compte suspendu. Contactez le support.' });
+    if (user.suspendu) return res.status(403).json({ erreur: 'Compte suspendu', motif: user.motif_suspension || null, suspendu: true });
 
     // Si employé, récupérer le patron_id
     let patronId = null;

@@ -39,6 +39,7 @@ const modulesRoutes        = require('./routes/modulesRoutes');
 const immoRoutes           = require('./routes/immoRoutes');
 const projetsRoutes        = require('./routes/projetsRoutes');
 const calculRoutes         = require('./routes/calculRoutes');
+const supportRoutes        = require('./routes/supportRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -115,6 +116,7 @@ app.use('/artisan', authenticateToken, artisanRoutes);
 app.use('/immo',    authenticateToken, immoRoutes);
 app.use('/projets', projetsRoutes);  // mix public + auth
 app.use('/calcul',  calculRoutes);   // endpoints de calcul métier (public + auth)
+app.use('/support', supportRoutes);  // tickets de support (public + fondateur)
 
 // ─── Analytics (visites) ────────────────────────────────────
 (async () => {
