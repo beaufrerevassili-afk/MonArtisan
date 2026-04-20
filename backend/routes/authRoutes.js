@@ -17,7 +17,7 @@ const SECRET = process.env.JWT_SECRET;
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 10 : 100,
+  max: 100,
   message: { erreur: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -25,7 +25,7 @@ const loginLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 20 : 200,
+  max: 200,
   message: { erreur: 'Trop de requêtes. Réessayez dans une heure.' },
   standardHeaders: true,
   legacyHeaders: false,

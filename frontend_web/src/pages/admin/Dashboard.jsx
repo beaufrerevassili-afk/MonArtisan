@@ -845,7 +845,29 @@ export default function DashboardAdmin() {
   const urlTab = searchParams.get('tab');
   const [tab, setTab] = useState(urlTab || 'overview');
   const [users, setUsers] = useState(DEMO_USERS);
+  const [backendStats, setBackendStats] = useState(null);
   const data = useMemo(() => getAllData(), []);
+
+  // Charger les vrais utilisateurs et stats depuis le backend
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || token.endsWith('.dev')) return; // Pas de backend pour les comptes démo
+    const headers = { Authorization: `Bearer ${token}` };
+    // Stats globales
+    fetch(`${import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com'}/admin/dashboard-stats`, { headers })
+      .then(r => r.json()).then(d => { if (d.users) setBackendStats(d); }).catch(() => {});
+    // Liste utilisateurs
+    fetch(`${import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com'}/admin/users`, { headers })
+      .then(r => r.json()).then(d => {
+        if (d.users?.length) {
+          setUsers(d.users.map(u => ({
+            id: u.id, nom: u.nom, email: u.email, role: u.role,
+            secteur: u.secteur || 'btp', inscrit: u.cree_le?.slice(0, 10),
+            actif: !u.suspendu, telephone: u.telephone, ville: u.ville, metier: u.metier,
+          })));
+        }
+      }).catch(() => {});
+  }, []);
 
   // Sync tab state avec URL query — marche aussi quand urlTab est null (= retour à overview)
   useEffect(() => {

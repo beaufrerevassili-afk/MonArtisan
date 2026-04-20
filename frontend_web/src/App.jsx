@@ -121,6 +121,11 @@ if (typeof window !== 'undefined') {
 
 function PatronDashboard() {
   const { user } = useAuth();
+  // Fondateur → toujours redirigé vers son dashboard
+  if (user?.role === 'fondateur') {
+    window.location.href = '/fondateur/dashboard';
+    return null;
+  }
   if (user?.secteur === 'com') return <DashboardCom />;
   return <DashboardPatron />;
 }
