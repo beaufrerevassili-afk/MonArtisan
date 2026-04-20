@@ -973,4 +973,112 @@ router.put('/documents/:id/valider', async (req, res) => {
   }
 });
 
+// ============================================================
+//  POINTAGES — Arrivée / Départ chantier (salarié)
+// ============================================================
+
+// GET /rh/pointages — Mes pointages (salarié) ou tous (patron)
+router.get('/pointages', async (req, res) => {
+  try {
+    const { role, id } = req.user || {};
+    let rows;
+    if (role === 'employe') {
+      const emp = await db.query('SELECT id FROM employes WHERE user_id = $1', [id]);
+      if (!emp.rows[0]) return res.json({ pointages: [] });
+      ({ rows } = await db.query('SELECT * FROM pointages WHERE employe_id = $1 ORDER BY date DESC, cree_le DESC LIMIT 100', [emp.rows[0].id]));
+    } else {
+      ({ rows } = await db.query('SELECT * FROM pointages WHERE patron_id = $1 ORDER BY date DESC, cree_le DESC LIMIT 200', [id]));
+    }
+    res.json({ pointages: rows });
+  } catch (err) {
+    console.error('GET /rh/pointages:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// POST /rh/pointages — Pointer (arrivée ou départ)
+router.post('/pointages', async (req, res) => {
+  try {
+    const { type, chantierId, chantierNom, date, heure } = req.body;
+    if (!type || !date || !heure) return res.status(400).json({ erreur: 'type, date et heure requis' });
+
+    const userId = req.user.id;
+    const emp = await db.query('SELECT id, prenom, nom, patron_id FROM employes WHERE user_id = $1', [userId]);
+    if (!emp.rows[0]) return res.status(400).json({ erreur: 'Employé non trouvé' });
+
+    const employe = emp.rows[0];
+    const employeNom = `${employe.prenom} ${employe.nom}`;
+
+    if (type === 'arrivee') {
+      const { rows } = await db.query(
+        'INSERT INTO pointages (patron_id, employe_id, employe_nom, chantier, date, heure_debut, statut) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+        [employe.patron_id, employe.id, employeNom, chantierNom || '', date, heure, 'en_cours']
+      );
+      res.json({ message: 'Arrivée enregistrée', pointage: rows[0] });
+    } else if (type === 'depart') {
+      // Trouver le pointage ouvert du jour
+      const existing = await db.query(
+        "SELECT id FROM pointages WHERE employe_id = $1 AND date = $2 AND statut = 'en_cours' ORDER BY cree_le DESC LIMIT 1",
+        [employe.id, date]
+      );
+      if (existing.rows[0]) {
+        const heureDebut = (await db.query('SELECT heure_debut FROM pointages WHERE id=$1', [existing.rows[0].id])).rows[0]?.heure_debut;
+        // Calculer les heures
+        let heures = 0;
+        if (heureDebut && heure) {
+          const [dh, dm] = heure.split(':').map(Number);
+          const [ah, am] = heureDebut.split(':').map(Number);
+          heures = Math.max(0, ((dh * 60 + dm) - (ah * 60 + am)) / 60);
+        }
+        const heuresSupp = Math.max(0, heures - 8);
+        const { rows } = await db.query(
+          "UPDATE pointages SET heure_fin=$1, heures=$2, heures_supp=$3, statut='valide' WHERE id=$4 RETURNING *",
+          [heure, Math.round(heures * 10) / 10, Math.round(heuresSupp * 10) / 10, existing.rows[0].id]
+        );
+        res.json({ message: 'Départ enregistré', pointage: rows[0] });
+      } else {
+        // Pas de pointage ouvert, créer un pointage complet
+        const { rows } = await db.query(
+          "INSERT INTO pointages (patron_id, employe_id, employe_nom, chantier, date, heure_fin, statut) VALUES ($1,$2,$3,$4,$5,$6,'valide') RETURNING *",
+          [employe.patron_id, employe.id, employeNom, chantierNom || '', date, heure]
+        );
+        res.json({ message: 'Départ enregistré (sans arrivée)', pointage: rows[0] });
+      }
+    } else {
+      return res.status(400).json({ erreur: 'type doit être "arrivee" ou "depart"' });
+    }
+  } catch (err) {
+    console.error('POST /rh/pointages:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /rh/pointages/:id/valider — Patron valide un pointage
+router.put('/pointages/:id/valider', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      "UPDATE pointages SET statut='valide' WHERE id=$1 AND patron_id=$2 RETURNING *",
+      [req.params.id, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Pointage non trouvé' });
+    res.json({ message: 'Pointage validé', pointage: rows[0] });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// GET /rh/solde-conges/:employeId — Solde congés d'un employé
+router.get('/solde-conges/:employeId', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      "SELECT COALESCE(SUM(nb_jours),0) as pris FROM conges WHERE employe_id=$1 AND statut='approuve' AND EXTRACT(YEAR FROM date_debut)=EXTRACT(YEAR FROM NOW())",
+      [req.params.employeId]
+    );
+    const pris = parseInt(rows[0].pris) || 0;
+    res.json({ total: 25, pris, restant: 25 - pris });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

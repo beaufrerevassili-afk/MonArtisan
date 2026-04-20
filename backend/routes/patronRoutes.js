@@ -239,7 +239,8 @@ router.post('/devis-pro/:id/signer', async (req, res) => {
 
 router.get('/chantiers', async (req, res) => {
   try {
-    const result   = await db.query('SELECT * FROM chantiers ORDER BY cree_le DESC');
+    const patronId = req.user?.id;
+    const result = await db.query('SELECT * FROM chantiers WHERE patron_id = $1 OR patron_id IS NULL ORDER BY cree_le DESC', [patronId]);
     const chantiers = result.rows.map(mapChantier);
 
     const stats = {
@@ -265,20 +266,24 @@ router.post('/chantiers', async (req, res) => {
     const { nom, client, adresse, budgetPrevu, dateDebut, dateFin, description } = req.body;
     if (!nom || !budgetPrevu) return res.status(400).json({ erreur: 'nom, budgetPrevu requis' });
 
+    const patronId = req.user?.id;
+    const patronNom = req.user?.nom || '';
     const result = await db.query(
       `INSERT INTO chantiers
          (nom, client, adresse, chef, statut, avancement, budget_prevu, budget_reel,
-          date_debut, date_fin, date_fin_reelle, equipe, description, alertes)
-       VALUES ($1, $2, $3, 'Bernard Martin', 'planifie', 0, $4, 0, $5, $6, NULL, '[]', $7, '[]')
+          date_debut, date_fin, date_fin_reelle, equipe, description, alertes, patron_id)
+       VALUES ($1, $2, $3, $4, 'planifie', 0, $5, 0, $6, $7, NULL, '[]', $8, '[]', $9)
        RETURNING *`,
       [
         nom,
         client || '',
         adresse || '',
+        patronNom,
         parseFloat(budgetPrevu),
         dateDebut || null,
         dateFin   || null,
         description || '',
+        patronId,
       ]
     );
 
