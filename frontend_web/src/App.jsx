@@ -159,9 +159,23 @@ function usePageTracker() {
   }, [location.pathname]);
 }
 
+function SuspendedGuard() {
+  const { user } = useAuth();
+  const path = window.location.pathname;
+  const allowedPaths = ['/compte-suspendu', '/login', '/support', '/cgu', '/logout'];
+  if (user?.suspendu && !allowedPaths.some(p => path.startsWith(p))) {
+    return <Navigate to="/compte-suspendu" replace />;
+  }
+  return null;
+}
+
 function AppRoutes() {
   const { user } = useAuth();
   usePageTracker();
+
+  // Redirection globale pour comptes suspendus
+  const suspendedRedirect = SuspendedGuard();
+  if (suspendedRedirect) return suspendedRedirect;
 
   return (
     <Suspense fallback={<LazySpinner />}>
