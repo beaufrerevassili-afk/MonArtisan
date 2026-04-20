@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,7 +19,11 @@ export default function CompteSuspendu() {
   const email = user?.email || '';
   const motif = user?.motifSuspension || '';
 
-  // Charger les tickets + polling toutes les 10s
+  // Ref pour accéder au viewTicket actuel dans le polling
+  const viewTicketRef = useRef(viewTicket);
+  useEffect(() => { viewTicketRef.current = viewTicket; }, [viewTicket]);
+
+  // Charger les tickets
   const chargerTickets = async () => {
     if (!email) return;
     try {
@@ -28,17 +32,19 @@ export default function CompteSuspendu() {
       if (d.tickets) {
         setTickets(d.tickets);
         // Si on est dans un ticket détaillé, le rafraîchir aussi
-        if (viewTicket) {
-          const updated = d.tickets.find(t => t.id === viewTicket.id);
+        const current = viewTicketRef.current;
+        if (current) {
+          const updated = d.tickets.find(t => t.id === current.id);
           if (updated) setViewTicket(updated);
         }
       }
     } catch {}
   };
 
+  // Polling toutes les 5s
   useEffect(() => {
     chargerTickets();
-    const interval = setInterval(chargerTickets, 10000); // Polling toutes les 10s
+    const interval = setInterval(chargerTickets, 5000);
     return () => clearInterval(interval);
   }, [email]);
 
