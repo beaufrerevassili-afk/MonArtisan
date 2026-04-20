@@ -863,19 +863,30 @@ function SupportTab() {
       .then(r => r.json()).then(d => { if (d.tickets) setTickets(d.tickets); }).catch(() => {});
   }, []);
 
+  const selectedTicketRef = React.useRef(selectedTicket);
+  React.useEffect(() => { selectedTicketRef.current = selectedTicket; }, [selectedTicket]);
+
   const refreshTickets = async () => {
     const token = localStorage.getItem('token');
     if (!token || token.endsWith('.dev')) return;
     try {
       const r = await fetch(`${API}/support/tickets`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
-      if (d.tickets) setTickets(d.tickets);
+      if (d.tickets) {
+        setTickets(d.tickets);
+        // Rafraîchir le ticket sélectionné si ouvert
+        const current = selectedTicketRef.current;
+        if (current) {
+          const updated = d.tickets.find(t => t.id === current.id);
+          if (updated) setSelectedTicket(updated);
+        }
+      }
     } catch {}
   };
 
-  // Polling toutes les 15s pour voir les nouveaux messages
+  // Polling toutes les 5s
   useEffect(() => {
-    const interval = setInterval(refreshTickets, 15000);
+    const interval = setInterval(refreshTickets, 5000);
     return () => clearInterval(interval);
   }, []);
 
