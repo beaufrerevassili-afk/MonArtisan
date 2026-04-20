@@ -4,17 +4,17 @@ import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
 import DS from '../../design/ds';
 import NotificationBell from '../../components/ui/NotificationBell';
-import { IconHome, IconBuilding, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser } from '../../components/ui/Icons';
+import { IconHome, IconBuilding, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield } from '../../components/ui/Icons';
 
-const TABS = [
-  { label: 'Tableau de bord', Icon: IconHome },
-  { label: 'Chantiers', Icon: IconBuilding },
-  { label: 'Planning', Icon: IconCalendar },
-  { label: 'Fiches de paie', Icon: IconCreditCard },
-  { label: 'Congés', Icon: IconClock },
-  { label: 'Notes de frais', Icon: IconDocument },
-  { label: 'Documents', Icon: IconBox },
-  { label: 'Profil', Icon: IconUser },
+const MENU_ITEMS = [
+  { id: 'matin', label: 'Mon matin', Icon: IconHome },
+  { id: 'mafiche', label: 'Ma fiche', Icon: IconShield },
+  { id: 'planning', label: 'Planning semaine', Icon: IconCalendar },
+  { id: 'paie', label: 'Fiches de paie', Icon: IconCreditCard },
+  { id: 'conges', label: 'Congés', Icon: IconClock },
+  { id: 'frais', label: 'Notes de frais', Icon: IconDocument },
+  { id: 'documents', label: 'Documents', Icon: IconBox },
+  { id: 'profil', label: 'Profil', Icon: IconUser },
 ];
 
 const DOCUMENTS_REQUIS = [
@@ -29,11 +29,11 @@ const DOCUMENTS_REQUIS = [
   { id: 'casier_judiciaire',   label: 'Extrait de casier judiciaire', icon: '📄' },
 ];
 
-const DEMO_CHANTIERS = [
-  { id:1, titre:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, Nice', statut:'en_cours', dateDebut:'2026-04-01', dateFin:'2026-04-20', chef:'Vassili B.' },
-  { id:2, titre:'Installation électrique — Bureau Médicin', adresse:'8 av Jean Médecin, Nice', statut:'planifie', dateDebut:'2026-04-22', dateFin:'2026-05-05', chef:'Vassili B.' },
-  { id:3, titre:'Peinture T3 — SCI Riviera', adresse:'24 rue Pastorelli, Nice', statut:'complete', dateDebut:'2026-03-10', dateFin:'2026-03-25', chef:'Vassili B.' },
-];
+const DEMO_CHANTIERS = (() => { try { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); if (c?.length) return c; } catch {} return [
+  { id:'ch1', titre:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', dateDebut:'2026-04-01', dateFin:'2026-04-25', chef:'Marc Lambert', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
+  { id:'ch2', titre:'Mise aux normes électriques — SCI Horizon', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', dateDebut:'2026-04-28', dateFin:'2026-05-10', chef:'Marc Lambert', equipe:['Claire Bernard'] },
+  { id:'ch3', titre:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', dateDebut:'2026-04-07', dateFin:'2026-04-18', chef:'Marc Lambert', equipe:['Luc Moreau','Pierre Martin'] },
+]; })();
 
 const DEMO_BULLETINS = [
   { id:1, periode:'Mars 2026', brut:2800, net:2184, date:'2026-03-28', statut:'paye' },
@@ -53,17 +53,47 @@ const DEMO_FRAIS = [
   { id:3, date:'2026-04-05', montant:89.00, categorie:'Matériel', description:'Outillage Leroy Merlin', statut:'en_attente' },
 ];
 
-const DEMO_PLANNING = [
-  { id:1, jour:'Lundi', heure:'08:00-17:00', tache:'Chantier Dupont — Démolition cuisine', lieu:'12 rue de la Liberté' },
-  { id:2, jour:'Mardi', heure:'08:00-17:00', tache:'Chantier Dupont — Plomberie', lieu:'12 rue de la Liberté' },
-  { id:3, jour:'Mercredi', heure:'08:00-12:00', tache:'Chantier Dupont — Électricité', lieu:'12 rue de la Liberté' },
+const DEMO_PLANNING_FALLBACK = [
+  { id:1, jour:'Lundi', heure:'07:30-17:00', tache:'Chantier Dupont — Démolition cuisine', lieu:'12 rue de la Liberté, Marseille' },
+  { id:2, jour:'Mardi', heure:'07:30-17:00', tache:'Chantier Dupont — Plomberie', lieu:'12 rue de la Liberté, Marseille' },
+  { id:3, jour:'Mercredi', heure:'07:30-12:00', tache:'Chantier Dupont — Électricité', lieu:'12 rue de la Liberté, Marseille' },
   { id:4, jour:'Mercredi', heure:'14:00-17:00', tache:'Réunion équipe', lieu:'Bureau' },
-  { id:5, jour:'Jeudi', heure:'08:00-17:00', tache:'Chantier Dupont — Pose carrelage', lieu:'12 rue de la Liberté' },
-  { id:6, jour:'Vendredi', heure:'08:00-16:00', tache:'Chantier Dupont — Finitions', lieu:'12 rue de la Liberté' },
+  { id:5, jour:'Jeudi', heure:'07:30-17:00', tache:'Chantier Dupont — Pose carrelage', lieu:'12 rue de la Liberté, Marseille' },
+  { id:6, jour:'Vendredi', heure:'07:30-16:00', tache:'Chantier Dupont — Finitions', lieu:'12 rue de la Liberté, Marseille' },
 ];
 
-const DEMO_PROFIL = { prenom:'Jean', nom:'Martin', poste:'Ouvrier qualifié', email:'jean.martin@email.com', telephone:'0612345678', typeContrat:'CDI', salaireBase:2800, dateEntree:'2024-09-01', statut:'actif' };
-const DEMO_PATRON = { nom:'Vassili B.', email:'contact@freample.com', siret:'12345678900012', adresse:'Nice', metier:'BTP' };
+// Générer le planning réel depuis les chantiers du patron
+function buildPlanningFromChantiers(chantiers, userName) {
+  const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const now = new Date();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const planning = [];
+  for (let d = 0; d < 6; d++) {
+    const day = new Date(monday); day.setDate(monday.getDate() + d);
+    const dayStr = day.toISOString().slice(0, 10);
+    const jourLabel = JOURS_SEMAINE[day.getDay()];
+    chantiers.forEach(c => {
+      if (c.statut === 'terminee' || c.statut === 'annulee') return;
+      if (!c.dateDebut) return;
+      const fin = c.dateFin || c.dateDebut;
+      if (dayStr < c.dateDebut || dayStr > fin) return;
+      // Vérifier si le salarié est dans l'équipe
+      const inEquipe = !c.equipe || c.equipe.length === 0 || c.equipe.some(e => (userName || '').toLowerCase().split(' ').some(n => n.length > 2 && e.toLowerCase().includes(n)));
+      if (!inEquipe) return;
+      planning.push({ id: `${c.id}-${d}`, jour: jourLabel, heure: '07:30-17:00', tache: c.titre || c.description?.slice(0, 50) || 'Chantier', lieu: c.adresse || c.ville || '—' });
+    });
+  }
+  return planning;
+}
+
+const DEMO_PROFIL = { prenom:'Lucas', nom:'Garcia', poste:'Carreleur', email:'lucas.garcia@lambertbtp.fr', telephone:'06 34 56 78 90', typeContrat:'CDI', salaireBase:2500, dateEntree:'2023-09-01', statut:'actif' };
+const DEMO_PATRON = (() => {
+  try {
+    const p = JSON.parse(localStorage.getItem('freample_profil_patron') || 'null');
+    if (p?.nom) return { nom: p.nom, email: p.email || '', siret: p.siret || '', adresse: p.adresse || 'Marseille', metier: (p.metiers || []).join(', ') || p.metier || 'BTP' };
+  } catch {}
+  return { nom:'Lambert BTP', email:'contact@lambertbtp.fr', siret:'12345678900012', adresse:'Marseille', metier:'BTP' };
+})();
 
 const statutColors = { en_cours:'#2563EB', planifie:'#D97706', complete:'#16A34A', en_attente:'#D97706', approuve:'#16A34A', rejete:'#DC2626', rembourse:'#16A34A', paye:'#16A34A', parti:'#DC2626' };
 const statutLabels = { en_cours:'En cours', planifie:'Planifié', complete:'Terminé', en_attente:'En attente', approuve:'Approuvé', rejete:'Rejeté', rembourse:'Remboursé', paye:'Payé', parti:'Parti' };
@@ -83,7 +113,7 @@ export default function DashboardEmploye() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState('matin');
   const [chantiers, setChantiers] = useState(DEMO_CHANTIERS);
   const [bulletins, setBulletins] = useState(DEMO_BULLETINS);
   const [conges, setConges] = useState(DEMO_CONGES);
@@ -96,15 +126,41 @@ export default function DashboardEmploye() {
   const [uploadingDoc, setUploadingDoc] = useState('');
   const [bulletinPreview, setBulletinPreview] = useState(null);
   const [pointages, setPointages] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('freample_pointage') || '[]'); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem('freample_pointages') || '[]'); } catch { return []; }
   });
+  const [signalForm, setSignalForm] = useState({ desc: '', type: 'defaut' });
+  const [signalOpen, setSignalOpen] = useState(null);
+  const [rapportForm, setRapportForm] = useState({ note: '' });
+  const [rapportOpen, setRapportOpen] = useState(null);
+  const [messageForm, setMessageForm] = useState('');
+  const [messageOpen, setMessageOpen] = useState(null);
+  const [meteoOpen, setMeteoOpen] = useState(null);
+  const [trajetPointage, setTrajetPointage] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('freample_trajet_today') || 'null'); } catch { return null; }
+  });
+
+  // Carburant states
+  const [carburantForm, setCarburantForm] = useState({ litres: '', montant: '', km: '' });
+  const [carburantOpen, setCarburantOpen] = useState(null); // chantierId
+  const [carburantConfirm, setCarburantConfirm] = useState(null);
 
   // Stock management states
   const [stockExpandedChantier, setStockExpandedChantier] = useState(null); // { chantierId, section: 'stock'|'achat'|'surplus' }
   const [stockQties, setStockQties] = useState({}); // { articleId: qty }
-  const [achatForm, setAchatForm] = useState({ fournisseur: '', description: '', montantHT: '', tva: '20' });
+  const [achatForm, setAchatForm] = useState({ fournisseur: '', tva: '20' });
+  const [achatLignes, setAchatLignes] = useState([{ article: '', quantite: '', unite: 'u', prixUnitaire: '' }]);
   const [surplusForm, setSurplusForm] = useState({ article: '', quantite: '', prixUnitaire: '' });
+  const [stockSuggestions, setStockSuggestions] = useState([]);
+  const [stockSuggestIdx, setStockSuggestIdx] = useState(null); // which input shows suggestions
   const [stockConfirmation, setStockConfirmation] = useState(null);
+
+  // Todo demain states
+  const [todoForm, setTodoForm] = useState('');
+  const [todoOpen, setTodoOpen] = useState(null);
+
+  // Note de frais chantier states
+  const [fraisChantierForm, setFraisChantierForm] = useState({ montant: '', categorie: 'Repas', description: '' });
+  const [fraisChantierOpen, setFraisChantierOpen] = useState(null);
 
   const patronId = user?.patronId;
   const hasEntreprise = !!patronId;
@@ -114,9 +170,21 @@ export default function DashboardEmploye() {
       if (data.employe) setProfil(data.employe);
       if (data.patron) setPatron(data.patron);
     }).catch(() => {});
-    api.get('/missions').then(({ data }) => { if (data.missions?.length) setChantiers(data.missions); }).catch(() => {});
+    api.get('/missions').then(({ data }) => { if (data.missions?.length) setChantiers(data.missions); }).catch(() => {
+      const patronChantiers = JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]');
+      if (patronChantiers.length > 0) {
+        setChantiers(patronChantiers);
+      }
+      // Keep DEMO_CHANTIERS as additional fallback (already set as initial state)
+    });
     api.get('/rh/bulletins-paie').then(({ data }) => { if (data.bulletins?.length) setBulletins(data.bulletins); }).catch(() => {});
-    api.get('/rh/conges').then(({ data }) => { if (data.conges?.length) setConges(data.conges); }).catch(() => {});
+    api.get('/rh/conges').then(({ data }) => { if (data.conges?.length) setConges(data.conges); }).catch(() => {
+      // Fallback localStorage — lire les congés avec statuts mis à jour par le patron
+      try {
+        const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+        if (local.length > 0) setConges(local);
+      } catch {}
+    });
     api.get('/rh/notes-frais').then(({ data }) => { if (data.notes?.length) setFrais(data.notes); }).catch(() => {});
     api.get('/rh/documents').then(({ data }) => { if (data.documents) setMesDocs(data.documents); }).catch(() => {});
   }, []);
@@ -125,16 +193,24 @@ export default function DashboardEmploye() {
   const fraisEnAttente = frais.filter(f => f.statut === 'en_attente').reduce((s, f) => s + f.montant, 0);
 
   const submitConge = () => {
-    const c = { id: Date.now(), debut: form.debut, fin: form.fin, jours: Math.max(1, Math.ceil((new Date(form.fin) - new Date(form.debut)) / 86400000) + 1), type: form.typeConge || 'vacances', statut: 'en_attente', commentaire: form.commentaire || '' };
+    const c = { id: Date.now(), debut: form.debut, fin: form.fin, jours: Math.max(1, Math.ceil((new Date(form.fin) - new Date(form.debut)) / 86400000) + 1), type: form.typeConge || 'vacances', statut: 'en_attente', commentaire: form.commentaire || '', employe: profil.prenom + ' ' + profil.nom };
     setConges(prev => [c, ...prev]);
     api.post('/rh/conges', c).catch(() => {});
+    // Persist to shared localStorage for patron dashboard
+    const allConges = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+    allConges.push(c);
+    localStorage.setItem('freample_conges', JSON.stringify(allConges));
     setModal(null); setForm({});
   };
 
   const submitFrais = () => {
-    const f = { id: Date.now(), date: form.dateFrais || new Date().toISOString().slice(0, 10), montant: Number(form.montant) || 0, categorie: form.categorie || 'Autre', description: form.descFrais || '', statut: 'en_attente' };
+    const f = { id: Date.now(), date: form.dateFrais || new Date().toISOString().slice(0, 10), montant: Number(form.montant) || 0, categorie: form.categorie || 'Autre', description: form.descFrais || '', statut: 'en_attente', chantierId: form.chantierId || null, employe: profil.prenom + ' ' + profil.nom };
     setFrais(prev => [f, ...prev]);
     api.post('/rh/notes-frais', f).catch(() => {});
+    // Persist to shared localStorage for patron dashboard
+    const allFrais = JSON.parse(localStorage.getItem('freample_frais_chantier') || '[]');
+    allFrais.push(f);
+    localStorage.setItem('freample_frais_chantier', JSON.stringify(allFrais));
     setModal(null); setForm({});
   };
 
@@ -143,7 +219,7 @@ export default function DashboardEmploye() {
     const entry = { date: now.toISOString().slice(0, 10), type, heure: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
     const updated = [...pointages, entry];
     setPointages(updated);
-    localStorage.setItem('freample_pointage', JSON.stringify(updated));
+    localStorage.setItem('freample_pointages', JSON.stringify(updated));
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -196,11 +272,11 @@ export default function DashboardEmploye() {
           <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
         </div>
         <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {TABS.map((t, i) => (
-            <button key={t.label} onClick={() => { setTab(i); setMenuOpen(false); }}
-              style={{ width: '100%', padding: '12px 20px', background: tab === i ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === i ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === i ? 700 : 400, color: tab === i ? DS.ink : DS.muted, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
-              onMouseEnter={e => { if (tab !== i) e.currentTarget.style.background = '#FAFAF8'; }}
-              onMouseLeave={e => { if (tab !== i) e.currentTarget.style.background = 'none'; }}>
+          {MENU_ITEMS.map(t => (
+            <button key={t.id} onClick={() => { setTab(t.id); setMenuOpen(false); }}
+              style={{ width: '100%', padding: '12px 20px', background: tab === t.id ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === t.id ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? DS.ink : DS.muted, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
+              onMouseEnter={e => { if (tab !== t.id) e.currentTarget.style.background = '#FAFAF8'; }}
+              onMouseLeave={e => { if (tab !== t.id) e.currentTarget.style.background = 'none'; }}>
               <t.Icon size={16} /> {t.label}
             </button>
           ))}
@@ -223,116 +299,274 @@ export default function DashboardEmploye() {
         </div>
       )}
 
-      {/* ═══ TABLEAU DE BORD ═══ */}
-      {tab === 0 && <>
-        {/* Pointage */}
-        <div style={{ ...CARD, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: DS.ink }}>Pointage du jour</div>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-            <button onClick={() => recordPointage('arrivee')} style={{ ...BTN, background: '#16A34A', fontSize: 15, padding: '14px 28px' }}>🟢 Arrivée</button>
-            <button onClick={() => recordPointage('depart')} style={{ ...BTN, background: '#DC2626', fontSize: 15, padding: '14px 28px' }}>🔴 Départ</button>
+      {/* ═══ MON MATIN ═══ */}
+      {tab === 'matin' && (() => {
+        const today = new Date().toISOString().slice(0, 10);
+        const mesChantiers = chantiers.filter(c => {
+          const isInEquipe = (c.equipe || []).some(nom =>
+            nom.toLowerCase().includes(profil.nom?.toLowerCase()) ||
+            nom.toLowerCase().includes(profil.prenom?.toLowerCase())
+          );
+          const isActive = c.dateDebut && c.dateDebut <= today && (!c.dateFin || c.dateFin >= today);
+          const notDone = c.statut !== 'terminee' && c.statut !== 'annulee' && c.statut !== 'complete';
+          return (isInEquipe && isActive && notDone) || (c.statut === 'en_cours' && isActive);
+        });
+
+        // ── Compteur heures semaine ──
+        const allPts = (() => { try { return JSON.parse(localStorage.getItem('freample_pointages') || '[]'); } catch { return []; } })();
+        const now = new Date();
+        const mondayDate = new Date(now); mondayDate.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+        const mondayStr = mondayDate.toISOString().slice(0, 10);
+        let heuresSemaine = 0;
+        const joursPtes = [...new Set(allPts.filter(p => p.date >= mondayStr && p.date <= today).map(p => p.date))];
+        joursPtes.forEach(d => {
+          const arr = allPts.find(p => p.date === d && p.type === 'arrivee');
+          const dep = allPts.find(p => p.date === d && p.type === 'depart');
+          if (arr && dep) {
+            const [ah, am] = arr.heure.split(':').map(Number);
+            const [dh, dm] = dep.heure.split(':').map(Number);
+            heuresSemaine += (dh * 60 + dm - ah * 60 - am) / 60;
+          }
+        });
+        const heuresSupp = Math.max(0, heuresSemaine - 35);
+
+        // ── Alertes salarié ──
+        const alertesSalarie = [];
+        const lsConges = (() => { try { return JSON.parse(localStorage.getItem('freample_conges') || '[]'); } catch { return []; } })();
+        const mesCg = lsConges.filter(c => c.employe && `${profil.prenom} ${profil.nom}`.toLowerCase().includes(c.employe.toLowerCase().split(' ').pop()));
+        mesCg.forEach(c => {
+          if (c.statut === 'approuve') alertesSalarie.push({ type: 'success', msg: `Congé du ${c.debut} au ${c.fin} approuvé` });
+          if (c.statut === 'rejete') alertesSalarie.push({ type: 'danger', msg: `Congé du ${c.debut} au ${c.fin} refusé${c.commentaire ? ' — ' + c.commentaire : ''}` });
+        });
+        const lsFrais = (() => { try { return JSON.parse(localStorage.getItem('freample_frais_chantier') || '[]'); } catch { return []; } })();
+        const mesFr = lsFrais.filter(f => f.employe && `${profil.prenom} ${profil.nom}`.toLowerCase().includes(f.employe.toLowerCase().split(' ').pop()));
+        mesFr.forEach(f => {
+          if (f.statut === 'rembourse') alertesSalarie.push({ type: 'success', msg: `Note de frais "${f.description}" remboursée (${f.montant}€)` });
+        });
+
+        // ── Numéro patron ──
+        const patronTel = (() => { try { const p = JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); return p.telephone || p.tel || ''; } catch { return ''; } })();
+
+        return <>
+        {/* Header + compteur + appel patron */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>Bonjour {profil.prenom}</div>
+            <div style={{ fontSize: 13, color: DS.muted }}>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
           </div>
-          {todayPointages.length > 0 ? (
-            <div style={{ fontSize: 13, color: DS.ink }}>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 6 }}>
-                {todayArrivees.length > 0 && <span>Arrivée : {todayArrivees.map(a => a.heure).join(', ')}</span>}
-                {todayDeparts.length > 0 && <span>Départ : {todayDeparts.map(d => d.heure).join(', ')}</span>}
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: DS.accent }}>Total travaillé aujourd'hui : {todayHoursWorked}</div>
-            </div>
-          ) : (
-            <div style={{ fontSize: 12, color: DS.muted }}>Aucun pointage aujourd'hui</div>
+          {patronTel && (
+            <a href={`tel:${patronTel}`} style={{ padding: '8px 14px', background: '#16A34A', color: '#fff', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              Patron
+            </a>
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 20 }}>
-          {[
-            { l: 'Chantiers assignés', v: chantiers.filter(c => c.statut !== 'complete').length, c: '#2563EB' },
-            { l: 'Congés restants', v: `${congesRestants} j`, c: '#16A34A' },
-            { l: 'Prochaine paie', v: bulletins[0]?.net ? `${bulletins[0].net}€` : '—', c: DS.gold },
-            { l: 'Frais en attente', v: `${fraisEnAttente.toFixed(2)}€`, c: '#D97706' },
-          ].map(k => (
-            <div key={k.l} style={{ ...CARD, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: k.c, borderRadius: '14px 14px 0 0' }} />
-              <div style={{ fontSize: 11, color: DS.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{k.l}</div>
-              <div style={{ fontSize: 24, fontWeight: 300, color: DS.ink }}>{k.v}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={CARD}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: DS.ink }}>Chantiers en cours</div>
-            {chantiers.filter(c => c.statut === 'en_cours').map(c => (
-              <div key={c.id} style={{ padding: '8px 0', borderBottom: '1px solid #E8E6E1' }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{c.titre}</div>
-                <div style={{ fontSize: 11, color: DS.muted }}>{c.adresse}</div>
-              </div>
-            ))}
-            {chantiers.filter(c => c.statut === 'en_cours').length === 0 && <div style={{ fontSize: 12, color: DS.muted }}>Aucun chantier en cours</div>}
+        {/* Compteur heures semaine */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Cette semaine</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: DS.ink }}>{heuresSemaine.toFixed(1)}h</div>
           </div>
-          <div style={CARD}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: DS.ink }}>Congés en attente</div>
-            {conges.filter(c => c.statut === 'en_attente').map(c => (
-              <div key={c.id} style={{ padding: '8px 0', borderBottom: '1px solid #E8E6E1' }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{c.debut} → {c.fin} ({c.jours}j)</div>
-                <div style={{ fontSize: 11, color: '#D97706' }}>{c.commentaire}</div>
-              </div>
-            ))}
-            {conges.filter(c => c.statut === 'en_attente').length === 0 && <div style={{ fontSize: 12, color: DS.muted }}>Aucune demande en attente</div>}
+          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Heures sup</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: heuresSupp > 0 ? '#D97706' : '#16A34A' }}>{heuresSupp.toFixed(1)}h</div>
+          </div>
+          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Jours pointés</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: DS.ink }}>{joursPtes.length}/5</div>
           </div>
         </div>
-      </>}
 
-      {/* ═══ MES CHANTIERS ═══ */}
-      {tab === 1 && <>
-        <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Mes chantiers ({chantiers.length})</h2>
-        {chantiers.map(c => {
+        {/* Alertes salarié */}
+        {alertesSalarie.length > 0 && (
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {alertesSalarie.map((a, i) => (
+              <div key={i} style={{
+                padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: a.type === 'success' ? '#F0FDF4' : '#FEF2F2',
+                border: `1px solid ${a.type === 'success' ? '#16A34A40' : '#DC262640'}`,
+                color: a.type === 'success' ? '#16A34A' : '#DC2626',
+              }}>
+                {a.type === 'success' ? '✓' : '✕'} {a.msg}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Trajet pointage */}
+        {!trajetPointage && (
+          <button onClick={() => {
+            const t = { departDepot: new Date().toISOString(), heureDepart: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) };
+            setTrajetPointage(t);
+            localStorage.setItem('freample_trajet_today', JSON.stringify(t));
+          }} style={{ width: '100%', padding: '16px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}>
+            Départ du dépôt
+          </button>
+        )}
+        {trajetPointage && !trajetPointage.arriveeChantier && (
+          <div style={{ padding: '12px 16px', background: '#EFF6FF', border: '1px solid #2563EB30', borderRadius: 12, marginBottom: 16, fontSize: 13 }}>
+            En route depuis {trajetPointage.heureDepart}
+          </div>
+        )}
+
+        {/* Pas de chantier */}
+        {mesChantiers.length === 0 && (
+          <div style={{ ...CARD, textAlign: 'center', padding: 32, marginBottom: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: DS.ink }}>Pas de chantier prévu aujourd'hui</div>
+            <div style={{ fontSize: 13, color: DS.muted, marginBottom: 16 }}>Consultez le planning de la semaine</div>
+            <button onClick={() => setTab('planning')} style={BTN}>Voir le planning</button>
+          </div>
+        )}
+
+        {/* Chantiers du jour */}
+        {mesChantiers.map(c => {
+          const allPointages = JSON.parse(localStorage.getItem('freample_pointages') || '[]');
+          const chantierPointages = allPointages.filter(p => p.date === today && p.chantierId === c.id);
+          const hasArrived = chantierPointages.some(p => p.type === 'arrivee');
+          const hasDeparted = chantierPointages.some(p => p.type === 'depart');
+          const arrivalTime = chantierPointages.find(p => p.type === 'arrivee')?.heure;
+          const departTime = chantierPointages.find(p => p.type === 'depart')?.heure;
+
           const isExpanded = stockExpandedChantier?.chantierId === c.id;
           const activeSection = isExpanded ? stockExpandedChantier.section : null;
           const toggleSection = (section) => {
             if (isExpanded && activeSection === section) {
-              setStockExpandedChantier(null);
-              setStockQties({});
-              setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
-              setSurplusForm({ article: '', quantite: '', prixUnitaire: '' });
-              setStockConfirmation(null);
+              setStockExpandedChantier(null); setStockQties({}); setAchatForm({ fournisseur: '', tva: '20' }); setAchatLignes([{ article: '', quantite: '', unite: 'u', prixUnitaire: '' }]); setSurplusForm({ article: '', quantite: '', prixUnitaire: '' }); setStockConfirmation(null);
             } else {
-              setStockExpandedChantier({ chantierId: c.id, section });
-              setStockQties({});
-              setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
-              setSurplusForm({ article: '', quantite: '', prixUnitaire: '' });
-              setStockConfirmation(null);
+              setStockExpandedChantier({ chantierId: c.id, section }); setStockQties({}); setAchatForm({ fournisseur: '', tva: '20' }); setAchatLignes([{ article: '', quantite: '', unite: 'u', prixUnitaire: '' }]); setSurplusForm({ article: '', quantite: '', prixUnitaire: '' }); setStockConfirmation(null);
             }
           };
+
+          const messages = JSON.parse(localStorage.getItem(`freample_messages_${c.id}`) || '[]');
+
           return (
-          <div key={c.id} style={{ ...CARD, marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{c.titre}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: statutColors[c.statut], background: `${statutColors[c.statut]}15`, padding: '2px 8px', borderRadius: 6 }}>{statutLabels[c.statut]}</span>
+          <div key={c.id} style={{ ...CARD, marginBottom: 16 }}>
+            {/* Todo from yesterday */}
+            {(() => {
+              const todo = JSON.parse(localStorage.getItem(`freample_todo_${c.id}`) || 'null');
+              const isForToday = todo && todo.date === today;
+              if (!isForToday) return null;
+              return (
+                <div style={{ marginBottom: 12, padding: '12px 14px', background: '#FEF3C7', border: '2px solid #D97706', borderRadius: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#D97706', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>À faire aujourd'hui</div>
+                  <div style={{ fontSize: 13, color: DS.ink, marginBottom: 8, whiteSpace: 'pre-wrap' }}>{todo.note}</div>
+                  <div style={{ fontSize: 11, color: DS.muted, marginBottom: 8 }}>Noté par {todo.salarie}</div>
+                  <button onClick={() => { localStorage.removeItem(`freample_todo_${c.id}`); setTodoOpen(prev => prev === null ? undefined : null); /* force re-render */ }} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 14px' }}>Fait</button>
                 </div>
-                <div style={{ fontSize: 12, color: DS.muted }}>{c.adresse} · {c.dateDebut} → {c.dateFin} · Chef: {c.chef}</div>
+              );
+            })()}
+            {/* Chantier header */}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: DS.ink, marginBottom: 2 }}>{c.titre}</div>
+              {c.adresse && <a href={`https://maps.google.com/?q=${encodeURIComponent(c.adresse)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#2563EB', textDecoration: 'underline' }}>{c.adresse}</a>}
+              {/* Équipe aujourd'hui */}
+              {c.equipe && c.equipe.length > 0 && (
+                <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: DS.muted, fontWeight: 600 }}>Équipe :</span>
+                  {c.equipe.map((nom, ei) => {
+                    const isMe = nom.toLowerCase().includes(profil.nom?.toLowerCase()) || nom.toLowerCase().includes(profil.prenom?.toLowerCase());
+                    return (
+                      <span key={ei} style={{
+                        padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                        background: isMe ? '#2563EB15' : '#F8F7F4',
+                        color: isMe ? '#2563EB' : DS.ink,
+                        border: isMe ? '1px solid #2563EB40' : '1px solid #E8E6E1',
+                      }}>
+                        {nom}{isMe ? ' (vous)' : ''}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {c.vehicule && (
+                <div style={{ fontSize: 12, color: DS.muted, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🚛</span> {c.vehicule.modele || c.vehicule.model || 'Véhicule'} — {c.vehicule.immatriculation}
+                </div>
+              )}
+            </div>
+
+            {/* Pointage per chantier */}
+            <div style={{ marginBottom: 14, padding: '12px 14px', background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+              {!hasArrived && (
+                <button onClick={() => {
+                  const now = new Date();
+                  const entry = { id: Date.now(), date: today, type: 'arrivee', heure: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), chantierId: c.id };
+                  const updated = [...JSON.parse(localStorage.getItem('freample_pointages') || '[]'), entry];
+                  localStorage.setItem('freample_pointages', JSON.stringify(updated));
+                  setPointages(updated);
+                  if (trajetPointage && !trajetPointage.arriveeChantier) {
+                    const updatedTrajet = { ...trajetPointage, arriveeChantier: new Date().toISOString() };
+                    setTrajetPointage(updatedTrajet);
+                    localStorage.setItem('freample_trajet_today', JSON.stringify(updatedTrajet));
+                  }
+                }} style={{ width: '100%', padding: '14px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                  Arrivée sur chantier
+                </button>
+              )}
+              {hasArrived && !hasDeparted && (
+                <div>
+                  <div style={{ fontSize: 13, color: '#16A34A', fontWeight: 600, marginBottom: 8 }}>Arrivé à {arrivalTime}</div>
+                  <button onClick={() => {
+                    const now = new Date();
+                    const entry = { id: Date.now(), date: today, type: 'depart', heure: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), chantierId: c.id };
+                    const updated = [...JSON.parse(localStorage.getItem('freample_pointages') || '[]'), entry];
+                    localStorage.setItem('freample_pointages', JSON.stringify(updated));
+                    setPointages(updated);
+                  }} style={{ width: '100%', padding: '14px', background: '#DC2626', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                    Départ du chantier
+                  </button>
+                </div>
+              )}
+              {hasArrived && hasDeparted && (
+                <div style={{ fontSize: 13, color: DS.ink }}>
+                  <span style={{ color: '#16A34A', fontWeight: 600 }}>Arrivée : {arrivalTime}</span> — <span style={{ color: '#DC2626', fontWeight: 600 }}>Départ : {departTime}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Météo */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: DS.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Météo du jour</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[{ label: 'Soleil', icon: '☀️' }, { label: 'Nuageux', icon: '⛅' }, { label: 'Pluie', icon: '🌧️' }, { label: 'Neige', icon: '❄️' }].map(m => (
+                  <button key={m.label} onClick={() => {
+                    const journal = JSON.parse(localStorage.getItem(`freample_journal_${c.id}`) || '[]');
+                    const todayEntry = journal.find(j => j.date === today);
+                    if (todayEntry) todayEntry.meteo = m.label;
+                    else journal.push({ date: today, meteo: m.label, nbOuvriers: mesChantiers.length, description: '', problemes: '' });
+                    localStorage.setItem(`freample_journal_${c.id}`, JSON.stringify(journal));
+                    setMeteoOpen(c.id + '_' + m.label);
+                  }} style={{ flex: 1, padding: '8px 4px', background: meteoOpen === c.id + '_' + m.label ? '#2563EB15' : '#FAFAF8', border: meteoOpen === c.id + '_' + m.label ? '2px solid #2563EB' : '1px solid #E8E6E1', borderRadius: 8, cursor: 'pointer', fontSize: 18, textAlign: 'center' }}
+                  title={m.label}>
+                    {m.icon}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-              <button onClick={() => toggleSection('stock')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'stock' ? '#0A0A0A' : 'transparent', color: activeSection === 'stock' ? '#fff' : '#0A0A0A' }}>Utiliser le stock</button>
-              <button onClick={() => toggleSection('achat')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'achat' ? '#0A0A0A' : 'transparent', color: activeSection === 'achat' ? '#fff' : '#0A0A0A' }}>Achat fournisseur</button>
-              <button onClick={() => toggleSection('surplus')} style={{ ...BTN_O, fontSize: 12, padding: '7px 14px', background: activeSection === 'surplus' ? '#0A0A0A' : 'transparent', color: activeSection === 'surplus' ? '#fff' : '#0A0A0A' }}>Surplus à retourner</button>
+            {/* 8 action buttons (4x2 grid) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+              <button onClick={() => toggleSection('stock')} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: activeSection === 'stock' ? '#0A0A0A' : 'transparent', color: activeSection === 'stock' ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Prendre du stock</button>
+              <button onClick={() => toggleSection('achat')} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: activeSection === 'achat' ? '#0A0A0A' : 'transparent', color: activeSection === 'achat' ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Achat fournisseur</button>
+              <button onClick={() => { setCarburantOpen(carburantOpen === c.id ? null : c.id); setCarburantForm({ litres: '', montant: '', km: '' }); setCarburantConfirm(null); }} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: carburantOpen === c.id ? '#0A0A0A' : 'transparent', color: carburantOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Plein carburant</button>
+              <button onClick={() => toggleSection('surplus')} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: activeSection === 'surplus' ? '#0A0A0A' : 'transparent', color: activeSection === 'surplus' ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Surplus à retourner</button>
+              <button onClick={() => setSignalOpen(signalOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: signalOpen === c.id ? '#DC2626' : 'transparent', color: signalOpen === c.id ? '#fff' : '#DC2626', borderColor: '#DC2626', textAlign: 'center' }}>Signaler problème</button>
+              <button onClick={() => setRapportOpen(rapportOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: rapportOpen === c.id ? '#0A0A0A' : 'transparent', color: rapportOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Rapport du jour</button>
+              <button onClick={() => setTodoOpen(todoOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: todoOpen === c.id ? '#0A0A0A' : 'transparent', color: todoOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>À faire demain</button>
+              <button onClick={() => setFraisChantierOpen(fraisChantierOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: fraisChantierOpen === c.id ? '#0A0A0A' : 'transparent', color: fraisChantierOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Note de frais</button>
             </div>
 
             {/* Confirmation message */}
             {stockConfirmation && isExpanded && (
-              <div style={{ marginTop: 10, padding: '8px 12px', background: '#16A34A18', border: '1px solid #16A34A40', borderRadius: 8, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>{stockConfirmation}</div>
+              <div style={{ marginBottom: 10, padding: '8px 12px', background: '#16A34A18', border: '1px solid #16A34A40', borderRadius: 8, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>{stockConfirmation}</div>
             )}
 
             {/* ── Utiliser le stock ── */}
             {activeSection === 'stock' && (() => {
               const articles = JSON.parse(localStorage.getItem('freample_stock_articles') || '[]');
               return (
-                <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Stock disponible</div>
                   {articles.length === 0 && <div style={{ fontSize: 12, color: DS.muted }}>Aucun article en stock</div>}
                   {articles.map((art, idx) => (
@@ -350,7 +584,6 @@ export default function DashboardEmploye() {
                       const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
                       const matieres = JSON.parse(localStorage.getItem(`freample_matieres_stock_${c.id}`) || '[]');
                       let count = 0;
-                      const today = new Date().toISOString().slice(0, 10);
                       arts.forEach((art, idx) => {
                         const key = art.id || idx;
                         const qty = Number(stockQties[key]);
@@ -374,102 +607,175 @@ export default function DashboardEmploye() {
               );
             })()}
 
-            {/* ── Achat fournisseur ── */}
-            {activeSection === 'achat' && (
-              <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+            {/* ── Achat fournisseur (multi-lignes) ── */}
+            {activeSection === 'achat' && (() => {
+              const totalHT = achatLignes.reduce((s, l) => s + (Number(l.quantite) || 0) * (Number(l.prixUnitaire) || 0), 0);
+              const tvaRate = Number(achatForm.tva) || 20;
+              const totalTTC = Math.round(totalHT * (1 + tvaRate / 100) * 100) / 100;
+              return (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Nouvel achat fournisseur</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Fournisseur</label>
-                    <input value={achatForm.fournisseur} onChange={e => setAchatForm(f => ({ ...f, fournisseur: e.target.value }))} style={INP} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Description</label>
-                    <input value={achatForm.description} onChange={e => setAchatForm(f => ({ ...f, description: e.target.value }))} style={INP} />
-                  </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Fournisseur</label>
+                  <input value={achatForm.fournisseur} onChange={e => setAchatForm(f => ({ ...f, fournisseur: e.target.value }))} style={INP} placeholder="ex: Point P" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Montant HT (€)</label>
-                    <input type="number" value={achatForm.montantHT} onChange={e => setAchatForm(f => ({ ...f, montantHT: e.target.value }))} style={INP} />
+
+                {/* Lignes d'articles */}
+                <div style={{ fontSize: 11, fontWeight: 600, color: DS.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Articles</div>
+                {achatLignes.map((ligne, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.2fr auto', gap: 6, marginBottom: 6, alignItems: 'end' }}>
+                    <div>
+                      {idx === 0 && <label style={{ fontSize: 10, color: DS.muted, display: 'block', marginBottom: 2 }}>Article</label>}
+                      <div style={{ position: 'relative' }}>
+                        <input value={ligne.article}
+                          onChange={e => {
+                            const val = e.target.value;
+                            const updated = [...achatLignes]; updated[idx] = { ...updated[idx], article: val }; setAchatLignes(updated);
+                            if (val.length >= 2) {
+                              const arts = (() => { try { return JSON.parse(localStorage.getItem('freample_stock_articles') || '[]'); } catch { return []; } })();
+                              const matches = arts.filter(a => a.designation.toLowerCase().includes(val.toLowerCase())).slice(0, 5);
+                              setStockSuggestions(matches); setStockSuggestIdx(matches.length > 0 ? `achat-${idx}` : null);
+                            } else { setStockSuggestIdx(null); }
+                          }}
+                          onFocus={() => { if (ligne.article.length >= 2) { const arts = (() => { try { return JSON.parse(localStorage.getItem('freample_stock_articles') || '[]'); } catch { return []; } })(); const m = arts.filter(a => a.designation.toLowerCase().includes(ligne.article.toLowerCase())).slice(0, 5); setStockSuggestions(m); setStockSuggestIdx(m.length > 0 ? `achat-${idx}` : null); } }}
+                          onBlur={() => setTimeout(() => setStockSuggestIdx(null), 200)}
+                          style={{ ...INP, fontSize: 12 }} placeholder="Désignation" />
+                        {stockSuggestIdx === `achat-${idx}` && stockSuggestions.length > 0 && (
+                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #E8E6E1', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.12)', zIndex: 10, marginTop: 2 }}>
+                            {stockSuggestions.map(s => (
+                              <div key={s.id} onMouseDown={() => {
+                                const updated = [...achatLignes]; updated[idx] = { ...updated[idx], article: s.designation, unite: s.unite || 'u', prixUnitaire: s.valeurUnitaire || '' }; setAchatLignes(updated); setStockSuggestIdx(null);
+                              }} style={{ padding: '6px 10px', cursor: 'pointer', fontSize: 12, borderBottom: '1px solid #F2F2F7' }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#F8F7F4'} onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                                <span style={{ fontWeight: 600 }}>{s.designation}</span>
+                                <span style={{ color: '#777', marginLeft: 6 }}>{s.quantite} {s.unite} · {(s.valeurUnitaire || 0).toFixed(2)}€</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      {idx === 0 && <label style={{ fontSize: 10, color: DS.muted, display: 'block', marginBottom: 2 }}>Qté</label>}
+                      <input type="number" min="0" value={ligne.quantite} onChange={e => { const updated = [...achatLignes]; updated[idx] = { ...updated[idx], quantite: e.target.value }; setAchatLignes(updated); }} style={{ ...INP, fontSize: 12 }} placeholder="0" />
+                    </div>
+                    <div>
+                      {idx === 0 && <label style={{ fontSize: 10, color: DS.muted, display: 'block', marginBottom: 2 }}>Unité</label>}
+                      <select value={ligne.unite} onChange={e => { const updated = [...achatLignes]; updated[idx] = { ...updated[idx], unite: e.target.value }; setAchatLignes(updated); }} style={{ ...INP, fontSize: 12 }}>
+                        <option value="u">u</option><option value="sac">sac</option><option value="kg">kg</option><option value="m">m</option><option value="m²">m²</option><option value="boîte">boîte</option>
+                      </select>
+                    </div>
+                    <div>
+                      {idx === 0 && <label style={{ fontSize: 10, color: DS.muted, display: 'block', marginBottom: 2 }}>Prix unit. HT</label>}
+                      <input type="number" min="0" step="0.01" value={ligne.prixUnitaire} onChange={e => { const updated = [...achatLignes]; updated[idx] = { ...updated[idx], prixUnitaire: e.target.value }; setAchatLignes(updated); }} style={{ ...INP, fontSize: 12 }} placeholder="0.00" />
+                    </div>
+                    <div>
+                      {idx === 0 && <label style={{ fontSize: 10, color: 'transparent', display: 'block', marginBottom: 2 }}>&nbsp;</label>}
+                      {achatLignes.length > 1 ? (
+                        <button onClick={() => setAchatLignes(prev => prev.filter((_, i) => i !== idx))} style={{ background: 'none', border: '1px solid #DC262640', borderRadius: 6, color: '#DC2626', cursor: 'pointer', fontSize: 14, width: 30, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: DS.font }}>&times;</button>
+                      ) : <div style={{ width: 30, height: 36 }} />}
+                    </div>
                   </div>
+                ))}
+                <button onClick={() => setAchatLignes(prev => [...prev, { article: '', quantite: '', unite: 'u', prixUnitaire: '' }])} style={{ ...BTN_O, fontSize: 11, padding: '6px 12px', marginBottom: 10 }}>+ Ajouter une ligne</button>
+
+                {/* TVA */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                   <div>
                     <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>TVA %</label>
                     <select value={achatForm.tva} onChange={e => setAchatForm(f => ({ ...f, tva: e.target.value }))} style={INP}>
-                      <option value="0">0%</option>
-                      <option value="5.5">5.5%</option>
-                      <option value="10">10%</option>
-                      <option value="20">20%</option>
+                      <option value="0">0%</option><option value="5.5">5.5%</option><option value="10">10%</option><option value="20">20%</option>
                     </select>
                   </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 2 }}>
+                    <div style={{ fontSize: 12, color: DS.muted }}>Total HT : <strong style={{ color: DS.ink }}>{totalHT.toFixed(2)} €</strong></div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: DS.ink }}>Total TTC : {totalTTC.toFixed(2)} €</div>
+                  </div>
                 </div>
+
                 <button onClick={() => {
-                  const montantHT = Number(achatForm.montantHT);
-                  if (!achatForm.fournisseur || !achatForm.description || !montantHT) return;
+                  const validLignes = achatLignes.filter(l => l.article && Number(l.quantite) > 0 && Number(l.prixUnitaire) > 0);
+                  if (!achatForm.fournisseur || validLignes.length === 0) return;
                   const tva = Number(achatForm.tva);
-                  const montantTTC = montantHT * (1 + tva / 100);
-                  const today = new Date().toISOString().slice(0, 10);
+                  const montantHT = validLignes.reduce((s, l) => s + Number(l.quantite) * Number(l.prixUnitaire), 0);
+                  const montantTTC = Math.round(montantHT * (1 + tva / 100) * 100) / 100;
                   const achats = JSON.parse(localStorage.getItem(`freample_matieres_achat_${c.id}`) || '[]');
                   const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
-                  const entry = { id: Date.now(), fournisseur: achatForm.fournisseur, description: achatForm.description, montantHT, tva, montantTTC: Math.round(montantTTC * 100) / 100, date: today, chantierId: c.id };
-                  achats.push(entry);
-                  mouvements.push({ id: Date.now() + 1, type: 'achat', article: achatForm.description, fournisseur: achatForm.fournisseur, montantHT, tva, montantTTC: Math.round(montantTTC * 100) / 100, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
+                  // Save each line individually
+                  validLignes.forEach((l, idx) => {
+                    const ligneHT = Number(l.quantite) * Number(l.prixUnitaire);
+                    achats.push({ id: Date.now() + idx, fournisseur: achatForm.fournisseur, article: l.article, quantite: Number(l.quantite), unite: l.unite, prixUnitaire: Number(l.prixUnitaire), montantHT: ligneHT, tva, date: today, chantierId: c.id });
+                    mouvements.push({ id: Date.now() + idx + 500, type: 'achat', article: l.article, quantite: Number(l.quantite), unite: l.unite, prixUnitaire: Number(l.prixUnitaire), fournisseur: achatForm.fournisseur, montantHT: ligneHT, tva, montantTTC: Math.round(ligneHT * (1 + tva / 100) * 100) / 100, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
+                  });
                   localStorage.setItem(`freample_matieres_achat_${c.id}`, JSON.stringify(achats));
                   localStorage.setItem('freample_stock_mouvements', JSON.stringify(mouvements));
-                  // Écriture comptable auto — achat matériaux (employé)
+                  // Comptabilité
                   const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
-                  const montantTVA = Math.round(montantHT * tva / 100);
+                  const montantTVA = Math.round(montantHT * tva / 100 * 100) / 100;
                   const refCompta = `ACH-${Date.now()}`;
+                  const descriptionCompta = validLignes.map(l => l.article).join(', ');
                   ecritures.push(
-                    { date: today, journal: 'HA', piece: refCompta, compte: '601000', libelle: `Achat ${achatForm.description} — Chantier`, debit: montantHT, credit: 0 },
+                    { date: today, journal: 'HA', piece: refCompta, compte: '601000', libelle: `Achat ${descriptionCompta} — Chantier`, debit: montantHT, credit: 0 },
                     { date: today, journal: 'HA', piece: refCompta, compte: '445660', libelle: 'TVA déductible', debit: montantTVA, credit: 0 },
                     { date: today, journal: 'HA', piece: refCompta, compte: '401000', libelle: `Fournisseur ${achatForm.fournisseur}`, debit: 0, credit: montantHT + montantTVA },
                   );
                   localStorage.setItem('freample_ecritures', JSON.stringify(ecritures));
-                  setAchatForm({ fournisseur: '', description: '', montantHT: '', tva: '20' });
-                  setStockConfirmation(`Achat enregistré : ${achatForm.description} — ${montantHT}€ HT chez ${achatForm.fournisseur}`);
-                }} style={{ ...BTN, fontSize: 12 }}>Valider</button>
+                  setAchatForm({ fournisseur: '', tva: '20' });
+                  setAchatLignes([{ article: '', quantite: '', unite: 'u', prixUnitaire: '' }]);
+                  setStockConfirmation(`Achat enregistré : ${validLignes.length} article${validLignes.length > 1 ? 's' : ''} — ${montantHT.toFixed(2)}€ HT chez ${achatForm.fournisseur}`);
+                }} style={{ ...BTN, fontSize: 12 }}>Valider l'achat</button>
               </div>
-            )}
+              );
+            })()}
 
             {/* ── Surplus à retourner ── */}
             {activeSection === 'surplus' && (
-              <div style={{ marginTop: 12, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Retourner du surplus au stock</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
-                  <div>
+                  <div style={{ position: 'relative' }}>
                     <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Article</label>
-                    <input value={surplusForm.article} onChange={e => setSurplusForm(f => ({ ...f, article: e.target.value }))} style={INP} />
+                    <input value={surplusForm.article}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSurplusForm(f => ({ ...f, article: val }));
+                        if (val.length >= 2) {
+                          const arts = (() => { try { return JSON.parse(localStorage.getItem('freample_stock_articles') || '[]'); } catch { return []; } })();
+                          const matches = arts.filter(a => a.designation.toLowerCase().includes(val.toLowerCase())).slice(0, 5);
+                          setStockSuggestions(matches); setStockSuggestIdx(matches.length > 0 ? 'surplus' : null);
+                        } else { setStockSuggestIdx(null); }
+                      }}
+                      onFocus={() => { if (surplusForm.article.length >= 2) { const arts = (() => { try { return JSON.parse(localStorage.getItem('freample_stock_articles') || '[]'); } catch { return []; } })(); const m = arts.filter(a => a.designation.toLowerCase().includes(surplusForm.article.toLowerCase())).slice(0, 5); setStockSuggestions(m); setStockSuggestIdx(m.length > 0 ? 'surplus' : null); } }}
+                      onBlur={() => setTimeout(() => setStockSuggestIdx(null), 200)}
+                      style={INP} placeholder="Désignation" />
+                    {stockSuggestIdx === 'surplus' && stockSuggestions.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #E8E6E1', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.12)', zIndex: 10, marginTop: 2 }}>
+                        {stockSuggestions.map(s => (
+                          <div key={s.id} onMouseDown={() => { setSurplusForm(f => ({ ...f, article: s.designation, prixUnitaire: s.valeurUnitaire || '' })); setStockSuggestIdx(null); }}
+                            style={{ padding: '6px 10px', cursor: 'pointer', fontSize: 12, borderBottom: '1px solid #F2F2F7' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#F8F7F4'} onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                            <span style={{ fontWeight: 600 }}>{s.designation}</span>
+                            <span style={{ color: '#777', marginLeft: 6 }}>{s.quantite} {s.unite} · {(s.valeurUnitaire || 0).toFixed(2)}€</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Quantité</label>
-                    <input type="number" value={surplusForm.quantite} onChange={e => setSurplusForm(f => ({ ...f, quantite: e.target.value }))} style={INP} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix unitaire (€)</label>
-                    <input type="number" value={surplusForm.prixUnitaire} onChange={e => setSurplusForm(f => ({ ...f, prixUnitaire: e.target.value }))} style={INP} />
-                  </div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Quantité</label><input type="number" value={surplusForm.quantite} onChange={e => setSurplusForm(f => ({ ...f, quantite: e.target.value }))} style={INP} /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix unitaire (€)</label><input type="number" value={surplusForm.prixUnitaire} onChange={e => setSurplusForm(f => ({ ...f, prixUnitaire: e.target.value }))} style={INP} /></div>
                 </div>
                 <button onClick={() => {
                   const qty = Number(surplusForm.quantite);
                   const prix = Number(surplusForm.prixUnitaire);
                   if (!surplusForm.article || !qty || qty <= 0) return;
-                  const today = new Date().toISOString().slice(0, 10);
-                  // Increment stock
                   const articles = JSON.parse(localStorage.getItem('freample_stock_articles') || '[]');
                   const existing = articles.find(a => a.designation.toLowerCase() === surplusForm.article.toLowerCase());
-                  if (existing) {
-                    existing.quantite = (existing.quantite || 0) + qty;
-                    if (prix) existing.prixUnitaire = prix;
-                  } else {
-                    articles.push({ id: Date.now(), designation: surplusForm.article, quantite: qty, unite: 'u', prixUnitaire: prix || 0 });
-                  }
+                  if (existing) { existing.quantite = (existing.quantite || 0) + qty; if (prix) existing.prixUnitaire = prix; }
+                  else { articles.push({ id: Date.now(), designation: surplusForm.article, quantite: qty, unite: 'u', prixUnitaire: prix || 0 }); }
                   localStorage.setItem('freample_stock_articles', JSON.stringify(articles));
-                  // Negative entry on chantier budget
                   const matieres = JSON.parse(localStorage.getItem(`freample_matieres_stock_${c.id}`) || '[]');
                   matieres.push({ id: Date.now() + 1, designation: surplusForm.article, quantite: -qty, unite: 'u', prixUnitaire: prix || 0, total: -(qty * (prix || 0)), date: today, type: 'surplus' });
                   localStorage.setItem(`freample_matieres_stock_${c.id}`, JSON.stringify(matieres));
-                  // Mouvement
                   const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
                   mouvements.push({ id: Date.now() + 2, type: 'surplus', article: surplusForm.article, quantite: qty, prixUnitaire: prix || 0, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, chantierId: c.id });
                   localStorage.setItem('freample_stock_mouvements', JSON.stringify(mouvements));
@@ -478,30 +784,272 @@ export default function DashboardEmploye() {
                 }} style={{ ...BTN, fontSize: 12 }}>Retourner au stock</button>
               </div>
             )}
+
+            {/* ── Plein carburant ── */}
+            {carburantOpen === c.id && (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Plein carburant{c.vehicule ? ` — ${c.vehicule.modele || c.vehicule.model || 'Véhicule'}` : ''}</div>
+                {carburantConfirm && <div style={{ marginBottom: 8, padding: '6px 10px', background: '#16A34A18', border: '1px solid #16A34A40', borderRadius: 8, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>{carburantConfirm}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Litres</label><input type="number" step="0.1" value={carburantForm.litres} onChange={e => setCarburantForm(f => ({ ...f, litres: e.target.value }))} style={INP} placeholder="ex: 45" /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Montant €</label><input type="number" step="0.01" value={carburantForm.montant} onChange={e => setCarburantForm(f => ({ ...f, montant: e.target.value }))} style={INP} placeholder="ex: 78.50" /></div>
+                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Km compteur</label><input type="number" value={carburantForm.km} onChange={e => setCarburantForm(f => ({ ...f, km: e.target.value }))} style={INP} placeholder="ex: 45230" /></div>
+                </div>
+                <button onClick={() => {
+                  const vehiculeId = c.vehicule?.id || c.vehicule?.immatriculation || c.id;
+                  const litres = parseFloat(carburantForm.litres);
+                  const montant = parseFloat(carburantForm.montant);
+                  const km = parseInt(carburantForm.km) || 0;
+                  if (!litres || !montant) return;
+                  const entries = JSON.parse(localStorage.getItem(`freample_carburant_${vehiculeId}`) || '[]');
+                  entries.push({ id: Date.now(), date: today, litres, montant, km, employe: profil.prenom + ' ' + profil.nom, chantier: c.titre });
+                  localStorage.setItem(`freample_carburant_${vehiculeId}`, JSON.stringify(entries));
+                  setCarburantForm({ litres: '', montant: '', km: '' });
+                  setCarburantConfirm(`Plein enregistré : ${litres}L / ${montant.toFixed(2)}€`);
+                }} style={{ ...BTN, fontSize: 12 }}>Enregistrer le plein</button>
+              </div>
+            )}
+
+            {/* ── Signaler un problème ── */}
+            {signalOpen === c.id && (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FEF2F2', borderRadius: 10, border: '1px solid #DC262640' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: '#DC2626' }}>Signaler un problème</div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Type</label>
+                  <select value={signalForm.type} onChange={e => setSignalForm(f => ({ ...f, type: e.target.value }))} style={INP}>
+                    <option value="defaut">Défaut</option>
+                    <option value="malfacon">Malfaçon</option>
+                    <option value="securite">Sécurité</option>
+                    <option value="materiel_manquant">Matériel manquant</option>
+                    <option value="autre">Autre</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Description</label>
+                  <textarea value={signalForm.desc} onChange={e => setSignalForm(f => ({ ...f, desc: e.target.value }))} style={{ ...INP, minHeight: 60, resize: 'vertical' }} placeholder="Décrivez le problème..." />
+                </div>
+                <button onClick={() => {
+                  if (!signalForm.desc.trim()) return;
+                  const signalements = JSON.parse(localStorage.getItem(`freample_signalements_${c.id}`) || '[]');
+                  signalements.push({ id: Date.now(), date: today, type: signalForm.type, description: signalForm.desc, salarie: profil.prenom + ' ' + profil.nom, chantierId: c.id });
+                  localStorage.setItem(`freample_signalements_${c.id}`, JSON.stringify(signalements));
+                  setSignalForm({ desc: '', type: 'defaut' });
+                  setSignalOpen(null);
+                }} style={{ ...BTN, background: '#DC2626', fontSize: 12 }}>Envoyer le signalement</button>
+              </div>
+            )}
+
+            {/* ── Rapport du jour ── */}
+            {rapportOpen === c.id && (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Rapport du jour</div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Ce qui a été fait aujourd'hui</label>
+                  <textarea value={rapportForm.note} onChange={e => setRapportForm(f => ({ ...f, note: e.target.value }))} style={{ ...INP, minHeight: 80, resize: 'vertical' }} placeholder="Décrivez l'avancement..." />
+                </div>
+                <button onClick={() => {
+                  if (!rapportForm.note.trim()) return;
+                  const rapports = JSON.parse(localStorage.getItem(`freample_rapports_${c.id}`) || '[]');
+                  rapports.push({ id: Date.now(), date: today, note: rapportForm.note, salarie: profil.prenom + ' ' + profil.nom });
+                  localStorage.setItem(`freample_rapports_${c.id}`, JSON.stringify(rapports));
+                  // Also save to journal
+                  const journal = JSON.parse(localStorage.getItem(`freample_journal_${c.id}`) || '[]');
+                  const todayEntry = journal.find(j => j.date === today);
+                  if (todayEntry) { todayEntry.description = (todayEntry.description ? todayEntry.description + '\n' : '') + rapportForm.note; }
+                  else { journal.push({ date: today, meteo: '', nbOuvriers: 0, description: rapportForm.note, problemes: '' }); }
+                  localStorage.setItem(`freample_journal_${c.id}`, JSON.stringify(journal));
+                  setRapportForm({ note: '' });
+                  setRapportOpen(null);
+                }} style={{ ...BTN, fontSize: 12 }}>Enregistrer le rapport</button>
+              </div>
+            )}
+
+            {/* ── À faire demain ── */}
+            {todoOpen === c.id && (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>À faire demain</div>
+                <div style={{ marginBottom: 10 }}>
+                  <textarea value={todoForm} onChange={e => setTodoForm(e.target.value)} style={{ ...INP, minHeight: 70, resize: 'vertical' }} placeholder="Ce qu'il faudra faire demain sur ce chantier..." />
+                </div>
+                <button onClick={() => {
+                  if (!todoForm.trim()) return;
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+                  localStorage.setItem(`freample_todo_${c.id}`, JSON.stringify({ date: tomorrowStr, note: todoForm, salarie: profil.prenom + ' ' + profil.nom }));
+                  setTodoForm('');
+                  setTodoOpen(null);
+                  setStockConfirmation('Note "à faire demain" enregistrée');
+                }} style={{ ...BTN, fontSize: 12 }}>Enregistrer</button>
+              </div>
+            )}
+
+            {/* ── Note de frais chantier ── */}
+            {fraisChantierOpen === c.id && (
+              <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Note de frais — {c.titre}</div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Catégorie</label>
+                  <select value={fraisChantierForm.categorie} onChange={e => setFraisChantierForm(f => ({ ...f, categorie: e.target.value }))} style={INP}>
+                    <option value="Repas">Repas</option><option value="Transport">Transport</option><option value="Péage">Péage</option><option value="Matériel">Matériel</option><option value="Autre">Autre</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Description</label>
+                  <input value={fraisChantierForm.description} onChange={e => setFraisChantierForm(f => ({ ...f, description: e.target.value }))} style={INP} placeholder="ex: Déjeuner équipe" />
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Montant (€)</label>
+                  <input type="number" step="0.01" value={fraisChantierForm.montant} onChange={e => setFraisChantierForm(f => ({ ...f, montant: e.target.value }))} style={INP} placeholder="0.00" />
+                </div>
+                <button onClick={() => {
+                  const montant = Number(fraisChantierForm.montant);
+                  if (!montant || !fraisChantierForm.description) return;
+                  const allFrais = JSON.parse(localStorage.getItem('freample_frais_chantier') || '[]');
+                  allFrais.push({ id: Date.now(), chantierId: c.id, chantier: c.titre, salarie: profil.prenom + ' ' + profil.nom, date: today, categorie: fraisChantierForm.categorie, description: fraisChantierForm.description, montant });
+                  localStorage.setItem('freample_frais_chantier', JSON.stringify(allFrais));
+                  // Also add to the frais state for display in Notes de frais tab
+                  const newFrais = { id: Date.now(), date: today, montant, categorie: fraisChantierForm.categorie, description: fraisChantierForm.description, statut: 'en_attente', chantierId: c.id, employe: profil.prenom + ' ' + profil.nom };
+                  setFrais(prev => [newFrais, ...prev]);
+                  setFraisChantierForm({ montant: '', categorie: 'Repas', description: '' });
+                  setFraisChantierOpen(null);
+                  setStockConfirmation(`Note de frais enregistrée : ${montant.toFixed(2)}€ (${fraisChantierForm.categorie})`);
+                }} style={{ ...BTN, fontSize: 12 }}>Valider</button>
+              </div>
+            )}
+
+            {/* ── Messages client ── */}
+            <div style={{ marginTop: 4, padding: '12px 14px', background: '#F8F7F4', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: DS.muted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Messages chantier</div>
+              {messages.length === 0 && <div style={{ fontSize: 12, color: DS.muted, marginBottom: 8 }}>Aucun message</div>}
+              {messages.slice(-3).map(msg => (
+                <div key={msg.id} style={{ padding: '6px 0', borderBottom: '1px solid #E8E6E140', fontSize: 12 }}>
+                  <span style={{ fontWeight: 600, color: msg.from === 'salarie' ? '#2563EB' : DS.ink }}>{msg.auteur}</span>
+                  <span style={{ color: DS.muted, marginLeft: 6 }}>{msg.date}</span>
+                  <div style={{ color: DS.ink, marginTop: 2 }}>{msg.texte}</div>
+                </div>
+              ))}
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <input value={messageOpen === c.id ? messageForm : ''} onFocus={() => setMessageOpen(c.id)} onChange={e => { setMessageOpen(c.id); setMessageForm(e.target.value); }} placeholder="Écrire un message..." style={{ ...INP, flex: 1 }} />
+                <button onClick={() => {
+                  if (!messageForm.trim() || messageOpen !== c.id) return;
+                  const msgs = JSON.parse(localStorage.getItem(`freample_messages_${c.id}`) || '[]');
+                  msgs.push({ id: Date.now(), date: today, from: 'salarie', auteur: profil.prenom + ' ' + profil.nom, texte: messageForm });
+                  localStorage.setItem(`freample_messages_${c.id}`, JSON.stringify(msgs));
+                  setMessageForm('');
+                }} style={{ ...BTN, fontSize: 12, padding: '8px 16px' }}>Envoyer</button>
+              </div>
+            </div>
           </div>
           );
         })}
-      </>}
+        </>;
+      })()}
 
-      {/* ═══ MON PLANNING ═══ */}
-      {tab === 2 && <>
-        <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Planning de la semaine</h2>
-        <div style={{ ...CARD, padding: 0 }}>
-          {DEMO_PLANNING.map((p, i) => (
-            <div key={p.id} style={{ padding: '12px 18px', borderBottom: i < DEMO_PLANNING.length - 1 ? '1px solid #E8E6E1' : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 80, fontSize: 12, fontWeight: 700, color: DS.accent, flexShrink: 0 }}>{p.jour}</div>
-              <div style={{ width: 100, fontSize: 12, color: DS.muted, flexShrink: 0 }}>{p.heure}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{p.tache}</div>
-                <div style={{ fontSize: 11, color: DS.muted }}>{p.lieu}</div>
+      {/* ═══ MA FICHE ═══ */}
+      {tab === 'mafiche' && (() => {
+        const fichesSalaries = (() => { try { return JSON.parse(localStorage.getItem('freample_fiches_salaries') || '[]'); } catch { return []; } })();
+        const maFiche = fichesSalaries.find(f => f.actif && (f.email === user?.email || `${f.prenom} ${f.nom}`.toLowerCase().includes((user?.nom || '').toLowerCase().split(' ').pop())));
+        if (!maFiche) return (
+          <div style={{ ...CARD, textAlign: 'center', padding: 30 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: DS.muted }}>Fiche non disponible</div>
+            <div style={{ fontSize: 12, color: DS.subtle, marginTop: 4 }}>Votre employeur n'a pas encore créé votre fiche. Contactez-le pour qu'il la renseigne.</div>
+          </div>
+        );
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Ma fiche</h2>
+            {/* Infos */}
+            <div style={CARD}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+                {[['Poste', maFiche.poste], ['Téléphone', maFiche.telephone || '—'], ['Email', maFiche.email || '—'], ['Date entrée', maFiche.dateEntree || '—']].map(([k,v]) => (
+                  <div key={k} style={{ padding: '8px 12px', background: DS.bgSoft, borderRadius: 8 }}>
+                    <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>{k}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </>}
+            {/* Compétences */}
+            <div style={CARD}>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Mes compétences</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {(maFiche.competences || []).length > 0
+                  ? maFiche.competences.map(c => <span key={c} style={{ padding: '4px 12px', background: '#F5EFE0', color: '#A68B4B', borderRadius: 6, fontSize: 12, fontWeight: 600 }}>{c}</span>)
+                  : <span style={{ fontSize: 12, color: DS.subtle }}>Aucune compétence renseignée</span>
+                }
+              </div>
+            </div>
+            {/* Habilitations */}
+            <div style={CARD}>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Mes habilitations</div>
+              {(maFiche.habilitations || []).length === 0 && <div style={{ fontSize: 12, color: DS.subtle }}>Aucune habilitation</div>}
+              {(maFiche.habilitations || []).map((h, i) => {
+                const jours = h.dateExpiration ? Math.round((new Date(h.dateExpiration) - new Date()) / 86400000) : null;
+                const expired = jours !== null && jours < 0;
+                const soon = jours !== null && jours >= 0 && jours < 30;
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: expired ? '#FEF2F2' : soon ? '#FFFBEB' : DS.bgSoft, borderRadius: 8, marginBottom: 6, border: expired ? '1px solid #DC2626' : 'none' }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{h.type}</div>
+                      <div style={{ fontSize: 10, color: DS.subtle }}>{h.organisme} · N°{h.numero}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      {expired && <span style={{ fontSize: 10, fontWeight: 700, color: '#DC2626' }}>EXPIREE</span>}
+                      {soon && <span style={{ fontSize: 10, fontWeight: 700, color: '#D97706' }}>Expire dans {jours}j</span>}
+                      {!expired && !soon && jours !== null && <span style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>Valide ({jours}j)</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Carte BTP + Visite médicale */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={CARD}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Carte BTP</div>
+                {maFiche.carteBTP?.numero ? (
+                  <div><div style={{ fontSize: 12 }}>N° {maFiche.carteBTP.numero}</div><div style={{ fontSize: 11, color: DS.subtle }}>Expire : {maFiche.carteBTP.dateExpiration || '—'}</div></div>
+                ) : <div style={{ fontSize: 12, color: DS.subtle }}>Non renseignée</div>}
+              </div>
+              <div style={CARD}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Visite médicale</div>
+                {maFiche.visiteMedicale?.prochaine ? (
+                  <div><div style={{ fontSize: 12 }}>Prochaine : {maFiche.visiteMedicale.prochaine}</div><div style={{ fontSize: 11, color: DS.subtle }}>Dernière : {maFiche.visiteMedicale.derniere || '—'}</div></div>
+                ) : <div style={{ fontSize: 12, color: DS.subtle }}>Non renseignée</div>}
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: DS.subtle, textAlign: 'center' }}>Ces informations sont gérées par votre employeur. Contactez-le pour toute modification.</div>
+          </div>
+        );
+      })()}
+
+      {/* ═══ MON PLANNING ═══ */}
+      {tab === 'planning' && (() => {
+        const realPlanning = buildPlanningFromChantiers(chantiers, profil.prenom + ' ' + profil.nom);
+        const planning = realPlanning.length > 0 ? realPlanning : DEMO_PLANNING_FALLBACK;
+        const isReal = realPlanning.length > 0;
+        return <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: DS.ink }}>Planning de la semaine</h2>
+            {!isReal && <span style={{ fontSize: 11, color: DS.muted, background: '#F2F2F7', padding: '4px 10px', borderRadius: 6 }}>Données de démonstration</span>}
+          </div>
+          <div style={{ ...CARD, padding: 0 }}>
+            {planning.map((p, i) => (
+              <div key={p.id} style={{ padding: '12px 18px', borderBottom: i < planning.length - 1 ? '1px solid #E8E6E1' : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 80, fontSize: 12, fontWeight: 700, color: DS.accent, flexShrink: 0 }}>{p.jour}</div>
+                <div style={{ width: 100, fontSize: 12, color: DS.muted, flexShrink: 0 }}>{p.heure}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{p.tache}</div>
+                  <div style={{ fontSize: 11, color: DS.muted }}>{p.lieu}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>;
+      })()}
 
       {/* ═══ FICHES DE PAIE ═══ */}
-      {tab === 3 && <>
+      {tab === 'paie' && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Fiches de paie</h2>
         <div style={{ ...CARD, padding: 0 }}>
           {bulletins.map((b, i) => (
@@ -517,7 +1065,7 @@ export default function DashboardEmploye() {
       </>}
 
       {/* ═══ CONGÉS ═══ */}
-      {tab === 4 && <>
+      {tab === 'conges' && <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: DS.ink }}>Congés</h2>
           <button onClick={() => { setForm({ typeConge: 'vacances' }); setModal('conge'); }} style={BTN}>+ Demander un congé</button>
@@ -551,7 +1099,7 @@ export default function DashboardEmploye() {
       </>}
 
       {/* ═══ NOTES DE FRAIS ═══ */}
-      {tab === 5 && <>
+      {tab === 'frais' && <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: DS.ink }}>Notes de frais</h2>
           <button onClick={() => { setForm({ categorie: 'Transport' }); setModal('frais'); }} style={BTN}>+ Nouvelle note</button>
@@ -581,7 +1129,7 @@ export default function DashboardEmploye() {
       </>}
 
       {/* ═══ MES DOCUMENTS ═══ */}
-      {tab === 6 && <>
+      {tab === 'documents' && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: DS.ink }}>Mes documents</h2>
         <p style={{ fontSize: 13, color: DS.muted, marginBottom: 16 }}>Déposez les documents demandés par votre employeur. Ils seront visibles en temps réel.</p>
 
@@ -665,7 +1213,7 @@ export default function DashboardEmploye() {
       </>}
 
       {/* ═══ MON PROFIL ═══ */}
-      {tab === 7 && <>
+      {tab === 'profil' && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Mon profil</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={CARD}>
@@ -736,6 +1284,7 @@ export default function DashboardEmploye() {
               </div>
               <div style={{ marginBottom: 10 }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Catégorie</label><select value={form.categorie || 'Transport'} onChange={e => setForm(f => ({ ...f, categorie: e.target.value }))} style={INP}><option>Transport</option><option>Repas</option><option>Matériel</option><option>Hébergement</option><option>Autre</option></select></div>
               <div style={{ marginBottom: 14 }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Description</label><input value={form.descFrais || ''} onChange={e => setForm(f => ({ ...f, descFrais: e.target.value }))} style={INP} /></div>
+              <div style={{ marginBottom: 14 }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Chantier associé</label><select value={form.chantierId || ''} onChange={e => setForm(f => ({ ...f, chantierId: e.target.value }))} style={INP}><option value="">— Aucun —</option>{chantiers.map(ch => <option key={ch.id} value={ch.id}>{ch.titre}</option>)}</select></div>
               <button onClick={submitFrais} style={{ ...BTN, width: '100%' }}>Soumettre</button>
             </>}
           </div>

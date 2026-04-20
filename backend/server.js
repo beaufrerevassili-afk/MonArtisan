@@ -56,7 +56,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true); // mobile apps, curl
-    if (origin.includes('localhost') || allowedOrigins.includes(origin)) {
+    if ((origin.startsWith('http://localhost:') || origin.startsWith('http://localhost/')) || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     callback(null, false);

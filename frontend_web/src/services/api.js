@@ -3,6 +3,10 @@ import axios from 'axios';
 // Source unique de l'URL backend — importer API_URL partout au lieu de dupliquer
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+// Callback pour les toasts d'erreur (connecté par ToastProvider au mount)
+let _errorToast = null;
+export function setApiErrorToast(fn) { _errorToast = fn; }
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -19,18 +23,37 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Rediriger vers /login si session expirée (sauf comptes démo et erreurs réseau)
+// Intercepteur réponse : toast automatique sur erreur + redirect 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || '';
     const token = localStorage.getItem('token');
     const isDemo = token && token.endsWith('.dev');
+
     // Ne déconnecter que sur une vraie 401 du serveur, jamais pour les comptes démo ou erreurs réseau
     if (error.response?.status === 401 && !url.includes('/login') && !isDemo) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+
+    // Toast d'erreur automatique (silencieux pour les comptes démo sans backend)
+    if (_errorToast && !isDemo) {
+      const status = error.response?.status;
+      const msg = error.response?.data?.erreur || error.response?.data?.message;
+      if (status === 403) {
+        _errorToast('Accès refusé', 'error');
+      } else if (status === 404) {
+        _errorToast('Ressource introuvable', 'warning');
+      } else if (status >= 500) {
+        _errorToast('Erreur serveur — réessayez dans un instant', 'error');
+      } else if (!error.response && error.code === 'ERR_NETWORK') {
+        // Pas de toast sur erreur réseau en mode démo (pas de backend)
+      } else if (msg) {
+        _errorToast(msg, 'error');
+      }
+    }
+
     return Promise.reject(error);
   }
 );

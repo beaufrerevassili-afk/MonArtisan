@@ -47,8 +47,41 @@ const DEMO_MESSAGES = {
   ],
 };
 const STORAGE_MSG = 'freample_messages';
-function loadLocalMessages() { try { return JSON.parse(localStorage.getItem(STORAGE_MSG)) || DEMO_MESSAGES; } catch { return DEMO_MESSAGES; } }
-function saveLocalMessages(m) { localStorage.setItem(STORAGE_MSG, JSON.stringify(m)); }
+function loadLocalMessages() {
+  try {
+    // Charger depuis l'ancienne clé unique
+    const old = JSON.parse(localStorage.getItem(STORAGE_MSG) || 'null');
+    // Fusionner avec les clés par projet (utilisées par le Dashboard)
+    const merged = old || { ...DEMO_MESSAGES };
+    // Lire aussi les clés freample_messages_{id}
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('freample_messages_')) {
+        const id = key.replace('freample_messages_', '');
+        try {
+          const msgs = JSON.parse(localStorage.getItem(key) || '[]');
+          if (msgs.length > 0) {
+            const existing = merged[id] || [];
+            // Fusionner sans doublons
+            const allIds = new Set(existing.map(m => m.id));
+            const newMsgs = msgs.filter(m => !allIds.has(m.id));
+            merged[id] = [...existing, ...newMsgs].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+          }
+        } catch {}
+      }
+    }
+    return merged;
+  } catch { return DEMO_MESSAGES; }
+}
+function saveLocalMessages(m) {
+  localStorage.setItem(STORAGE_MSG, JSON.stringify(m));
+  // Aussi sauver dans les clés par projet pour synchro Dashboard
+  Object.entries(m).forEach(([id, msgs]) => {
+    if (Array.isArray(msgs) && msgs.length > 0) {
+      localStorage.setItem(`freample_messages_${id}`, JSON.stringify(msgs));
+    }
+  });
+}
 
 export default function Messagerie() {
   const { user } = useAuth();

@@ -16,7 +16,7 @@ function authenticateToken(req, res, next) {
     try {
       const { rows } = await db.query('SELECT suspendu FROM users WHERE id = $1', [user.id]);
       if (rows[0]?.suspendu) return res.status(403).json({ erreur: 'Compte suspendu' });
-    } catch {}
+    } catch (e) { console.error('Auth DB check:', e.message); }
     req.user = user;
     next();
   });

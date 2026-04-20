@@ -173,8 +173,8 @@ export default function ContratsBTPModule() {
 
       <div style={{ ...CARD, marginTop: 16, borderLeft: '4px solid #2563EB', padding: 14 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#2563EB', marginBottom: 4 }}>Besoin d'un avis juridique ?</div>
-        <div style={{ fontSize: 11, color: '#555', marginBottom: 8 }}>Pour les situations complexes, consultez un juriste spécialisé BTP via Freample Droit.</div>
-        <button onClick={() => window.location.href = '/droit'} style={{ ...BTN, background: '#2563EB', fontSize: 11, padding: '6px 14px' }}>Consulter Freample Droit →</button>
+        <div style={{ fontSize: 11, color: '#555', marginBottom: 8 }}>Pour les situations complexes, consultez un juriste spécialisé en droit du BTP.</div>
+        <button onClick={() => window.location.href = '/cgu'} style={{ ...BTN, background: '#2563EB', fontSize: 11, padding: '6px 14px' }}>Voir les mentions légales →</button>
       </div>
     </div>
   );

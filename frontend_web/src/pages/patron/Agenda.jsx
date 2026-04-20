@@ -60,31 +60,30 @@ const TYPES = {
 function rel(n) { return ymd(addDays(TODAY, n)); }
 
 const DEMO_EVENTS = [
-  { id: 'e1',  type: 'rdv',      date: rel(1),   title: 'RDV Mme Leblanc – salle de bain', heure: '09:30', salarie: 'Martin D.', lieu: '14 rue des Lilas, Paris' },
-  { id: 'e2',  type: 'rdv',      date: rel(2),   title: 'RDV M. Rousseau – devis cuisine', heure: '14:00', salarie: 'Sophie R.', lieu: '3 impasse des Acacias, Lyon' },
-  { id: 'e3',  type: 'chantier', date: rel(0),   title: 'Chantier Dupont – ravalement',    heureFin: rel(14) },
-  { id: 'e4',  type: 'chantier', date: rel(5),   title: 'Chantier Résidence Les Pins',     heureFin: rel(19) },
-  { id: 'e5',  type: 'echeance', date: rel(3),   title: 'Déclaration URSSAF T1 2024' },
-  { id: 'e6',  type: 'echeance', date: rel(10),  title: 'Paiement charges sociales – mars' },
-  { id: 'e7',  type: 'ct',       date: rel(7),   title: 'CT à renouveler – AA-123-BB',     vehicule: 'Renault Master AA-123-BB' },
-  { id: 'e8',  type: 'ct',       date: rel(-3),  title: 'CT échu – BB-456-CC',             vehicule: 'Peugeot Expert BB-456-CC' },
-  { id: 'e9',  type: 'rdv',      date: rel(8),   title: 'RDV chantier M. Martin', heure: '10:00', salarie: 'Karim B.' },
-  { id: 'e10', type: 'echeance', date: rel(30),  title: 'TVA mensuelle – déclaration' },
-  { id: 'e11', type: 'rdv',      date: rel(0),   title: 'RDV visite chantier Girard', heure: '16:00', salarie: 'Martin D.' },
-  { id: 'e12', type: 'chantier', date: rel(-5),  title: 'Chantier Fontaine – extension terrasse', heureFin: rel(2) },
+  { id: 'e1',  type: 'rdv',      date: rel(1),   title: 'RDV Mme Dupont — cuisine', heure: '09:30', salarie: 'Pierre M.', lieu: '12 rue de la Liberté, Marseille' },
+  { id: 'e2',  type: 'rdv',      date: rel(2),   title: 'RDV M. Rousseau — devis SDB', heure: '14:00', salarie: 'Sophie D.', lieu: '24 rue Paradis, Marseille' },
+  { id: 'e3',  type: 'chantier', date: rel(0),   title: 'Chantier Dupont — rénovation cuisine', heureFin: rel(14) },
+  { id: 'e4',  type: 'chantier', date: rel(5),   title: 'Syndic Voltaire — peinture parties communes', heureFin: rel(12) },
+  { id: 'e5',  type: 'echeance', date: rel(3),   title: 'Déclaration URSSAF T1 2026' },
+  { id: 'e6',  type: 'echeance', date: rel(10),  title: 'Paiement charges sociales — avril' },
+  { id: 'e7',  type: 'ct',       date: rel(7),   title: 'CT à renouveler — Renault Trafic AB-123-CD', vehicule: 'Renault Trafic AB-123-CD' },
+  { id: 'e8',  type: 'rdv',      date: rel(8),   title: 'RDV M. Leblanc — extension garage', heure: '10:00', salarie: 'Pierre M.' },
+  { id: 'e9',  type: 'echeance', date: rel(30),  title: 'TVA mensuelle — déclaration' },
+  { id: 'e10', type: 'rdv',      date: rel(0),   title: 'Visite chantier SCI Horizon', heure: '16:00', salarie: 'Claire B.' },
+  { id: 'e11', type: 'chantier', date: rel(-5),  title: 'Chantier Rousseau — SDB terminé', heureFin: rel(-2) },
 ];
 
-const SALARIES = ['Martin D.', 'Sophie R.', 'Karim B.', 'Lucas P.', 'Emma V.'];
+const SALARIES = ['Pierre M.', 'Sophie D.', 'Lucas G.', 'Luc M.', 'Claire B.'];
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 const HORAIRES_PAR_SECTEUR = {
-  btp:        { debut: '07:30', fin: '17:30', joursTravail: [0,1,2,3,4]    }, // Lun-Ven
-  coiffure:   { debut: '09:00', fin: '19:00', joursTravail: [1,2,3,4,5]    }, // Mar-Sam
-  restaurant: { debut: '10:00', fin: '23:00', joursTravail: [0,1,2,3,4,5,6] }, // tous
-  vacances:   { debut: '08:00', fin: '20:00', joursTravail: [0,1,2,3,4,5,6] },
-  hotel:      { debut: '06:00', fin: '22:00', joursTravail: [0,1,2,3,4,5,6] },
-  default:    { debut: '08:00', fin: '18:00', joursTravail: [0,1,2,3,4]    },
+  btp:        { debut: '07:30', fin: '17:30', joursTravail: [0,1,2,3,4]    }, // Lun-Ven standard
+  btp_ete:    { debut: '06:30', fin: '16:00', joursTravail: [0,1,2,3,4]    }, // Été (chaleur)
+  btp_hiver:  { debut: '08:00', fin: '17:00', joursTravail: [0,1,2,3,4]    }, // Hiver (luminosité)
+  btp_samedi: { debut: '07:30', fin: '17:30', joursTravail: [0,1,2,3,4,5]  }, // Lun-Sam
+  astreinte:  { debut: '07:00', fin: '19:00', joursTravail: [0,1,2,3,4,5,6] }, // 7j/7 urgences
+  default:    { debut: '07:30', fin: '17:30', joursTravail: [0,1,2,3,4]    },
 };
 const JOURS_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -170,9 +169,22 @@ export default function Agenda() {
     const headers = { Authorization: `Bearer ${token}` };
 
     // Load custom agenda events first
+    // Charger les events : d'abord API, sinon localStorage, sinon démo
     api.get('/patron/agenda')
-      .then(({ data }) => setEvents(data.events || DEMO_EVENTS))
-      .catch(() => setEvents(DEMO_EVENTS));
+      .then(({ data }) => {
+        const evts = data.events?.length ? data.events : DEMO_EVENTS;
+        setEvents(evts);
+        // Sauver en localStorage pour le Dashboard et les autres pages
+        try { localStorage.setItem('freample_agenda_events', JSON.stringify(evts)); } catch {}
+      })
+      .catch(() => {
+        // Fallback localStorage, puis démo
+        try {
+          const stored = JSON.parse(localStorage.getItem('freample_agenda_events') || '[]');
+          setEvents(stored.length ? stored : DEMO_EVENTS);
+          if (!stored.length) localStorage.setItem('freample_agenda_events', JSON.stringify(DEMO_EVENTS));
+        } catch { setEvents(DEMO_EVENTS); }
+      });
 
     // Then merge chantiers/missions as readonly events
     Promise.all([
@@ -727,14 +739,14 @@ export default function Agenda() {
 
           {/* Secteur presets */}
           <div style={{ marginBottom: 20 }}>
-            <label className="label">Préréglages par secteur</label>
+            <label className="label">Préréglages horaires BTP</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {Object.entries({
-                btp:        '🏗️ BTP',
-                coiffure:   '✂️ Coiffure',
-                restaurant: '🍽️ Restaurant',
-                hotel:      '🏨 Hôtel',
-                vacances:   '🏖️ Location',
+                btp:        '🏗️ Standard',
+                btp_ete:    '☀️ Été',
+                btp_hiver:  '❄️ Hiver',
+                btp_samedi: '📅 Lun-Sam',
+                astreinte:  '🚨 Astreinte 7j/7',
               }).map(([s, label]) => (
                 <button key={s} type="button"
                   onClick={() => setHoraires(HORAIRES_PAR_SECTEUR[s])}

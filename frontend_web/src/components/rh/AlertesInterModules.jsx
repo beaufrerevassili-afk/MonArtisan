@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
+
+function makeAlerteId(a) {
+  // Clé stable : hash du message + module
+  return (a.module + '::' + a.message).replace(/\s+/g, '_').slice(0, 120);
+}
 
 /*
   Moteur de ponts inter-modules.
@@ -75,10 +80,21 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
     alertes.push({ type: 'warning', module: 'Pointage → Paie', icon: '⏰', message: `${nonValides} pointage${nonValides > 1 ? 's' : ''} en attente de validation — impact sur le calcul de paie`, action: 'Valider', link: '/patron/rh?onglet=pointage' });
   }
 
-  if (alertes.length === 0) return null;
+  // Filtrer les alertes dismissed par l'utilisateur
+  const [dismissed, setDismissed] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('freample_alertes_dismissed') || '[]')); }
+    catch { return new Set(); }
+  });
+
+  // Générer ID et filtrer
+  const visibleAlertes = alertes
+    .map(a => ({ ...a, _id: makeAlerteId(a) }))
+    .filter(a => !dismissed.has(a._id));
+
+  if (visibleAlertes.length === 0) return null;
 
   const typeOrder = { danger: 0, warning: 1, info: 2 };
-  alertes.sort((a, b) => typeOrder[a.type] - typeOrder[b.type]);
+  visibleAlertes.sort((a, b) => typeOrder[a.type] - typeOrder[b.type]);
 
   const typeStyles = {
     danger: { bg: '#FEF2F2', border: '#DC2626', color: '#DC2626' },
@@ -86,15 +102,36 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
     info: { bg: '#EFF6FF', border: '#2563EB', color: '#2563EB' },
   };
 
+  const dismissAlerte = (id) => {
+    const next = new Set(dismissed);
+    next.add(id);
+    setDismissed(next);
+    try { localStorage.setItem('freample_alertes_dismissed', JSON.stringify(Array.from(next))); } catch {}
+  };
+
+  const resetDismissed = () => {
+    setDismissed(new Set());
+    try { localStorage.removeItem('freample_alertes_dismissed'); } catch {}
+  };
+
+  const dismissedCount = dismissed.size;
+
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 16 }}>🔗</span> Alertes inter-modules ({alertes.length})
+      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 16 }}>🔗</span> Alertes inter-modules ({visibleAlertes.length})
+        </span>
+        {dismissedCount > 0 && (
+          <button onClick={resetDismissed} style={{ fontSize: 11, color: '#6E6E73', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+            Restaurer {dismissedCount} alerte{dismissedCount > 1 ? 's' : ''} masquée{dismissedCount > 1 ? 's' : ''}
+          </button>
+        )}
       </div>
-      {alertes.map((a, i) => {
+      {visibleAlertes.map((a) => {
         const s = typeStyles[a.type];
         return (
-          <div key={i} style={{ ...CARD, background: s.bg, borderLeft: `4px solid ${s.border}`, marginBottom: 4, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div key={a._id} style={{ ...CARD, background: s.bg, borderLeft: `4px solid ${s.border}`, marginBottom: 4, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
               <span style={{ fontSize: 16 }}>{a.icon}</span>
               <div>
@@ -102,7 +139,10 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
                 <div style={{ fontSize: 10, color: '#555' }}>{a.module}</div>
               </div>
             </div>
-            <a href={a.link} style={{ fontSize: 10, fontWeight: 600, color: s.color, textDecoration: 'none', whiteSpace: 'nowrap', padding: '4px 10px', border: `1px solid ${s.border}40`, borderRadius: 6, background: '#fff' }}>{a.action} →</a>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+              <a href={a.link} style={{ fontSize: 10, fontWeight: 600, color: s.color, textDecoration: 'none', whiteSpace: 'nowrap', padding: '4px 10px', border: `1px solid ${s.border}40`, borderRadius: 6, background: '#fff' }}>{a.action} →</a>
+              <button onClick={() => dismissAlerte(a._id)} title="Marquer comme traité" style={{ width: 22, height: 22, border: 'none', background: 'transparent', cursor: 'pointer', color: s.color, fontSize: 14, fontWeight: 700, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            </div>
           </div>
         );
       })}

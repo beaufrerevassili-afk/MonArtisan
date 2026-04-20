@@ -53,12 +53,12 @@ function mapNotif(n) {
 // GET /notifications — Notifications de l'utilisateur
 router.get('/', async (req, res) => {
   try {
-    const { userId, lu } = req.query;
+    const userId = req.user.id;
+    const { lu } = req.query;
 
-    let sql    = 'SELECT * FROM notifications WHERE 1=1';
-    const params = [];
+    let sql    = 'SELECT * FROM notifications WHERE user_id = $1';
+    const params = [userId];
 
-    if (userId) { params.push(parseInt(userId)); sql += ` AND user_id = $${params.length}`; }
     if (lu !== undefined) { params.push(lu === 'true'); sql += ` AND lu = $${params.length}`; }
 
     sql += ' ORDER BY cree_le DESC';
@@ -81,12 +81,10 @@ router.get('/', async (req, res) => {
 // PUT /notifications/tout-lire — Marquer toutes comme lues (avant /:id/lire pour éviter le conflit de route)
 router.put('/tout-lire', async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id;
 
-    let sql    = `UPDATE notifications SET lu = true, lu_le = NOW() WHERE lu = false`;
-    const params = [];
-
-    if (userId) { params.push(parseInt(userId)); sql += ` AND user_id = $${params.length}`; }
+    const sql = `UPDATE notifications SET lu = true, lu_le = NOW() WHERE lu = false AND user_id = $1`;
+    const params = [userId];
 
     const result = await db.query(sql, params);
     const count = result.rowCount || 0;
@@ -117,6 +115,9 @@ router.put('/:id/lire', async (req, res) => {
 // POST /notifications/envoyer — Envoyer une notification (usage interne)
 router.post('/envoyer', async (req, res) => {
   try {
+    if (!['patron', 'super_admin', 'fondateur'].includes(req.user.role)) {
+      return res.status(403).json({ erreur: 'Non autorisé' });
+    }
     const { userId, type, titre, contenu, canal } = req.body;
     if (!userId || !type || !contenu) {
       return res.status(400).json({ erreur: 'userId, type, contenu requis' });
@@ -136,9 +137,9 @@ router.post('/envoyer', async (req, res) => {
 
     // Simulation envoi
     const envois = {};
-    if (notif.canal.includes('push'))  envois.push  = 'envoyé';
-    if (notif.canal.includes('email')) envois.email = 'envoyé via SendGrid';
-    if (notif.canal.includes('sms'))   envois.sms   = 'envoyé via Twilio';
+    if (Array.isArray(notif.canal) && notif.canal.includes('push'))  envois.push  = 'envoyé';
+    if (Array.isArray(notif.canal) && notif.canal.includes('email')) envois.email = 'envoyé via SendGrid';
+    if (Array.isArray(notif.canal) && notif.canal.includes('sms'))   envois.sms   = 'envoyé via Twilio';
 
     res.status(201).json({ message: 'Notification envoyée', notification: notif, envois });
   } catch (err) {
@@ -150,6 +151,9 @@ router.post('/envoyer', async (req, res) => {
 // POST /notifications/push-masse — Notification à plusieurs utilisateurs
 router.post('/push-masse', async (req, res) => {
   try {
+    if (!['patron', 'super_admin', 'fondateur'].includes(req.user.role)) {
+      return res.status(403).json({ erreur: 'Non autorisé' });
+    }
     const { userIds, type, titre, contenu } = req.body;
     if (!userIds || !Array.isArray(userIds) || !contenu) {
       return res.status(400).json({ erreur: 'userIds (tableau) et contenu requis' });

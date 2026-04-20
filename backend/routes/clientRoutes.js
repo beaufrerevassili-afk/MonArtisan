@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const emailService = require('../services/emailService');
 
 // Données publiques statiques (en mémoire)
 const artisansDisponibles = [
@@ -177,6 +178,14 @@ router.post('/notations', async (req, res) => {
       creeLe:      n.cree_le,
     };
 
+    // Notifier l'artisan par email + notification
+    const artisanInfo = await db.query('SELECT email, nom FROM users WHERE id = $1', [parseInt(artisanId)]).catch(() => ({ rows: [] }));
+    if (artisanInfo.rows[0]) {
+      const clientNom = req.user?.nom || 'Un client';
+      emailService.sendNouvelAvis(artisanInfo.rows[0].email, artisanInfo.rows[0].nom, parseInt(note), clientNom).catch(() => {});
+      db.query(`INSERT INTO notifications (user_id, type, titre, contenu) VALUES ($1, 'avis_recu', 'Nouvel avis reçu', $2)`,
+        [parseInt(artisanId), `${clientNom} vous a laissé un avis ${'★'.repeat(note)}${'☆'.repeat(5-note)}`]).catch(() => {});
+    }
     res.status(201).json({ message: 'Notation enregistrée', notation });
   } catch (err) {
     console.error('POST /client/notations :', err.message);
@@ -301,6 +310,9 @@ router.post('/litiges', async (req, res) => {
 // PUT /client/litiges/:id/avancer — Faire avancer un litige (admin)
 router.put('/litiges/:id/avancer', async (req, res) => {
   try {
+    if (!['super_admin', 'fondateur'].includes(req.user.role)) {
+      return res.status(403).json({ erreur: 'Action réservée aux administrateurs' });
+    }
     const litigeId = parseInt(req.params.id);
     const existing = await db.query('SELECT * FROM litiges WHERE id = $1', [litigeId]);
     if (!existing.rows.length) return res.status(404).json({ erreur: 'Litige introuvable' });
@@ -504,6 +516,13 @@ router.post('/devis-client/:id/accepter', async (req, res) => {
 
     const d = existing.rows[0];
 
+    // Vérifier que le devis appartient au client connecté (via la mission)
+    const missionCheck = await client.query('SELECT client_id FROM missions WHERE id = $1', [d.mission_id]);
+    if (!missionCheck.rows[0] || missionCheck.rows[0].client_id !== req.user.id) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ erreur: 'Non autorisé' });
+    }
+
     // Accepter ce devis
     const acceptResult = await client.query(
       `UPDATE devis_clients SET statut = 'accepte', accepte_le = NOW() WHERE id = $1 RETURNING *`,
@@ -556,9 +575,19 @@ router.post('/devis-client/:id/accepter', async (req, res) => {
 // POST /client/devis-client/:id/refuser
 router.post('/devis-client/:id/refuser', async (req, res) => {
   try {
+    const devisId = parseInt(req.params.id);
+
+    // Vérifier que le devis existe et appartient au client connecté (via la mission)
+    const existing = await db.query('SELECT mission_id FROM devis_clients WHERE id = $1', [devisId]);
+    if (!existing.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
+    const missionCheck = await db.query('SELECT client_id FROM missions WHERE id = $1', [existing.rows[0].mission_id]);
+    if (!missionCheck.rows[0] || missionCheck.rows[0].client_id !== req.user.id) {
+      return res.status(403).json({ erreur: 'Non autorisé' });
+    }
+
     const result = await db.query(
       `UPDATE devis_clients SET statut = 'refuse', refuse_le = NOW() WHERE id = $1 RETURNING *`,
-      [parseInt(req.params.id)]
+      [devisId]
     );
     if (!result.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
 
@@ -741,8 +770,14 @@ router.get('/paiements-historique', async (req, res) => {
 // ============================================================
 
 // DELETE /client/supprimer-compte
-router.delete('/supprimer-compte', (req, res) => {
-  res.json({ message: 'Compte supprimé avec succès. Toutes vos données ont été effacées.' });
+router.delete('/supprimer-compte', async (req, res) => {
+  try {
+    await db.query('UPDATE users SET suspendu = true, email = $1 WHERE id = $2',
+      [`deleted_${req.user.id}@deleted.local`, req.user.id]);
+    res.json({ message: 'Compte supprimé avec succès.' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;

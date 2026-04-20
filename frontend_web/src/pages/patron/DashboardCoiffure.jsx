@@ -778,7 +778,7 @@ export default function DashboardCoiffure() {
           <div style={{ textAlign:'center', color:'#888', padding:40 }}>Aucun client trouvé.</div>
         )}
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:14 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:14 }}>
           {filtered.map((c, idx) => (
             <div key={c.id} style={{ ...CARD_STYLE, cursor:'pointer' }} onClick={() => setClientModal(c)}>
               <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
@@ -870,7 +870,7 @@ export default function DashboardCoiffure() {
           <button style={BTN_PRIMARY} onClick={() => setEquipeModal(true)}>+ Ajouter un employé</button>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:14 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:14 }}>
           {equipe.map(e => (
             <div key={e.id} style={CARD_STYLE}>
               <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:16 }}>

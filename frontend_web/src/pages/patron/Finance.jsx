@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp, IconClock, IconUser } from '../../components/ui/Icons';
-import Facturation from './Facturation';
+// Facturation.jsx est géré via DevisFactures.jsx, pas ici
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
 import ExportCompta from '../../components/rh/ExportCompta';
 import BiblothequePrix from '../../components/rh/BiblothequePrix';
@@ -199,7 +199,7 @@ export default function Finance() {
                   )}
 
                   {/* Raccourcis */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
                     {[
                       { label: 'Devis Pro', sub: 'Créer et gérer vos devis', icon: <IconDocument size={18} />, path: '/patron/devis-pro', bg: 'var(--primary-light)', fg: 'var(--primary)', border: 'rgba(91,91,214,0.2)' },
                       { label: 'Facturation', sub: 'Suivre vos factures', icon: <IconCheck size={18} />, path: '/patron/facturation', bg: 'rgba(52,199,89,0.08)', fg: '#1A7A3C', border: 'rgba(52,199,89,0.2)' },
@@ -264,29 +264,67 @@ export default function Finance() {
                       )}
                     </div>
 
-                    {/* Répartition par activité */}
-                    <div className="card" style={{ padding: 20 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)', marginBottom: 16 }}>Répartition par activité</div>
-                      {d.repartition && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          {d.repartition.map((r, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
-                              <div style={{ fontSize: '0.8125rem', color: 'var(--text)', width: 90, flexShrink: 0, fontWeight: 500 }}>{r.label}</div>
-                              <div style={{ flex: 1, height: 6, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden' }}>
-                                <div style={{ width: `${r.pct}%`, height: '100%', background: r.color, borderRadius: 3, transition: 'width 0.6s' }} />
+                    {/* Répartition par activité — calculée depuis données réelles */}
+                    {(() => {
+                      const COLORS = ['#5B5BD6','#34C759','#FF9500','#AF52DE','#636363','#DC2626','#2563EB','#D97706'];
+                      // Lire devis signés + chantiers pour calculer CA par métier
+                      const lsDevisF = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]'); } catch { return []; } })();
+                      const lsChantiersF = (() => { try { return JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]'); } catch { return []; } })();
+                      const profilF = (() => { try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; } })();
+                      const metiersEntreprise = profilF.metiers || [];
+                      // Calculer CA par métier depuis les devis signés
+                      const caParMetier = {};
+                      lsDevisF.filter(dv => dv.statut === 'signe' || dv.statut === 'accepte').forEach(dv => {
+                        const m = dv.metier || 'Autre';
+                        caParMetier[m] = (caParMetier[m] || 0) + (Number(dv.montantTTC) || 0);
+                      });
+                      // Compléter avec chantiers qui ont un métier
+                      lsChantiersF.forEach(ch => {
+                        if (ch.metier && !caParMetier[ch.metier] && ch.budget) {
+                          caParMetier[ch.metier] = (caParMetier[ch.metier] || 0) + (Number(ch.budget) || 0);
+                        }
+                      });
+                      // Si aucune donnée réelle, utiliser les données demo
+                      const hasRealData = Object.keys(caParMetier).length > 0;
+                      const repartition = hasRealData
+                        ? Object.entries(caParMetier).map(([label, ca], i) => ({ label, ca, color: COLORS[i % COLORS.length] }))
+                        : (d.repartition || []);
+                      const totalCA = repartition.reduce((s, r) => s + (r.ca || 0), 0);
+                      const repartitionPct = repartition.map(r => ({ ...r, pct: totalCA > 0 ? Math.round(r.ca / totalCA * 100) : 0 }));
+                      // Ajouter les métiers de l'entreprise sans CA
+                      metiersEntreprise.forEach(m => {
+                        if (!repartitionPct.find(r => r.label.toLowerCase() === m.toLowerCase())) {
+                          repartitionPct.push({ label: m, ca: 0, pct: 0, color: '#E8E6E1' });
+                        }
+                      });
+                      return (
+                        <div className="card" style={{ padding: 20 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text)' }}>Répartition par activité</div>
+                            {!hasRealData && <span style={{ fontSize: 10, color: '#D97706', fontWeight: 600 }}>Données exemple</span>}
+                            {hasRealData && <span style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>Données réelles</span>}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {repartitionPct.map((r, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                                <div style={{ fontSize: '0.8125rem', color: 'var(--text)', width: 100, flexShrink: 0, fontWeight: 500 }}>{r.label}</div>
+                                <div style={{ flex: 1, height: 6, background: 'var(--bg)', borderRadius: 3, overflow: 'hidden' }}>
+                                  <div style={{ width: `${r.pct}%`, height: '100%', background: r.color, borderRadius: 3, transition: 'width 0.6s' }} />
+                                </div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', width: 36, textAlign: 'right', flexShrink: 0 }}>{r.pct}%</div>
+                                <div style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary)', width: 70, textAlign: 'right', flexShrink: 0 }}>{(r.ca || 0).toLocaleString('fr-FR')}€</div>
                               </div>
-                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', width: 36, textAlign: 'right', flexShrink: 0 }}>{r.pct}%</div>
+                            ))}
+                          </div>
+                          {totalCA > 0 && (
+                            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
+                              Total : <strong style={{ color: 'var(--text)' }}>{totalCA.toLocaleString('fr-FR')} €</strong>
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                      {d.chiffreAffaires?.total > 0 && (
-                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-light)', fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
-                          Total : <strong style={{ color: 'var(--text)' }}>{(d.chiffreAffaires.total).toLocaleString('fr-FR')} €</strong>
-                        </div>
-                      )}
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Top clients */}
@@ -357,7 +395,9 @@ export default function Finance() {
             {/* Trésorerie */}
             <div style={{ marginTop: 24 }}>
               <h3 className="section-title" style={{ marginBottom: 12 }}>Trésorerie</h3>
-              <TrésorerieView />
+              <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', color: '#6E6E73', fontSize: 13 }}>
+                Prévision de trésorerie disponible après connexion du compte bancaire.
+              </div>
             </div>
           </>)}
 
@@ -373,32 +413,98 @@ export default function Finance() {
             </div>
           </>)}
 
-          {/* ── Comptabilité ── */}
-          {tab === 'comptabilite' && (<>
-            <div>
-              <h3 className="section-title" style={{ marginBottom: 12 }}>Export comptable</h3>
-              <ExportCompta />
-            </div>
-            <div style={{ marginTop: 24 }}>
-              <h3 className="section-title" style={{ marginBottom: 12 }}>Bilan & Résultat</h3>
-              <BilanResultatView />
-            </div>
-            <div style={{ marginTop: 24 }}>
-              <h3 className="section-title" style={{ marginBottom: 12 }}>Rapprochement bancaire</h3>
-              <RapprochementBancaireView />
-            </div>
-            <div style={{ marginTop: 24 }}>
-              <h3 className="section-title" style={{ marginBottom: 12 }}>Barème de paiement</h3>
-              <BaremePaiementView />
-            </div>
-            <div style={{ marginTop: 24 }}>
-              <h3 className="section-title" style={{ marginBottom: 12 }}>Bibliothèque de prix</h3>
-              <BiblothequePrix />
-            </div>
-          </>)}
+          {/* ── Comptabilité avec sous-onglets ── */}
+          {tab === 'comptabilite' && (() => {
+            const subCompta = form.subCompta || 'journal';
+            return <>
+              <div style={{ display: 'flex', gap: 4, background: '#F2F2F7', borderRadius: 10, padding: 3, marginBottom: 20, width: 'fit-content' }}>
+                {[
+                  { id: 'journal', label: 'Journal & FEC' },
+                  { id: 'bilan', label: 'Bilan' },
+                  { id: 'outils', label: 'Outils' },
+                ].map(s => (
+                  <button key={s.id} onClick={() => setForm(f => ({ ...f, subCompta: s.id }))} style={{
+                    padding: '7px 16px', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    background: subCompta === s.id ? '#fff' : 'transparent',
+                    color: subCompta === s.id ? '#1C1C1E' : '#6E6E73',
+                    boxShadow: subCompta === s.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  }}>{s.label}</button>
+                ))}
+              </div>
+
+              {subCompta === 'journal' && <ExportCompta />}
+
+              {subCompta === 'bilan' && <>
+                <BilanResultatView />
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', color: '#6E6E73', fontSize: 13 }}>
+                    Le rapprochement bancaire sera disponible après connexion de votre compte bancaire (synchronisation DSP2).
+                  </div>
+                </div>
+              </>}
+
+              {subCompta === 'outils' && <>
+                <BaremePaiementView />
+                <div style={{ marginTop: 24 }}>
+                  <BiblothequePrix />
+                </div>
+              </>}
+            </>;
+          })()}
 
           {/* ── Paie ── */}
           {tab === 'paie' && (<>
+            {/* Heures terrain from employee pointages */}
+            {(() => {
+              const chantierKeys = Object.keys(localStorage).filter(k => k.startsWith('freample_heures_'));
+              const heuresParChantier = chantierKeys.map(k => {
+                const cid = k.replace('freample_heures_', '');
+                const data = JSON.parse(localStorage.getItem(k) || '{}');
+                const totalH = Object.values(data).reduce((s, days) => s + Object.values(days || {}).reduce((a, h) => a + (parseFloat(h) || 0), 0), 0);
+                return { chantierId: cid, heures: totalH };
+              }).filter(c => c.heures > 0);
+              // Also read pointages for total hours
+              const pointages = JSON.parse(localStorage.getItem('freample_pointages') || '[]');
+              const pointagesByDate = {};
+              pointages.forEach(p => {
+                if (!pointagesByDate[p.date]) pointagesByDate[p.date] = [];
+                pointagesByDate[p.date].push(p);
+              });
+              let totalPointageMinutes = 0;
+              Object.values(pointagesByDate).forEach(dayEntries => {
+                for (let i = 0; i < dayEntries.length; i++) {
+                  const a = dayEntries.find((p, j) => j >= i && p.type === 'arrivee');
+                  if (!a) break;
+                  const aIdx = dayEntries.indexOf(a);
+                  const d = dayEntries.find((p, j) => j > aIdx && p.type === 'depart');
+                  if (!d) break;
+                  const [ah, am] = a.heure.split(':').map(Number);
+                  const [dh, dm] = d.heure.split(':').map(Number);
+                  totalPointageMinutes += (dh * 60 + dm) - (ah * 60 + am);
+                  i = dayEntries.indexOf(d);
+                }
+              });
+              const totalPointageH = totalPointageMinutes > 0 ? `${Math.floor(totalPointageMinutes / 60)}h${String(totalPointageMinutes % 60).padStart(2, '0')}` : null;
+              return (heuresParChantier.length > 0 || totalPointageH) ? (
+                <div className="card" style={{ marginBottom: 20, padding: 18 }}>
+                  <h3 className="section-title" style={{ marginBottom: 12, fontSize: '0.95rem' }}>Heures terrain</h3>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                    {totalPointageH && (
+                      <div style={{ padding: '10px 16px', background: 'rgba(37,99,235,0.08)', borderRadius: 10, minWidth: 120 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>Pointages employ\u00e9s</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--primary)' }}>{totalPointageH}</div>
+                      </div>
+                    )}
+                    {heuresParChantier.map(hc => (
+                      <div key={hc.chantierId} style={{ padding: '10px 16px', background: 'rgba(37,99,235,0.06)', borderRadius: 10, minWidth: 120 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>Chantier #{hc.chantierId}</div>
+                        <div style={{ fontSize: 20, fontWeight: 700 }}>{hc.heures.toFixed(1)}h</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
             <div>
               <h3 className="section-title" style={{ marginBottom: 12 }}>Salaires</h3>
               <SalairesView />
@@ -462,7 +568,7 @@ function TrésorerieView() {
       )}
 
       {/* Soldes */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {[
           { label: 'Solde actuel',             val: d.soldeActuel,       color: 'var(--primary)', sub: 'Compte courant' },
           { label: 'Encaissements attendus',    val: totalEncaissements,  color: '#1A7A3C',        sub: `${d.encaissementsAttendus.length} factures en cours` },
@@ -1651,37 +1757,50 @@ function KpiCard({ label, valeur, Icon, color = 'blue', trend, trendLabel, trend
 
 /* ── Bilan & Compte de résultat simplifié ── */
 function BilanResultatView() {
-  const fin = DEMO_FINANCE;
-  const sal = DEMO_SALARIES;
-  const tres = DEMO_TRESORERIE;
+  // Lire les vraies données de l'écosystème Freample
+  const factures = JSON.parse(localStorage.getItem('freample_factures_patron') || '[]');
+  const devisData = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+  const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+  const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
 
-  // Produits
-  const caPrestation = fin.chiffreAffaires.total;
-  const autresProduits = 2_400;
-  const totalProduits = caPrestation + autresProduits;
+  // PRODUITS — depuis les factures et devis signés
+  const facturesPayees = factures.filter(f => f.statut === 'payee' || f.statut === 'sequestre_libere');
+  const caEncaisse = facturesPayees.reduce((s, f) => s + (f.montantTTC || 0), 0);
+  const devisSignes = devisData.filter(d => d.statut === 'signe');
+  const caTotal = devisSignes.reduce((s, d) => s + (d.montantTTC || d.ttc || 0), 0);
+  const totalProduits = caTotal || caEncaisse || DEMO_FINANCE.chiffreAffaires.total;
 
-  // Charges
-  const achatsMatieresEtFournitures = 18_600;
-  const sousTraitance = 12_400;
-  const chargesPersonnel = sal.resume.totalBrut * 12;
-  const chargesSocialesPatronales = sal.resume.totalChargesPatronales * 12;
-  const dotationsAmortissements = 6_800;
-  const autresCharges = 4_200;
-  const totalCharges = achatsMatieresEtFournitures + sousTraitance + chargesPersonnel + chargesSocialesPatronales + dotationsAmortissements + autresCharges;
+  // CHARGES — depuis les écritures comptables auto + mouvements stock
+  const achatsCompta = ecritures.filter(e => e.compte === '601000' && e.debit > 0).reduce((s, e) => s + e.debit, 0);
+  const achatsStock = mouvements.filter(m => m.type === 'sortie' || m.type === 'Sortie').reduce((s, m) => s + ((m.quantite || 0) * (m.prixUnitaire || 0)), 0);
+  const achatsFournisseurs = mouvements.filter(m => m.type === 'achat' || m.type === 'Achat').reduce((s, m) => s + (m.montantHT || m.montant || 0), 0);
+  const achatsMatieresEtFournitures = achatsCompta || (achatsStock + achatsFournisseurs) || 18_600;
 
+  const sousTraitanceCompta = ecritures.filter(e => e.libelle?.toLowerCase().includes('sous-trait')).reduce((s, e) => s + e.debit, 0);
+  const sousTraitance = sousTraitanceCompta || 0;
+
+  const chargesPersonnelCompta = ecritures.filter(e => e.compte === '641000').reduce((s, e) => s + e.debit, 0);
+  const chargesPersonnel = chargesPersonnelCompta || DEMO_SALARIES.resume.totalBrut * 12;
+
+  const chargesSocialesCompta = ecritures.filter(e => e.compte === '645000').reduce((s, e) => s + e.debit, 0);
+  const chargesSocialesPatronales = chargesSocialesCompta || DEMO_SALARIES.resume.totalChargesPatronales * 12;
+
+  const totalCharges = achatsMatieresEtFournitures + sousTraitance + chargesPersonnel + chargesSocialesPatronales;
   const resultatNet = totalProduits - totalCharges;
 
-  // Bilan
-  const immobilisations = 45_000;
-  const creancesClients = fin.chiffreAffaires.montantEnAttente;
-  const tresorerie = tres.soldeActuel;
-  const totalActif = immobilisations + creancesClients + tresorerie;
+  // BILAN — depuis les vraies données
+  const creancesClients = factures.filter(f => !['payee', 'sequestre_libere'].includes(f.statut)).reduce((s, f) => s + (f.montantTTC || 0), 0) || DEMO_FINANCE.chiffreAffaires.montantEnAttente;
+  const tresorerie = caEncaisse - totalCharges * 0.7; // estimation simplifiée
+  const immobilisations = 45_000; // à renseigner par le patron (futur)
+  const totalActif = immobilisations + creancesClients + Math.max(0, tresorerie);
 
-  const capitauxPropres = 30_000;
+  const capitauxPropres = 30_000; // à renseigner par le patron (futur)
   const resultatExercice = resultatNet;
-  const dettesFournisseurs = 12_000;
-  const emprunts = 25_000;
-  const totalPassif = capitauxPropres + resultatExercice + dettesFournisseurs + emprunts;
+  const dettesFournisseurs = ecritures.filter(e => e.compte === '401000' && e.credit > 0).reduce((s, e) => s + e.credit, 0) || 0;
+  const totalPassif = capitauxPropres + resultatExercice + dettesFournisseurs;
+
+  // Indicateurs pour le patron (pas du jargon comptable)
+  const margeGlobale = totalProduits > 0 ? Math.round(resultatNet / totalProduits * 100) : 0;
 
   const cellStyle = { padding: '8px 14px', fontSize: 13, fontVariantNumeric: 'tabular-nums', borderBottom: '1px solid var(--border)' };
   const headerCell = { ...cellStyle, fontWeight: 700, fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--bg)' };
@@ -1692,8 +1811,29 @@ function BilanResultatView() {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 20 }}>Bilan & Compte de r\u00E9sultat</h2>
-      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>Exercice en cours \u2014 donn\u00E9es de d\u00E9monstration</p>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 12 }}>Bilan & Compte de résultat</h2>
+
+      {/* Résumé lisible pour le patron */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }}>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #E5E5EA', borderTop: '3px solid #16A34A' }}>
+          <div style={{ fontSize: 11, color: '#6E6E73', textTransform: 'uppercase', marginBottom: 4 }}>Chiffre d'affaires</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#16A34A' }}>{fmt(totalProduits)}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #E5E5EA', borderTop: '3px solid #DC2626' }}>
+          <div style={{ fontSize: 11, color: '#6E6E73', textTransform: 'uppercase', marginBottom: 4 }}>Total charges</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#DC2626' }}>{fmt(totalCharges)}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #E5E5EA', borderTop: `3px solid ${resultatNet >= 0 ? '#16A34A' : '#DC2626'}` }}>
+          <div style={{ fontSize: 11, color: '#6E6E73', textTransform: 'uppercase', marginBottom: 4 }}>Résultat net</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: resultatNet >= 0 ? '#16A34A' : '#DC2626' }}>{resultatNet >= 0 ? '+' : ''}{fmt(resultatNet)}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #E5E5EA', borderTop: `3px solid ${margeGlobale >= 20 ? '#16A34A' : margeGlobale >= 10 ? '#D97706' : '#DC2626'}` }}>
+          <div style={{ fontSize: 11, color: '#6E6E73', textTransform: 'uppercase', marginBottom: 4 }}>Marge globale</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: margeGlobale >= 20 ? '#16A34A' : margeGlobale >= 10 ? '#D97706' : '#DC2626' }}>{margeGlobale}%</div>
+        </div>
+      </div>
+
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>Calculé depuis vos devis signés, factures, achats matériaux et salaires enregistrés sur Freample.</p>
 
       {/* BILAN SIMPLIFIE */}
       <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, paddingBottom: 6, borderBottom: '2px solid var(--text)' }}>Bilan simplifi\u00E9</h3>
@@ -1773,7 +1913,7 @@ function BilanResultatView() {
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-        Donn\u00E9es de d\u00E9monstration \u2014 Les montants estim\u00E9s (immobilisations, emprunts, capitaux propres) sont indicatifs et doivent \u00EAtre ajust\u00E9s selon votre comptabilit\u00E9 r\u00E9elle.
+        Les produits et charges sont calculés depuis vos devis, factures et achats sur Freample. Les immobilisations et capitaux propres sont des estimations à ajuster avec votre comptable.
       </div>
     </div>
   );

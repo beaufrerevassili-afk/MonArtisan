@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /patron/
+Disallow: /employe/
+Disallow: /client/
+Disallow: /admin/
+Disallow: /artisan/
+
+Sitemap: https://freample.com/sitemap.xml

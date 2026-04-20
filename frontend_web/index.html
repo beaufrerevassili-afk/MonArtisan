@@ -3,37 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Freample — Montage vidéo professionnel, artisans & services premium en France</title>
-  <meta name="description" content="Freample : agence de montage vidéo professionnel pour TikTok, YouTube et Reels. Trouvez aussi un artisan certifié ou réservez un coiffeur. Devis gratuit, livraison 72h." />
-  <meta name="keywords" content="montage vidéo, TikTok, YouTube, Reels, agence vidéo, création contenu, monteur vidéo professionnel, artisan, coiffeur, devis gratuit, Freample" />
-  <meta property="og:title" content="Freample — Montage vidéo pro & services premium" />
-  <meta property="og:description" content="Montage vidéo professionnel pour TikTok, YouTube, Reels. Livré en 72h à partir de 63,45€. Devis gratuit." />
+  <title>Freample — Trouvez un artisan BTP à Marseille | Devis gratuit, travaux garantis</title>
+  <meta name="description" content="Freample est la plateforme qui met en relation clients et artisans du BTP à Marseille et en PACA. Devis gratuit, paiement sécurisé par séquestre, artisans certifiés avec assurance décennale. Plomberie, électricité, maçonnerie, peinture, carrelage et plus." />
+  <meta name="keywords" content="artisan BTP Marseille, devis travaux gratuit, plombier Marseille, électricien Marseille, maçon Marseille, rénovation maison Marseille, travaux appartement, entreprise BTP PACA, plateforme artisan, devis en ligne BTP, peintre bâtiment, carreleur, couvreur, menuisier, isolation thermique, séquestre paiement travaux, assurance décennale" />
+
+  <!-- Open Graph (partage réseaux sociaux) -->
+  <meta property="og:title" content="Freample — Artisans BTP certifiés à Marseille | Devis gratuit" />
+  <meta property="og:description" content="Trouvez un artisan BTP de confiance à Marseille. Comparez les devis, payez en toute sécurité via séquestre. Commission 1% seulement. Plomberie, électricité, maçonnerie, peinture." />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="fr_FR" />
+  <meta property="og:url" content="https://freample.com" />
+  <meta property="og:site_name" content="Freample" />
+
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="robots" content="index, follow" />
+  <meta name="twitter:title" content="Freample — Artisans BTP à Marseille" />
+  <meta name="twitter:description" content="Devis gratuit, paiement sécurisé, artisans certifiés. La plateforme BTP nouvelle génération." />
+
+  <!-- SEO technique -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://freample.com" />
+  <meta name="geo.region" content="FR-13" />
+  <meta name="geo.placename" content="Marseille" />
+  <meta name="geo.position" content="43.2965;5.3698" />
+  <meta name="ICBM" content="43.2965, 5.3698" />
+
+  <!-- Favicon & PWA -->
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0A0A0A" />
+  <meta name="theme-color" content="#2C2520" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Freample" />
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+
+  <!-- Schema.org — Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "WebApplication",
     "name": "Freample",
-    "description": "Agence de montage vidéo professionnel et plateforme de services premium en France",
+    "alternateName": "Freample BTP",
+    "description": "Plateforme de mise en relation entre clients et artisans du BTP à Marseille et en région PACA. Devis gratuit, paiement sécurisé par séquestre, gestion de chantier intégrée.",
     "url": "https://freample.com",
-    "contactPoint": { "@type": "ContactPoint", "email": "freamplecom@gmail.com", "contactType": "customer service" },
-    "sameAs": []
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "Inscription gratuite. Commission de 1% uniquement sur les transactions marketplace."
+    },
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoMidpoint": {
+        "@type": "GeoCoordinates",
+        "latitude": 43.2965,
+        "longitude": 5.3698
+      },
+      "geoRadius": "100000"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "Freample",
+      "url": "https://freample.com",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contact@freample.com",
+        "contactType": "customer service",
+        "availableLanguage": "French"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Marseille",
+        "addressRegion": "Provence-Alpes-Côte d'Azur",
+        "addressCountry": "FR"
+      }
+    }
   }
   </script>
+
+  <!-- Schema.org — Service BTP -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Mise en relation artisans BTP",
+    "description": "Trouvez un artisan du bâtiment certifié à Marseille : plombier, électricien, maçon, peintre, carreleur, couvreur, menuisier. Devis gratuit et comparatif.",
+    "provider": { "@type": "Organization", "name": "Freample" },
+    "areaServed": { "@type": "City", "name": "Marseille" },
+    "serviceType": ["Plomberie", "Électricité", "Maçonnerie", "Peinture", "Carrelage", "Menuiserie", "Couverture", "Chauffage", "Isolation", "Rénovation"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "Devis gratuit et sans engagement"
+    }
+  }
+  </script>
+
+  <!-- Noscript SEO fallback -->
+  <noscript>
+    <style>body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }</style>
+  </noscript>
 </head>
 <body>
   <div id="root"></div>
+
+  <!-- Contenu SEO visible par les crawlers quand JS ne s'exécute pas -->
+  <noscript>
+    <h1>Freample — Trouvez un artisan BTP à Marseille</h1>
+    <p>Freample est la plateforme de mise en relation entre clients et artisans du bâtiment à Marseille et en région PACA.</p>
+    <h2>Nos services</h2>
+    <ul>
+      <li>Plombier à Marseille — devis gratuit</li>
+      <li>Électricien à Marseille — mise aux normes</li>
+      <li>Maçon à Marseille — construction et rénovation</li>
+      <li>Peintre en bâtiment à Marseille</li>
+      <li>Carreleur à Marseille — pose et rénovation</li>
+      <li>Couvreur à Marseille — toiture et étanchéité</li>
+      <li>Menuisier à Marseille — bois et aluminium</li>
+      <li>Chauffagiste à Marseille — installation et dépannage</li>
+      <li>Isolation thermique à Marseille</li>
+    </ul>
+    <h2>Pourquoi Freample ?</h2>
+    <ul>
+      <li>Artisans certifiés avec assurance décennale</li>
+      <li>Paiement sécurisé par séquestre</li>
+      <li>Commission de seulement 1%</li>
+      <li>Devis gratuit et comparatif</li>
+      <li>Gestion de chantier intégrée pour les professionnels</li>
+    </ul>
+    <h2>Pour les entreprises BTP</h2>
+    <p>Freample offre un ERP complet pour les petites entreprises du bâtiment (1 à 10 salariés) : gestion des devis et factures, planning d'équipe, suivi de chantier, RH, QSE, comptabilité simplifiée.</p>
+    <p><a href="https://freample.com/inscription">Créer un compte gratuit</a> | <a href="https://freample.com/login">Se connecter</a></p>
+  </noscript>
+
   <script type="module" src="/src/main.jsx"></script>
   <script>
     if ('serviceWorker' in navigator) {

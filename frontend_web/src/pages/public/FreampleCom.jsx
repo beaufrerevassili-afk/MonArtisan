@@ -133,7 +133,7 @@ export default function FreampleCom(){
               Tout ce dont vos réseaux ont besoin
             </h2>
           </div>
-          <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:0,border:`1px solid ${L.border}`}}>
+          <StaggerChildren style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))',gap:0,border:`1px solid ${L.border}`}}>
             {[
               {title:'Montage vidéo',sub:'TikTok, Reels, YouTube'},
               {title:'Direction artistique',sub:'Identité visuelle, branding'},

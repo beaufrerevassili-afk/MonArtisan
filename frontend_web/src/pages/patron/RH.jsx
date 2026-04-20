@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { DEMO_FICHES_SALARIES } from '../../utils/profilEntreprise';
 import {
   IconTeam, IconDocument, IconAlert, IconPlus, IconCheck, IconX,
   IconDownload, IconUser, IconCalendar,
@@ -156,7 +157,18 @@ export default function RH() {
     ]).then(([e, t]) => {
       setEmployes(e.data.employes);
       setTdb(t.data);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => {
+      // Fallback localStorage — charger depuis les fiches salariés
+      try {
+        const fiches = JSON.parse(localStorage.getItem('freample_fiches_salaries') || '[]');
+        if (fiches.length > 0) {
+          setEmployes(fiches.map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: f.salaireBase || 2500, typeContrat: f.typeContrat || 'CDI', statut: f.actif ? 'actif' : 'inactif' })));
+        } else {
+          // Fallback démo depuis profilEntreprise
+          setEmployes(DEMO_FICHES_SALARIES.filter(f => !f.isPatron).map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: 2500, typeContrat: 'CDI', statut: 'actif' })));
+        }
+      } catch {}
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" style={{ width: 28, height: 28 }} /></div>;
@@ -259,7 +271,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* KPI Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {kpis.map(k => (
           <div key={k.label} onClick={() => setTab(k.tab)} style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.07)', cursor: 'pointer', transition: 'all 0.15s', border: `1.5px solid transparent` }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = k.color + '60'; e.currentTarget.style.boxShadow = `0 8px 24px ${k.color}18`; }}
@@ -315,7 +327,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
       {/* Alertes RH */}
       <div style={{ background: 'linear-gradient(135deg, #5B5BD6, #0066CC)', borderRadius: 16, padding: '20px 24px', color: '#fff' }}>
         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Actions à faire cette semaine</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           {[
             { emoji: '📋', text: 'Générer les bulletins de paie Mars', urgent: true },
             { emoji: '✅', text: `Valider ${congesEnAttente || 2} demandes de congés`, urgent: congesEnAttente > 0 },
@@ -627,7 +639,7 @@ function RecrutementView() {
           </div>
 
           {/* Kanban */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
             {PIPELINE_STAGES.map(stage => {
               const stageCands = candidatures.filter(c => c.statut === stage);
               const sc = PIPELINE_COLORS[stage];
@@ -1267,7 +1279,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Sub-nav */}
       <div style={{ display: 'flex', gap: 2, background: '#F2F2F7', borderRadius: 12, padding: 4, width: 'fit-content' }}>
-        {[['planning', '📅 Planning hebdomadaire'], ['localisation', '📍 Localisation en temps réel']].map(([v, l]) => (
+        {[['planning', '📅 Planning hebdomadaire']].map(([v, l]) => (
           <button key={v} onClick={() => setView(v)} style={{
             padding: '8px 20px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
             background: view === v ? '#fff' : 'transparent',
@@ -1439,11 +1451,21 @@ function CongesView() {
   const [refusCommentaire, setRefusCommentaire] = useState('');
 
   useEffect(() => {
-    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {});
+    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
+      // Fallback localStorage — lire les congés soumis par les salariés
+      try {
+        const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+        if (local.length > 0) setConges(local);
+      } catch {}
+    });
     api.get('/rh/employes').then(r => setEmployes(r.data.employes || [])).catch(() => {});
   }, []);
 
-  const refresh = () => api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {});
+  const refresh = () => {
+    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
+      try { setConges(JSON.parse(localStorage.getItem('freample_conges') || '[]')); } catch {}
+    });
+  };
 
   function nomEmploye(id) {
     const emp = employes.find(e => String(e.id) === String(id));
@@ -1468,12 +1490,26 @@ function CongesView() {
 
   async function approuver(id) {
     await api.put(`/rh/conges/${id}/valider`, { decision: 'approuvé' }).catch(() => {});
+    // Mettre à jour localStorage pour synchro salarié
+    try {
+      const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+      const updated = local.map(c => c.id === id ? { ...c, statut: 'approuve' } : c);
+      localStorage.setItem('freample_conges', JSON.stringify(updated));
+      setConges(updated);
+    } catch {}
     await refresh();
   }
 
   async function confirmerRefus() {
     if (!refusModal) return;
     await api.put(`/rh/conges/${refusModal.id}/valider`, { decision: 'refusé', commentaire: refusCommentaire }).catch(() => {});
+    // Mettre à jour localStorage pour synchro salarié
+    try {
+      const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+      const updated = local.map(c => c.id === refusModal.id ? { ...c, statut: 'rejete', commentaire: refusCommentaire } : c);
+      localStorage.setItem('freample_conges', JSON.stringify(updated));
+      setConges(updated);
+    } catch {}
     setRefusModal(null);
     setRefusCommentaire('');
     await refresh();
@@ -2137,7 +2173,7 @@ function PaieView({ employes }) {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 16 }}>
           {[
             { label: 'Net à payer', ratio: '100 %', desc: 'Ce que perçoit le salarié', color: '#34C759' },
             { label: 'Salaire brut', ratio: '~ 130 % du net', desc: 'Net + cotisations salariales (22–25 %)', color: '#5B5BD6' },
@@ -2486,7 +2522,7 @@ function ZonesTrajetView({ employes = [] }) {
         )}
 
         {zone && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
             {[
               { label: 'Indemnité / jour', value: formatCur(indemniteJour), color: '#34C759' },
               { label: `Indemnité / mois (${joursParMois}j)`, value: formatCur(indemniteMois), color: '#5B5BD6' },

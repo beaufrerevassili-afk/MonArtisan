@@ -95,10 +95,14 @@ const INP = { width:'100%', padding:'10px 12px', border:`1px solid ${L.border}`,
 const LBL = { fontSize:11, fontWeight:600, color:L.textSec, display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.06em' };
 const CARD = { background:L.white, border:`1px solid ${L.border}`, padding:'20px' };
 
+import OnboardingWizard, { isOnboardingDone, getOnboardingType } from '../../components/onboarding/OnboardingWizard';
+import ActionsQuotidiennes, { genererActionsSCI } from '../../components/dashboard/ActionsQuotidiennes';
+
 export default function ImmoDemo() {
   const navigate = useNavigate();
   const auth = useAuth() || {};
   const user = auth.user || null;
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone() && getOnboardingType(user) === 'sci');
   const [data, setData] = useState(loadData);
   const [activeSci, setActiveSci] = useState(null);
   const [tab, setTab] = useState('dashboard');
@@ -156,6 +160,9 @@ export default function ImmoDemo() {
   const accountType = (() => { try { return JSON.parse(localStorage.getItem('freample_account_type')); } catch { return null; } })();
   const isSCIUser = user?.secteur === 'immo' || user?.entrepriseType === 'sci' || accountType?.entrepriseType === 'sci';
   if (!user || (!isSCIUser && user.email !== 'freamplecom@gmail.com')) { navigate('/'); return null; }
+
+  // Onboarding première connexion
+  if (showOnboarding) return <OnboardingWizard type="sci" onComplete={() => { setShowOnboarding(false); setData(loadData()); }} />;
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 3000); };
   const genId = () => { const id = data.nextId; setData(d=>({...d, nextId:d.nextId+1})); return id; };
@@ -358,6 +365,9 @@ export default function ImmoDemo() {
               </div>;
             })}
           </div>
+          <button onClick={() => { auth.logout?.(); navigate('/login'); }} style={{ width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: `1px solid ${L.border}`, cursor: 'pointer', fontFamily: L.font, fontSize: 12, color: '#DC2626', textAlign: 'left', fontWeight: 600 }}>
+            Se déconnecter
+          </button>
         </div>
 
         {/* MAIN */}
@@ -406,6 +416,7 @@ export default function ImmoDemo() {
             const rdtColor = (v) => v >= 7 ? L.green : v >= 4 ? L.orange : L.red;
 
             return <>
+            <ActionsQuotidiennes actions={genererActionsSCI(data, biens, navigate, setTab)} />
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <div>
                 <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Vue d'ensemble</h2>
@@ -415,12 +426,12 @@ export default function ImmoDemo() {
             </div>
 
             {/* ── KPI CARDS (4 prioritaires) ── */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12, marginBottom:20 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:12, marginBottom:20 }}>
               {[
-                { l:'Loyers percus ce mois', v:`${loyersPercusCeMois.toLocaleString()}€`, c:L.green, icon:'💰', sub:`${biens.filter(b=>b.locataireId&&data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye')).length}/${biens.filter(b=>b.locataireId).length} encaisses` },
-                { l:'Impayes', v:impayesCount > 0 ? `${impayesCount} (${impayesTotal.toLocaleString()}€)` : '0', c:impayesCount>0?L.red:L.green, icon:'⚠️', sub:impayesCount>0?'A traiter en urgence':'Aucun impaye' },
-                { l:'Tresorerie estimee', v:`${tresorerie>=0?'+':''}${tresorerie.toLocaleString()}€`, c:tresorerie>=0?L.green:L.red, icon:'🏦', sub:'Loyers - credits - charges' },
-                { l:'Rendement brut moyen', v:`${rendementBrutMoyen.toFixed(2)}%`, c:rdtColor(rendementBrutMoyen), icon:'📈', sub:`Sur ${biens.filter(b=>b.prixAchat>0).length} biens` },
+                { l:'Loyers percus ce mois', v:`${loyersPercusCeMois.toLocaleString()}€`, c:L.green, icon:'', sub:`${biens.filter(b=>b.locataireId&&data.paiements.find(p=>p.bienId===b.id&&p.mois===currentMonth&&p.statut==='paye')).length}/${biens.filter(b=>b.locataireId).length} encaisses` },
+                { l:'Impayes', v:impayesCount > 0 ? `${impayesCount} (${impayesTotal.toLocaleString()}€)` : '0', c:impayesCount>0?L.red:L.green, icon:'', sub:impayesCount>0?'A traiter en urgence':'Aucun impaye' },
+                { l:'Tresorerie estimee', v:`${tresorerie>=0?'+':''}${tresorerie.toLocaleString()}€`, c:tresorerie>=0?L.green:L.red, icon:'', sub:'Loyers - credits - charges' },
+                { l:'Rendement brut moyen', v:`${rendementBrutMoyen.toFixed(2)}%`, c:rdtColor(rendementBrutMoyen), icon:'', sub:`Sur ${biens.filter(b=>b.prixAchat>0).length} biens` },
               ].map(k=>(
                 <div key={k.l} style={{ ...CARD, position:'relative', overflow:'hidden' }}>
                   <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.c }} />
@@ -1575,16 +1586,16 @@ export default function ImmoDemo() {
                   const csv=rows.map(r=>r.join(';')).join('\n');
                   const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comptabilite_tresorerie.csv';a.click();
                   showToast('Comptabilité exportée en CSV');
-                }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>📥 Export comptabilité</button>
+                }} style={{ ...BTN_OUTLINE, fontSize:10, padding:'5px 12px' }}>Export comptabilité</button>
               </div>
 
               {/* 1. KPI CARDS */}
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:10, marginBottom:20 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:10, marginBottom:20 }}>
                 {[
-                  { label:'Loyers mensuels', value:`${totalLoyers.toLocaleString()}€`, icon:'💰', color:L.gold, sub:`${biens.length} bien${biens.length>1?'s':''} · ${nbBiensLoc} occupé${nbBiensLoc>1?'s':''}` },
-                  { label:'Taux de recouvrement', value:`${tauxRecouvrement}%`, icon:'📊', color:tauxColor, sub:`${paidThisMonth.length}/${nbBiensLoc} encaissés ce mois` },
-                  { label:'Charges mensuelles', value:`${chargesMensuelles.toLocaleString()}€`, icon:'📋', color:L.red, sub:`Charges ${totalCharges}€ + TF ${Math.round(totalTaxeFonciere/12)}€ + Ass. ${Math.round(totalAssurance/12)}€ + Crédit ${totalMensualites}€` },
-                  { label:'Cashflow net', value:`${cashflowNet>=0?'+':''}${cashflowNet.toLocaleString()}€`, icon:'🏦', color:cashflowNet>=0?L.green:L.red, sub:`Loyers ${totalLoyers}€ − Charges & crédits ${chargesMensuelles}€` },
+                  { label:'Loyers mensuels', value:`${totalLoyers.toLocaleString()}€`, icon:'', color:L.gold, sub:`${biens.length} bien${biens.length>1?'s':''} · ${nbBiensLoc} occupé${nbBiensLoc>1?'s':''}` },
+                  { label:'Taux de recouvrement', value:`${tauxRecouvrement}%`, icon:'', color:tauxColor, sub:`${paidThisMonth.length}/${nbBiensLoc} encaissés ce mois` },
+                  { label:'Charges mensuelles', value:`${chargesMensuelles.toLocaleString()}€`, icon:'', color:L.red, sub:`Charges ${totalCharges}€ + TF ${Math.round(totalTaxeFonciere/12)}€ + Ass. ${Math.round(totalAssurance/12)}€ + Crédit ${totalMensualites}€` },
+                  { label:'Cashflow net', value:`${cashflowNet>=0?'+':''}${cashflowNet.toLocaleString()}€`, icon:'', color:cashflowNet>=0?L.green:L.red, sub:`Loyers ${totalLoyers}€ − Charges & crédits ${chargesMensuelles}€` },
                 ].map(k=>(
                   <div key={k.label} style={{ ...CARD, padding:14, position:'relative', overflow:'hidden' }}>
                     <div style={{ position:'absolute', top:10, right:12, fontSize:22, opacity:0.15 }}>{k.icon}</div>
@@ -2058,7 +2069,7 @@ export default function ImmoDemo() {
               })}
             </div>
             {biens.some(b=>b.dpe&&['F','G'].includes(b.dpe)) && <div style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginTop:12, fontSize:12, color:L.red, lineHeight:1.7 }}>
-              <strong>⚠️ Attention :</strong> Vous avez des biens classés F ou G. Depuis le 1er janvier 2025, les logements classés G sont interdits à la location. Les F seront interdits en 2028. Planifiez vos travaux de rénovation énergétique.
+              <strong>Attention :</strong> Vous avez des biens classés F ou G. Depuis le 1er janvier 2025, les logements classés G sont interdits à la location. Les F seront interdits en 2028. Planifiez vos travaux de rénovation énergétique.
               <div style={{ marginTop:8 }}><button onClick={()=>navigate('/btp')} style={{ ...BTN, fontSize:11, padding:'6px 14px', background:L.blue }}>Trouver un artisan RGE</button></div>
             </div>}
           </>}
@@ -2102,7 +2113,7 @@ export default function ImmoDemo() {
               </div>
 
               {/* KPI */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 16 }}>
                 {[
                   { l: 'En cours', v: enCours.length, c: L.orange },
                   { l: 'Terminés', v: termines.length, c: L.green },
@@ -2222,13 +2233,13 @@ export default function ImmoDemo() {
             <p style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Générez des courriers juridiquement conformes en 1 clic.</p>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:10 }}>
               {[
-                { icon:'⚠️', title:'Mise en demeure', desc:'Relance formelle pour loyer impayé. Délai de 8 jours.', color:L.red, action:()=>{if(impayes[0]) setModal({type:'miseEnDemeure',data:{bien:impayes[0],loc:getLocataire(impayes[0].locataireId)}});else showToast('Aucun impayé');} },
-                { icon:'📈', title:'Augmentation de loyer', desc:'Notification d\'augmentation basée sur l\'IRL. Préavis 6 mois.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'augmentation'}}) },
-                { icon:'🚪', title:'Congé pour vente', desc:'Notification au locataire de la vente du bien. Préavis 6 mois.', color:L.orange, action:()=>setModal({type:'courrier',data:{type:'conge_vente'}}) },
-                { icon:'🔄', title:'Renouvellement bail', desc:'Proposition de renouvellement du bail. Conditions identiques ou modifiées.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'renouvellement'}}) },
-                { icon:'📋', title:'Régularisation des charges', desc:'Décompte annuel provisions vs charges réelles.', color:L.green, action:()=>setModal({type:'courrier',data:{type:'regularisation'}}) },
-                { icon:'📝', title:'Attestation de loyer', desc:'Attestation pour les démarches CAF / APL du locataire.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'attestation'}}) },
-                { icon:'📑', title:'Contrat de bail', desc:'Bail d\'habitation conforme loi ELAN/ALUR. Meublé ou vide.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'bail'}}) },
+                { icon:'', title:'Mise en demeure', desc:'Relance formelle pour loyer impayé. Délai de 8 jours.', color:L.red, action:()=>{if(impayes[0]) setModal({type:'miseEnDemeure',data:{bien:impayes[0],loc:getLocataire(impayes[0].locataireId)}});else showToast('Aucun impayé');} },
+                { icon:'', title:'Augmentation de loyer', desc:'Notification d\'augmentation basée sur l\'IRL. Préavis 6 mois.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'augmentation'}}) },
+                { icon:'', title:'Congé pour vente', desc:'Notification au locataire de la vente du bien. Préavis 6 mois.', color:L.orange, action:()=>setModal({type:'courrier',data:{type:'conge_vente'}}) },
+                { icon:'', title:'Renouvellement bail', desc:'Proposition de renouvellement du bail. Conditions identiques ou modifiées.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'renouvellement'}}) },
+                { icon:'', title:'Régularisation des charges', desc:'Décompte annuel provisions vs charges réelles.', color:L.green, action:()=>setModal({type:'courrier',data:{type:'regularisation'}}) },
+                { icon:'', title:'Attestation de loyer', desc:'Attestation pour les démarches CAF / APL du locataire.', color:L.blue, action:()=>setModal({type:'courrier',data:{type:'attestation'}}) },
+                { icon:'', title:'Contrat de bail', desc:'Bail d\'habitation conforme loi ELAN/ALUR. Meublé ou vide.', color:L.gold, action:()=>setModal({type:'courrier',data:{type:'bail'}}) },
               ].map(c=>(
                 <div key={c.title} onClick={c.action} style={{ ...CARD, cursor:'pointer', transition:'all .15s', borderLeft:`3px solid ${c.color}` }}
                   onMouseEnter={e=>{e.currentTarget.style.borderColor=c.color;e.currentTarget.style.boxShadow='0 4px 12px rgba(0,0,0,0.04)';}}
@@ -2359,7 +2370,7 @@ export default function ImmoDemo() {
             {subStrat==='fiscal' && <>
             {/* 2. SIMULATEUR IR vs IS */}
             <div style={{ ...CARD, marginBottom:16 }}>
-              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>⚖️ IR vs IS — Quel régime fiscal choisir ?</div>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>IR vs IS — Quel régime fiscal choisir ?</div>
               {(()=>{
                 const revAn=totalLoyers*12;
                 const chargesAn=totalCharges*12+totalDepenses;
@@ -2415,7 +2426,7 @@ export default function ImmoDemo() {
 
             {/* Investir redirige vers le module dédié */}
             {subStrat==='investir' && <div style={{ ...CARD, textAlign:'center', padding:32 }}>
-              <div style={{ fontSize:28, marginBottom:8 }}>🏦</div>
+              <div style={{ fontSize:28, marginBottom:8 }}></div>
               <div style={{ fontSize:14, fontWeight:700, marginBottom:8 }}>Cette fonctionnalité a déménagé</div>
               <div style={{ fontSize:12, color:L.textSec, marginBottom:16 }}>Le juge de décision et le dossier bancaire sont maintenant dans Projets immobiliers → Investir.</div>
               <button onClick={()=>setTab('investir_tab')} style={BTN} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Aller vers Investir →</button>
@@ -2467,25 +2478,25 @@ export default function ImmoDemo() {
                   {needIS && <p style={{ margin:'0 0 8px' }}>Vos revenus fonciers annuels ({loyersAnnuels.toLocaleString()}€) dépassent 30 000€ → <strong>le passage à l'IS peut être avantageux</strong> (imposition à 15% jusqu'à 42 500€ vs TMI personnelle).</p>}
                   {needLMNP && <p style={{ margin:'0 0 8px' }}>Certains de vos biens (studios/appartements) pourraient être éligibles au statut <strong>LMNP</strong> → amortissement du bien = quasiment 0€ d'impôts pendant 10+ ans.</p>}
                   {ltv > 70 && <p style={{ margin:'0 0 8px', color:L.red }}>Votre LTV est de {ltv.toFixed(0)}% — endettement élevé. Consolidez avant de racheter.</p>}
-                  {ltv < 30 && <p style={{ margin:'0 0 8px', color:L.green }}>✅ LTV de {ltv.toFixed(0)}% — excellent. Capacité d'emprunt disponible pour un nouvel investissement.</p>}
+                  {ltv < 30 && <p style={{ margin:'0 0 8px', color:L.green }}>LTV de {ltv.toFixed(0)}% — excellent. Capacité d'emprunt disponible pour un nouvel investissement.</p>}
                 </div>
               </div>
 
               {/* SCHÉMA ORGANIGRAMME */}
               <div style={{ ...CARD, marginBottom:20 }}>
-                <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>📊 Structure patrimoniale{needHolding ? ' — Holding recommandée' : ''}</div>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Structure patrimoniale{needHolding ? ' — Holding recommandée' : ''}</div>
 
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:0, padding:'20px 0' }}>
                   {/* Vous */}
                   <div style={{ background:L.noir, color:'#fff', padding:'12px 32px', fontSize:14, fontWeight:700, textAlign:'center' }}>
-                    👤 Vous (personne physique)
+                    Vous (personne physique)
                   </div>
                   <div style={{ width:2, height:24, background:L.border }} />
 
                   {needHolding ? <>
                     {/* Holding */}
                     <div style={{ background:L.gold, color:'#fff', padding:'14px 40px', fontSize:14, fontWeight:700, textAlign:'center', position:'relative' }}>
-                      🏛️ HOLDING (SAS/SARL)
+                      HOLDING (SAS/SARL)
                       <div style={{ fontSize:10, fontWeight:400, marginTop:2 }}>Convention de trésorerie · Remontée dividendes (régime mère-fille)</div>
                     </div>
                     <div style={{ width:2, height:16, background:L.border }} />
@@ -2552,7 +2563,7 @@ export default function ImmoDemo() {
 
               {/* Comparatif régimes */}
               <div style={{ ...CARD }}>
-                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>📋 Comparatif des régimes fiscaux</div>
+                <div style={{ fontSize:14, fontWeight:700, marginBottom:14 }}>Comparatif des régimes fiscaux</div>
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                     <thead>
@@ -2733,7 +2744,7 @@ export default function ImmoDemo() {
 
             {/* Impayés avec mise en demeure */}
             {impayes.length>0 && <div style={{ marginBottom:20 }}>
-              <div style={{ fontSize:13, fontWeight:700, color:L.red, marginBottom:8 }}>⚠️ Loyers impayés</div>
+              <div style={{ fontSize:13, fontWeight:700, color:L.red, marginBottom:8 }}>Loyers impayés</div>
               {impayes.map(b=>{
                 const loc=getLocataire(b.locataireId);
                 return <div key={b.id} style={{ background:L.redBg, border:`1px solid ${L.red}30`, padding:'14px 18px', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
@@ -2760,13 +2771,13 @@ export default function ImmoDemo() {
                   <div style={{ width:8, height:8, borderRadius:'50%', background:a.type==='warning'?L.orange:L.blue }} />
                   <span style={{ fontSize:13, color:a.type==='warning'?L.orange:L.blue, fontWeight:500 }}>{a.msg}</span>
                 </div>
-                {a.bienId && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:'#8B5CF6' }}>🎬 Créer annonce</button>}
+                {a.bienId && <button onClick={()=>navigate(`/com`)} style={{ ...BTN, fontSize:10, padding:'5px 12px', background:'#8B5CF6' }}>Créer annonce</button>}
               </div>
             ))}
 
             {/* Projection cashflow 12 mois */}
             <div style={{ ...CARD, marginTop:24 }}>
-              <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>📈 Projection cashflow — 12 prochains mois</div>
+              <div style={{ fontSize:14, fontWeight:700, marginBottom:16 }}>Projection cashflow — 12 prochains mois</div>
               <div style={{ overflowX:'auto' }}>
                 <div style={{ display:'flex', gap:0, minWidth:700 }}>
                   {Array.from({length:12}).map((_,i)=>{
@@ -2795,15 +2806,97 @@ export default function ImmoDemo() {
           </>}
 
           {/* ═══ QUITTANCES DE LOYER ═══ */}
-          {tab==='quittances' && <>
+          {tab==='quittances' && (() => {
+            const selectedMois = form.quittanceMois || currentMonth;
+            const [selYear, selMonthNum] = selectedMois.split('-').map(Number);
+            const selMonthIdx = selMonthNum - 1;
+            const moisAvecPaiements = [...new Set(data.paiements.map(p=>p.mois))].sort().reverse();
+            const quittanceBiens = biens.filter(b=>b.locataireId).map(bien => {
+              const loc = getLocataire(bien.locataireId);
+              const paiement = data.paiements.find(p=>p.bienId===bien.id && p.mois===selectedMois && p.statut==='paye');
+              return { bien, loc, paiement };
+            }).filter(q=>q.loc);
+            const biensAvecQuittance = quittanceBiens.filter(q=>q.paiement);
+            return <>
             <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 6px' }}>Quittances de loyer</h2>
             <p style={{ fontSize:13, color:L.textLight, margin:'0 0 20px' }}>Génération mensuelle — obligatoire sur demande du locataire (art. 21 loi du 6 juillet 1989)</p>
 
-            {biens.filter(b=>b.locataireId).map(bien => {
-              const loc = getLocataire(bien.locataireId);
-              if (!loc) return null;
-              const moisActuel = currentMonth;
-              const paiement = data.paiements.find(p=>p.bienId===bien.id && p.mois===moisActuel && p.statut==='paye');
+            {/* Month selector */}
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16, alignItems:'center' }}>
+              <span style={{ fontSize:11, fontWeight:600, color:L.textSec, textTransform:'uppercase', letterSpacing:'0.06em', marginRight:4 }}>Mois :</span>
+              {moisAvecPaiements.map(m => {
+                const [y, mo] = m.split('-').map(Number);
+                return (
+                  <button key={m} onClick={()=>setForm(f=>({...f, quittanceMois:m}))}
+                    style={{ padding:'6px 14px', fontSize:11, fontWeight:600, border:`1px solid ${selectedMois===m?L.gold:L.border}`, background:selectedMois===m?L.cream:'transparent', color:selectedMois===m?L.gold:L.textSec, cursor:'pointer', fontFamily:L.font }}>
+                    {MOIS[mo-1]} {y}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Bulk print button */}
+            {biensAvecQuittance.length > 0 && (
+              <button onClick={() => {
+                const el = document.getElementById('all-quittances-print');
+                if (el) { el.style.display='block'; window.print(); setTimeout(()=>el.style.display='none', 500); }
+              }} style={{ ...BTN, fontSize:11, padding:'8px 16px', background:L.blue, marginBottom:16 }}>
+                Imprimer toutes les quittances du mois ({biensAvecQuittance.length})
+              </button>
+            )}
+
+            {/* Hidden bulk print container */}
+            {biensAvecQuittance.length > 0 && (
+              <div id="all-quittances-print" style={{ display:'none' }}>
+                <style>{`@media print { body * { visibility:hidden !important; } #all-quittances-print, #all-quittances-print * { visibility:visible !important; } #all-quittances-print { display:block !important; position:fixed; top:0; left:0; width:100%; padding:40px; background:#fff; font-size:13px; overflow:auto; height:auto; } }`}</style>
+                {biensAvecQuittance.map(({ bien, loc, paiement }, idx) => (
+                  <div key={bien.id} style={{ maxWidth:600, margin:'0 auto', fontFamily:L.font, pageBreakAfter: idx < biensAvecQuittance.length - 1 ? 'always' : 'auto' }}>
+                    <div style={{ textAlign:'center', marginBottom:30 }}>
+                      <div style={{ fontSize:22, fontWeight:900 }}>QUITTANCE DE LOYER</div>
+                      <div style={{ fontSize:13, color:'#555', marginTop:6 }}>{MOIS[selMonthIdx]} {selYear}</div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:24 }}>
+                      <div style={{ padding:16, border:'1px solid #E8E6E1' }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'#888', textTransform:'uppercase', marginBottom:6 }}>Bailleur</div>
+                        <div style={{ fontWeight:700 }}>{sci?.nom || data.scis[0]?.nom}</div>
+                        <div style={{ fontSize:12, color:'#555' }}>SIRET : {sci?.siret || data.scis[0]?.siret}</div>
+                      </div>
+                      <div style={{ padding:16, border:'1px solid #E8E6E1' }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'#888', textTransform:'uppercase', marginBottom:6 }}>Locataire</div>
+                        <div style={{ fontWeight:700 }}>{loc.prenom} {loc.nom}</div>
+                        <div style={{ fontSize:12, color:'#555' }}>{bien.adresse}</div>
+                      </div>
+                    </div>
+                    <div style={{ padding:16, border:'1px solid #E8E6E1', marginBottom:20 }}>
+                      <div style={{ fontSize:10, fontWeight:700, color:'#888', textTransform:'uppercase', marginBottom:10 }}>Détail du paiement</div>
+                      <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid #f0f0f0' }}>
+                        <span>Loyer</span><span style={{ fontWeight:600 }}>{bien.loyer} €</span>
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid #f0f0f0' }}>
+                        <span>Charges (provision)</span><span style={{ fontWeight:600 }}>{bien.charges} €</span>
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', fontWeight:800, fontSize:15 }}>
+                        <span>Total</span><span>{bien.loyer + bien.charges} €</span>
+                      </div>
+                    </div>
+                    <div style={{ fontSize:12, color:'#555', lineHeight:1.8 }}>
+                      Je soussigné(e), représentant de {sci?.nom || data.scis[0]?.nom}, déclare avoir reçu de {loc.prenom} {loc.nom}
+                      la somme de {bien.loyer + bien.charges} euros au titre du loyer et des charges du mois de {MOIS[selMonthIdx]} {selYear}
+                      pour le logement situé au {bien.adresse}.
+                    </div>
+                    <div style={{ marginTop:30, display:'flex', justifyContent:'space-between' }}>
+                      <div><div style={{ fontSize:11, color:'#888' }}>Fait le {new Date().toLocaleDateString('fr-FR')}</div></div>
+                      <div><div style={{ fontSize:11, color:'#888', marginBottom:40 }}>Signature du bailleur</div></div>
+                    </div>
+                    <div style={{ marginTop:20, fontSize:10, color:'#999', textAlign:'center' }}>
+                      Cette quittance ne libère pas le locataire des sommes restant éventuellement dues. Art. 21 loi n°89-462 du 6 juillet 1989.
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {quittanceBiens.map(({ bien, loc, paiement }) => {
               return (
                 <div key={bien.id} style={{ ...CARD, marginBottom:12 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
@@ -2827,7 +2920,7 @@ export default function ImmoDemo() {
                       <div style={{ maxWidth:600, margin:'0 auto', fontFamily:L.font }}>
                         <div style={{ textAlign:'center', marginBottom:30 }}>
                           <div style={{ fontSize:22, fontWeight:900 }}>QUITTANCE DE LOYER</div>
-                          <div style={{ fontSize:13, color:'#555', marginTop:6 }}>{MOIS[new Date().getMonth()]} {new Date().getFullYear()}</div>
+                          <div style={{ fontSize:13, color:'#555', marginTop:6 }}>{MOIS[selMonthIdx]} {selYear}</div>
                         </div>
                         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:24 }}>
                           <div style={{ padding:16, border:'1px solid #E8E6E1' }}>
@@ -2855,7 +2948,7 @@ export default function ImmoDemo() {
                         </div>
                         <div style={{ fontSize:12, color:'#555', lineHeight:1.8 }}>
                           Je soussigné(e), représentant de {sci?.nom || data.scis[0]?.nom}, déclare avoir reçu de {loc.prenom} {loc.nom}
-                          la somme de {bien.loyer + bien.charges} euros au titre du loyer et des charges du mois de {MOIS[new Date().getMonth()]} {new Date().getFullYear()}
+                          la somme de {bien.loyer + bien.charges} euros au titre du loyer et des charges du mois de {MOIS[selMonthIdx]} {selYear}
                           pour le logement situé au {bien.adresse}.
                         </div>
                         <div style={{ marginTop:30, display:'flex', justifyContent:'space-between' }}>
@@ -2871,10 +2964,11 @@ export default function ImmoDemo() {
                 </div>
               );
             })}
-            {biens.filter(b=>b.locataireId).length === 0 && (
+            {quittanceBiens.length === 0 && (
               <div style={{ ...CARD, textAlign:'center', padding:40, color:L.textLight }}>Aucun bien avec locataire actif.</div>
             )}
-          </>}
+          </>;
+          })()}
 
           {/* ═══ ASSEMBLÉE GÉNÉRALE ═══ */}
           {tab==='ag' && (() => {
@@ -2906,7 +3000,7 @@ export default function ImmoDemo() {
                 </div>
 
                 <div style={{ fontSize:13, lineHeight:2, marginBottom:20 }}>
-                  L'an {new Date().getFullYear()}, le ______________________, les associés de la {agSci?.nom} se sont réunis en Assemblée Générale Ordinaire au siège social.
+                  L'an {new Date().getFullYear()}, le <input type="date" style={{ border:'none', borderBottom:`1px solid ${L.border}`, fontSize:13, fontFamily:L.font, padding:'2px 4px' }} />, les associés de la {agSci?.nom} se sont réunis en Assemblée Générale Ordinaire au siège social.
                 </div>
 
                 <div style={{ marginBottom:16 }}>
@@ -3267,14 +3361,14 @@ export default function ImmoDemo() {
                       const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
                       setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
                       setModal({type:'dossierBancaire',data:updated}); showToast('✓ Modifications enregistrées');
-                    }} style={{ ...BTN, fontSize:11, background:L.green }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.green}>💾 Enregistrer</button>
+                    }} style={{ ...BTN, fontSize:11, background:L.green }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.green}>Enregistrer</button>
                     <button onClick={()=>{
                       const t2=tauxCredit/100/12;const n2=dureeCredit*12;const emp2=coutAjuste-apport;
                       const mens2=t2>0?Math.round(emp2*(t2*Math.pow(1+t2,n2))/(Math.pow(1+t2,n2)-1)):Math.round(emp2/n2);
                       const updated={...d,id:d.id,nom:d.nom,prix:prixAchat,notaire:fraisNotaire,travaux:montantTravaux,loyer:loyerEstime,charges:chargesEstimees,apport,secu:txSecu,taux:tauxCredit,duree:dureeCredit,assurance:assuranceCredit,strategie,neuf:isNeuf,mensualite:mens2,created:d.created||new Date().toISOString()};
                       setData(dd=>({...dd,dossiers:(dd.dossiers||[]).map(x=>x.id===d.id?updated:x)}));
                       setModal({type:'dossierView',data:updated}); showToast('Dossier enregistré — mode PDF');
-                    }} style={{ ...BTN_OUTLINE, fontSize:11 }}>📄 Voir le PDF</button>
+                    }} style={{ ...BTN_OUTLINE, fontSize:11 }}>Voir le PDF</button>
                   </div>
                 </div>
 
@@ -3351,7 +3445,7 @@ export default function ImmoDemo() {
                   <R l="Cashflow annuel" v={`${cfAnnuel>=0?'+':''}${cfAnnuel.toLocaleString()}€`} b c={cfAnnuel>=0?L.green:L.red} />
                   <R l="Rentabilité brute" v={`${rdtBrut.toFixed(2)}%`} c={L.gold} />
                   <R l="Rentabilité nette" v={`${rdtNet.toFixed(2)}%`} b c={L.gold} />
-                  <R l={cfMensuel>=0?'Autofinancé':'Effort d\'épargne'} v={cfMensuel>=0?'✅ Oui':`${Math.abs(cfMensuel)}€/mois`} b c={cfMensuel>=0?L.green:L.red} />
+                  <R l={cfMensuel>=0?'Autofinancé':'Effort d\'épargne'} v={cfMensuel>=0?'Oui':`${Math.abs(cfMensuel)}€/mois`} b c={cfMensuel>=0?L.green:L.red} />
                 </div>
               </div>
 
@@ -3403,16 +3497,16 @@ export default function ImmoDemo() {
               <div style={{ background:L.noir, color:'#fff', padding:'16px', marginBottom:14 }}>
                 <div style={{ fontSize:12, fontWeight:700, color:L.gold, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>6. Synthèse décisionnelle</div>
                 <div style={{ fontSize:12, lineHeight:1.8 }}>
-                  {cfMensuel>=0 && <div style={{ color:L.green }}>✅ <strong>Autofinancement :</strong> Le bien génère un cashflow positif de {cfMensuel}€/mois, démontrant sa capacité à couvrir l'intégralité des charges.</div>}
-                  {cfMensuel<0 && <div style={{ color:L.orange }}>⚠️ <strong>Effort d'épargne :</strong> Un complément de {Math.abs(cfMensuel)}€/mois est nécessaire. Ce montant reste maîtrisé et compatible avec un investissement patrimonial.</div>}
-                  <div style={{ color:rdtNet>4?L.green:L.gold }}>📈 <strong>Rentabilité :</strong> Rendement net de {rdtNet.toFixed(2)}%, {rdtNet>6?'excellent':rdtNet>4?'satisfaisant':'correct'} pour ce type d'investissement ({strategie}).</div>
-                  <div>🛡️ <strong>Sécurité :</strong> Marge de {txSecu}% intégrée ({margeSec.toLocaleString()}€). {scenarioDegrade>-200?'Le projet reste viable même en scénario dégradé.':'Attention au scénario dégrad�� — prévoir une réserve de trésorerie.'}</div>
-                  <div>🏛️ <strong>Patrimoine :</strong> Cet investissement portera le patrimoine total à {(totalValeur+prixAchat).toLocaleString()}€ ({data.biens.length+1} biens), renforçant la diversification et l'assise patrimoniale.</div>
+                  {cfMensuel>=0 && <div style={{ color:L.green }}><strong>Autofinancement :</strong> Le bien génère un cashflow positif de {cfMensuel}€/mois, démontrant sa capacité à couvrir l'intégralité des charges.</div>}
+                  {cfMensuel<0 && <div style={{ color:L.orange }}><strong>Effort d'épargne :</strong> Un complément de {Math.abs(cfMensuel)}€/mois est nécessaire. Ce montant reste maîtrisé et compatible avec un investissement patrimonial.</div>}
+                  <div style={{ color:rdtNet>4?L.green:L.gold }}><strong>Rentabilité :</strong> Rendement net de {rdtNet.toFixed(2)}%, {rdtNet>6?'excellent':rdtNet>4?'satisfaisant':'correct'} pour ce type d'investissement ({strategie}).</div>
+                  <div><strong>Sécurité :</strong> Marge de {txSecu}% intégrée ({margeSec.toLocaleString()}€). {scenarioDegrade>-200?'Le projet reste viable même en scénario dégradé.':'Attention au scénario dégradé — prévoir une réserve de trésorerie.'}</div>
+                  <div><strong>Patrimoine :</strong> Cet investissement portera le patrimoine total à {(totalValeur+prixAchat).toLocaleString()}€ ({data.biens.length+1} biens), renforçant la diversification et l'assise patrimoniale.</div>
                 </div>
               </div>
 
               <div style={{ textAlign:'center', fontSize:10, color:L.textLight, marginBottom:12 }}>Document généré par Freample Immo — simulation, ne constitue pas un conseil financier</div>
-              <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>📄 Imprimer / Exporter PDF</button>
+              <button onClick={()=>window.print()} style={{ ...BTN, width:'100%' }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / Exporter PDF</button>
             </>;
           })()}
 
@@ -3714,14 +3808,14 @@ export default function ImmoDemo() {
               <p style={{ marginTop:20 }}>Le bailleur,<br/><em>(Signature)</em></p>
             </div>
             <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-              <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>🖨️ Imprimer</button>
+              <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer</button>
               <button onClick={()=>{
                 const email=modal.data.loc?.email;
                 if(!email){showToast('Pas d\'email');return;}
                 const corps=`Objet : Mise en demeure de payer — Loyer impayé\n\nMadame, Monsieur ${modal.data.loc?.nom},\n\nJe constate que le loyer de ${modal.data.bien?.loyer}€ relatif au bien situé au ${modal.data.bien?.adresse} n'a pas été réglé.\n\nJe vous mets en demeure de procéder au règlement dans un délai de 8 jours.\n\nLe bailleur`;
                 window.open(`mailto:${email}?subject=${encodeURIComponent('Mise en demeure — Loyer impayé')}&body=${encodeURIComponent(corps)}`, '_blank');
                 showToast(`Email préparé pour ${modal.data.loc?.nom}`);
-              }} style={{ ...BTN, flex:1, background:L.blue }}>📧 Email</button>
+              }} style={{ ...BTN, flex:1, background:L.blue }}>Email</button>
               <button onClick={()=>{enregistrerPaiement(modal.data.bien?.id);setModal(null);}} style={{ ...BTN, flex:1, background:L.green }}>✓ Payé</button>
             </div>
           </>}
@@ -3787,13 +3881,13 @@ export default function ImmoDemo() {
                 {tpl.corps}
               </div>
               <div style={{ display:'flex', gap:8 }}>
-                <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>🖨️ Imprimer / PDF</button>
+                <button onClick={()=>window.print()} style={{ ...BTN, flex:1 }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.noir}>Imprimer / PDF</button>
                 <button onClick={()=>{
                   const dest=data.locataires.find(l=>l.id===Number(form.courrierDest||loc?.id));
                   if(!dest?.email){showToast('Pas d\'email pour ce locataire');return;}
                   window.open(`mailto:${dest.email}?subject=${encodeURIComponent(tpl.titre)}&body=${encodeURIComponent(tpl.corps.replace(/\n/g,'\r\n'))}`, '_blank');
                   showToast(`Email préparé pour ${dest.prenom} ${dest.nom}`);
-                }} style={{ ...BTN, flex:1, background:L.blue }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.blue}>📧 Envoyer par email</button>
+                }} style={{ ...BTN, flex:1, background:L.blue }} onMouseEnter={e=>e.currentTarget.style.background=L.gold} onMouseLeave={e=>e.currentTarget.style.background=L.blue}>Envoyer par email</button>
               </div>
             </>;
           })()}

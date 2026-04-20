@@ -10,6 +10,7 @@ const crypto    = require('crypto');
 const rateLimit = require('express-rate-limit');
 const db        = require('../db');
 const resetTokens = require('../utils/resetTokens');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET;
@@ -81,8 +82,8 @@ router.post('/register', authLimiter, async (req, res) => {
       if (manquants.length > 0) return res.status(400).json({ erreur: `Documents manquants : ${manquants.join(', ')}` });
     }
 
-    const rolesValides = ['client', 'patron', 'artisan', 'employe', 'fondateur', 'super_admin'];
-    const roleValide   = rolesValides.includes(role) ? role : 'client';
+    const rolesAutorisesInscription = ['client', 'patron', 'artisan'];
+    const roleValide = rolesAutorisesInscription.includes(role) ? role : 'client';
     const isVerified   = roleValide !== 'patron' && roleValide !== 'artisan';
     const hash         = await bcrypt.hash(motdepasse, 12);
 
@@ -117,6 +118,8 @@ router.post('/register', authLimiter, async (req, res) => {
     }
 
     const token = jwt.sign({ id: newUser.id, email: newUser.email, role: newUser.role, nom: newUser.nom }, SECRET, { expiresIn: '8h' });
+    // Email de bienvenue (non-bloquant)
+    emailService.sendBienvenue(email, nom).catch(e => console.log('[Email bienvenue]', e.message));
     res.status(201).json({ message: `Compte créé pour ${nom}`, token, role: newUser.role, userId: newUser.id });
   } catch (err) {
     console.error('Erreur /register :', err.message);
@@ -139,8 +142,8 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
     const expiresAt = Date.now() + 30 * 60 * 1000; // 30 minutes
     resetTokens.set(token, { userId: user.id, expiresAt });
 
-    // TODO: send email with reset link (SendGrid / Resend)
-    console.log(`[RESET] Lien: /reset-password/${token} pour ${user.email}`);
+    // Envoi du lien de réinitialisation
+    emailService.sendResetPassword(user.email, user.nom, token).catch(e => console.log('[Email reset]', e.message));
     res.json({ message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' });
   } catch (err) {
     console.error('Erreur /forgot-password :', err.message);

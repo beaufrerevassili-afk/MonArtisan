@@ -22,6 +22,7 @@ export default function SecteurSelect() {
   const [projet, setProjet] = useState({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' });
   const [projetSent, setProjetSent] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
 
   // Au chargement : si un projet en attente existe et l'utilisateur est connecté → publier auto
   useEffect(() => {
@@ -43,9 +44,37 @@ export default function SecteurSelect() {
         setProjet(p);
         setShowProjet(true);
         setProjetSent(true);
+      } else {
+        // Restaurer le brouillon uniquement pour les clients ou visiteurs (pas patron/artisan/etc.)
+        const canDraft = !user || user.role === 'client';
+        const draft = canDraft ? localStorage.getItem('freample_projet_brouillon') : null;
+        if (draft) {
+          const d = JSON.parse(draft);
+          const hasContent = d.metier || d.description || d.ville || d.budget;
+          if (hasContent) {
+            setProjet(d);
+            setShowProjet(true);
+            // Déterminer l'étape en fonction des champs remplis
+            if (d.budget) setProjetStep(4);
+            else if (d.ville) setProjetStep(3);
+            else if (d.description) setProjetStep(2);
+            else if (d.metier) setProjetStep(2);
+            setDraftRestored(true);
+            setTimeout(() => setDraftRestored(false), 3000);
+          }
+        }
       }
     } catch {}
   }, [user]);
+
+  // Auto-save brouillon à chaque modification du projet
+  useEffect(() => {
+    if (projetSent) return;
+    const hasContent = projet.metier || projet.description || projet.ville || projet.budget;
+    if (hasContent) {
+      localStorage.setItem('freample_projet_brouillon', JSON.stringify(projet));
+    }
+  }, [projet, projetSent]);
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -69,15 +98,14 @@ export default function SecteurSelect() {
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => navigate('/pro')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font, transition: 'color .15s' }}
               onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
-              Professionnel
+              Professionnel BTP
             </button>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {isDev && <button onClick={() => navigate('/immo/demo')} style={{ padding: '6px 12px', background: '#F0FDF4', border: 'none', fontSize: 11, fontWeight: 700, color: '#16A34A', cursor: 'pointer' }}>Demo</button>}
+          {false && <button style={{ display: 'none' }} />}
           {user ? <>
             <button onClick={() => {
-              if (user.secteur === 'immo' || user.entrepriseType === 'sci') { navigate('/immo/gestion'); return; }
               if (user.entrepriseType === 'ae') { navigate('/ae/dashboard'); return; }
               const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard', fondateur: '/' };
               navigate(dest[user.role] || '/');
@@ -97,20 +125,20 @@ export default function SecteurSelect() {
                     <div style={{ fontSize: 12, color: L.textSec }}>{user.email}</div>
                   </div>
                   {[
-                    { label: 'Mon espace', icon: '📊', action: () => { if (user.secteur === 'immo' || user.entrepriseType === 'sci') { navigate('/immo/gestion'); return; } if (user.entrepriseType === 'ae') { navigate('/ae/dashboard'); return; } const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
-                    { label: 'Trouver un artisan', icon: '🔨', action: () => navigate('/btp') },
+                    { label: 'Mon espace', action: () => { if (user.entrepriseType === 'ae') { navigate('/ae/dashboard'); return; } const dest = { client: '/client/dashboard', patron: '/patron/dashboard', employe: '/employe/dashboard', artisan: '/artisan/dashboard' }; navigate(dest[user.role] || '/'); } },
+                    { label: 'Trouver un artisan', action: () => navigate('/btp') },
                   ].map(item => (
                     <button key={item.label} onClick={() => { setMenuOpen(false); item.action(); }}
                       style={{ width: '100%', padding: '11px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: L.font, fontSize: 13, fontWeight: 500, color: L.text, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'background .1s' }}
                       onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                      <span style={{ fontSize: 15 }}>{item.icon}</span> {item.label}
+                      {item.label}
                     </button>
                   ))}
                   <div style={{ borderTop: `1px solid ${L.border}` }}>
                     <button onClick={async () => { setMenuOpen(false); const { logout } = auth; if (logout) await logout(); navigate('/'); }}
                       style={{ width: '100%', padding: '11px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: L.font, fontSize: 13, fontWeight: 500, color: '#DC2626', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 }}
                       onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                      <span style={{ fontSize: 15 }}>🚪</span> Se déconnecter
+                      Se déconnecter
                     </button>
                   </div>
                 </div>
@@ -152,11 +180,10 @@ export default function SecteurSelect() {
                 style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .3s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = L.gold; e.currentTarget.style.borderColor = L.gold; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 6 }}>Proposer mon projet</div>
                 <div style={{ fontSize: 13, color: 'rgba(245,239,224,0.6)', lineHeight: 1.5, marginBottom: 16 }}>Décrivez vos travaux, fixez votre budget. Des artisans vous envoient leurs offres.</div>
                 <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(245,239,224,0.4)' }}>
-                  <span>📋 Publiez</span><span>🔔 Recevez</span><span>✅ Choisissez</span>
+                  <span>Publiez</span><span>Recevez</span><span>Choisissez</span>
                 </div>
               </div>
               {/* Carte 2 — Trouver un artisan */}
@@ -164,18 +191,17 @@ export default function SecteurSelect() {
                 style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .3s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = L.gold; e.currentTarget.style.borderColor = L.gold; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(166,139,75,0.4)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 6 }}>Trouver un artisan</div>
                 <div style={{ fontSize: 13, color: 'rgba(245,239,224,0.6)', lineHeight: 1.5, marginBottom: 16 }}>Dépannage urgent ou artisan de confiance — trouvez le bon professionnel directement.</div>
                 <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'rgba(245,239,224,0.4)' }}>
-                  <span>⚡ Rapide</span><span>🛡️ Vérifiés</span><span>⭐ Avis</span>
+                  <span>Rapide</span><span>Vérifiés</span><span>Avis</span>
                 </div>
               </div>
             </div>
 
             {/* Commission */}
             <div style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: 'rgba(245,239,224,0.3)' }}>
-              Commission projet : 2€ &lt; 500€ · 5€ au-dessus · L'artisan reçoit 100%
+              Commission Freample : 1% du montant des travaux · L'artisan reçoit 100%
             </div>
           </> : projetSent ? <>
             {/* ── Confirmation ── */}
@@ -204,15 +230,22 @@ export default function SecteurSelect() {
               ))}
             </div>
 
+            {/* Brouillon restauré toast */}
+            {draftRestored && (
+              <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(166,139,75,0.15)', border: '1px solid rgba(166,139,75,0.3)', borderRadius: 10, fontSize: 12, fontWeight: 600, color: L.gold, textAlign: 'center', animation: 'fadeIn .3s' }}>
+                Brouillon restauré
+              </div>
+            )}
+
             <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {projetStep === 1 && <>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Quel type de travaux ?</div>
                 <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 20 }}>Sélectionnez le métier concerné</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
-                  {[{ m: 'Plomberie', e: '🔧' }, { m: 'Électricité', e: '⚡' }, { m: 'Peinture', e: '🎨' }, { m: 'Maçonnerie', e: '🧱' }, { m: 'Menuiserie', e: '🪚' }, { m: 'Carrelage', e: '🔲' }, { m: 'Chauffage', e: '🔥' }, { m: 'Serrurerie', e: '🔑' }, { m: 'Couverture', e: '🏠' }, { m: 'Isolation', e: '🧊' }, { m: 'Autre', e: '🔨' }].map(({ m, e }) => (
+                  {['Plomberie', 'Électricité', 'Peinture', 'Maçonnerie', 'Menuiserie', 'Carrelage', 'Chauffage', 'Serrurerie', 'Couverture', 'Isolation', 'Autre'].map(m => (
                     <button key={m} onClick={() => { setProjet(p => ({ ...p, metier: m })); setProjetStep(2); }}
                       style={{ padding: '14px 12px', background: projet.metier === m ? L.gold : 'rgba(255,255,255,0.06)', border: `1px solid ${projet.metier === m ? L.gold : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, color: projet.metier === m ? '#fff' : '#F5EFE0', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, textAlign: 'center', transition: 'all .15s' }}>
-                      <span style={{ fontSize: 20, display: 'block', marginBottom: 4 }}>{e}</span>{m}
+                      {m}
                     </button>
                   ))}
                 </div>
@@ -254,7 +287,7 @@ export default function SecteurSelect() {
                   <div>
                     <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Urgence</div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      {[{ id: 'urgent', label: '🚨 Urgent', desc: 'Sous 48h' }, { id: 'normal', label: '📅 Normal', desc: 'Sous 2 semaines' }, { id: 'flexible', label: '🕐 Flexible', desc: 'Pas pressé' }].map(u => (
+                      {[{ id: 'urgent', label: 'Urgent', desc: 'Sous 48h' }, { id: 'normal', label: 'Normal', desc: 'Sous 2 semaines' }, { id: 'flexible', label: 'Flexible', desc: 'Pas pressé' }].map(u => (
                         <button key={u.id} onClick={() => setProjet(p => ({ ...p, urgence: u.id }))}
                           style={{ flex: 1, padding: '10px', background: projet.urgence === u.id ? L.gold + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${projet.urgence === u.id ? L.gold : 'rgba(255,255,255,0.1)'}`, borderRadius: 8, cursor: 'pointer', fontFamily: L.font, textAlign: 'center' }}>
                           <div style={{ fontSize: 12, fontWeight: 600, color: projet.urgence === u.id ? L.gold : '#F5EFE0' }}>{u.label}</div>
@@ -334,6 +367,7 @@ export default function SecteurSelect() {
                     projets.push({ id: Date.now(), ...projet, budget, commission, fraisPaiement, total, statut: 'publie', date: new Date().toISOString(), clientNom: user?.nom || 'Client' });
                     localStorage.setItem('freample_projets', JSON.stringify(projets));
                   } catch {}
+                  localStorage.removeItem('freample_projet_brouillon');
                   setProjetSent(true);
                 }}
                   style={{ marginTop: 16, width: '100%', padding: '16px', background: L.gold, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, transition: 'background .2s', boxShadow: '0 4px 16px rgba(166,139,75,0.3)' }}
@@ -378,10 +412,10 @@ export default function SecteurSelect() {
             Qui nous sommes
           </h2>
           <p style={{ fontSize: 16, color: L.textSec, lineHeight: 1.75, margin: '0 0 28px' }}>
-            Freample est une startup French Tech. On est partis d'un constat simple : trouver un bon artisan ou gérer un bien immobilier, c'est encore trop compliqué en France. Trop d'intermédiaires, trop de frictions, trop de prix opaques.
+            Freample est une startup French Tech basée à Marseille. On est partis d'un constat simple : trouver un bon artisan du bâtiment, c'est encore trop compliqué en France. Trop d'intermédiaires, trop de frictions, trop de prix opaques.
           </p>
           <p style={{ fontSize: 16, color: L.textSec, lineHeight: 1.75, margin: '0 0 28px' }}>
-            On a construit Freample pour regrouper ces services dans un seul endroit, avec une interface claire et des tarifs honnêtes. Pas de jargon, pas de surprises.
+            On a construit Freample pour connecter directement les clients et les artisans BTP, avec une interface claire et des tarifs honnêtes. Pas de jargon, pas de surprises. Commission de 1% seulement.
           </p>
           <div style={{ borderLeft: `3px solid ${L.gold}`, paddingLeft: 20, marginTop: 32 }}>
             <p style={{ fontSize: 15, fontStyle: 'italic', color: L.text, lineHeight: 1.7, margin: 0 }}>
@@ -406,7 +440,7 @@ export default function SecteurSelect() {
               { title: 'Simplicité', desc: 'Zéro jargon. Chaque parcours est pensé pour être compris en 30 secondes.' },
               { title: 'Rapidité', desc: 'Gestion instantanée, documents en quelques minutes.' },
               { title: 'Accessibilité', desc: 'Des services premium à des tarifs justes, pour les particuliers comme les entreprises.' },
-              { title: 'Écosystème', desc: 'Artisans, immobilier, gestion — tout est connecté dans une seule plateforme.' },
+              { title: 'Écosystème', desc: 'Marketplace, devis, chantiers, RH, finance — tout est connecté dans une seule plateforme BTP.' },
             ].map(o => (
               <div key={o.title} style={{ background: L.white, padding: 'clamp(20px,3vw,32px)' }}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 8px' }}>{o.title}</h3>
@@ -442,7 +476,7 @@ export default function SecteurSelect() {
             onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAuthModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: '#F2F2F7', border: 'none', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 14, color: '#636363', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
 
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FFF7ED', border: '2px solid #A68B4B', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24 }}>📋</div>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FFF7ED', border: '2px solid #A68B4B', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 20, fontWeight: 800, color: '#A68B4B' }}>P</div>
             <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.02em' }}>Votre projet est prêt !</h3>
             <p style={{ fontSize: 14, color: '#636363', lineHeight: 1.6, margin: '0 0 24px' }}>
               Créez un compte gratuit pour publier votre projet et recevoir des offres d'artisans. <strong>Votre projet ne sera pas perdu.</strong>
@@ -454,7 +488,7 @@ export default function SecteurSelect() {
                 <span style={{ color: '#636363' }}>{projet.metier}</span>
                 <span style={{ fontWeight: 700 }}>{projet.budget ? `${Number(projet.budget).toLocaleString('fr-FR')}€` : '—'}</span>
               </div>
-              <div style={{ fontSize: 12, color: '#8E8E93' }}>📍 {projet.ville || '—'} · {projet.description?.slice(0, 40)}{projet.description?.length > 40 ? '...' : ''}</div>
+              <div style={{ fontSize: 12, color: '#8E8E93' }}>{projet.ville || '—'} · {projet.description?.slice(0, 40)}{projet.description?.length > 40 ? '...' : ''}</div>
             </div>
 
             <button onClick={() => { setShowAuthModal(false); navigate('/register?role=client&redirect=/'); }}

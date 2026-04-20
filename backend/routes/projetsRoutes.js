@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const emailService = require('../services/emailService');
 
 // ─── Migration auto ─────────────────────────────
 async function ensureTables() {
@@ -166,17 +167,37 @@ router.get('/:id/offres', authenticateToken, async (req, res) => {
 
 // PUT /projets/offres/:id/accepter — Client accepte une offre
 router.put('/offres/:id/accepter', authenticateToken, async (req, res) => {
+  const client = await db.pool.connect();
   try {
+    await client.query('BEGIN');
     // Marquer l'offre comme acceptée
-    const { rows } = await db.query(`UPDATE projet_offres SET statut = 'acceptee' WHERE id = $1 RETURNING *`, [req.params.id]);
-    if (!rows[0]) return res.status(404).json({ erreur: 'Offre non trouvée' });
+    const { rows } = await client.query(`UPDATE projet_offres SET statut = 'acceptee' WHERE id = $1 RETURNING *`, [req.params.id]);
+    if (!rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ erreur: 'Offre non trouvée' }); }
+    // Verify ownership
+    const proj = await client.query('SELECT client_id FROM projets_clients WHERE id = $1', [rows[0].projet_id]);
+    if (!proj.rows[0] || proj.rows[0].client_id !== req.user.id) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ erreur: 'Non autorisé' });
+    }
     // Mettre le projet en "en_cours"
-    await db.query(`UPDATE projets_clients SET statut = 'en_cours' WHERE id = $1`, [rows[0].projet_id]);
+    await client.query(`UPDATE projets_clients SET statut = 'en_cours' WHERE id = $1`, [rows[0].projet_id]);
     // Refuser les autres offres
-    await db.query(`UPDATE projet_offres SET statut = 'refusee' WHERE projet_id = $1 AND id != $2 AND statut = 'proposee'`, [rows[0].projet_id, req.params.id]);
+    await client.query(`UPDATE projet_offres SET statut = 'refusee' WHERE projet_id = $1 AND id != $2 AND statut = 'proposee'`, [rows[0].projet_id, req.params.id]);
+    // Notifier l'artisan par email + notification
+    const artisan = await client.query('SELECT u.email, u.nom FROM users u WHERE u.id = $1', [rows[0].artisan_id]);
+    const projet = await client.query('SELECT titre FROM projets_clients WHERE id = $1', [rows[0].projet_id]);
+    if (artisan.rows[0] && projet.rows[0]) {
+      emailService.sendOffreAcceptee(artisan.rows[0].email, artisan.rows[0].nom, projet.rows[0].titre).catch(() => {});
+      await client.query(`INSERT INTO notifications (user_id, type, titre, contenu) VALUES ($1, 'mission_acceptee', 'Offre acceptée !', $2)`,
+        [rows[0].artisan_id, `Votre offre pour « ${projet.rows[0].titre} » a été acceptée`]);
+    }
+    await client.query('COMMIT');
     res.json({ offre: rows[0], message: 'Offre acceptée — vous êtes mis en relation' });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     res.status(500).json({ erreur: 'Erreur serveur' });
+  } finally {
+    client.release();
   }
 });
 
@@ -214,6 +235,15 @@ router.post('/:id/offre', authenticateToken, async (req, res) => {
       INSERT INTO projet_offres (projet_id, artisan_id, patron_id, prix_propose, message, date_proposee, delai_jours)
       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *
     `, [req.params.id, req.user.id, req.user.patronId || null, prixPropose, message || null, dateProposee || null, delaiJours || null]);
+    // Notifier le client par email + notification
+    const projet = await db.query('SELECT p.titre, u.email, u.nom, u.id AS client_id FROM projets_clients p JOIN users u ON u.id = p.client_id WHERE p.id = $1', [req.params.id]);
+    if (projet.rows[0]) {
+      const { email, nom, client_id, titre } = projet.rows[0];
+      const artisanNom = req.user.nom || 'Un artisan';
+      emailService.sendNouvelleOffre(email, nom, titre, artisanNom).catch(() => {});
+      db.query(`INSERT INTO notifications (user_id, type, titre, contenu) VALUES ($1, 'nouvelle_offre', 'Nouvelle offre reçue', $2)`,
+        [client_id, `${artisanNom} a soumis une offre de ${prixPropose}€ pour « ${titre} »`]).catch(() => {});
+    }
     res.status(201).json({ offre: rows[0], message: 'Offre envoyée' });
   } catch (err) {
     console.error('POST offre:', err.message);

@@ -1282,4 +1282,38 @@ a:focus-visible,
     max-width: 100% !important;
     width: 100% !important;
   }
+
+  /* ── Notification dropdown: full width on mobile ── */
+  .notif-dropdown {
+    width: calc(100vw - 24px) !important;
+    right: -12px !important;
+    max-width: none !important;
+  }
+
+  /* ── Touch-friendly buttons in inline dashboards ── */
+  button[style*="fontSize: 11"],
+  button[style*="fontSize:11"],
+  button[style*="fontSize: 12"],
+  button[style*="fontSize:12"] {
+    min-height: 44px;
+  }
+
+  /* ── Inline grids: collapse on mobile ── */
+  div[style*="gridTemplateColumns: repeat(3"],
+  div[style*="gridTemplateColumns:repeat(3"],
+  div[style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  div[style*="gridTemplateColumns: repeat(4"],
+  div[style*="gridTemplateColumns:repeat(4"],
+  div[style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── Inline flex gaps: tighter on mobile ── */
+  div[style*="gap: 20"],
+  div[style*="gap:20"] {
+    gap: 12px !important;
+  }
 }

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { setApiErrorToast } from '../services/api';
 
 const ToastContext = createContext(null);
 
@@ -20,6 +21,9 @@ export function ToastProvider({ children }) {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, duration);
   }, []);
+
+  // Connecter le toast d'erreur API globalement
+  useEffect(() => { setApiErrorToast(addToast); return () => setApiErrorToast(null); }, [addToast]);
 
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id));

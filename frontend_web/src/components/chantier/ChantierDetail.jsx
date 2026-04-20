@@ -328,8 +328,54 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   // ═════════════════════════════════════════════════════════════════
   // Tab: Journal
   // ═════════════════════════════════════════════════════════════════
+  // Lire signalements, rapports et todos des salariés
+  const signalements = useMemo(() => lsGet(`freample_signalements_${cid}`, []), [cid]);
+  const rapportsSalaries = useMemo(() => lsGet(`freample_rapports_${cid}`, []), [cid]);
+  const todoChantier = useMemo(() => lsGet(`freample_todo_${cid}`, null), [cid]);
+
   const renderJournal = () => (
     <div>
+      {/* Signalements des salariés */}
+      {signalements.length > 0 && (
+        <div style={{ ...CARD, marginBottom: 16, borderLeft: `3px solid ${L.red}` }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: L.red, marginBottom: 10 }}>Signalements ({signalements.length})</div>
+          {signalements.sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(s => (
+            <div key={s.id} style={{ padding: '10px 0', borderBottom: `1px solid ${L.borderLight}`, fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontWeight: 600 }}>{s.type || 'Signalement'}</span>
+                <span style={{ fontSize: 11, color: L.textLight }}>{s.date} — {s.salarie || 'Salarié'}</span>
+              </div>
+              <div style={{ color: L.textSec }}>{s.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Todo du jour (posé par le salarié la veille) */}
+      {todoChantier && todoChantier.date === new Date().toISOString().slice(0, 10) && (
+        <div style={{ ...CARD, marginBottom: 16, borderLeft: `3px solid ${L.orange}`, background: '#FFFBEB' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: L.orange, marginBottom: 4 }}>À faire aujourd'hui</div>
+          <div style={{ fontSize: 13, color: L.text }}>{todoChantier.note}</div>
+          <div style={{ fontSize: 11, color: L.textLight, marginTop: 4 }}>Posé par {todoChantier.salarie || 'le salarié'}</div>
+        </div>
+      )}
+
+      {/* Rapports des salariés */}
+      {rapportsSalaries.length > 0 && (
+        <div style={{ ...CARD, marginBottom: 16, borderLeft: `3px solid ${L.green}` }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: L.green, marginBottom: 10 }}>Rapports terrain ({rapportsSalaries.length})</div>
+          {rapportsSalaries.sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5).map(r => (
+            <div key={r.id} style={{ padding: '10px 0', borderBottom: `1px solid ${L.borderLight}`, fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontWeight: 600 }}>{r.salarie || 'Salarié'}</span>
+                <span style={{ fontSize: 11, color: L.textLight }}>{r.date}</span>
+              </div>
+              <div style={{ color: L.textSec }}>{r.note}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Add entry form */}
       <div style={{ ...CARD, marginBottom: 20 }}>
         <SectionTitle>Nouvelle entrée</SectionTitle>
@@ -483,11 +529,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
       </div>
 
       {/* CTA Sous-traitance Freample */}
-      <div style={{ ...CARD, marginTop: 16, borderLeft: '3px solid #A68B4B', background: '#FDFCF7' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Besoin de renfort ?</div>
-        <div style={{ fontSize: 12, color: '#6E6E73', marginBottom: 10 }}>Trouvez un sous-traitant qualifié via Freample. Commission 1% uniquement si vous l'engagez.</div>
-        <button onClick={() => { window.location.href = '/btp'; }} style={{ padding: '8px 18px', background: '#A68B4B', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Trouver un sous-traitant</button>
-      </div>
+      <SousTraitanceForm chantier={chantier} showToast={showToast} />
     </div>
   );
 
@@ -770,6 +812,73 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
 
       {/* Tab content */}
       {tabContent[tab]?.()}
+    </div>
+  );
+}
+
+// ── Sous-traitance : publier une demande ──
+function SousTraitanceForm({ chantier, showToast }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ metier: '', description: '', budget: '', dateDebut: chantier?.dateDebut || '', dateFin: chantier?.dateFin || '' });
+  const [sent, setSent] = useState(false);
+
+  const METIERS = ['Plomberie','Electricite','Peinture','Maconnerie','Carrelage','Menuiserie','Couverture','Chauffage','Serrurerie','Platrerie','Isolation','Charpente','Facade','Climatisation'];
+
+  const publier = () => {
+    if (!form.metier || !form.budget) return;
+    const all = lsGet('freample_soustraitance', []);
+    const patronProfil = lsGet('freample_profil_patron', {});
+    all.push({
+      id: Date.now(), chantierId: chantier?.id, chantierTitre: chantier?.titre || chantier?.metier || 'Chantier',
+      patronNom: patronProfil.nom || 'Patron', patronId: patronProfil.id,
+      metier: form.metier, description: form.description, budget: Number(form.budget),
+      ville: chantier?.ville || chantier?.adresse || '', dateDebut: form.dateDebut, dateFin: form.dateFin,
+      statut: 'ouverte', reponses: [], date: today(),
+    });
+    lsSet('freample_soustraitance', all);
+    setSent(true);
+    if (showToast) showToast('Demande de sous-traitance publiee');
+  };
+
+  if (sent) {
+    return (
+      <div style={{ ...CARD, marginTop: 16, borderLeft: '3px solid #16A34A', background: '#F0FDF4' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>Demande publiee</div>
+        <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 4 }}>Les auto-entrepreneurs {form.metier} de la zone seront notifies.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...CARD, marginTop: 16, borderLeft: '3px solid #A68B4B', background: '#FDFCF7' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Besoin de renfort ?</div>
+      <div style={{ fontSize: 12, color: '#6E6E73', marginBottom: 10 }}>Trouvez un sous-traitant qualifie via Freample. Commission 1% uniquement si vous l'engagez. Auto-liquidation TVA appliquee.</div>
+      {!open ? (
+        <button onClick={() => setOpen(true)} style={{ padding: '8px 18px', background: '#A68B4B', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 8 }}>Chercher un sous-traitant</button>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div>
+            <label style={LBL}>Corps de metier recherche</label>
+            <select value={form.metier} onChange={e => setForm(f => ({ ...f, metier: e.target.value }))} style={INP}>
+              <option value="">-- Selectionnez --</option>
+              {METIERS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={LBL}>Description du besoin</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ ...INP, minHeight: 50 }} placeholder="Ex: Besoin d'un electricien pour le cablage du 2e etage..." />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <div><label style={LBL}>Budget HT</label><input type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} style={INP} placeholder="0" /></div>
+            <div><label style={LBL}>Du</label><input type="date" value={form.dateDebut} onChange={e => setForm(f => ({ ...f, dateDebut: e.target.value }))} style={INP} /></div>
+            <div><label style={LBL}>Au</label><input type="date" value={form.dateFin} onChange={e => setForm(f => ({ ...f, dateFin: e.target.value }))} style={INP} /></div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={publier} style={{ ...BTN, background: '#A68B4B', borderRadius: 8 }}>Publier la demande</button>
+            <button onClick={() => setOpen(false)} style={{ ...BTN_O, borderRadius: 8 }}>Annuler</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

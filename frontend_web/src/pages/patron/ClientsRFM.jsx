@@ -25,37 +25,27 @@ function scoreMonetary(total) {
 }
 
 function getSegment(r, f, m) {
+  // Ordre : Champion > Fidèle > Ordinaire > Nouveau > Peu investi > En perte
   if (r >= 4 && f >= 4 && m >= 4) return 'champion';
-  if (r >= 4 && f === 1)          return 'nouveau';
   if (f >= 4 && m >= 3)           return 'fidele';
-  if (r >= 3 && f <= 2 && m >= 2) return 'potentiel';
-  if (r <= 2 && f >= 3 && m >= 3) return 'risque';
-  if (r <= 2 && f >= 4 && m >= 4) return 'reconquerir';
-  if (r <= 2 && f <= 2)           return 'inactif';
+  if (r >= 4 && f === 1)          return 'nouveau';
+  if (r <= 2 && f >= 3)           return 'en_perte';      // Anciens bons clients devenus inactifs
+  if (r <= 2 && f <= 2)           return 'en_perte';      // Ex-inactifs fusionnés
+  if (r >= 3 && f <= 2)           return 'peu_investi';   // Ex-à risque fusionnés
   return 'ordinaire';
 }
 
+// Ordre d'affichage : Champion → Fidèle → Ordinaire → Nouveau → Peu investi → En perte
 const SEGMENTS = {
-  champion:    { label: 'Champion',       color: '#1A7F43', bg: '#D1F2E0', desc: 'Achètent souvent, récemment et dépensent beaucoup. À chouchouter.' },
-  fidele:      { label: 'Fidèle',         color: '#1565C0', bg: '#E3F2FD', desc: 'Commandent régulièrement. Bon potentiel de CA récurrent.' },
-  potentiel:   { label: 'Client potentiel', color: '#00796B', bg: '#E0F2F1', desc: 'Clients récents avec peu de commandes — à fidéliser.' },
-  nouveau:     { label: 'Nouveau',        color: '#6A1B9A', bg: '#F3E5F5', desc: 'Premier passage récent. À accompagner pour une 2e commande.' },
-  risque:      { label: 'À risque',       color: '#E65100', bg: '#FFF3E0', desc: 'Bons clients qui ne sont plus venus depuis un moment.' },
-  reconquerir: { label: 'À reconquérir',  color: '#C62828', bg: '#FFEBEE', desc: 'Anciens bons clients devenus inactifs — priorité de relance.' },
-  inactif:     { label: 'Inactif',        color: '#6E6E73', bg: '#F2F2F7', desc: 'Peu commandé et pas vu depuis longtemps.' },
-  ordinaire:   { label: 'Ordinaire',      color: '#5856D6', bg: '#EDE7F6', desc: 'Profil mixte — à surveiller.' },
+  champion:    { label: 'Champion',    color: '#1A7F43', bg: '#D1F2E0', desc: 'Achètent souvent, récemment et dépensent beaucoup. À chouchouter.' },
+  fidele:      { label: 'Fidèle',      color: '#1565C0', bg: '#E3F2FD', desc: 'Commandent régulièrement. Bon potentiel de CA récurrent.' },
+  ordinaire:   { label: 'Ordinaire',   color: '#5856D6', bg: '#EDE7F6', desc: 'Profil mixte — à surveiller.' },
+  nouveau:     { label: 'Nouveau',     color: '#6A1B9A', bg: '#F3E5F5', desc: 'Premier passage récent. À accompagner pour une 2e commande.' },
+  peu_investi: { label: 'Peu investi', color: '#E65100', bg: '#FFF3E0', desc: 'Clients avec un faible engagement — potentiel à développer ou risque de perte.' },
+  en_perte:    { label: 'En perte',    color: '#6E6E73', bg: '#F2F2F7', desc: 'Clients qui ne sont plus venus depuis longtemps ou quasi-inactifs — campagne de réactivation.' },
 };
 
-const ACTIONS_SEGMENT = {
-  champion:    'Proposer programme fidélité / parrainage',
-  fidele:      'Envoyer offre exclusive ou réduction sur prochain chantier',
-  potentiel:   'Relancer avec proposition de visite conseil gratuite',
-  nouveau:     'Appeler pour s\'assurer de sa satisfaction + proposer 2e devis',
-  risque:      'Contacter en urgence — proposer un rendez-vous de reprise',
-  reconquerir: 'Envoyer une offre de retour agressive (remise 10-15%)',
-  inactif:     'Campagne de réactivation — email ou courrier postal',
-  ordinaire:   'Suivi standard — relance annuelle',
-};
+const ACTIONS_SEGMENT = {};
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -134,16 +124,7 @@ export default function ClientsRFM() {
   const [tri, setTri] = useState('rfm');
   const [selectedId, setSelectedId] = useState(null);
 
-  if (mainTab === 'avis') return (
-    <div>
-      <div style={{ display:'flex', gap:4, marginBottom:0, padding:'28px 28px 0' }}>
-        <button onClick={()=>setMainTab('clients')} style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid transparent', fontSize:14, fontWeight:400, color:'#6E6E73', cursor:'pointer' }}>Clients & Segmentation</button>
-        <button style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid #5B5BD6', fontSize:14, fontWeight:700, color:'#1C1C1E', cursor:'pointer' }}>Avis & Réputation</button>
-      </div>
-      <Reputation />
-    </div>
-  );
-
+  // Règles des hooks : useMemo DOIT être appelé avant les return conditionnels
   const clients = useMemo(() => {
     let list = CLIENTS_DEMO;
     if (filtreSegment !== 'tous') list = list.filter(c => c.segment === filtreSegment);
@@ -157,6 +138,16 @@ export default function ClientsRFM() {
       return 0;
     });
   }, [filtreSegment, search, tri]);
+
+  if (mainTab === 'avis') return (
+    <div>
+      <div style={{ display:'flex', gap:4, marginBottom:0, padding:'28px 28px 0' }}>
+        <button onClick={()=>setMainTab('clients')} style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid transparent', fontSize:14, fontWeight:400, color:'#6E6E73', cursor:'pointer' }}>Clients & Segmentation</button>
+        <button style={{ padding:'10px 20px', background:'transparent', border:'none', borderBottom:'2px solid #5B5BD6', fontSize:14, fontWeight:700, color:'#1C1C1E', cursor:'pointer' }}>Avis & Réputation</button>
+      </div>
+      <Reputation />
+    </div>
+  );
 
   const selected = CLIENTS_DEMO.find(c => c.id === selectedId);
 
@@ -256,8 +247,8 @@ export default function ClientsRFM() {
         </div>
       </div>
 
-      {/* Table + detail panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 360px' : '1fr', gap: 16, alignItems: 'start' }}>
+      {/* Table + modal zoom */}
+      <div>
         {/* Client list */}
         <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           {/* Table header */}
@@ -327,20 +318,103 @@ export default function ClientsRFM() {
           })}
         </div>
 
-        {/* Detail panel */}
-        {selected && (
-          <ClientDetail client={selected} onClose={() => setSelectedId(null)} />
-        )}
       </div>
+
+      {/* Modal zoom fiche client */}
+      {selected && (
+        <div onClick={() => setSelectedId(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn .2s ease-out' }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ width: '92%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto', animation: 'zoomIn .25s ease-out' }}>
+            <ClientDetail client={selected} onClose={() => setSelectedId(null)} />
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
     </div>
   );
 }
 
 /* ── Client detail panel ── */
+function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+
 function ClientDetail({ client: c, onClose }) {
   const seg = SEGMENTS[c.segment];
   const rfmTotal = c.r + c.f + c.m;
   const [actionDone, setActionDone] = useState(false);
+  const [commentaires, setCommentaires] = useState(() => lsGet('freample_client_commentaires', {}));
+  const [newComment, setNewComment] = useState('');
+  const [showAllHisto, setShowAllHisto] = useState(false);
+
+  // ── Données réelles depuis localStorage ──
+  const allDevis = lsGet('freample_devis', []);
+  const allChantiers = lsGet('freample_chantiers_custom', []);
+  const allFactures = lsGet('freample_factures', []);
+  const allPvs = lsGet('freample_pv_receptions', []);
+
+  // Matcher par nom client (fuzzy)
+  const nomLower = (c.nom || '').toLowerCase();
+  const matchClient = (name) => {
+    if (!name) return false;
+    const n = name.toLowerCase();
+    return n.includes(nomLower) || nomLower.includes(n) || n.split(' ').some(w => w.length > 2 && nomLower.includes(w));
+  };
+
+  const devisClient = allDevis.filter(d => matchClient(d.client));
+  const chantiersClient = allChantiers.filter(ch => matchClient(ch.client));
+  const facturesClient = allFactures.filter(f => matchClient(f.client));
+  const pvsClient = allPvs.filter(pv => matchClient(pv.maitreOuvrage?.nom));
+
+  // Historique unifié : démo + données réelles
+  const historiqueReel = [
+    ...devisClient.map(d => ({ date: d.date, desc: `Devis ${d.numero || ''} — ${d.objet || ''}`, montant: d.montantTTC || 0, type: 'devis', statut: d.statut })),
+    ...chantiersClient.map(ch => ({ date: ch.dateDebut, desc: ch.titre || '', montant: ch.caDevis || ch.budgetPrevu || 0, type: 'chantier', statut: ch.statut })),
+    ...facturesClient.map(f => ({ date: f.date, desc: `Facture ${f.numero || ''} — ${f.objet || ''}`, montant: f.montantTTC || 0, type: 'facture', statut: f.statut })),
+  ].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const historiqueAll = historiqueReel.length > 0 ? historiqueReel : (c.historique || []);
+  const historiqueVisible = showAllHisto ? historiqueAll : historiqueAll.slice(0, 5);
+
+  // Commentaires du patron pour ce client
+  const mesCommentaires = commentaires[c.id] || [];
+
+  const ajouterCommentaire = () => {
+    if (!newComment.trim()) return;
+    const comment = { id: Date.now(), texte: newComment.trim(), date: new Date().toISOString() };
+    const updated = { ...commentaires, [c.id]: [...mesCommentaires, comment] };
+    setCommentaires(updated);
+    localStorage.setItem('freample_client_commentaires', JSON.stringify(updated));
+    setNewComment('');
+  };
+
+  const supprimerCommentaire = (commentId) => {
+    const updated = { ...commentaires, [c.id]: mesCommentaires.filter(cm => cm.id !== commentId) };
+    setCommentaires(updated);
+    localStorage.setItem('freample_client_commentaires', JSON.stringify(updated));
+  };
+
+  // KPIs client
+  const caReel = historiqueReel.length > 0 ? devisClient.filter(d => d.statut === 'accepte' || d.statut === 'signe').reduce((s, d) => s + (d.montantTTC || 0), 0) : c.totalCA;
+  const nbChantiers = chantiersClient.length || c.nbCommandes;
+  const nbPvs = pvsClient.length;
+  const panierMoyen = nbChantiers > 0 ? Math.round((caReel || c.totalCA) / nbChantiers) : 0;
+
+  // Ancienneté (depuis la première commande)
+  const allDates = [...(c.historique || []).map(h => h.date), ...devisClient.map(d => d.date), ...chantiersClient.map(ch => ch.dateDebut)].filter(Boolean).sort();
+  const premiereDate = allDates[0];
+  const ancienneteJours = premiereDate ? Math.round((new Date() - new Date(premiereDate)) / 86400000) : c.daysSince || 0;
+  const ancienneteLabel = ancienneteJours > 365 ? `${Math.floor(ancienneteJours / 365)} an${Math.floor(ancienneteJours / 365) > 1 ? 's' : ''} ${Math.floor((ancienneteJours % 365) / 30)} mois`
+    : ancienneteJours > 30 ? `${Math.floor(ancienneteJours / 30)} mois` : `${ancienneteJours} jours`;
+
+  // Infos pré-remplies depuis les devis
+  const firstDevis = devisClient[0] || {};
+  const adresseClient = firstDevis.clientAdresse || firstDevis.adresseChantier || c.adresse || '';
+  const emailClient = firstDevis.clientEmail || c.email || '';
+  const telClient = firstDevis.clientTel || c.telephone || '';
 
   return (
     <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.12)', overflow: 'hidden', position: 'sticky', top: 24 }}>
@@ -360,11 +434,43 @@ function ClientDetail({ client: c, onClose }) {
         </div>
       </div>
 
-      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 600, overflowY: 'auto' }}>
-        {/* Contact */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {c.telephone && <div style={{ fontSize: 13, color: '#1C1C1E' }}>📞 {c.telephone}</div>}
-          {c.email && <div style={{ fontSize: 13, color: '#5B5BD6' }}>✉ {c.email}</div>}
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 700, overflowY: 'auto' }}>
+        {/* Infos client */}
+        <div style={{ background: '#FAFAFA', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[
+              ['Téléphone', telClient || '—', telClient ? `tel:${telClient}` : null],
+              ['Email', emailClient || '—', emailClient ? `mailto:${emailClient}` : null],
+              ['Adresse', adresseClient || '—', null],
+              ['Ancienneté', ancienneteLabel, null],
+              ['Date de naissance', '—', null],
+              ['Client depuis', premiereDate ? formatDate(premiereDate) : '—', null],
+            ].map(([label, val, href]) => (
+              <div key={label} style={{ padding: '6px 0' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.3 }}>{label}</div>
+                {href ? (
+                  <a href={href} style={{ fontSize: 13, fontWeight: 600, color: '#5B5BD6', textDecoration: 'none', marginTop: 2, display: 'block' }}>{val}</a>
+                ) : (
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1E', marginTop: 2 }}>{val}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* KPIs client */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+          {[
+            ['CA total', formatCur(caReel || c.totalCA), '#1A7F43'],
+            ['Panier moyen', formatCur(panierMoyen), '#5B5BD6'],
+            ['Chantiers', nbChantiers, '#FF9500'],
+            ['PV signés', nbPvs, '#A68B4B'],
+          ].map(([label, val, color]) => (
+            <div key={label} style={{ textAlign: 'center', background: '#FAFAFA', borderRadius: 10, padding: '10px 6px' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color }}>{val}</div>
+              <div style={{ fontSize: 9, color: '#636363', marginTop: 2 }}>{label}</div>
+            </div>
+          ))}
         </div>
 
         {/* RFM scores */}
@@ -395,51 +501,72 @@ function ClientDetail({ client: c, onClose }) {
           </div>
         </div>
 
-        {/* Recommandation */}
-        <div style={{ background: `${seg.bg}`, borderRadius: 12, padding: '12px 14px', border: `1px solid ${seg.color}30` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: seg.color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Recommandation</div>
-          <div style={{ fontSize: 12, color: '#3C3C43', lineHeight: 1.6 }}>{seg.desc}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: seg.color, marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-            <span>→</span> {ACTIONS_SEGMENT[c.segment]}
+
+        {/* Commentaires du patron */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Notes internes</div>
+          {mesCommentaires.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+              {mesCommentaires.map(cm => (
+                <div key={cm.id} style={{ padding: '8px 12px', background: '#FFFBEB', borderRadius: 8, borderLeft: '3px solid #A68B4B', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 12, color: '#1C1C1E', lineHeight: 1.5 }}>{cm.texte}</div>
+                    <div style={{ fontSize: 10, color: '#636363', marginTop: 4 }}>{formatDate(cm.date)}</div>
+                  </div>
+                  <button onClick={() => supprimerCommentaire(cm.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 12, padding: 2, flexShrink: 0 }}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input value={newComment} onChange={e => setNewComment(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') ajouterCommentaire(); }}
+              placeholder="Ajouter une note sur ce client..."
+              style={{ flex: 1, padding: '8px 12px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, outline: 'none' }} />
+            <button onClick={ajouterCommentaire} disabled={!newComment.trim()}
+              style={{ padding: '8px 14px', background: newComment.trim() ? '#A68B4B' : '#E5E5EA', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: newComment.trim() ? 'pointer' : 'default' }}>
+              +
+            </button>
           </div>
         </div>
 
-        {/* Historique */}
+        {/* Historique unifié */}
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Historique des commandes</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>
+            Historique {historiqueReel.length > 0 ? '(données réelles)' : '(démo)'}
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {(c.historique || []).map((h, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#FAFAFA', borderRadius: 10, fontSize: 13 }}>
-                <div>
-                  <div style={{ fontWeight: 600, color: '#1C1C1E' }}>{h.desc}</div>
-                  <div style={{ fontSize: 11, color: '#636363', marginTop: 2 }}>{formatDate(h.date)}</div>
+            {historiqueVisible.map((h, i) => {
+              const typeIcon = h.type === 'devis' ? '📋' : h.type === 'chantier' ? '🏗️' : h.type === 'facture' ? '🧾' : '📦';
+              const statutColor = h.statut === 'accepte' || h.statut === 'signe' || h.statut === 'terminee' || h.statut === 'payee' ? '#16A34A'
+                : h.statut === 'envoye' || h.statut === 'en_cours' ? '#D97706'
+                : h.statut === 'retire_marketplace' || h.statut === 'annulee' ? '#DC2626' : '#636363';
+              return (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#FAFAFA', borderRadius: 10, fontSize: 13 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: '#1C1C1E', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>{typeIcon}</span> {h.desc || '—'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#636363', marginTop: 2, display: 'flex', gap: 8 }}>
+                      <span>{formatDate(h.date)}</span>
+                      {h.statut && <span style={{ fontWeight: 600, color: statutColor }}>{h.statut}</span>}
+                    </div>
+                  </div>
+                  <div style={{ fontWeight: 700, color: '#1C1C1E', flexShrink: 0 }}>{formatCur(h.montant)}</div>
                 </div>
-                <div style={{ fontWeight: 700, color: '#1C1C1E' }}>{formatCur(h.montant)}</div>
-              </div>
-            ))}
-            {(!c.historique || c.historique.length === 0) && (
+              );
+            })}
+            {historiqueAll.length === 0 && (
               <div style={{ textAlign: 'center', padding: 20, color: '#636363', fontSize: 13 }}>Aucun historique disponible</div>
+            )}
+            {historiqueAll.length > 5 && !showAllHisto && (
+              <button onClick={() => setShowAllHisto(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#5B5BD6', fontWeight: 600, padding: 4 }}>
+                Voir tout ({historiqueAll.length} éléments) →
+              </button>
             )}
           </div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {actionDone ? (
-            <div style={{ background: '#D1F2E0', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#1A7F43', fontWeight: 600, textAlign: 'center' }}>
-              Action enregistrée — client ajouté à la file de relance
-            </div>
-          ) : (
-            <>
-              <button onClick={() => setActionDone(true)} style={{ padding: '11px 0', border: 'none', borderRadius: 10, background: seg.color, color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-                Lancer l'action recommandée
-              </button>
-              <button style={{ padding: '10px 0', border: `1.5px solid ${seg.color}`, borderRadius: 10, background: '#fff', color: seg.color, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
-                Proposer un devis
-              </button>
-            </>
-          )}
-        </div>
       </div>
     </div>
   );

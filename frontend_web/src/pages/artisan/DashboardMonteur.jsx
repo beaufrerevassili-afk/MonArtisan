@@ -28,13 +28,23 @@ const STATUS = {
   livre:    { label:'Livré',     bg:'#D1FAE5', border:'#86EFAC', color:'#065F46' },
 };
 
-const PROJETS = [];
+const PROJETS = [
+  { id: 1, titre: 'Reel Instagram Salon Excellence', type: 'Reels', client: 'Salon Excellence', statut: 'en_cours', fichiers: 1, revisions: 0, deadline: '2026-04-22', montant: 180, notes: 'Ambiance chaleureuse, musique dynamique, durée 30s' },
+  { id: 2, titre: 'Clip TikTok restaurant Bella Vita', type: 'TikTok', client: 'La Bella Vita', statut: 'revision', fichiers: 2, revisions: 1, deadline: '2026-04-20', montant: 150, notes: 'Ajouter sous-titres et logo en fin' },
+  { id: 3, titre: 'Vidéo YouTube corporate BTP', type: 'YouTube', client: 'Bernard BTP', statut: 'a_faire', fichiers: 0, revisions: 0, deadline: '2026-04-28', montant: 420, notes: 'Format 3 min, voix off fournie' },
+  { id: 4, titre: 'Stories Instagram coiffeur', type: 'Stories', client: 'Coiffure Nice', statut: 'livre', fichiers: 4, revisions: 0, deadline: '2026-04-08', montant: 120, notes: '' },
+  { id: 5, titre: 'Montage témoignage client', type: 'YouTube', client: 'Freample', statut: 'livre', fichiers: 1, revisions: 1, deadline: '2026-03-25', montant: 200, notes: '' },
+];
 
-const AVIS = [];
+const AVIS = [
+  { client: 'Freample', note: 5, commentaire: 'Travail excellent, livré dans les temps et retours pris en compte.', date: '2026-03-26' },
+  { client: 'Coiffure Nice', note: 5, commentaire: 'Super monteur, très créatif. On recommande !', date: '2026-04-08' },
+  { client: 'Mode Studio', note: 4, commentaire: 'Bon travail, quelques retours mais bien gérés.', date: '2026-03-12' },
+];
 
 const GAINS_SEMAINE = [
-  { jour:'Lun', montant:0 },{ jour:'Mar', montant:0 },{ jour:'Mer', montant:0 },
-  { jour:'Jeu', montant:0 },{ jour:'Ven', montant:0 },{ jour:'Sam', montant:0 },
+  { jour:'Lun', montant:0 },{ jour:'Mar', montant:120 },{ jour:'Mer', montant:0 },
+  { jour:'Jeu', montant:200 },{ jour:'Ven', montant:0 },{ jour:'Sam', montant:180 },
   { jour:'Dim', montant:0 },
 ];
 

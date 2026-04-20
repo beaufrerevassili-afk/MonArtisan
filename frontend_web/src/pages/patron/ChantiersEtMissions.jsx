@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import DevisFormulaire from '../../components/DevisFormulaire';
+import GanttPlanning from '../../components/chantier/GanttPlanning';
 import {
   IconBuilding, IconCalendar, IconAlert, IconCheck, IconPlus, IconX,
   IconRefresh, IconDocument, IconUser, IconTrendUp,
 } from '../../components/ui/Icons';
 import { API_URL } from '../../services/api';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
+import { verifierHabilitation } from '../../utils/profilEntreprise';
 import { calculerIndemniteTrajet } from '../../utils/calculPaie';
-import PhotosChantier from '../../components/rh/PhotosChantier';
+import ChantierDetail from '../../components/chantier/ChantierDetail';
 
 // Adresse dépôt — en prod, viendrait du profil entreprise
 const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '24 rue de la Liberté, Nice';
@@ -72,29 +74,27 @@ function vidangeAlert(v, km) {
   return km >= v.prochainKm - 2000;
 }
 
-/* ── Demo data ── */
+/* ── Demo data (unifié depuis demoData.js) ── */
 const DEMO_ITEMS = [
-  { id: 1, titre: 'Rénovation façade — Immeuble Leblanc', description: 'Ravalement complet façade sud + peinture, 280 m². Mise en échafaudage incluse.', adresse: '24 rue Victor Hugo, 75015 Paris', client: 'M. Leblanc', statut: 'en_cours', priorite: 'haute', budgetPrevu: 18500, budgetReel: 16200, caDevis: 22000, avancement: 65, dateDebut: '2025-03-01', dateFin: '2025-04-15', equipe: ['Jean Martin', 'Sophie Durand'], vehicule: { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic' }, notes: 'Accès échafaudage côté rue uniquement.' },
-  { id: 2, titre: 'Pose carrelage — Appartement T3 Dupont', description: 'Pose carrelage 60×60 salle de bain + cuisine, 45 m² total. Ragréage préalable.', adresse: '8 av. des Fleurs, 92100 Boulogne', client: 'Mme Dupont', statut: 'assignee', priorite: null, budgetPrevu: 3200, budgetReel: null, caDevis: 3800, avancement: 20, dateDebut: '2025-03-18', dateFin: '2025-03-25', equipe: ['Marc Petit'], vehicule: { id: 2, immatriculation: 'EF-456-GH', modele: 'Citroën Berlingo' }, notes: '' },
-  { id: 3, titre: 'Installation électrique neuve — SCI Horizon', description: 'Mise aux normes tableau + tirage câbles, 6 pièces. Attestation conformité Consuel incluse.', adresse: '5 rue Pasteur, 94000 Créteil', client: 'SCI Horizon', statut: 'terminee', priorite: null, budgetPrevu: 4800, budgetReel: 4950, caDevis: 5800, avancement: 100, dateDebut: '2025-02-10', dateFin: '2025-02-20', equipe: ['Claire Bernard'], vehicule: null, notes: '' },
-  { id: 4, titre: 'Plomberie — Remplacement chauffe-eau collectif', description: 'Dépose ancien cumulus 150L + pose chauffe-eau thermodynamique 200L.', adresse: '15 bd Voltaire, 75011 Paris', client: 'Syndic Voltaire', statut: 'en_attente', priorite: 'urgente', budgetPrevu: 2200, budgetReel: null, caDevis: null, avancement: 0, dateDebut: '2025-04-01', dateFin: null, equipe: [], vehicule: null, notes: 'Accès cave nécessaire. Contacter M. Renard, gardien.' },
-  { id: 5, titre: 'Isolation toiture — Pavillon Martin', description: 'Isolation combles perdus en laine de verre, 120 m². Pose pare-vapeur.', adresse: '3 chemin des Vignes, 91300 Massy', client: 'M. Martin', statut: 'planifie', priorite: null, budgetPrevu: 5600, budgetReel: null, caDevis: 7200, avancement: 0, dateDebut: '2025-05-05', dateFin: '2025-05-12', equipe: ['Jean Martin', 'Luc Moreau'], vehicule: null, notes: '' },
+  { id: 'ch1', titre: 'Rénovation cuisine — Mme Dupont', description: 'Rénovation complète cuisine 12m² : plomberie, électricité, carrelage, peinture.', adresse: '12 rue de la Liberté, 13001 Marseille', client: 'Mme Dupont', statut: 'en_cours', priorite: 'haute', budgetPrevu: 8500, budgetReel: 7200, caDevis: 8500, avancement: 65, dateDebut: '2026-04-01', dateFin: '2026-04-25', equipe: ['Pierre Martin', 'Sophie Duval', 'Lucas Garcia'], vehicule: { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic' }, notes: '', source: 'marketplace' },
+  { id: 'ch2', titre: 'Mise aux normes électriques — SCI Horizon', description: 'Tableau électrique + câblage complet appartement T4.', adresse: '5 rue Pasteur, 13006 Marseille', client: 'SCI Horizon', statut: 'planifie', priorite: null, budgetPrevu: 4800, budgetReel: null, caDevis: 5200, avancement: 0, dateDebut: '2026-04-28', dateFin: '2026-05-10', equipe: ['Claire Bernard'], vehicule: null, notes: '', source: 'direct' },
+  { id: 'ch3', titre: 'Peinture parties communes — Syndic Voltaire', description: 'Peinture cage d\'escalier 4 étages + hall d\'entrée.', adresse: '15 bd Voltaire, 13005 Marseille', client: 'Syndic Voltaire', statut: 'en_cours', priorite: null, budgetPrevu: 6200, budgetReel: null, caDevis: 6200, avancement: 40, dateDebut: '2026-04-07', dateFin: '2026-04-18', equipe: ['Luc Moreau', 'Pierre Martin'], vehicule: { id: 2, immatriculation: 'EF-456-GH', modele: 'Citroën Berlingo' }, notes: '', source: 'direct' },
+  { id: 'ch4', titre: 'Salle de bain complète — M. Rousseau', description: 'Douche à l\'italienne, meuble vasque, carrelage sol et murs.', adresse: '24 rue Paradis, 13006 Marseille', client: 'M. Rousseau', statut: 'terminee', priorite: null, budgetPrevu: 5500, budgetReel: 5500, caDevis: 5500, avancement: 100, dateDebut: '2026-03-10', dateFin: '2026-03-28', equipe: ['Sophie Duval', 'Lucas Garcia'], vehicule: null, notes: '', source: 'marketplace' },
+  { id: 'ch5', titre: 'Extension garage — M. Leblanc', description: 'Construction extension garage 20m² : fondations, murs, toiture, enduit.', adresse: '8 bd Longchamp, 13001 Marseille', client: 'M. Leblanc', statut: 'en_attente', priorite: 'urgente', budgetPrevu: 15000, budgetReel: null, caDevis: null, avancement: 0, dateDebut: null, dateFin: null, equipe: [], vehicule: null, notes: 'En attente de devis', source: 'marketplace' },
 ];
 
 const DEMO_EMPLOYES = [
-  { id: 'e1', nom: 'Martin', prenom: 'Jean', metier: 'Maçonnerie', habilitations: ['CACES R372', 'Travail en hauteur'], disponible: true },
-  { id: 'e2', nom: 'Durand', prenom: 'Sophie', metier: 'Plomberie', habilitations: ['Habilitation électrique B1', 'Travail en hauteur'], disponible: true },
-  { id: 'e3', nom: 'Petit', prenom: 'Marc', metier: 'Maçonnerie', habilitations: ['CACES R372', 'AIPR'], disponible: false },
-  { id: 'e4', nom: 'Bernard', prenom: 'Claire', metier: 'Électricité', habilitations: ['Habilitation électrique B2', 'Habilitation électrique BR'], disponible: true },
-  { id: 'e5', nom: 'Moreau', prenom: 'Luc', metier: 'Carrelage', habilitations: ['Travail en hauteur'], disponible: true },
-  { id: 'e6', nom: 'Leroy', prenom: 'Éric', metier: 'Plomberie', habilitations: ['AIPR', 'CACES R372'], disponible: false },
+  { id: 'e1', nom: 'Martin', prenom: 'Pierre', metier: 'Maçonnerie', habilitations: ['CACES R489', 'Travail en hauteur'], disponible: true },
+  { id: 'e2', nom: 'Duval', prenom: 'Sophie', metier: 'Plomberie', habilitations: ['Habilitation électrique B1'], disponible: true },
+  { id: 'e3', nom: 'Garcia', prenom: 'Lucas', metier: 'Carrelage', habilitations: ['Travail en hauteur'], disponible: true },
+  { id: 'e4', nom: 'Moreau', prenom: 'Luc', metier: 'Peinture', habilitations: [], disponible: true },
+  { id: 'e5', nom: 'Bernard', prenom: 'Claire', metier: 'Électricité', habilitations: ['Habilitation électrique B2', 'BR', 'HC'], disponible: true },
 ];
 
 const DEMO_VEHICULES = [
-  { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic', type: 'Fourgon', capacite: '900 kg', kilometrage: 87400, couleur: '#5B5BD6', statut: 'en_mission', chantier: 'Rénovation façade — Immeuble Leblanc', vidange: { date: '2024-11-10', km: 85000, prochainKm: 95000, intervalleKm: 10000 }, controleTechnique: { date: '2023-09-15', prochaineDate: '2025-09-15' }, assurance: { expiration: '2025-12-31' } },
-  { id: 2, immatriculation: 'EF-456-GH', modele: 'Citroën Berlingo', type: 'Fourgonnette', capacite: '700 kg', kilometrage: 52100, couleur: '#34C759', statut: 'en_mission', chantier: 'Pose carrelage — Appartement T3 Dupont', vidange: { date: '2025-01-20', km: 50000, prochainKm: 60000, intervalleKm: 10000 }, controleTechnique: { date: '2024-04-08', prochaineDate: '2026-04-08' }, assurance: { expiration: '2025-08-31' } },
-  { id: 3, immatriculation: 'IJ-789-KL', modele: 'Peugeot Expert', type: 'Fourgon', capacite: '850 kg', kilometrage: 134200, couleur: '#FF9500', statut: 'disponible', chantier: null, vidange: { date: '2024-09-05', km: 130000, prochainKm: 140000, intervalleKm: 10000 }, controleTechnique: { date: '2022-11-22', prochaineDate: '2024-11-22' }, assurance: { expiration: '2025-11-30' } },
-  { id: 4, immatriculation: 'MN-012-OP', modele: 'Ford Transit', type: 'Fourgon grand volume', capacite: '1200 kg', kilometrage: 61800, couleur: '#AF52DE', statut: 'maintenance', chantier: null, vidange: { date: '2025-02-14', km: 60000, prochainKm: 70000, intervalleKm: 10000 }, controleTechnique: { date: '2024-06-30', prochaineDate: '2026-06-30' }, assurance: { expiration: '2026-01-15' } },
+  { id: 1, immatriculation: 'AB-123-CD', modele: 'Renault Trafic', type: 'Fourgon', capacite: '900 kg', kilometrage: 87400, couleur: '#5B5BD6', statut: 'en_mission', chantier: 'Rénovation cuisine — Mme Dupont', vidange: { date: '2024-11-10', km: 85000, prochainKm: 95000, intervalleKm: 10000 }, controleTechnique: { date: '2024-09-15', prochaineDate: '2026-09-15' }, assurance: { expiration: '2026-12-31' } },
+  { id: 2, immatriculation: 'EF-456-GH', modele: 'Citroën Berlingo', type: 'Fourgonnette', capacite: '700 kg', kilometrage: 52100, couleur: '#34C759', statut: 'en_mission', chantier: 'Peinture — Syndic Voltaire', vidange: { date: '2025-01-20', km: 50000, prochainKm: 60000, intervalleKm: 10000 }, controleTechnique: { date: '2025-04-08', prochaineDate: '2027-04-08' }, assurance: { expiration: '2026-08-31' } },
+  { id: 3, immatriculation: 'IJ-789-KL', modele: 'Peugeot Expert', type: 'Fourgon', capacite: '850 kg', kilometrage: 134200, couleur: '#FF9500', statut: 'disponible', chantier: null, vidange: { date: '2025-09-05', km: 130000, prochainKm: 140000, intervalleKm: 10000 }, controleTechnique: { date: '2025-11-22', prochaineDate: '2027-11-22' }, assurance: { expiration: '2026-11-30' } },
 ];
 
 const DEMO_DEPENSES = [
@@ -105,7 +105,8 @@ const DEMO_DEPENSES = [
   { id: 5, date: '2025-03-20', categorie: 'carburant', description: 'Carburant véhicule chantier', fournisseur: 'Total', montant: 95 },
 ];
 
-const MAIN_TABS = ['Vue d\'ensemble', 'Missions & Chantiers', 'Gantt', 'Photos', 'Dépenses', 'Rentabilité', 'Flotte', 'Ajouter'];
+const MAIN_TABS = ['Chantiers', 'Planning', 'Flotte'];
+const JOURS_SEMAINE = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const STATUT_FILTERS = ['Tous', 'en_attente', 'planifie', 'assignee', 'en_cours', 'terminee', 'annulee'];
 const STATUT_FILTER_LABELS = { Tous: 'Tous', en_attente: 'En attente', planifie: 'Planifié', assignee: 'Assignée', en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée' };
 
@@ -115,10 +116,11 @@ const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', b
 /* ════════════════════════════════════════ */
 export default function ChantiersEtMissions() {
   const { token } = useAuth();
-  const [tab, setTab] = useState('Vue d\'ensemble');
+  const [tab, setTab] = useState('Chantiers');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [detailChantier, setDetailChantier] = useState(null); // id du chantier ouvert en vue détail
   const [editModal, setEditModal] = useState(null);
   const [confirmCancel, setConfirmCancel] = useState(null);
 
@@ -135,7 +137,8 @@ export default function ChantiersEtMissions() {
       const dc = await rc.json();
       const missions = (dm.missions || []).map(m => ({ ...m, titre: m.titre || m.nom }));
       const chantiers = (dc.chantiers || []).map(c => ({ ...c, titre: c.nom || c.titre, statut: c.statut === 'planifie' ? 'planifie' : c.statut === 'termine' ? 'terminee' : c.statut }));
-      setItems([...missions, ...chantiers]);
+      const all = [...missions, ...chantiers];
+      setItems(all.length > 0 ? all : DEMO_ITEMS);
     } catch {
       setItems(DEMO_ITEMS);
     }
@@ -164,15 +167,15 @@ export default function ChantiersEtMissions() {
         {/* KPI row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
           {[
-            { label: 'Total', value: items.length, color: '#5B5BD6', icon: '📋' },
-            { label: 'En attente', value: en_attente.length, color: '#856404', icon: '⏳' },
-            { label: 'En cours', value: en_cours.length, color: '#0C5460', icon: '⚙️' },
-            { label: 'Terminés', value: termines.length, color: '#1A7F43', icon: '✅' },
-            { label: 'Alertes budget', value: alertesBudget.length, color: '#C0392B', icon: '⚠️' },
-            { label: 'Alertes flotte', value: alertesVehicules.length, color: alertesVehicules.length > 0 ? '#FF9500' : '#636363', icon: '🚐' },
+            { label: 'Total', value: items.length, color: '#5B5BD6' },
+            { label: 'En attente', value: en_attente.length, color: '#856404' },
+            { label: 'En cours', value: en_cours.length, color: '#0C5460' },
+            { label: 'Terminés', value: termines.length, color: '#1A7F43' },
+            { label: 'Alertes budget', value: alertesBudget.length, color: '#C0392B' },
+            { label: 'Alertes flotte', value: alertesVehicules.length, color: alertesVehicules.length > 0 ? '#FF9500' : '#636363' },
           ].map(k => (
             <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{k.icon}</div>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: k.color, marginBottom: 8 }} />
               <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1 }}>{k.value}</div>
               <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 5 }}>{k.label}</div>
             </div>
@@ -184,20 +187,20 @@ export default function ChantiersEtMissions() {
           <div style={{ background: '#FFE5E5', border: '1px solid rgba(255,59,48,0.3)', borderRadius: 12, padding: '14px 18px' }}>
             <div style={{ fontWeight: 700, color: '#C0392B', fontSize: 14, marginBottom: 8 }}>Alertes</div>
             {alertesBudget.map(c => (
-              <div key={c.id} onClick={() => { setSelectedItem(c); setTab('Missions & Chantiers'); }} style={{ fontSize: 13, color: '#C0392B', marginBottom: 4, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+              <div key={c.id} onClick={() => { setSelectedItem(c); setTab('Chantiers'); }} style={{ fontSize: 13, color: '#C0392B', marginBottom: 4, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
                 <span>⚠ {c.titre} — Budget dépassé ({formatCur(c.budgetReel)} vs {formatCur(c.budgetPrevu)})</span>
                 <span style={{ fontSize: 11, fontWeight: 700 }}>Voir →</span>
               </div>
             ))}
             {alertesRetard.map(c => (
-              <div key={c.id} onClick={() => { setSelectedItem(c); setTab('Missions & Chantiers'); }} style={{ fontSize: 13, color: '#C0392B', marginBottom: 4, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+              <div key={c.id} onClick={() => { setSelectedItem(c); setTab('Chantiers'); }} style={{ fontSize: 13, color: '#C0392B', marginBottom: 4, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
                 <span>⚠ {c.titre} — Date dépassée (prévu : {formatDate(c.dateFin)})</span>
                 <span style={{ fontSize: 11, fontWeight: 700 }}>Voir →</span>
               </div>
             ))}
             {alertesVehicules.map(v => (
               <div key={v.id} onClick={() => setTab('Flotte')} style={{ fontSize: 13, color: '#856404', marginBottom: 4, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
-                <span>🚐 {v.modele} ({v.immatriculation}) — {ctExpired(v.controleTechnique?.prochaineDate) ? 'Contrôle technique dépassé' : ctSoon(v.controleTechnique?.prochaineDate) ? 'CT bientôt expiré' : 'Vidange proche'}</span>
+                <span>{v.modele} ({v.immatriculation}) — {ctExpired(v.controleTechnique?.prochaineDate) ? 'Contrôle technique dépassé' : ctSoon(v.controleTechnique?.prochaineDate) ? 'CT bientôt expiré' : 'Vidange proche'}</span>
                 <span style={{ fontSize: 11, fontWeight: 700 }}>Voir →</span>
               </div>
             ))}
@@ -209,7 +212,7 @@ export default function ChantiersEtMissions() {
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>En cours ({en_cours.length})</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
-              {en_cours.map(c => <ItemCard key={c.id} item={c} onClick={() => { setSelectedItem(c); setTab('Missions & Chantiers'); }} />)}
+              {en_cours.map(c => <ItemCard key={c.id} item={c} onClick={() => { setSelectedItem(c); setTab('Chantiers'); }} onOpenDetail={id => setDetailChantier(id)} />)}
             </div>
           </div>
         )}
@@ -217,7 +220,7 @@ export default function ChantiersEtMissions() {
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>En attente ({en_attente.length})</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
-              {en_attente.map(c => <ItemCard key={c.id} item={c} onClick={() => { setSelectedItem(c); setTab('Missions & Chantiers'); }} />)}
+              {en_attente.map(c => <ItemCard key={c.id} item={c} onClick={() => { setSelectedItem(c); setTab('Chantiers'); }} onOpenDetail={id => setDetailChantier(id)} />)}
             </div>
           </div>
         )}
@@ -268,7 +271,7 @@ export default function ChantiersEtMissions() {
                 Aucun élément pour ce filtre
               </div>
             ) : filtered.map(m => (
-              <ItemCard key={m.id} item={m} onClick={() => openItem(m)} isSelected={selectedItem?.id === m.id} />
+              <ItemCard key={m.id} item={m} onClick={() => openItem(m)} isSelected={selectedItem?.id === m.id} onOpenDetail={id => setDetailChantier(id)} />
             ))}
           </div>
 
@@ -287,6 +290,154 @@ export default function ChantiersEtMissions() {
               headers={headers}
             />
           )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Planning semaine (qui fait quoi où) ── */
+  function VueSemaine() {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0=dim, 1=lun
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const [weekOffset, setWeekOffset] = useState(0);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset + weekOffset * 7);
+
+    const weekDays = JOURS_SEMAINE.map((nom, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return { nom, date: d, dateStr: d.toISOString().slice(0, 10), isToday: d.toDateString() === today.toDateString() };
+    });
+
+    const activeItems = items.filter(m => m.dateDebut && m.statut !== 'terminee' && m.statut !== 'annulee');
+
+    // Pour chaque chantier, déterminer s'il est actif chaque jour de la semaine
+    function isChantierActiveOnDay(item, dayStr) {
+      const d = new Date(dayStr);
+      const debut = new Date(item.dateDebut);
+      const fin = item.dateFin ? new Date(item.dateFin) : new Date(debut.getTime() + 30 * 86400000);
+      return d >= debut && d <= fin;
+    }
+
+    // Ouvriers par chantier
+    function getEquipe(item) {
+      if (!item.equipe || item.equipe.length === 0) return [];
+      return item.equipe.map(nom => {
+        const emp = DEMO_EMPLOYES.find(e => `${e.prenom} ${e.nom}`.toLowerCase().includes(nom.toLowerCase()) || nom.toLowerCase().includes(e.nom.toLowerCase()));
+        return emp ? { id: emp.id, nom: `${emp.prenom} ${emp.nom[0]}.`, metier: emp.metier, disponible: emp.disponible } : { id: nom, nom: nom.split(' ').map((n,i) => i === 0 ? n : n[0]+'.').join(' '), metier: '', disponible: true };
+      });
+    }
+
+    const weekLabel = `${weekDays[0].date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} — ${weekDays[5].date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+
+    // Build conflict map per day (employees & vehicles)
+    const conflictsPerDay = {};
+    const vehicleConflictsPerDay = {};
+    weekDays.forEach(d => {
+      const empThisDay = {};
+      const vehThisDay = {};
+      activeItems.forEach(item => {
+        if (!isChantierActiveOnDay(item, d.dateStr)) return;
+        const equipeList = getEquipe(item);
+        equipeList.forEach(e => {
+          if (!empThisDay[e.nom]) empThisDay[e.nom] = [];
+          empThisDay[e.nom].push(item.titre);
+        });
+        if (item.vehicule) {
+          const vKey = String(item.vehicule.id || item.vehicule.immatriculation);
+          if (!vehThisDay[vKey]) vehThisDay[vKey] = [];
+          vehThisDay[vKey].push(item.titre);
+        }
+      });
+      conflictsPerDay[d.dateStr] = Object.entries(empThisDay).filter(([, ch]) => ch.length > 1).map(([nom]) => nom);
+      vehicleConflictsPerDay[d.dateStr] = Object.entries(vehThisDay).filter(([, ch]) => ch.length > 1).map(([vKey]) => vKey);
+    });
+    return (
+      <div style={{ background: 'var(--card)', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--shadow-sm)', marginBottom: 20 }}>
+        {/* Header semaine */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '2px solid var(--border-light)' }}>
+          <button onClick={() => setWeekOffset(w => w - 1)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Semaine prec.</button>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{weekLabel}</div>
+            {weekOffset !== 0 && <button onClick={() => setWeekOffset(0)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--primary)', fontWeight: 600 }}>Revenir a cette semaine</button>}
+          </div>
+          <button onClick={() => setWeekOffset(w => w + 1)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Semaine suiv.</button>
+        </div>
+
+        {/* Grille */}
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: 800 }}>
+            {/* En-tête jours */}
+            <div style={{ display: 'grid', gridTemplateColumns: '180px repeat(6, 1fr)', borderBottom: '1px solid var(--border-light)' }}>
+              <div style={{ padding: '8px 12px', fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', borderRight: '1px solid var(--border-light)' }}>Chantier</div>
+              {weekDays.map(d => (
+                <div key={d.dateStr} style={{ padding: '8px 6px', textAlign: 'center', fontSize: 11, fontWeight: d.isToday ? 800 : 600, color: d.isToday ? 'var(--primary)' : 'var(--text-secondary)', background: d.isToday ? 'var(--primary-light, rgba(91,91,214,0.06))' : 'transparent', borderRight: '1px solid var(--border-light)' }}>
+                  <div>{d.nom}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: d.isToday ? 'var(--primary)' : 'var(--text)' }}>{d.date.getDate()}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Lignes par chantier */}
+            {activeItems.length === 0 && (
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Aucun chantier actif cette semaine</div>
+            )}
+            {activeItems.map((item, idx) => {
+              const equipe = getEquipe(item);
+              const x = STATUT_MAP[item.statut] || {};
+              return (
+                <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '180px repeat(6, 1fr)', borderBottom: '1px solid var(--border-light)', background: idx % 2 === 0 ? 'var(--card)' : 'var(--bg)' }}>
+                  {/* Nom chantier */}
+                  <div style={{ padding: '10px 12px', borderRight: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.titre}>
+                      {item.titre?.split('—')[0]?.trim() || item.titre}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>{item.client}</div>
+                    {equipe.length === 0 && <div style={{ fontSize: 10, color: '#DC2626', fontWeight: 600, marginTop: 2 }}>Aucun ouvrier</div>}
+                  </div>
+
+                  {/* Cases jours */}
+                  {weekDays.map(d => {
+                    const active = isChantierActiveOnDay(item, d.dateStr);
+                    const isSamedi = d.nom === 'Samedi';
+                    const hasVehicleConflict = active && item.vehicule && vehicleConflictsPerDay[d.dateStr]?.includes(String(item.vehicule.id || item.vehicule.immatriculation));
+                    return (
+                      <div key={d.dateStr} style={{ padding: '6px 4px', borderRight: '1px solid var(--border-light)', minHeight: 50, background: !active ? (isSamedi ? 'var(--bg)' : 'transparent') : d.isToday ? 'rgba(91,91,214,0.04)' : 'transparent', display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center' }}>
+                        {active && equipe.length > 0 && equipe.map(e => {
+                          const isConflict = conflictsPerDay[d.dateStr]?.includes(e.nom);
+                          return (
+                          <div key={e.id} style={{ fontSize: 10, fontWeight: 600, padding: '3px 6px', borderRadius: 4, background: isConflict ? '#FFF3E0' : e.disponible ? (x.color || 'var(--primary)') + '18' : '#FEF2F2', color: isConflict ? '#E65100' : e.disponible ? (x.color || 'var(--primary)') : '#DC2626', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', border: isConflict ? '1px solid #FF9800' : 'none' }} title={isConflict ? `${e.nom} — CONFLIT : assigné sur plusieurs chantiers` : `${e.nom} — ${e.metier}`}>
+                            {isConflict && <span style={{ marginRight: 3, fontWeight: 800 }}>!</span>}{e.nom}
+                          </div>
+                          );
+                        })}
+                        {active && hasVehicleConflict && (
+                          <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 3, background: '#FFEBEE', color: '#C62828', border: '1px solid #EF5350', textAlign: 'center' }} title="Véhicule assigné sur plusieurs chantiers">
+                            !! Véhicule
+                          </div>
+                        )}
+                        {active && equipe.length === 0 && (
+                          <div style={{ fontSize: 10, color: '#DC2626', fontWeight: 600, textAlign: 'center' }}>—</div>
+                        )}
+                        {!active && <div style={{ fontSize: 9, color: 'var(--text-tertiary)', textAlign: 'center', opacity: 0.4 }}>—</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Légende */}
+        <div style={{ padding: '8px 16px', background: 'var(--bg)', borderTop: '1px solid var(--border-light)', display: 'flex', gap: 16, fontSize: 11, color: 'var(--text-tertiary)', flexWrap: 'wrap' }}>
+          <span>Ouvriers assignés par chantier et par jour</span>
+          <span style={{ color: '#DC2626' }}>Rouge = indisponible</span>
+          <span style={{ color: '#E65100' }}>Orange ! = conflit ouvrier</span>
+          <span style={{ color: '#C62828' }}>!! Véhicule = conflit véhicule</span>
+          <span>Naviguer : semaine prec. / suiv.</span>
         </div>
       </div>
     );
@@ -697,7 +848,7 @@ export default function ChantiersEtMissions() {
     async function handleSubmit(e) {
       e.preventDefault();
       setSaving(true);
-      const payload = { ...form, distanceDepot: distanceInfo?.km || null };
+      const payload = { ...form, distanceDepot: distanceInfo?.km || null, source: 'manual' };
       try {
         await fetch(`${API_URL}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(payload) });
       } catch {}
@@ -708,15 +859,21 @@ export default function ChantiersEtMissions() {
 
     if (done) return (
       <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#D1F2E0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 20, color: '#1A7F43', fontWeight: 700 }}>OK</div>
         <p style={{ fontWeight: 700, fontSize: 16 }}>Mission / Chantier ajouté !</p>
-        <button onClick={() => { setDone(false); setTab('Missions & Chantiers'); }} style={{ marginTop: 14, padding: '10px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>Voir la liste</button>
+        <button onClick={() => { setDone(false); setTab('Chantiers'); }} style={{ marginTop: 14, padding: '10px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>Voir la liste</button>
       </div>
     );
 
+    const manualCount = items.filter(i => i.source === 'manual' || !i.source).length;
+    const isBlocked = manualCount >= 5;
+
     return (
       <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: 14, padding: 28, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Nouveau chantier / mission</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Nouveau chantier / mission</h3>
+          <span style={{ fontSize: 12, fontWeight: 600, color: isBlocked ? '#C0392B' : '#A68B4B', background: isBlocked ? '#FFE5E5' : '#FFF7E0', padding: '4px 12px', borderRadius: 20 }}>{manualCount}/5 chantiers manuels</span>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Titre *</label><input value={form.titre} onChange={e => setForm(p => ({ ...p, titre: e.target.value }))} placeholder="Rénovation appartement Dupont" required style={inp} /></div>
           <div><label style={lbl}>Client</label><input value={form.client} onChange={e => setForm(p => ({ ...p, client: e.target.value }))} placeholder="Jean Dupont" style={inp} /></div>
@@ -750,24 +907,42 @@ export default function ChantiersEtMissions() {
           </div>
           <div><label style={lbl}>Date début</label><input type="date" value={form.dateDebut} onChange={e => setForm(p => ({ ...p, dateDebut: e.target.value }))} style={inp} /></div>
           <div><label style={lbl}>Date fin prévue</label><input type="date" value={form.dateFin} onChange={e => setForm(p => ({ ...p, dateFin: e.target.value }))} style={inp} /></div>
+          <div style={{ gridColumn: '1/-1' }}>
+            <label style={lbl}>Équipe assignée</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {DEMO_EMPLOYES.map(e => {
+                const selected = (form.equipe || []).includes(`${e.prenom} ${e.nom}`);
+                return <button key={e.id} type="button" onClick={() => {
+                  const nom = `${e.prenom} ${e.nom}`;
+                  setForm(p => ({ ...p, equipe: selected ? (p.equipe || []).filter(x => x !== nom) : [...(p.equipe || []), nom] }));
+                }} style={{ padding: '6px 12px', fontSize: 12, fontWeight: 600, border: `1px solid ${selected ? '#5B5BD6' : '#E5E5EA'}`, background: selected ? '#EEF2FF' : 'transparent', color: selected ? '#5B5BD6' : '#6E6E73', cursor: 'pointer', borderRadius: 8 }}>
+                  {selected ? '✓ ' : ''}{e.prenom} {e.nom} ({e.metier})
+                </button>;
+              })}
+            </div>
+          </div>
           <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Description / Notes</label><textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3} style={{ ...inp, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5 }} /></div>
         </div>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button type="button" onClick={() => setTab('Missions & Chantiers')} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Annuler</button>
-          <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Créer'}</button>
-        </div>
+        {isBlocked ? (
+          <div style={{ background: '#FFF7E0', border: '1px solid #A68B4B40', padding: '16px', marginTop: 12, textAlign: 'center', borderRadius: 10 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#A68B4B', marginBottom: 6 }}>Limite de 5 chantiers manuels atteinte</div>
+            <div style={{ fontSize: 12, color: '#6E6E73', marginBottom: 12 }}>Trouvez vos prochains clients directement sur Freample et gérez un nombre illimité de chantiers.</div>
+            <button type="button" onClick={() => { window.location.href = '/patron/projets'; }} style={{ padding: '10px 24px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Voir les projets disponibles</button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button type="button" onClick={() => setTab('Chantiers')} style={{ padding: '9px 20px', border: '1px solid #E5E5EA', borderRadius: 10, background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>Annuler</button>
+            <button type="submit" disabled={saving} style={{ padding: '9px 24px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>{saving ? 'Enregistrement…' : 'Créer'}</button>
+          </div>
+        )}
       </form>
     );
   }
 
   /* ── Main render ── */
   const tabContent = {
-    'Vue d\'ensemble': <TabOverview />,
-    'Missions & Chantiers': <TabListe />,
-    'Gantt': <TabGantt />,
-    'Dépenses': <TabDepenses />,
-    'Rentabilité': <TabRentabilite />,
-    'Photos': <PhotosChantier />,
+    'Chantiers': <><VueSemaine /><TabListe /></>,
+    'Planning': <GanttPlanning items={items} employes={DEMO_EMPLOYES} onOpenDetail={(id) => { setSelectedItem(id); setDetailChantier(id); }} />,
     'Flotte': <FlotteView />,
     'Ajouter': <TabAjouter />,
   };
@@ -778,7 +953,7 @@ export default function ChantiersEtMissions() {
       {confirmCancel && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, padding: 32, maxWidth: 380, width: '100%', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
-            <div style={{ fontSize: 38, marginBottom: 12 }}>⚠️</div>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#FFF3CD', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 16, color: '#856404', fontWeight: 700 }}>!</div>
             <h3 style={{ margin: '0 0 10px', fontSize: 17, fontWeight: 700 }}>Annuler la mission ?</h3>
             <p style={{ fontSize: 14, color: '#6E6E73', marginBottom: 22, lineHeight: 1.6 }}>
               Voulez-vous vraiment annuler <strong>"{items.find(m => m.id === confirmCancel)?.titre}"</strong> ?
@@ -794,31 +969,47 @@ export default function ChantiersEtMissions() {
       {/* Edit modal */}
       {editModal && <EditModal item={editModal} onClose={() => setEditModal(null)} onSave={fetchItems} headers={headers} />}
 
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>Missions & Chantiers</h1>
-        <p style={{ color: '#6E6E73', marginTop: 4, fontSize: 14 }}>Pilotage · Planning · Dépenses · Flotte</p>
-      </div>
+      {/* ── Vue détail chantier ── */}
+      {detailChantier ? (
+        <ChantierDetail
+          chantier={items.find(x => x.id === detailChantier)}
+          employes={DEMO_EMPLOYES}
+          vehicules={DEMO_VEHICULES}
+          depenses={DEMO_DEPENSES.filter(d => !d.chantierId || d.chantierId === detailChantier)}
+          onBack={() => setDetailChantier(null)}
+          onUpdate={(updated) => setItems(prev => prev.map(x => x.id === updated.id ? updated : x))}
+          showToast={(msg) => {}}
+        />
+      ) : (<>
+        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>Chantiers</h1>
+            <p style={{ color: '#6E6E73', marginTop: 4, fontSize: 14 }}>Planning · Suivi · Flotte</p>
+          </div>
+          <button onClick={() => setTab('Ajouter')} style={{ padding: '9px 18px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>+ Nouveau chantier</button>
+        </div>
 
-      <div style={{ display: 'flex', gap: 4, background: '#F2F2F7', borderRadius: 12, padding: 4, marginBottom: 24, flexWrap: 'wrap' }}>
-        {MAIN_TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            padding: '8px 16px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
-            background: tab === t ? '#fff' : 'transparent',
-            color: tab === t ? '#1C1C1E' : '#6E6E73',
-            boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
-          }}>{t}</button>
-        ))}
-      </div>
+        <div style={{ display: 'flex', gap: 4, background: '#F2F2F7', borderRadius: 12, padding: 4, marginBottom: 24, flexWrap: 'wrap' }}>
+          {MAIN_TABS.map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: '8px 16px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
+              background: tab === t ? '#fff' : 'transparent',
+              color: tab === t ? '#1C1C1E' : '#6E6E73',
+              boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+            }}>{t}</button>
+          ))}
+        </div>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#636363' }}>Chargement…</div>
-      ) : tabContent[tab]}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 60, color: '#636363' }}>Chargement…</div>
+        ) : tabContent[tab]}
+      </>)}
     </div>
   );
 }
 
 /* ════════ ItemCard ════════ */
-function ItemCard({ item, onClick, isSelected }) {
+function ItemCard({ item, onClick, isSelected, onOpenDetail }) {
   const color = progressColor(item.avancement || 0);
   const ecart = item.budgetReel && item.budgetPrevu ? ((item.budgetReel - item.budgetPrevu) / item.budgetPrevu * 100) : 0;
 
@@ -869,12 +1060,41 @@ function ItemCard({ item, onClick, isSelected }) {
         </div>
       )}
 
+      {/* Équipe */}
+      {item.equipe?.length > 0 ? (
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' }}>
+          {item.equipe.map((nom, i) => (
+            <span key={i} style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', background: '#F2F2F7', color: '#636363', borderRadius: 4 }}>
+              {nom.split(' ').map((n, j) => j === 0 ? n : n[0] + '.').join(' ')}
+            </span>
+          ))}
+          <button onClick={e => { e.stopPropagation(); onOpenDetail?.(item.id); }}
+            style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', background: '#EFF6FF', color: '#2563EB', border: '1px solid #2563EB40', borderRadius: 4, cursor: 'pointer' }}>
+            + Sous-traiter
+          </button>
+        </div>
+      ) : (
+        <InlineSousTraiter item={item} onOpenDetail={onOpenDetail} />
+      )}
+
+      {/* Marge */}
+      {item.caDevis && item.budgetReel && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: '#FAFAFA', borderRadius: 8, marginBottom: 10, fontSize: 12 }}>
+          <span style={{ color: '#636363' }}>Marge</span>
+          {(() => {
+            const marge = item.caDevis - item.budgetReel;
+            const pct = item.caDevis > 0 ? Math.round(marge / item.caDevis * 100) : 0;
+            return <span style={{ fontWeight: 700, color: pct >= 20 ? '#1A7F43' : pct >= 10 ? '#856404' : '#C0392B' }}>{marge.toLocaleString()}€ ({pct}%)</span>;
+          })()}
+        </div>
+      )}
+
       {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363', alignItems: 'center' }}>
         <span>{formatDate(item.dateDebut)}{item.dateFin ? ` → ${formatDate(item.dateFin)}` : ''}</span>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {item.equipe?.length > 0 && <span>👥 {item.equipe.length}</span>}
-          {item.vehicule && <span>🚐</span>}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {item.equipe?.length > 0 && <span>{item.equipe.length} ouvrier{item.equipe.length > 1 ? 's' : ''}</span>}
+          {onOpenDetail && <button onClick={e => { e.stopPropagation(); onOpenDetail(item.id); }} style={{ padding: '4px 12px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Ouvrir</button>}
         </div>
       </div>
     </div>
@@ -1006,7 +1226,49 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                   Devis envoyé — le client peut comparer les offres reçues
                 </div>
               )}
-              {!['terminee', 'termine', 'annulee'].includes(item.statut) && (
+              {/* Bouton terminer → PV de réception */}
+              {item.statut === 'en_cours' && (item.avancement >= 80 || true) && (
+                <button onClick={() => {
+                  // Passer le chantier en réception
+                  const updated = items.map(c => c.id === item.id ? { ...c, statut: 'reception', avancement: 100 } : c);
+                  setItems(updated);
+                  localStorage.setItem('freample_chantiers_custom', JSON.stringify(updated));
+                  // Créer le PV dans localStorage
+                  const profilPatron = (() => { try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; } })();
+                  const devisLie = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]').find(d => d.projetId === item.projetId || d.chantierId === item.id); } catch { return null; } })();
+                  const pv = {
+                    id: 'pv_' + Date.now(), chantierId: item.id, projetId: item.projetId,
+                    dateReception: new Date().toISOString().slice(0, 10), dateSignature: null,
+                    maitreOuvrage: { nom: item.client || '', adresse: item.adresse || '' },
+                    entreprise: { nom: profilPatron.nom || '', siret: profilPatron.siret || '', adresse: profilPatron.adresse || '', decennale: profilPatron.decennale || '' },
+                    chantier: { adresse: item.adresse || '', description: item.titre || '', dateDebut: item.dateDebut || '', dateFin: new Date().toISOString().slice(0, 10) },
+                    devisRef: devisLie?.numero || '', montantTTC: devisLie?.montantTTC || item.caDevis || item.budgetPrevu || 0,
+                    lignes: devisLie?.lignes || [],
+                    sansReserve: null, reserves: [], statut: 'en_attente_signature',
+                  };
+                  const pvs = (() => { try { return JSON.parse(localStorage.getItem('freample_pv_receptions') || '[]'); } catch { return []; } })();
+                  pvs.push(pv);
+                  localStorage.setItem('freample_pv_receptions', JSON.stringify(pvs));
+                  // Notif client
+                  const notifs = (() => { try { return JSON.parse(localStorage.getItem('freample_notifs_client') || '[]'); } catch { return []; } })();
+                  notifs.push({ id: Date.now(), date: new Date().toISOString(), type: 'pv_reception', titre: 'Travaux terminés — PV de réception à signer', message: `L'entreprise a terminé les travaux "${item.titre}". Signez le PV de réception pour libérer le paiement.`, lu: false });
+                  localStorage.setItem('freample_notifs_client', JSON.stringify(notifs));
+                  // Mettre à jour le projet marketplace
+                  try {
+                    const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
+                    const updProjets = projets.map(p => p.id === item.projetId ? { ...p, statut: 'reception' } : p);
+                    localStorage.setItem('freample_projets', JSON.stringify(updProjets));
+                  } catch {}
+                }} style={{ padding: '12px 0', border: 'none', borderRadius: 10, background: '#16A34A', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'inherit' }}>
+                  Terminer le chantier → Envoyer le PV de réception
+                </button>
+              )}
+              {item.statut === 'reception' && (
+                <div style={{ padding: '12px 16px', background: '#EFF6FF', borderRadius: 10, color: '#2563EB', fontWeight: 700, fontSize: 13, textAlign: 'center' }}>
+                  PV de réception envoyé — en attente de signature du client
+                </div>
+              )}
+              {!['terminee', 'termine', 'annulee', 'reception'].includes(item.statut) && (
                 <button onClick={onCancelRequest} style={{ padding: '10px 0', border: '1px solid #FFE5E5', borderRadius: 10, background: '#FFF5F5', color: '#C0392B', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
                   Annuler la mission
                 </button>
@@ -1041,6 +1303,18 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
               {employes.map(emp => {
                 const selected = equipeIds.includes(emp.id);
                 const isMatch = !filtreMetier || emp.metier === filtreMetier;
+                // Vérification compétences depuis fiches salariés
+                const chantierMetier = item?.metier || '';
+                const fichesSalaries = (() => { try { return JSON.parse(localStorage.getItem('freample_fiches_salaries') || '[]'); } catch { return []; } })();
+                const fiche = fichesSalaries.find(f => f.actif && (`${f.prenom} ${f.nom}`).toLowerCase().includes(emp.nom?.toLowerCase() || ''));
+                const hasCompetence = !chantierMetier || !fiche || (fiche.competences || []).some(c => c.toLowerCase().includes(chantierMetier.toLowerCase()) || chantierMetier.toLowerCase().includes(c.toLowerCase()));
+                // Vérifier habilitation requise
+                let habWarning = null;
+                if (fiche && chantierMetier) {
+                  const check = verifierHabilitation(fiche, chantierMetier);
+                  if (check.requis && !check.possede) habWarning = check.message;
+                  else if (check.expire) habWarning = check.message;
+                }
                 return (
                   <div key={emp.id} onClick={() => toggleEmploye(emp.id)} style={{ border: `2px solid ${selected ? '#5B5BD6' : isMatch && filtreMetier ? '#34C75940' : '#F2F2F7'}`, borderRadius: 12, padding: '10px 14px', cursor: 'pointer', background: selected ? '#EBF5FF' : '#fff', transition: 'all 0.15s', opacity: emp.disponible ? 1 : 0.55 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1051,10 +1325,13 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end' }}>
                         {selected && <span style={{ fontSize: 10, background: '#5B5BD6', color: '#fff', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>Assigné</span>}
                         {!emp.disponible && <span style={{ fontSize: 10, background: '#FF9500', color: '#fff', padding: '1px 7px', borderRadius: 20 }}>Indispo.</span>}
+                        {selected && !hasCompetence && <span style={{ fontSize: 9, background: '#FEF2F2', color: '#DC2626', padding: '1px 7px', borderRadius: 20, fontWeight: 600 }}>Competence manquante</span>}
+                        {selected && habWarning && <span style={{ fontSize: 9, background: '#FEF2F2', color: '#DC2626', padding: '1px 7px', borderRadius: 20, fontWeight: 600 }}>Hab. {habWarning.includes('expiree') ? 'expiree' : 'manquante'}</span>}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       {emp.habilitations.map(h => <span key={h} style={{ fontSize: 9, background: '#F2F2F7', color: '#6E6E73', padding: '2px 6px', borderRadius: 20 }}>{h}</span>)}
+                      {fiche && (fiche.competences || []).map(c => <span key={c} style={{ fontSize: 9, background: '#F5EFE0', color: '#A68B4B', padding: '2px 6px', borderRadius: 20 }}>{c}</span>)}
                     </div>
                   </div>
                 );
@@ -1224,6 +1501,52 @@ function EditModal({ item, onClose, onSave, headers }) {
 }
 
 /* ════════ FlotteView — vehicle maintenance tracking ════════ */
+
+/* ── Fuel tracking helpers ── */
+function getCarburantEntries(vehiculeId) {
+  try {
+    const s = localStorage.getItem(`freample_carburant_${vehiculeId}`);
+    return s ? JSON.parse(s) : [];
+  } catch { return []; }
+}
+function saveCarburantEntries(vehiculeId, entries) {
+  localStorage.setItem(`freample_carburant_${vehiculeId}`, JSON.stringify(entries));
+}
+function calculerConsoReelle(entries) {
+  if (!entries || entries.length < 2) return null;
+  const sorted = [...entries].sort((a, b) => a.kilometrage - b.kilometrage);
+  let totalLitres = 0;
+  let totalKm = 0;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = sorted[i].kilometrage - sorted[i - 1].kilometrage;
+    if (diff > 0) {
+      totalLitres += sorted[i].litres;
+      totalKm += diff;
+    }
+  }
+  if (totalKm === 0) return null;
+  return (totalLitres / totalKm) * 100;
+}
+function consoConstructeur(typeVehicule) {
+  if (!typeVehicule) return 8;
+  const t = typeVehicule.toLowerCase();
+  if (t.includes('fourgonnette') || t.includes('berlingo')) return 7;
+  return 8; // fourgon and others default
+}
+function ecartConsoColor(consoReelle, consoRef) {
+  if (!consoReelle || !consoRef) return null;
+  const ecart = ((consoReelle - consoRef) / consoRef) * 100;
+  if (ecart <= 20) return { color: '#1A7F43', bg: '#D1F2E0', label: 'Normal' };
+  if (ecart <= 40) return { color: '#856404', bg: '#FFF3CD', label: 'Élevée' };
+  return { color: '#C0392B', bg: '#FFE5E5', label: 'Anormale' };
+}
+function calculerCoutKm(consoReelle, dernierPrixLitre, assuranceAnnuelle, kmMoyenJour) {
+  if (!consoReelle || !dernierPrixLitre) return null;
+  const coutCarburant = (dernierPrixLitre * consoReelle) / 100;
+  const coutAssurance = (assuranceAnnuelle && kmMoyenJour) ? (assuranceAnnuelle / 365 / kmMoyenJour) : 0;
+  return coutCarburant + coutAssurance;
+}
+
 const FORM_VEHICULE_VIDE = { immatriculation: '', modele: '', type: 'Fourgon', capacite: '', kilometrage: '', vidangeKm: '', vidangeIntervalleKm: 10000, ctDate: '', assuranceExp: '', statut: 'disponible' };
 
 function FlotteView() {
@@ -1239,6 +1562,10 @@ function FlotteView() {
   const [kmEdit, setKmEdit] = useState({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState(FORM_VEHICULE_VIDE);
+  const [fuelOpen, setFuelOpen] = useState({});
+  const [fuelForm, setFuelForm] = useState({});
+  const [fuelRefresh, setFuelRefresh] = useState(0);
+  const [chantierAssign, setChantierAssign] = useState({});
 
   const alertes = vehicules.filter(v =>
     ctExpired(v.controleTechnique?.prochaineDate) ||
@@ -1283,6 +1610,21 @@ function FlotteView() {
     if (!newKm) return;
     setVehicules(prev => prev.map(v => v.id === id ? { ...v, kilometrage: newKm } : v));
     setKmEdit(p => ({ ...p, [id]: '' }));
+  }
+
+  function handleAddFuel(vehiculeId) {
+    const f = fuelForm[vehiculeId];
+    if (!f || !f.date || !f.litres || !f.montant || !f.kilometrage) return;
+    const entry = { id: Date.now(), date: f.date, litres: Number(f.litres), montant: Number(f.montant), kilometrage: Number(f.kilometrage) };
+    const entries = getCarburantEntries(vehiculeId);
+    entries.push(entry);
+    saveCarburantEntries(vehiculeId, entries);
+    setFuelForm(p => ({ ...p, [vehiculeId]: { date: '', litres: '', montant: '', kilometrage: '' } }));
+    setFuelRefresh(r => r + 1);
+  }
+
+  function handleAssignChantier(vehiculeId, chantierName) {
+    setVehicules(prev => prev.map(v => v.id === vehiculeId ? { ...v, chantierAssigne: chantierName || null } : v));
   }
 
   return (
@@ -1396,6 +1738,19 @@ function FlotteView() {
           const hasVidangeWarn = vidangeAlert(v.vidange, v.kilometrage);
           const isOpen = selected === v.id;
 
+          /* Fuel calculations */
+          const fuelEntries = getCarburantEntries(v.id);
+          const consoReelle = calculerConsoReelle(fuelEntries);
+          const consoRef = consoConstructeur(v.type);
+          const ecartInfo = ecartConsoColor(consoReelle, consoRef);
+          const dernierPrixLitre = fuelEntries.length > 0 ? fuelEntries[fuelEntries.length - 1].montant / fuelEntries[fuelEntries.length - 1].litres : null;
+          const assuranceAnnuelle = 1200; // default annual insurance estimate
+          const kmMoyenJour = 80; // default average daily km
+          const coutKm = calculerCoutKm(consoReelle, dernierPrixLitre, assuranceAnnuelle, kmMoyenJour);
+          const isFuelOpen = fuelOpen[v.id];
+          const ff = fuelForm[v.id] || { date: '', litres: '', montant: '', kilometrage: '' };
+          const last5Fuel = [...fuelEntries].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
           return (
             <div key={v.id} style={{ background: '#fff', borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden', border: (hasCtAlert || hasVidangeWarn) ? '2px solid #FF9500' : '1px solid transparent' }}>
               {/* Card header */}
@@ -1416,7 +1771,44 @@ function FlotteView() {
                     Mission : {v.chantier}
                   </div>
                 )}
+                {v.chantierAssigne && (
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#1565C0', background: '#E3F2FD', borderRadius: 8, padding: '4px 10px', display: 'inline-block', marginLeft: v.chantier ? 6 : 0, marginTop: v.chantier ? 0 : 4 }}>
+                    Chantier : {v.chantierAssigne}
+                  </div>
+                )}
               </div>
+
+              {/* Consumption KPI row */}
+              <div style={{ padding: '10px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, borderBottom: '1px solid #F2F2F7' }}>
+                <div style={{ background: '#FAFAFA', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 }}>Conso constructeur</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: '#5B5BD6' }}>{consoRef}</div>
+                  <div style={{ fontSize: 8, color: '#636363' }}>L/100km</div>
+                </div>
+                <div style={{ background: consoReelle && ecartInfo ? ecartInfo.bg : '#FAFAFA', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 }}>Conso réelle</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363' }}>{consoReelle ? consoReelle.toFixed(1) : '—'}</div>
+                  <div style={{ fontSize: 8, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363' }}>L/100km</div>
+                </div>
+                <div style={{ background: consoReelle && ecartInfo ? ecartInfo.bg : '#FAFAFA', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 }}>Ecart</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363' }}>
+                    {consoReelle ? `${(((consoReelle - consoRef) / consoRef) * 100).toFixed(0)}%` : '—'}
+                  </div>
+                  <div style={{ fontSize: 8, color: consoReelle && ecartInfo ? ecartInfo.color : '#636363' }}>{ecartInfo ? ecartInfo.label : ''}</div>
+                </div>
+                <div style={{ background: '#FAFAFA', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: '#636363', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 3 }}>Coût / km</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: '#1C1C1E' }}>{coutKm ? coutKm.toFixed(2).replace('.', ',') : '—'}</div>
+                  <div style={{ fontSize: 8, color: '#636363' }}>{coutKm ? '€/km' : ''}</div>
+                </div>
+              </div>
+              {/* Alert if consumption is abnormal (red) */}
+              {consoReelle && ecartInfo && ecartInfo.color === '#C0392B' && (
+                <div style={{ padding: '8px 18px', background: '#FFE5E5', fontSize: 11, color: '#C0392B', fontWeight: 600 }}>
+                  Consommation anormale — vérifier pneus, conduite ou mécanique
+                </div>
+              )}
 
               {/* Maintenance grid */}
               <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -1458,10 +1850,72 @@ function FlotteView() {
                     <span style={{ color: '#856404', fontWeight: 700 }}> ⚠</span>
                   )}
                 </div>
-                <button onClick={() => setSelected(isOpen ? null : v.id)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#5B5BD6' }}>
-                  {isOpen ? 'Fermer' : 'Mettre à jour'}
-                </button>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => setFuelOpen(p => ({ ...p, [v.id]: !p[v.id] }))} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: isFuelOpen ? '#F2F2F7' : '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#FF9500' }}>
+                    {isFuelOpen ? '✕ Carburant' : '⛽ Carburant'}
+                  </button>
+                  <button onClick={() => setSelected(isOpen ? null : v.id)} style={{ padding: '5px 12px', border: '1px solid #E5E5EA', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#5B5BD6' }}>
+                    {isOpen ? 'Fermer' : 'Mettre à jour'}
+                  </button>
+                </div>
               </div>
+
+              {/* Fuel history expandable section */}
+              {isFuelOpen && (
+                <div style={{ borderTop: '1px solid #F2F2F7', padding: '14px 18px', background: '#FFFBF0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#856404', marginBottom: 2 }}>Historique carburant</div>
+
+                  {/* Add fuel entry form */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 6, alignItems: 'flex-end' }}>
+                    <div>
+                      <label style={{ ...lbl, fontSize: 10 }}>Date</label>
+                      <input type="date" value={ff.date} onChange={e => setFuelForm(p => ({ ...p, [v.id]: { ...ff, date: e.target.value } }))} style={{ ...inp, fontSize: 11, padding: '6px 8px' }} />
+                    </div>
+                    <div>
+                      <label style={{ ...lbl, fontSize: 10 }}>Litres</label>
+                      <input type="number" step="0.1" value={ff.litres} onChange={e => setFuelForm(p => ({ ...p, [v.id]: { ...ff, litres: e.target.value } }))} placeholder="45" style={{ ...inp, fontSize: 11, padding: '6px 8px' }} />
+                    </div>
+                    <div>
+                      <label style={{ ...lbl, fontSize: 10 }}>Montant (€)</label>
+                      <input type="number" step="0.01" value={ff.montant} onChange={e => setFuelForm(p => ({ ...p, [v.id]: { ...ff, montant: e.target.value } }))} placeholder="85,00" style={{ ...inp, fontSize: 11, padding: '6px 8px' }} />
+                    </div>
+                    <div>
+                      <label style={{ ...lbl, fontSize: 10 }}>Km compteur</label>
+                      <input type="number" value={ff.kilometrage} onChange={e => setFuelForm(p => ({ ...p, [v.id]: { ...ff, kilometrage: e.target.value } }))} placeholder={String(v.kilometrage)} style={{ ...inp, fontSize: 11, padding: '6px 8px' }} />
+                    </div>
+                    <button onClick={() => handleAddFuel(v.id)} style={{ padding: '6px 12px', border: 'none', borderRadius: 8, background: '#FF9500', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 11, flexShrink: 0, marginBottom: 1 }}>+</button>
+                  </div>
+
+                  {/* Last 5 entries */}
+                  {last5Fuel.length > 0 ? (
+                    <div style={{ fontSize: 11, color: '#1C1C1E' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 4, padding: '4px 0', borderBottom: '1px solid #E5E5EA', fontWeight: 700, fontSize: 10, color: '#636363', textTransform: 'uppercase' }}>
+                        <span>Date</span><span>Litres</span><span>Montant</span><span>Km</span><span>L/100km</span>
+                      </div>
+                      {last5Fuel.map((entry, idx) => {
+                        const sorted = [...fuelEntries].sort((a, b) => a.kilometrage - b.kilometrage);
+                        const pos = sorted.findIndex(e => e.id === entry.id);
+                        let consoEntry = null;
+                        if (pos > 0) {
+                          const diff = entry.kilometrage - sorted[pos - 1].kilometrage;
+                          if (diff > 0) consoEntry = ((entry.litres / diff) * 100).toFixed(1);
+                        }
+                        return (
+                          <div key={entry.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 4, padding: '4px 0', borderBottom: '1px solid #F2F2F7', fontSize: 11 }}>
+                            <span>{formatDate(entry.date)}</span>
+                            <span>{entry.litres.toFixed(1)} L</span>
+                            <span>{entry.montant.toFixed(2)} €</span>
+                            <span>{entry.kilometrage.toLocaleString('fr-FR')}</span>
+                            <span style={{ fontWeight: 600 }}>{consoEntry ? `${consoEntry}` : '—'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 11, color: '#636363', fontStyle: 'italic' }}>Aucun plein enregistré</div>
+                  )}
+                </div>
+              )}
 
               {/* Expanded update form */}
               {isOpen && (
@@ -1497,12 +1951,105 @@ function FlotteView() {
                       </select>
                     </div>
                   </div>
+
+                  {/* Chantier assignment */}
+                  <div style={{ borderTop: '1px solid #E5E5EA', paddingTop: 10, marginTop: 4 }}>
+                    <label style={{ ...lbl, fontSize: 11 }}>Chantier assigné</label>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                      <input
+                        value={chantierAssign[v.id] !== undefined ? chantierAssign[v.id] : (v.chantierAssigne || '')}
+                        onChange={e => setChantierAssign(p => ({ ...p, [v.id]: e.target.value }))}
+                        placeholder="Nom du chantier..."
+                        style={{ ...inp, fontSize: 12, padding: '7px 10px', flex: 1 }}
+                      />
+                      <button onClick={() => { handleAssignChantier(v.id, chantierAssign[v.id] !== undefined ? chantierAssign[v.id] : (v.chantierAssigne || '')); setChantierAssign(p => ({ ...p, [v.id]: undefined })); }} style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: '#34C759', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, flexShrink: 0, marginBottom: 1 }}>Assigner</button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ════════ Sous-traitance inline (directement sur la carte chantier) ════════ */
+function InlineSousTraiter({ item, onOpenDetail }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ metier: '', budget: '', description: '' });
+  const [sent, setSent] = useState(false);
+
+  const METIERS = ['Plomberie','Electricite','Peinture','Maconnerie','Carrelage','Menuiserie','Couverture','Chauffage','Serrurerie','Platrerie','Isolation','Charpente'];
+
+  const publier = () => {
+    if (!form.metier) return;
+    try {
+      const all = JSON.parse(localStorage.getItem('freample_soustraitance') || '[]');
+      const patronProfil = JSON.parse(localStorage.getItem('freample_profil_patron') || '{}');
+      all.push({
+        id: Date.now(), chantierId: item.id, chantierTitre: item.titre || item.metier || 'Chantier',
+        patronNom: patronProfil.nom || 'Patron', metier: form.metier,
+        description: form.description || `Besoin d'un ${form.metier} pour le chantier ${item.titre}`,
+        budget: Number(form.budget) || 0,
+        ville: item.ville || item.adresse || '', dateDebut: item.dateDebut || '', dateFin: item.dateFin || '',
+        statut: 'ouverte', reponses: [], date: new Date().toISOString().slice(0, 10),
+      });
+      localStorage.setItem('freample_soustraitance', JSON.stringify(all));
+      setSent(true);
+    } catch {}
+  };
+
+  if (sent) {
+    return (
+      <div style={{ marginBottom: 10, padding: '10px 12px', background: '#F0FDF4', borderRadius: 8, border: '1px solid #16A34A40' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A' }}>Demande publiée</div>
+        <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>Les auto-entrepreneurs {form.metier} de votre zone seront notifiés.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 10 }}>
+      {!open ? (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 12px', background: '#FEF2F2', borderRadius: 8, border: '1px solid #DC262620' }}>
+          <span style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, flex: 1 }}>Aucun ouvrier assigné</span>
+          <button onClick={e => { e.stopPropagation(); setOpen(true); }}
+            style={{ fontSize: 10, fontWeight: 700, padding: '5px 12px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            Sous-traiter
+          </button>
+          <button onClick={e => { e.stopPropagation(); onOpenDetail?.(item.id); }}
+            style={{ fontSize: 10, fontWeight: 600, padding: '5px 12px', background: 'transparent', color: '#555', border: '1px solid #E5E5EA', borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            Assigner mon équipe
+          </button>
+        </div>
+      ) : (
+        <div onClick={e => e.stopPropagation()} style={{ padding: '12px', background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Chercher un sous-traitant</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+            <select value={form.metier} onChange={e => setForm(f => ({ ...f, metier: e.target.value }))}
+              style={{ flex: 2, minWidth: 120, padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, outline: 'none' }}>
+              <option value="">Métier recherché *</option>
+              {METIERS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <input type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
+              placeholder="Budget HT" style={{ flex: 1, minWidth: 80, padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, outline: 'none' }} />
+          </div>
+          <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            placeholder="Description du besoin (optionnel)" style={{ width: '100%', padding: '8px 10px', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={publier} disabled={!form.metier}
+              style={{ padding: '8px 16px', background: form.metier ? '#A68B4B' : '#C7C7CC', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: form.metier ? 'pointer' : 'not-allowed' }}>
+              Publier la demande
+            </button>
+            <button onClick={() => setOpen(false)}
+              style={{ padding: '8px 12px', background: 'transparent', color: '#555', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 12, cursor: 'pointer' }}>
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,603 +1,613 @@
-import React, { useEffect, useState } from 'react';
-import api from '../../services/api';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import {
-  IconFinance, IconMissions, IconTeam, IconAlert, IconCheck,
-  IconTrendUp, IconDocument, IconBuilding, IconClock,
-} from '../../components/ui/Icons';
-import DevisFormulaire from '../../components/DevisFormulaire';
 import AlertesInterModules from '../../components/rh/AlertesInterModules';
-
-const SALARIES_DEMO = [
-  { id: 's1', nom: 'Jean Martin',    poste: 'Maçon' },
-  { id: 's2', nom: 'Sophie Durand',  poste: 'Plombier' },
-  { id: 's3', nom: 'Marc Petit',     poste: 'Maçon' },
-  { id: 's4', nom: 'Claire Bernard', poste: 'Électricien' },
-  { id: 's5', nom: 'Luc Moreau',     poste: 'Carreleur' },
-];
-
-const ACTUALITES_DEMO = [
-  { id: 'a1', type: 'devis',    client: 'Mme Dupont',    adresse: '12 rue de France, Nice',                description: 'Demande de devis — Rénovation cuisine complète', date: '2026-04-07', heure: '09:14', urgence: false, lu: false },
-  { id: 'a2', type: 'mission',  client: 'SCI Horizon',   adresse: '5 rue Pasteur, Créteil',                description: 'Demande urgente — Fuite plomberie bureau', date: '2026-04-07', heure: '08:32', urgence: true,  lu: false },
-  { id: 'a3', type: 'devis',    client: 'M. Martin',     adresse: '3 chemin des Vignes, Massy',            description: 'Demande de devis — Isolation toiture 120 m²', date: '2026-04-06', heure: '16:45', urgence: false, lu: true  },
-  { id: 'a4', type: 'message',  client: 'Syndic Voltaire', adresse: '15 bd Voltaire, Paris 11e',           description: 'Message — Confirmation accès cave pour intervention', date: '2026-04-06', heure: '14:21', urgence: false, lu: true  },
-  { id: 'a5', type: 'mission',  client: 'Mme Leroy',     adresse: '8 rue de la République, Antibes',       description: 'Demande de travaux — Salle de bain complète', date: '2026-04-05', heure: '11:08', urgence: false, lu: true  },
-];
-
-const ECHEANCES = [
-  { label: 'TVA CA3',           date: '20 avr. 2026', montant: 2840, severity: 'high'   },
-  { label: 'Charges URSSAF',    date: '5 mai 2026',   montant: 6120, severity: 'medium' },
-  { label: 'Acompte IS',        date: '15 juin 2026', montant: 4200, severity: 'low'    },
-];
+import OnboardingWizard, { isOnboardingDone, getOnboardingType } from '../../components/onboarding/OnboardingWizard';
+import { DEMO_PLANNING as PLANNING_DEMO } from '../../utils/demoData';
 
 const STOCK_ALERTS = [
-  { materiau: 'Ciment CEM II 32.5', stock: 8,   seuil: 20, unite: 'sacs'   },
-  { materiau: 'Sable fin 0/4',      stock: 0.5, seuil: 2,  unite: 'tonnes' },
+  { materiau: 'Ciment CEM II 32.5', stock: 8, seuil: 20, unite: 'sacs' },
+  { materiau: 'Sable fin 0/4', stock: 0.5, seuil: 2, unite: 'tonnes' },
 ];
 
-const MOIS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-const METRICS = [
-  { key:'ca',             label:'CA',              color:'#5B5BD6' },
-  { key:'masseSalariale', label:'Masse salariale',  color:'#FF9500' },
-  { key:'frais',          label:'Frais',            color:'#AF52DE' },
-  { key:'beneficeNet',    label:'Bénéfice net',     color:'#34C759' },
-];
-const MONTHLY_DATA = [
-  { ca:6200,  masseSalariale:3600, frais:420,  beneficeNet:2180  },
-  { ca:7800,  masseSalariale:3600, frais:380,  beneficeNet:3820  },
-  { ca:5400,  masseSalariale:3800, frais:510,  beneficeNet:1090  },
-  { ca:9100,  masseSalariale:3800, frais:460,  beneficeNet:4840  },
-  { ca:8300,  masseSalariale:3900, frais:590,  beneficeNet:3810  },
-  { ca:7600,  masseSalariale:3900, frais:350,  beneficeNet:3350  },
-  { ca:6900,  masseSalariale:3700, frais:480,  beneficeNet:2720  },
-  { ca:4200,  masseSalariale:3700, frais:290,  beneficeNet: 210  },
-  { ca:8700,  masseSalariale:3900, frais:610,  beneficeNet:4190  },
-  { ca:9300,  masseSalariale:4000, frais:520,  beneficeNet:4780  },
-  { ca:8200,  masseSalariale:4000, frais:440,  beneficeNet:3760  },
-  { ca:5700,  masseSalariale:3800, frais:380,  beneficeNet:1520  },
-];
+const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+// Nombre d'alertes inter-modules (démo = 7 alertes par défaut)
+function countAlertes() {
+  try {
+    const dismissed = new Set(JSON.parse(localStorage.getItem('freample_alertes_dismissed') || '[]'));
+    const total = 7; // alertes démo
+    return Math.max(total - dismissed.size, 0);
+  } catch { return 7; }
+}
+
+function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
 
 export default function DashboardPatron() {
-  const { user }   = useAuth();
-  const navigate   = useNavigate();
-  const [data,      setData]      = useState(null);
-  const [chantiers, setChantiers] = useState([]);
-  const [pipeline,  setPipeline]  = useState(null);
-  const [alertes,   setAlertes]   = useState([]);
-  const [finance,   setFinance]   = useState(null);
-  const [loading,   setLoading]   = useState(true);
-  const [apiOk,     setApiOk]     = useState(false);
-  const [actualites, setActualites] = useState(ACTUALITES_DEMO);
-  const [showAllActu, setShowAllActu] = useState(false);
-  const [selectedActu, setSelectedActu] = useState(null); // opened actualité
-  const [devisActuMode, setDevisActuMode] = useState(false);
-  const [devisActuLignes, setDevisActuLignes] = useState([{ description: '', quantite: 1, prixHT: '' }]);
-  const [devisActuSoumis, setDevisActuSoumis] = useState(false);
-  const [rdvActuMode, setRdvActuMode] = useState(false);
-  const [rdvActuSoumis, setRdvActuSoumis] = useState(null); // null or { date, heureDebut, heureFin, salarie, note }
-  const [rdvForm, setRdvForm] = useState({ date: '', heureDebut: '09:00', heureFin: '10:00', salarie: '', note: '' });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone() && getOnboardingType(user) === 'patron');
+  const [showAlertes, setShowAlertes] = useState(false);
+  const [alerteCount, setAlerteCount] = useState(countAlertes);
+  const [slotDetail, setSlotDetail] = useState(null); // { emp, jour, slot }
+  const [showChantier, setShowChantier] = useState(null); // chantier label pour zoom
 
-  const devisActuTotaux = (() => {
-    const ht = devisActuLignes.reduce((s, l) => s + (parseFloat(l.prixHT) || 0) * (parseFloat(l.quantite) || 0), 0);
-    return { ht, tva: ht * 0.2, ttc: ht * 1.2 };
-  })();
+  const prenom = user?.nom?.split(' ')[0] || 'Patron';
 
-  function ouvrirActu(a) {
-    if (selectedActu?.id === a.id) {
-      setSelectedActu(null); setDevisActuMode(false); setDevisActuSoumis(false);
-      setRdvActuMode(false); setRdvActuSoumis(null);
-      return;
+  // ── Données écosystème depuis localStorage ──
+  const lsDevis = lsGet('freample_devis', []);
+  const lsFactures = lsGet('freample_factures', []);
+  const lsChantiers = lsGet('freample_chantiers_custom', []);
+
+  const moisCourant = new Date().toISOString().slice(0, 7);
+  const facturesPayees = lsFactures.filter(f => f.statut === 'payee' || f.statut === 'sequestre_libere');
+  const caMensuel = facturesPayees.filter(f => (f.date || '').startsWith(moisCourant)).reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || 5200;
+  const caAnnuel = facturesPayees.reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || 48500;
+  const margeNette = caAnnuel > 0 ? Math.round((caAnnuel * 0.18) / caAnnuel * 100) : 18;
+  const devisAFinaliser = lsDevis.filter(d => d.aFinaliserRole === 'patron' && d.statut === 'brouillon').length;
+  const devisEnvoyes = lsDevis.filter(d => d.statut === 'envoye').length;
+  const sequestreEnCours = lsFactures.filter(f => f.statut === 'sequestre' || f.statut === 'sequestre_acompte').reduce((s, f) => s + (Number(f.montantTTC) || 0), 0);
+
+  // ── Taux d'occupation par semaine (3 semaines) ──
+  const occupation = useMemo(() => {
+    const todayD = new Date();
+    const weeks = [];
+    for (let w = 0; w < 3; w++) {
+      const weekStart = new Date(todayD); weekStart.setDate(todayD.getDate() + w * 7 - todayD.getDay() + 1);
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 5);
+      const wsStr = weekStart.toISOString().slice(0, 10);
+      const weStr = weekEnd.toISOString().slice(0, 10);
+      const allNames = [...new Set(lsChantiers.flatMap(c => c.equipe || []))];
+      const occupes = allNames.filter(nom =>
+        lsChantiers.some(c => {
+          if (!c.dateDebut || c.statut === 'terminee' || c.statut === 'annulee') return false;
+          const fin = c.dateFin || c.dateDebut;
+          const inEquipe = (c.equipe || []).some(e => e.toLowerCase().includes(nom.toLowerCase()));
+          return inEquipe && c.dateDebut <= weStr && fin >= wsStr;
+        })
+      );
+      const total = Math.max(allNames.length, 1);
+      const pct = Math.round(occupes.length / total * 100);
+      weeks.push({ label: w === 0 ? 'Cette semaine' : w === 1 ? 'Semaine proch.' : 'Dans 2 sem.', pct, occupes: occupes.length, total: allNames.length });
     }
-    setSelectedActu(a);
-    setDevisActuMode(false); setDevisActuSoumis(false);
-    setRdvActuMode(false); setRdvActuSoumis(null);
-    setDevisActuLignes([{ description: '', quantite: 1, prixHT: '' }]);
-    setRdvForm({ date: '', heureDebut: '09:00', heureFin: '10:00', salarie: '', note: '' });
-    setActualites(p => p.map(x => x.id === a.id ? { ...x, lu: true } : x));
-  }
+    return weeks;
+  }, [lsChantiers]);
 
-  function soumettreDev() {
-    setDevisActuSoumis(true);
-    setDevisActuMode(false);
-  }
+  // ── Projets marketplace filtrés par disponibilité ──
+  const projetsRecommandes = useMemo(() => {
+    const allProjets = lsGet('freample_projets', []);
+    const metiersPatron = (lsGet('freample_profil_patron', {}).metiers || []).map(m => m.toLowerCase());
+    const premierTrou = occupation.find(w => w.pct < 60);
+    const toutBookes = !premierTrou;
+    return allProjets
+      .filter(p => p.statut === 'publie')
+      .filter(p => metiersPatron.length === 0 || metiersPatron.some(m => (p.metier || '').toLowerCase().includes(m) || m.includes((p.metier || '').toLowerCase())))
+      .filter(p => {
+        if (toutBookes) return p.urgence === 'flexible';
+        if (premierTrou === occupation[0]) return true;
+        return p.urgence !== 'urgent';
+      })
+      .slice(0, 4)
+      .map(p => ({
+        ...p,
+        suggestion: toutBookes ? 'Planning complet — projet flexible à planifier'
+          : premierTrou === occupation[0] ? 'Vous êtes disponible maintenant'
+          : `Correspond à votre creux (${premierTrou.label.toLowerCase()})`
+      }));
+  }, [occupation]);
 
-  function soumettreRdv(e) {
-    e.preventDefault();
-    setRdvActuSoumis({ ...rdvForm });
-    setRdvActuMode(false);
-  }
-
-  useEffect(() => {
-    Promise.all([
-      api.get('/dashboard/patron'),
-      api.get('/patron/chantiers'),
-      api.get('/patron/pipeline'),
-      api.get('/patron/alertes'),
-      api.get('/finance/tableau-de-bord'),
-    ]).then(([d, c, p, a, f]) => {
-      setData(d.data);
-      setChantiers(c.data.chantiers || []);
-      setPipeline(p.data);
-      setAlertes(a.data.alertes || []);
-      setFinance(f.data);
-      setApiOk(true);
-    }).catch(() => {}).finally(() => setLoading(false));
+  // ── Semaine courante pour le planning ──
+  const semaineLabel = useMemo(() => {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    return monday.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' });
   }, []);
 
-  if (loading) return (
-    <div style={{ display:'flex', justifyContent:'center', padding: 80 }}>
-      <div className="spinner" style={{ width: 28, height: 28 }} />
-    </div>
-  );
-
-  const prenom         = user?.nom?.split(' ')[0];
-  const alertesHigh    = alertes.filter(a => a.severity === 'high');
-  const chantierActifs = chantiers.filter(c => c.statut === 'en_cours');
-  const caAnnuel       = finance?.ca_annuel               ?? 0;
-  const caMensuel      = finance?.ca_mensuel_en_cours    ?? 0;
-  const treso          = finance?.tresorerie             ?? 0;
-  const benefice       = finance?.benefice_net           ?? 0;
-  const margeNette     = caAnnuel > 0 ? Math.round(benefice / caAnnuel * 100) : 0;
-  const impayees       = finance?.factures?.montant_en_attente ?? 0;
-  const nbImpayees     = finance?.factures?.en_attente   ?? 0;
+  // ── Onboarding ──
+  if (showOnboarding) return <OnboardingWizard type="patron" onComplete={() => setShowOnboarding(false)} />;
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Header */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+      {/* ══ HEADER + BOUTON ALERTES ══ */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1>Tableau de bord ERP</h1>
-          <p style={{ marginTop: 4 }}>Bienvenue, {prenom} — Vue d'ensemble de votre activité</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Bonjour {prenom}</h1>
+          <p style={{ marginTop: 4, color: 'var(--text-secondary)', fontSize: 14 }}>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
-        <span style={{ fontSize:'0.75rem', color:'var(--text-tertiary)', background:'var(--bg)', border:'1px solid var(--border-light)', borderRadius: 8, padding:'4px 12px' }}>
-          {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-        </span>
+        <button
+          onClick={() => setShowAlertes(true)}
+          style={{
+            position: 'relative', padding: '8px 16px', background: alerteCount > 0 ? '#FEF2F2' : '#F0FDF4',
+            border: `1px solid ${alerteCount > 0 ? '#DC2626' : '#16A34A'}`, borderRadius: 10,
+            cursor: 'pointer', fontSize: 13, fontWeight: 700, color: alerteCount > 0 ? '#DC2626' : '#16A34A',
+            display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, transition: 'transform .15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          Alertes modules
+          {alerteCount > 0 && (
+            <span style={{
+              background: '#DC2626', color: '#fff', borderRadius: '50%',
+              width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, fontWeight: 800,
+            }}>{alerteCount}</span>
+          )}
+          {alerteCount === 0 && <span style={{ fontSize: 11 }}>OK</span>}
+        </button>
       </div>
 
-      {/* Bandeau démo quand API hors ligne */}
-      {!apiOk && (
-        <div style={{ background: '#FFF3CD', border: '1px solid #FFCA28', borderRadius: 10, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: '1rem' }}>⚠️</span>
-          <span style={{ fontSize: '0.8125rem', color: '#7A5C00', fontWeight: 500 }}>
-            Backend non connecté — les chiffres affichés ci-dessous sont à zéro. Connectez votre API pour voir vos vraies données.
-          </span>
+      {/* ══ MODAL ALERTES (overlay zoom) ══ */}
+      {showAlertes && (
+        <div
+          onClick={() => { setShowAlertes(false); setAlerteCount(countAlertes()); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn .2s ease-out',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff', borderRadius: 20, padding: '28px 24px',
+              width: '90%', maxWidth: 700, maxHeight: '80vh', overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              animation: 'zoomIn .25s ease-out',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Alertes inter-modules</h2>
+              <button onClick={() => { setShowAlertes(false); setAlerteCount(countAlertes()); }}
+                style={{ background: '#F2F2F7', border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#6E6E73' }}>
+                Fermer
+              </button>
+            </div>
+            <AlertesInterModules />
+            {STOCK_ALERTS.length > 0 && (
+              <div onClick={() => { setShowAlertes(false); navigate('/patron/stock'); }}
+                style={{ marginTop: 12, background: '#FFFBEB', border: '1px solid #D97706', borderLeft: '4px solid #D97706', borderRadius: 10, padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#D97706' }}>Stock bas :</span>
+                {STOCK_ALERTS.map((s, i) => (
+                  <span key={i} style={{ fontSize: 12, color: '#555' }}>{s.materiau} ({s.stock} {s.unite})</span>
+                ))}
+                <span style={{ fontSize: 11, color: '#D97706', fontWeight: 600, marginLeft: 'auto' }}>Voir →</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* ══ MA JOURNÉE ══ */}
-      {(() => {
-        const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-        const todayChantiers = chantierActifs.length > 0 ? chantierActifs.slice(0, 3) : [{ id: 'd1', titre: 'Rénovation Dupont', adresse: '12 rue de France, Nice', avancement: 65 }, { id: 'd2', titre: 'Installation électrique Bureau', adresse: '8 av Jean Médecin, Nice', avancement: 30 }];
-        const todayRdv = [
-          { heure: '09:00', label: 'Estimation — Mme Leroy', lieu: 'Antibes', type: 'estimation' },
-          { heure: '14:00', label: 'Réunion chantier SCI Horizon', lieu: 'Nice', type: 'chantier' },
-        ];
-        const urgentActions = [];
-        if (nbImpayees > 0) urgentActions.push({ icon: '💰', label: `${nbImpayees} facture${nbImpayees > 1 ? 's' : ''} impayée${nbImpayees > 1 ? 's' : ''} (${impayees.toLocaleString('fr-FR')}€)`, color: '#DC2626', action: () => navigate('/patron/finance?onglet=facturation') });
-        const nonLusCount = actualites.filter(a => !a.lu).length;
-        if (nonLusCount > 0) urgentActions.push({ icon: '🔔', label: `${nonLusCount} nouvelle${nonLusCount > 1 ? 's' : ''} demande${nonLusCount > 1 ? 's' : ''}`, color: '#D97706' });
-        return (
-          <div style={{ background: 'linear-gradient(135deg, #2C2520 0%, #3D332D 100%)', borderRadius: 16, padding: 'clamp(18px,3vw,24px)', color: '#F5EFE0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Ma journée</div>
-                <div style={{ fontSize: 18, fontWeight: 800 }}>{today}</div>
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => navigate('/patron/projets')} style={{ padding: '6px 14px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>📋 Projets clients</button>
-                <button onClick={() => navigate('/patron/agenda')} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.1)', color: '#F5EFE0', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, fontSize: 11, fontWeight: 500, cursor: 'pointer' }}>📅 Agenda</button>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-              {/* Chantiers du jour */}
-              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>🏗️ CHANTIERS EN COURS ({todayChantiers.length})</div>
-                {todayChantiers.map(c => (
-                  <div key={c.id} onClick={() => navigate('/patron/missions')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600 }}>{c.titre}</div>
-                      <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.45)' }}>📍 {c.adresse}</div>
-                    </div>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#A68B4B' }}>{c.avancement || '?'}%</div>
-                  </div>
-                ))}
-              </div>
-              {/* RDV du jour */}
-              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>📅 RENDEZ-VOUS ({todayRdv.length})</div>
-                {todayRdv.map((r, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#A68B4B', width: 40, flexShrink: 0 }}>{r.heure}</div>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</div>
-                      <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.45)' }}>📍 {r.lieu}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Actions urgentes */}
-              {urgentActions.length > 0 && (
-                <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(245,239,224,0.5)', marginBottom: 10 }}>⚡ ACTIONS URGENTES</div>
-                  {urgentActions.map((a, i) => (
-                    <div key={i} onClick={a.action} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a.color + '15', borderRadius: 8, marginBottom: 4, cursor: a.action ? 'pointer' : 'default' }}>
-                      <span style={{ fontSize: 14 }}>{a.icon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: a.color }}>{a.label}</span>
-                    </div>
-                  ))}
+      {/* ══ TAUX D'OCCUPATION ══ */}
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          Disponibilité de votre équipe
+          {occupation[0]?.total === 0 && <span style={{ fontSize: 11, color: '#D97706', fontWeight: 500 }}>(aucun salarié assigné)</span>}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+          {occupation.map((w, i) => {
+            const color = w.pct > 80 ? '#16A34A' : w.pct > 50 ? '#D97706' : '#DC2626';
+            return (
+              <div key={i} style={{ background: '#fff', border: '1px solid #E8E6E1', borderRadius: 12, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: '#F2F1ED' }}>
+                  <div style={{ height: '100%', width: `${w.pct}%`, background: color, borderRadius: 2, transition: 'width .5s' }} />
                 </div>
-              )}
-            </div>
+                <div style={{ fontSize: 11, color: '#6E6E73', fontWeight: 600, marginBottom: 4 }}>{w.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color }}>{w.pct}%</div>
+                <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>{w.occupes}/{w.total} salariés occupés</div>
+              </div>
+            );
+          })}
+        </div>
+        {occupation.some(w => w.pct < 30) && (
+          <div onClick={() => navigate('/patron/projets')} style={{ marginTop: 8, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #DC2626', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#DC2626', flex: 1 }}>Trou d'activité détecté — consultez les projets disponibles</span>
+            <span style={{ fontSize: 11, color: '#DC2626', fontWeight: 600 }}>Voir →</span>
           </div>
-        );
-      })()}
+        )}
+      </div>
 
-      {/* Alertes inter-modules */}
-      <AlertesInterModules />
+      {/* ══ PLANNING HEBDO ÉQUIPE ══ */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700 }}>
+            Planning équipe — Semaine du {semaineLabel}
+          </div>
+          <button onClick={() => navigate('/patron/rh?onglet=planning')} style={{ fontSize: 12, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Planning complet →</button>
+        </div>
 
-      {/* Alertes critiques */}
-      {alertesHigh.length > 0 && (
-        <div style={{ display:'flex', flexDirection:'column', gap: 6 }}>
-          {alertesHigh.map((a, i) => (
-            <div key={i} onClick={() => a.lien && navigate(a.lien)} style={{ display:'flex', alignItems:'center', gap: 10, background:'var(--danger-light)', border:'1px solid rgba(255,59,48,0.2)', borderRadius: 10, padding:'10px 16px', cursor: a.lien ? 'pointer' : 'default' }}>
-              <IconAlert size={14} color="var(--danger)" />
-              <span style={{ fontSize:'0.8125rem', color:'var(--danger)', fontWeight: 500, flex: 1 }}>{a.msg}</span>
-              {a.montant && <span style={{ fontWeight: 700, color:'var(--danger)' }}>{a.montant.toLocaleString('fr-FR')} €</span>}
-              {a.lien && <span style={{ fontSize:'0.75rem', color:'var(--danger)', fontWeight: 600 }}>Voir →</span>}
+        {/* Légende */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+          {PLANNING_DEMO.map(e => (
+            <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6E6E73' }}>
+              <div style={{ width: 8, height: 8, borderRadius: 3, background: e.couleur, flexShrink: 0 }} />
+              {e.nom}
             </div>
           ))}
         </div>
-      )}
 
-      {/* Fil d'actualités */}
-      {(() => {
-        const nonLus = actualites.filter(a => !a.lu).length;
-        const affiches = showAllActu ? actualites : actualites.slice(0, 4);
-        const typeConfig = {
-          devis:   { label: 'Demande devis',  bg: '#EBF5FF', color: '#5B5BD6', dot: '#5B5BD6' },
-          mission: { label: 'Nouvelle mission', bg: '#FFF0E5', color: '#E65100', dot: '#FF6F00' },
-          message: { label: 'Message',         bg: '#F5F0FF', color: '#6200EA', dot: '#7C4DFF' },
-        };
-        return (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h2 style={{ margin: 0 }}>Actualités</h2>
-                {nonLus > 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 700, background: '#FF3B30', color: '#fff', borderRadius: 20, padding: '2px 8px' }}>{nonLus} nouveau{nonLus > 1 ? 'x' : ''}</span>
-                )}
-                {!apiOk && (
-                  <span style={{ fontSize: 10, fontWeight: 700, background: '#FFB800', color: '#fff', borderRadius: 6, padding: '2px 7px', letterSpacing: 0.5 }}>DEMO</span>
-                )}
+        {/* ── VUE DESKTOP : Grille planning compact ── */}
+        <div className="planning-grid-desktop" style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #E8E6E1' }}>
+          {/* Header jours */}
+          <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(6, 1fr)', borderBottom: '1px solid #F2F2F7' }}>
+            <div style={{ padding: '10px 12px', fontSize: 11, fontWeight: 700, color: '#6E6E73', background: '#FAFAF8' }}></div>
+            {JOURS.map(j => {
+              const now = new Date();
+              const dayIdx = (now.getDay() + 6) % 7;
+              const jourIdx = JOURS.indexOf(j);
+              const isToday = jourIdx === dayIdx;
+              return (
+                <div key={j} style={{
+                  padding: '10px 6px', fontSize: 11, fontWeight: 700, textAlign: 'center',
+                  background: isToday ? '#2563eb0a' : '#FAFAF8', borderLeft: '1px solid #F2F2F7',
+                  color: isToday ? '#2563EB' : '#1C1C1E',
+                }}>
+                  {j}{isToday ? ' •' : ''}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Lignes employés */}
+          {PLANNING_DEMO.map((emp, ri) => (
+            <div key={emp.id} style={{ display: 'grid', gridTemplateColumns: '120px repeat(6, 1fr)', borderBottom: ri < PLANNING_DEMO.length - 1 ? '1px solid #F2F2F7' : 'none' }}>
+              <div style={{ padding: '10px 12px', borderRight: '1px solid #F2F2F7', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: 12, color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.nom}</div>
+                <div style={{ fontSize: 10, color: '#6E6E73', marginTop: 1 }}>{emp.poste}</div>
               </div>
-              <button onClick={() => setActualites(p => p.map(a => ({ ...a, lu: true })))}
-                style={{ fontSize: 12, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                Tout marquer lu
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {affiches.map((a, i) => {
-                const tc = typeConfig[a.type] || typeConfig.message;
-                const isOpen = selectedActu?.id === a.id;
+              {JOURS.map(jour => {
+                const slot = emp.semaine[jour];
+                const isSelected = slotDetail?.emp?.id === emp.id && slotDetail?.jour === jour;
                 return (
-                  <div key={a.id}>
-                    {/* Row */}
-                    <div onClick={() => ouvrirActu(a)}
-                      style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '12px 20px', borderBottom: (!isOpen && i < affiches.length - 1) ? '1px solid var(--border-light)' : 'none', background: isOpen ? '#F0F5FF' : a.lu ? '#fff' : '#FAFBFF', cursor: 'pointer', transition: 'background 0.15s' }}
-                      onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = '#F5F7FF'; }}
-                      onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = a.lu ? '#fff' : '#FAFBFF'; }}>
-                      <div style={{ flexShrink: 0, width: 8, height: 8, borderRadius: '50%', background: a.lu ? '#C7C7CC' : tc.dot, marginTop: 6 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, background: tc.bg, color: tc.color, padding: '1px 8px', borderRadius: 20 }}>{tc.label}</span>
-                          {a.urgence && <span style={{ fontSize: 11, fontWeight: 700, background: '#FFE5E5', color: '#FF3B30', padding: '1px 8px', borderRadius: 20 }}>Urgent</span>}
-                          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>{a.heure} · {new Date(a.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
-                        </div>
-                        <p style={{ fontSize: 13, fontWeight: a.lu ? 400 : 600, color: 'var(--text)', margin: 0 }}>
-                          {a.client} — {a.description}
-                        </p>
+                  <div key={jour} style={{ padding: '6px 4px', borderLeft: '1px solid #F2F2F7', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    {slot ? (
+                      <div
+                        onClick={() => setSlotDetail(isSelected ? null : { emp, jour, slot })}
+                        style={{
+                          width: '100%', background: isSelected ? emp.couleur + '30' : emp.couleur + '15',
+                          borderLeft: `3px solid ${emp.couleur}`, borderRadius: 5, padding: '4px 6px',
+                          cursor: 'pointer', transition: 'all .15s',
+                          outline: isSelected ? `2px solid ${emp.couleur}` : 'none',
+                        }}
+                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = emp.couleur + '25'; }}
+                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = emp.couleur + '15'; }}
+                      >
+                        <div style={{ fontSize: 10, fontWeight: 700, color: emp.couleur }}>{slot.debut}h–{slot.fin}h</div>
+                        <div style={{ fontSize: 9, color: '#6E6E73', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{slot.label}</div>
                       </div>
-                      <span style={{ fontSize: 13, color: 'var(--text-tertiary)', flexShrink: 0, marginTop: 2 }}>{isOpen ? '▲' : '▼'}</span>
-                    </div>
-
-                    {/* Expanded panel */}
-                    {isOpen && (
-                      <div style={{ borderTop: '1px solid #E0EAFF', borderBottom: i < affiches.length - 1 ? '1px solid var(--border-light)' : 'none', background: '#F8FAFF', padding: '20px 24px' }}>
-
-                        {/* Banners */}
-                        {devisActuSoumis && (
-                          <div style={{ background: '#D1F2E0', border: '1px solid #34C759', borderRadius: 10, padding: '10px 16px', marginBottom: 16, fontSize: 13, color: '#1A7F43', fontWeight: 600 }}>
-                            ✓ Devis envoyé — le client pourra comparer toutes les offres reçues.
-                          </div>
-                        )}
-                        {rdvActuSoumis && (
-                          <div style={{ background: '#EBF5FF', border: '1px solid #5B5BD6', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#1565C0' }}>
-                            <div style={{ fontWeight: 700, marginBottom: 6 }}>📅 Rendez-vous proposé au client</div>
-                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                              <span><strong>Date :</strong> {new Date(rdvActuSoumis.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                              <span><strong>Horaire :</strong> {rdvActuSoumis.heureDebut} – {rdvActuSoumis.heureFin}</span>
-                              {rdvActuSoumis.salarie && <span><strong>Salarié :</strong> {rdvActuSoumis.salarie}</span>}
-                            </div>
-                            {rdvActuSoumis.note && <div style={{ marginTop: 6, fontSize: 12, color: '#1565C0', opacity: 0.85 }}>Note : {rdvActuSoumis.note}</div>}
-                          </div>
-                        )}
-
-                        {/* Mission recap */}
-                        {!devisActuMode && !rdvActuMode && (
-                          <>
-                            <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 12 }}>Récapitulatif de la demande</div>
-                            <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-                              {[
-                                { label: 'Client', value: a.client },
-                                { label: 'Adresse', value: a.adresse || '—' },
-                                { label: 'Type', value: tc.label },
-                                { label: 'Date', value: `${a.heure} — ${new Date(a.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}` },
-                                { label: 'Urgence', value: a.urgence ? '🔴 Urgent' : '🟢 Non urgent' },
-                              ].map(f => (
-                                <div key={f.label} style={{ background: '#fff', borderRadius: 10, padding: '10px 14px', border: '1px solid #E0EAFF' }}>
-                                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>{f.label}</div>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{f.value}</div>
-                                </div>
-                              ))}
-                            </div>
-                            <div style={{ background: '#fff', borderRadius: 10, padding: '12px 14px', border: '1px solid #E0EAFF', marginBottom: 16 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>Description</div>
-                              <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, lineHeight: 1.6 }}>{a.description}</p>
-                            </div>
-                            {(a.type === 'devis' || a.type === 'mission') && (
-                              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                                {!devisActuSoumis && (
-                                  <button onClick={() => setDevisActuMode(true)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-                                    📄 Proposer un devis
-                                  </button>
-                                )}
-                                {!rdvActuSoumis && (
-                                  <button onClick={() => setRdvActuMode(true)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#fff', color: '#5B5BD6', border: '2px solid #5B5BD6', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-                                    📅 Proposer un rendez-vous
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        )}
-
-                        {/* Devis form */}
-                        {devisActuMode && (
-                          <div>
-                            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 4 }}>Créer un devis — {a.client}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 18 }}>{a.description}</div>
-                            <DevisFormulaire
-                              clientNom={a.client}
-                              missionTitre={a.description}
-                              compact={true}
-                              onAnnuler={() => setDevisActuMode(false)}
-                              onSoumettre={() => soumettreDev()}
-                            />
-                          </div>
-                        )}
-
-                        {/* RDV form */}
-                        {rdvActuMode && (
-                          <form onSubmit={soumettreRdv}>
-                            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 14 }}>
-                              📅 Proposer un rendez-vous — <span style={{ color: 'var(--primary)' }}>{a.client}</span>
-                            </div>
-                            <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                              <div style={{ gridColumn: '1/-1' }}>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Date *</label>
-                                <input type="date" required value={rdvForm.date} onChange={e => setRdvForm(p => ({ ...p, date: e.target.value }))}
-                                  style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' }} />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Heure début *</label>
-                                <input type="time" required value={rdvForm.heureDebut} onChange={e => setRdvForm(p => ({ ...p, heureDebut: e.target.value }))}
-                                  style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' }} />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Heure fin *</label>
-                                <input type="time" required value={rdvForm.heureFin} onChange={e => setRdvForm(p => ({ ...p, heureFin: e.target.value }))}
-                                  style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' }} />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Salarié assigné</label>
-                                <select value={rdvForm.salarie} onChange={e => setRdvForm(p => ({ ...p, salarie: e.target.value }))}
-                                  style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' }}>
-                                  <option value="">— Non assigné —</option>
-                                  {SALARIES_DEMO.map(s => (
-                                    <option key={s.id} value={s.nom}>{s.nom} — {s.poste}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>Note pour le client (optionnel)</label>
-                              <textarea value={rdvForm.note} onChange={e => setRdvForm(p => ({ ...p, note: e.target.value }))} placeholder="Ex : Merci d'être présent sur place, accès par le portail latéral…" rows={2}
-                                style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, outline: 'none', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box', background: 'var(--card)', color: 'var(--text)' }} />
-                            </div>
-                            <div style={{ display: 'flex', gap: 10 }}>
-                              <button type="button" onClick={() => setRdvActuMode(false)}
-                                style={{ padding: '10px 20px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--text)', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
-                                Annuler
-                              </button>
-                              <button type="submit"
-                                style={{ padding: '10px 22px', border: 'none', borderRadius: 10, background: '#5B5BD6', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-                                Envoyer le rendez-vous
-                              </button>
-                            </div>
-                          </form>
-                        )}
-                      </div>
+                    ) : (
+                      <div style={{ width: '80%', height: 4, background: '#F2F1ED', borderRadius: 2 }} />
                     )}
                   </div>
                 );
               })}
             </div>
-
-            {actualites.length > 4 && (
-              <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border-light)', textAlign: 'center' }}>
-                <button onClick={() => setShowAllActu(p => !p)} style={{ fontSize: 13, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  {showAllActu ? 'Réduire' : `Voir tout (${actualites.length})`}
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Financial KPIs */}
-      <div className="stats-grid">
-        <KpiCard label="CA mensuel"   valeur={`${caMensuel.toLocaleString('fr-FR')} €`}       Icon={IconFinance}  color="blue"   sub={new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })} />
-        <KpiCard label="CA annuel"    valeur={`${caAnnuel.toLocaleString('fr-FR')} €`}        Icon={IconTrendUp}  color="green"  sub={`exercice ${new Date().getFullYear()}`} />
-        <KpiCard label="Marge nette"  valeur={`${margeNette} %`}                               Icon={IconDocument} color="green"  sub={`${benefice.toLocaleString('fr-FR')} €`} />
-        <KpiCard label="Trésorerie"   valeur={`${treso.toLocaleString('fr-FR')} €`}           Icon={IconFinance}  color={treso > 15000 ? 'green' : 'orange'} sub="solde bancaire" />
-        <KpiCard label="Impayées"     valeur={`${impayees.toLocaleString('fr-FR')} €`}        Icon={IconAlert}    color="orange" sub={`${nbImpayees} factures`} onClick={() => navigate('/patron/finance?onglet=facturation')} />
-        <KpiCard label="Devis signés" valeur={`${(pipeline?.stats?.ca_signe || 12100).toLocaleString('fr-FR')} €`} Icon={IconCheck} color="blue" sub={`taux conv. ${pipeline?.stats?.taux_conversion || 50}%`} />
-      </div>
-
-      {/* Multi-metric chart */}
-      <div className="card" style={{ padding: 24 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20 }}>
-          <div>
-            <h2 style={{ marginBottom: 2 }}>Performance financière 2024</h2>
-            <p style={{ fontSize: '0.75rem', color:'var(--text-tertiary)', margin: 0 }}>CA · Masse salariale · Frais · Bénéfice net</p>
-          </div>
-          <div style={{ display:'flex', gap: 14 }}>
-            {METRICS.map(m => (
-              <div key={m.key} style={{ display:'flex', alignItems:'center', gap: 5 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: m.color }} />
-                <span style={{ fontSize:'0.6875rem', color:'var(--text-secondary)', fontWeight: 500 }}>{m.label}</span>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
 
-        {/* Chart area */}
-        {(() => {
-          const maxV = Math.max(...MONTHLY_DATA.flatMap(m => [m.ca, m.masseSalariale, m.frais, m.beneficeNet]));
-          const chartH = 120;
-          const now = new Date().getMonth();
-          return (
-            <div style={{ position:'relative' }}>
-              {/* Y-grid lines */}
-              {[0, 33, 66, 100].map(pct => (
-                <div key={pct} style={{ position:'absolute', left: 0, right: 0, bottom: 20 + pct / 100 * chartH, borderTop:'1px dashed #F2F2F7', zIndex: 0 }}>
-                  <span style={{ fontSize: 8, color:'#C7C7CC', paddingLeft: 2 }}>{Math.round(pct / 100 * maxV / 1000)}k</span>
-                </div>
-              ))}
-              <div style={{ display:'flex', gap: 4, alignItems:'flex-end', height: chartH + 20, position:'relative', zIndex: 1 }}>
-                {MONTHLY_DATA.map((m, i) => (
-                  <div key={i} style={{ flex: 1, display:'flex', flexDirection:'column', alignItems:'center', gap: 1 }}>
-                    <div style={{ display:'flex', alignItems:'flex-end', gap: 1.5, height: chartH }}>
-                      {METRICS.map(metric => {
-                        const h = Math.max(2, Math.round((m[metric.key] / maxV) * chartH));
-                        const isNow = i === now;
-                        return (
-                          <div
-                            key={metric.key}
-                            title={`${metric.label} ${MOIS[i]}: ${m[metric.key].toLocaleString('fr-FR')} €`}
-                            style={{
-                              width: 5,
-                              height: h,
-                              background: metric.color,
-                              borderRadius:'2px 2px 0 0',
-                              opacity: isNow ? 1 : 0.6,
-                              transition:'height 0.3s',
-                              boxShadow: isNow ? `0 0 0 1px ${metric.color}40` : 'none',
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                    <span style={{ fontSize:'0.5rem', color: i === now ? 'var(--primary)' : 'var(--text-tertiary)', fontWeight: i === now ? 700 : 400, marginTop: 3 }}>
-                      {MOIS[i]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Bottom KPI row */}
-        <div className="stats-grid" style={{ marginTop: 20, paddingTop: 16, borderTop:'1px solid var(--border-light)' }}>
-          {METRICS.map(m => {
-            const total = MONTHLY_DATA.reduce((s, d) => s + d[m.key], 0);
-            const thisMonth = MONTHLY_DATA[new Date().getMonth()][m.key];
+        {/* ── VUE MOBILE : Liste par employé ── */}
+        <div className="planning-list-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {PLANNING_DEMO.map(emp => {
+            const joursActifs = JOURS.filter(j => emp.semaine[j]);
+            const totalH = Object.values(emp.semaine).reduce((s, d) => s + (d ? d.fin - d.debut : 0), 0);
             return (
-              <div key={m.key} style={{ textAlign:'center' }}>
-                <div style={{ fontSize:'0.6875rem', color:'var(--text-tertiary)', marginBottom: 4, fontWeight: 500, textTransform:'uppercase', letterSpacing:'0.04em' }}>{m.label}</div>
-                <div style={{ fontSize:'1rem', fontWeight: 800, color: m.color }}>{thisMonth.toLocaleString('fr-FR')} €</div>
-                <div style={{ fontSize:'0.6875rem', color:'var(--text-tertiary)', marginTop: 2 }}>YTD : {total.toLocaleString('fr-FR')} €</div>
+              <div key={emp.id} style={{ background: '#fff', border: '1px solid #E8E6E1', borderLeft: `4px solid ${emp.couleur}`, borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1E' }}>{emp.nom}</div>
+                    <div style={{ fontSize: 11, color: '#6E6E73' }}>{emp.poste} · {joursActifs.length}j · {totalH}h</div>
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: emp.couleur }}>{emp.semaine.Lun?.label || emp.semaine.Mar?.label || '—'}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {JOURS.map(j => {
+                    const slot = emp.semaine[j];
+                    const now = new Date();
+                    const dayIdx = (now.getDay() + 6) % 7;
+                    const isToday = JOURS.indexOf(j) === dayIdx;
+                    return (
+                      <div
+                        key={j}
+                        onClick={() => slot && setSlotDetail(slotDetail?.emp?.id === emp.id && slotDetail?.jour === j ? null : { emp, jour: j, slot })}
+                        style={{
+                          flex: 1, textAlign: 'center', padding: '6px 2px', borderRadius: 6,
+                          background: slot ? emp.couleur + '18' : '#F8F8F6',
+                          border: isToday ? `2px solid ${slot ? emp.couleur : '#2563EB'}` : '1px solid transparent',
+                          cursor: slot ? 'pointer' : 'default',
+                        }}
+                      >
+                        <div style={{ fontSize: 10, fontWeight: 700, color: isToday ? '#2563EB' : '#6E6E73' }}>{j}</div>
+                        {slot ? (
+                          <div style={{ fontSize: 9, fontWeight: 700, color: emp.couleur, marginTop: 2 }}>{slot.debut}–{slot.fin}h</div>
+                        ) : (
+                          <div style={{ fontSize: 9, color: '#ccc', marginTop: 2 }}>—</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
         </div>
+
+        {/* ── POPOVER DÉTAIL CRÉNEAU ── */}
+        {slotDetail && (
+          <div style={{
+            marginTop: 10, background: '#fff', border: `2px solid ${slotDetail.emp.couleur}`,
+            borderRadius: 14, padding: '16px 18px', boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+            animation: 'zoomIn .2s ease-out',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#1C1C1E' }}>{slotDetail.slot.label}</div>
+                <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 2 }}>{slotDetail.jour} · {slotDetail.slot.debut}h – {slotDetail.slot.fin}h ({slotDetail.slot.fin - slotDetail.slot.debut}h)</div>
+              </div>
+              <button onClick={() => setSlotDetail(null)} style={{ background: '#F2F2F7', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: '#6E6E73', fontWeight: 600 }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 10px', background: slotDetail.emp.couleur + '10', borderRadius: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: slotDetail.emp.couleur + '25', color: slotDetail.emp.couleur, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+                {slotDetail.emp.nom.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1E' }}>{slotDetail.emp.nom}</div>
+                <div style={{ fontSize: 11, color: '#6E6E73' }}>{slotDetail.emp.poste}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={() => { setShowChantier(slotDetail.slot.label); setSlotDetail(null); }}
+                style={{ padding: '7px 14px', background: slotDetail.emp.couleur, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                Voir le chantier
+              </button>
+              <button onClick={() => { setSlotDetail(null); navigate('/patron/rh?onglet=planning'); }}
+                style={{ padding: '7px 14px', background: '#fff', color: slotDetail.emp.couleur, border: `1px solid ${slotDetail.emp.couleur}`, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                Modifier le planning
+              </button>
+              <button onClick={() => { setSlotDetail(null); navigate('/patron/employes'); }}
+                style={{ padding: '7px 14px', background: '#F8F8F6', color: '#6E6E73', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                Fiche employé
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Résumé heures */}
+        {!slotDetail && (
+          <div className="planning-grid-desktop" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+            {PLANNING_DEMO.map(emp => {
+              const total = Object.values(emp.semaine).reduce((s, d) => s + (d ? d.fin - d.debut : 0), 0);
+              const jours = Object.values(emp.semaine).filter(Boolean).length;
+              return (
+                <div key={emp.id} style={{
+                  padding: '6px 12px', background: '#fff', border: '1px solid #E8E6E1',
+                  borderLeft: `3px solid ${emp.couleur}`, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', gap: 6, fontSize: 11,
+                }}>
+                  <span style={{ fontWeight: 700, color: '#1C1C1E' }}>{emp.nom.split(' ')[0]}</span>
+                  <span style={{ color: '#6E6E73' }}>{jours}j · {total}h</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Raccourcis rapides + Stock */}
-      <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 16 }}>
-
-        {/* Raccourcis */}
-        <div className="card" style={{ padding:'20px' }}>
-          <h2 style={{ marginBottom: 14 }}>Accès rapide</h2>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8 }}>
-            {[
-              { label:'Chantiers en cours', count:`${chantierActifs.length}`, path:'/patron/missions', color:'var(--primary)' },
-              { label:'Pipeline commercial', count:`${pipeline?.stats?.nb_prospects || 3} prospects`, path:'/patron/clients-rfm', color:'var(--success)' },
-              { label:'Factures impayées', count:`${nbImpayees}`, path:'/patron/finance?onglet=facturation', color:'var(--danger)' },
-              { label:'Échéances fiscales', count:`${ECHEANCES.length}`, path:'/patron/finance?onglet=urssaf', color:'var(--warning)' },
-            ].map(r => (
-              <div key={r.label} onClick={() => navigate(r.path)} style={{ padding:'12px 14px', background:'var(--bg)', borderRadius: 10, cursor:'pointer', border:'1px solid var(--border-light)', transition:'all .15s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = r.color}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-light)'}>
-                <div style={{ fontSize:'0.8125rem', fontWeight: 600, color:'var(--text)' }}>{r.label}</div>
-                <div style={{ fontSize:'1.125rem', fontWeight: 700, color: r.color, marginTop: 2 }}>{r.count}</div>
+      {/* ══ PROJETS RECOMMANDÉS ══ */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700 }}>
+            Projets recommandés pour vous
+            {projetsRecommandes.length > 0 && <span style={{ fontSize: 11, color: '#6E6E73', fontWeight: 500, marginLeft: 6 }}>(adaptés à votre disponibilité)</span>}
+          </div>
+          <button onClick={() => navigate('/patron/projets')} style={{ fontSize: 12, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Voir tous →</button>
+        </div>
+        {projetsRecommandes.length === 0 ? (
+          <div style={{ background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 12, padding: '24px 16px', textAlign: 'center' }}>
+            <div style={{ fontSize: 13, color: '#6E6E73' }}>Aucun projet dans votre zone pour l'instant</div>
+            <div style={{ fontSize: 11, color: '#A68B4B', marginTop: 4 }}>Vous serez notifié dès qu'un nouveau projet arrive</div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {projetsRecommandes.map(p => (
+              <div key={p.id} onClick={() => navigate('/patron/projets')}
+                style={{ background: '#fff', border: '1px solid #E8E6E1', borderRadius: 12, padding: '14px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, transition: 'border-color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#A68B4B'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = '#E8E6E1'}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{p.metier}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: p.urgence === 'urgent' ? '#DC2626' : p.urgence === 'flexible' ? '#16A34A' : '#D97706', background: p.urgence === 'urgent' ? '#FEF2F2' : p.urgence === 'flexible' ? '#F0FDF4' : '#FFFBEB', padding: '2px 8px', borderRadius: 4 }}>
+                      {p.urgence === 'urgent' ? 'Urgent' : p.urgence === 'flexible' ? 'Flexible' : 'Normal'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6E6E73' }}>{p.ville || 'Marseille'} · {p.clientNom || 'Client'}</div>
+                  <div style={{ fontSize: 11, color: '#A68B4B', fontWeight: 600, marginTop: 4 }}>{p.suggestion}</div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#A68B4B' }}>{(p.budget || 0).toLocaleString('fr-FR')}€</div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Alertes stock */}
-        <div className="card" style={{ padding:'14px 20px', cursor:'pointer' }} onClick={() => navigate('/patron/stock')}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 10 }}>
-            <p style={{ fontWeight: 600, fontSize:'0.875rem', margin: 0 }}>Alertes stock</p>
-            <span style={{ fontSize:'0.75rem', color:'var(--primary)', fontWeight: 600 }}>Voir le stock →</span>
+        )}
+        {occupation.every(w => w.pct > 80) && (
+          <div style={{ marginTop: 8, padding: '10px 14px', background: '#F0FDF4', border: '1px solid #16A34A', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#16A34A' }}>Votre planning est plein — pensez à sous-traiter si un projet urgent vous intéresse.</span>
           </div>
-          {STOCK_ALERTS.map((s, i) => (
-            <div key={i} style={{ display:'flex', justifyContent:'space-between', marginBottom: i < STOCK_ALERTS.length - 1 ? 7 : 0 }}>
-              <span style={{ fontSize:'0.8125rem', color:'var(--text-secondary)' }}>{s.materiau}</span>
-              <span style={{ fontSize:'0.8125rem', fontWeight: 600, color: s.stock < s.seuil * 0.3 ? 'var(--danger)' : 'var(--warning)' }}>
-                {s.stock} {s.unite} / seuil {s.seuil}
-              </span>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
-    </div>
-  );
-}
 
-function KpiCard({ label, valeur, Icon, color = 'blue', sub }) {
-  const colors = {
-    blue:   { bg:'var(--primary-light)', fg:'var(--primary)' },
-    green:  { bg:'var(--success-light)', fg:'#1A7A3C'        },
-    orange: { bg:'var(--warning-light)', fg:'#7A5C00'        },
-    red:    { bg:'var(--danger-light)',  fg:'var(--danger)'  },
-  };
-  const c = colors[color] || colors.blue;
-  return (
-    <div className="stat-card">
-      <div style={{ width: 34, height: 34, borderRadius: 9, background: c.bg, color: c.fg, display:'flex', alignItems:'center', justifyContent:'center', marginBottom: 12 }}>
-        <Icon size={16} />
+      {/* ══ ALERTES INLINE (devis à finaliser) ══ */}
+      {devisAFinaliser > 0 && (
+        <div onClick={() => navigate('/patron/devis-factures?tab=devis')}
+          style={{ background: '#FEF2F2', border: '1px solid #DC2626', borderLeft: '4px solid #DC2626', borderRadius: 10, padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#DC2626' }}>{devisAFinaliser} devis à finaliser</span>
+          <span style={{ fontSize: 11, color: '#7A1F1F' }}>— vos clients attendent</span>
+          <span style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, marginLeft: 'auto' }}>Finaliser →</span>
+        </div>
+      )}
+
+      {/* ══ CHIFFRES RAPIDES ══ */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginRight: 4 }}>Vos chiffres</div>
+        {[
+          { label: 'CA mois', value: `${caMensuel.toLocaleString('fr-FR')}€`, color: '#1A1A1A' },
+          { label: 'Séquestre', value: `${sequestreEnCours.toLocaleString('fr-FR')}€`, color: '#16A34A' },
+          { label: 'Marge', value: `${margeNette}%`, color: margeNette >= 15 ? '#16A34A' : '#D97706' },
+          { label: 'Devis en attente', value: `${devisEnvoyes}`, color: '#2563EB' },
+        ].map(k => (
+          <div key={k.label} style={{ padding: '8px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, color: '#6E6E73' }}>{k.label}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: k.color }}>{k.value}</span>
+          </div>
+        ))}
+        <button onClick={() => navigate('/patron/finance')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #A68B4B', borderRadius: 10, color: '#A68B4B', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+          Détails financiers →
+        </button>
       </div>
-      <p style={{ fontSize:'1.25rem', fontWeight: 700, color:'var(--text)', letterSpacing:'-0.025em', lineHeight: 1 }}>{valeur}</p>
-      <p style={{ fontSize:'0.8125rem', color:'var(--text-secondary)', marginTop: 5 }}>{label}</p>
-      {sub && <p style={{ fontSize:'0.6875rem', color:'var(--text-tertiary)', marginTop: 2 }}>{sub}</p>}
+
+      {/* ══ RDV DU JOUR (depuis l'agenda) ══ */}
+      {(() => {
+        const today = new Date().toISOString().slice(0, 10);
+        const agendaEvents = lsGet('freample_agenda_events', []);
+        const rdvAujourdhui = agendaEvents.filter(e => e.date === today || (e.start && e.start.startsWith(today)));
+        if (rdvAujourdhui.length === 0) return null;
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>Aujourd'hui</div>
+              <button onClick={() => navigate('/patron/agenda')} style={{ fontSize: 12, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Agenda →</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {rdvAujourdhui.map((e, i) => (
+                <div key={e.id || i} style={{ background: '#fff', border: '1px solid #E8E6E1', borderLeft: `3px solid ${e.type === 'chantier' ? '#D97706' : e.type === 'rdv' ? '#2563EB' : '#A68B4B'}`, borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{e.title || e.titre || '—'}</div>
+                    {e.lieu && <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>{e.lieu}</div>}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#A68B4B' }}>{e.heure || ''}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ══ MODAL ZOOM CHANTIER ══ */}
+      {showChantier && (() => {
+        const allChantiers = lsGet('freample_chantiers_custom', []);
+        const ch = allChantiers.find(c => (c.titre || '').toLowerCase().includes(showChantier.toLowerCase()) || showChantier.toLowerCase().includes((c.titre || '').toLowerCase().split('—')[0]?.trim()));
+        const chantier = ch || { titre: showChantier, statut: 'en_cours', avancement: 50, client: '—', adresse: '—' };
+        const devisLie = lsGet('freample_devis', []).find(d => d.projetId === chantier.projetId || (d.objet || '').toLowerCase().includes(showChantier.toLowerCase()));
+        const equipe = chantier.equipe || [];
+        const statusColors = { en_cours: '#D97706', planifie: '#2563EB', terminee: '#16A34A', en_attente: '#6E6E73', reception: '#8B5CF6' };
+        const statusLabels = { en_cours: 'En cours', planifie: 'Planifié', terminee: 'Terminé', en_attente: 'En attente', reception: 'Réception' };
+
+        return (
+          <div onClick={() => setShowChantier(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn .2s ease-out' }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background: '#fff', borderRadius: 20, width: '92%', maxWidth: 600, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', animation: 'zoomIn .25s ease-out' }}>
+
+              {/* Header */}
+              <div style={{ background: '#2C2520', padding: '20px 24px', borderRadius: '20px 20px 0 0', color: '#F5EFE0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#A68B4B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Chantier</div>
+                    <div style={{ fontSize: 18, fontWeight: 800 }}>{chantier.titre || showChantier}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.6)', marginTop: 4 }}>{chantier.client || '—'} · {chantier.adresse || '—'}</div>
+                  </div>
+                  <button onClick={() => setShowChantier(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, width: 30, height: 30, color: '#F5EFE0', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                </div>
+              </div>
+
+              <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Avancement */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>Avancement</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: (chantier.avancement || 0) >= 100 ? '#16A34A' : '#A68B4B' }}>{chantier.avancement || 0}%</span>
+                  </div>
+                  <div style={{ height: 8, background: '#E8E6E1', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ width: `${chantier.avancement || 0}%`, height: '100%', background: (chantier.avancement || 0) >= 100 ? '#16A34A' : '#A68B4B', borderRadius: 4 }} />
+                  </div>
+                </div>
+
+                {/* Infos */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+                  {[
+                    ['Statut', statusLabels[chantier.statut] || chantier.statut || '—'],
+                    ['Début', chantier.dateDebut ? new Date(chantier.dateDebut).toLocaleDateString('fr-FR') : '—'],
+                    ['Fin prévue', chantier.dateFin ? new Date(chantier.dateFin).toLocaleDateString('fr-FR') : 'À définir'],
+                    ['Budget', `${(chantier.budgetPrevu || chantier.caDevis || 0).toLocaleString('fr-FR')}€`],
+                    ['Source', chantier.source === 'marketplace' ? 'Marketplace' : 'Direct'],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ background: '#F8F7F4', padding: '8px 10px', borderRadius: 8 }}>
+                      <div style={{ fontSize: 10, color: '#555', fontWeight: 600, textTransform: 'uppercase' }}>{k}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', marginTop: 2 }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Équipe */}
+                {equipe.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 }}>Équipe assignée</div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {equipe.map((nom, i) => (
+                        <span key={i} style={{ padding: '5px 12px', background: '#F8F7F4', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 12, fontWeight: 600, color: '#1A1A1A' }}>{nom}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Devis lié */}
+                {devisLie && (
+                  <div style={{ background: '#F8F7F4', borderRadius: 10, padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#A68B4B' }}>Devis {devisLie.numero}</div>
+                        <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{(devisLie.lignes || []).length} ligne{(devisLie.lignes || []).length > 1 ? 's' : ''} · {(devisLie.montantTTC || 0).toLocaleString('fr-FR')}€ TTC</div>
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: devisLie.statut === 'accepte' ? '#F0FDF4' : '#FFFBEB', color: devisLie.statut === 'accepte' ? '#16A34A' : '#D97706' }}>
+                        {devisLie.statut === 'accepte' ? 'Accepté' : devisLie.statut === 'envoye' ? 'Envoyé' : devisLie.statut}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => { setShowChantier(null); navigate('/patron/missions'); }}
+                    style={{ flex: 1, padding: '11px 0', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                    Gérer le chantier
+                  </button>
+                  <button onClick={() => setShowChantier(null)}
+                    style={{ padding: '11px 20px', background: '#F2F2F7', color: '#6E6E73', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Animations + Responsive CSS */}
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+        .planning-list-mobile { display: none !important; }
+        @media (max-width: 680px) {
+          .planning-grid-desktop { display: none !important; }
+          .planning-list-mobile { display: flex !important; }
+        }
+      `}</style>
     </div>
   );
 }

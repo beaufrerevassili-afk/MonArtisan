@@ -60,6 +60,18 @@ function ArtisanCard({ artisan, onContact }) {
   const initials = artisan.nom.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   const accentColor = COLORS[artisan.id % COLORS.length];
   const [hovered, setHovered] = useState(false);
+  const [isFav, setIsFav] = useState(() => {
+    try { return (JSON.parse(localStorage.getItem('freample_favoris') || '[]')).includes(artisan.id); } catch { return false; }
+  });
+  const toggleFav = (e) => {
+    e.stopPropagation();
+    try {
+      const favs = JSON.parse(localStorage.getItem('freample_favoris') || '[]');
+      const next = isFav ? favs.filter(id => id !== artisan.id) : [...favs, artisan.id];
+      localStorage.setItem('freample_favoris', JSON.stringify(next));
+      setIsFav(!isFav);
+    } catch {}
+  };
 
   const dispoStyle = {
     aujourd_hui:    { bg: 'rgba(29,185,84,0.12)',  color: '#16A34A', label: "Dispo aujourd'hui" },
@@ -83,7 +95,15 @@ function ArtisanCard({ artisan, onContact }) {
       {/* Gradient accent bar */}
       <div style={{ height: 4, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}99)` }} />
 
-      <div style={{ padding: '20px 22px 22px' }}>
+      <div style={{ padding: '20px 22px 22px', position: 'relative' }}>
+        {/* Favori heart */}
+        <button
+          onClick={toggleFav}
+          aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          style={{ position: 'absolute', top: 12, right: 14, background: 'none', border: 'none', cursor: 'pointer', padding: 4, zIndex: 2, fontSize: 20, lineHeight: 1, color: isFav ? '#DC2626' : '#D1D5DB', transition: 'color .2s, transform .15s' }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        >{isFav ? '♥' : '♡'}</button>
         {/* Header row */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
           <div style={{

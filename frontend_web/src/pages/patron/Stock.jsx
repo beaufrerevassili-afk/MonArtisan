@@ -24,15 +24,23 @@ function formatCur(n) {
 }
 
 export default function Stock() {
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Charger immédiatement depuis localStorage ou ARTICLES_INIT (zéro flash blanc)
+  const [articles, setArticles] = useState(() => {
+    try { const s = localStorage.getItem('freample_stock_articles'); return s ? JSON.parse(s) : ARTICLES_INIT; } catch { return ARTICLES_INIT; }
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.get('/patron/stock')
-      .then(({ data }) => setArticles(data.articles || []))
-      .catch(() => setArticles(ARTICLES_INIT))
+      .then(({ data }) => { const articles = data.articles || []; setArticles(articles); if(articles.length) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); })
+      .catch(() => {
+        const saved = localStorage.getItem('freample_stock_articles');
+        setArticles(saved ? JSON.parse(saved) : ARTICLES_INIT);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { if(articles.length > 0) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); }, [articles]);
 
   const [modal, setModal] = useState(null); // null | 'add' | article-object
   const [form, setForm] = useState(ARTICLE_VIDE);
@@ -40,9 +48,28 @@ export default function Stock() {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('stock'); // stock | alertes | mouvement
 
+  const [mouvements, setMouvements] = useState([]);
+  const [searchMvt, setSearchMvt] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('freample_stock_mouvements');
+    if (saved) setMouvements(JSON.parse(saved));
+  }, []);
+
   const alertes = articles.filter(a => a.quantite <= a.seuilAlerte);
   const alertesCritiques = articles.filter(a => a.seuilAlerte > 0 && a.quantite <= a.seuilAlerte * 0.5);
-  const valeurTotale = articles.reduce((s, a) => s + a.quantite * a.valeurUnitaire, 0);
+  const valeurTotale = articles.reduce((s, a) => s + (Number(a.quantite) || 0) * (Number(a.valeurUnitaire) || 0), 0);
+
+  const now = new Date();
+  const sortiesCeMois = mouvements
+    .filter(m => {
+      if (m.type !== 'sortie' && m.type !== 'Sortie') return false;
+      const d = new Date(m.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    })
+    .reduce((s, m) => s + (Number(m.quantite) || 0), 0);
 
   const filtered = articles
     .filter(a => filtreCat === 'Tous' || a.categorie === filtreCat)
@@ -65,6 +92,13 @@ export default function Stock() {
       setModal(null);
     } catch (err) {
       console.error('Erreur stock:', err);
+      if (modal === 'add') {
+        const newArticle = { ...payload, id: Date.now() };
+        setArticles(prev => [...prev, newArticle]);
+      } else {
+        setArticles(prev => prev.map(a => a.id === modal.id ? { ...payload, id: modal.id } : a));
+      }
+      setModal(null);
     }
   }
 
@@ -75,6 +109,8 @@ export default function Stock() {
       setModal(null);
     } catch (err) {
       console.error('Erreur suppression stock:', err);
+      setArticles(prev => prev.filter(a => a.id !== id));
+      setModal(null);
     }
   }
 
@@ -101,6 +137,7 @@ export default function Stock() {
           { label: 'Alertes stock bas', val: alertes.length, color: alertes.length > 0 ? '#FF3B30' : '#34C759', Icon: IconAlert },
           { label: 'Valeur totale stock', val: formatCur(valeurTotale), color: '#34C759', Icon: IconCheck },
           { label: 'Catégories', val: CATS.length, color: '#AF52DE', Icon: IconBox },
+          { label: 'Sorties ce mois', val: sortiesCeMois, color: '#FF9500', Icon: IconAlert },
         ].map(k => (
           <div key={k.label} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
             <div style={{ width: 34, height: 34, borderRadius: 9, background: `${k.color}18`, color: k.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
@@ -133,6 +170,7 @@ export default function Stock() {
         {[
           { key: 'stock', label: 'Inventaire' },
           { key: 'alertes', label: `Alertes ${alertes.length > 0 ? `(${alertes.length})` : ''}` },
+          { key: 'mouvements', label: 'Mouvements' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: '8px 18px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all 0.15s', background: tab === t.key ? '#fff' : 'transparent', color: tab === t.key ? (t.key === 'alertes' && alertes.length > 0 ? '#C0392B' : '#1C1C1E') : '#6E6E73', boxShadow: tab === t.key ? '0 1px 4px rgba(0,0,0,0.10)' : 'none' }}>
             {t.label}
@@ -145,7 +183,7 @@ export default function Stock() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {alertes.length === 0 ? (
             <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#636363', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#D1F2E0', color: '#1A7F43', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 14, fontWeight: 800 }}>OK</div>
               <div style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1E', marginBottom: 6 }}>Tous les stocks sont OK</div>
               <div style={{ fontSize: 14 }}>Aucun article en dessous du seuil critique défini.</div>
             </div>
@@ -171,8 +209,8 @@ export default function Stock() {
                   return (
                     <div key={a.id} onClick={() => openEdit(a)} style={{ padding: '16px 18px', borderBottom: '1px solid #F2F2F7', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}
                       onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'} onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                      <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, background: critique ? '#FFE5E5' : '#FFF3CD', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                        {critique ? '🚨' : '⚠️'}
+                      <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, background: critique ? '#FFE5E5' : '#FFF3CD', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: critique ? '#C0392B' : '#856404' }}>
+                        {critique ? (<><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF3B30', display: 'inline-block', marginRight: 4 }} />CRITIQUE</>) : (<><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF9500', display: 'inline-block', marginRight: 4 }} />BAS</>)}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 14 }}>{a.designation}</div>
@@ -198,6 +236,57 @@ export default function Stock() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* ── Mouvements tab ── */}
+      {tab === 'mouvements' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <input
+            placeholder="Rechercher par article ou chantier..."
+            value={searchMvt} onChange={e => setSearchMvt(e.target.value)}
+            style={{ maxWidth: 360, padding: '9px 14px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, outline: 'none' }}
+          />
+          {(() => {
+            const TYPE_COLORS = { Sortie: '#FF9500', sortie: '#FF9500', Achat: '#007AFF', achat: '#007AFF', Surplus: '#34C759', surplus: '#34C759', Entrée: '#8E8E93', entree: '#8E8E93', entrée: '#8E8E93' };
+            const TYPE_BG = { Sortie: '#FFF3E0', sortie: '#FFF3E0', Achat: '#E8F0FE', achat: '#E8F0FE', Surplus: '#E8F8EE', surplus: '#E8F8EE', Entrée: '#F2F2F7', entree: '#F2F2F7', entrée: '#F2F2F7' };
+            const filteredMvt = mouvements
+              .filter(m => !searchMvt || (m.article || '').toLowerCase().includes(searchMvt.toLowerCase()) || (m.chantier || '').toLowerCase().includes(searchMvt.toLowerCase()))
+              .sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (filteredMvt.length === 0) return (
+              <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', color: '#636363', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: '#1C1C1E', marginBottom: 6 }}>Aucun mouvement enregistré</div>
+                <div style={{ fontSize: 14 }}>Les mouvements apparaîtront quand vos salariés utiliseront le stock depuis leurs chantiers.</div>
+              </div>
+            );
+            return (
+              <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: '#FAFAFA', borderBottom: '1px solid #F2F2F7' }}>
+                      {['Date', 'Type', 'Article', 'Quantité', 'Chantier', 'Salarié'].map(h => (
+                        <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Quantité' ? 'right' : 'left', fontSize: 11, fontWeight: 600, color: '#636363', textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMvt.map((m, i) => (
+                      <tr key={m.id || i} style={{ borderBottom: '1px solid #F8F8F8', background: i % 2 === 0 ? '#fff' : '#FAFAFA' }}>
+                        <td style={{ padding: '11px 14px', fontSize: 12, color: '#6E6E73' }}>{new Date(m.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                        <td style={{ padding: '11px 14px' }}>
+                          <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: TYPE_BG[m.type] || '#F2F2F7', color: TYPE_COLORS[m.type] || '#636363' }}>{m.type}</span>
+                        </td>
+                        <td style={{ padding: '11px 14px', fontWeight: 600 }}>{m.article || '—'}</td>
+                        <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700 }}>{m.quantite}</td>
+                        <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{m.chantier || '—'}</td>
+                        <td style={{ padding: '11px 14px', color: '#6E6E73' }}>{m.salarie || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -247,7 +336,7 @@ export default function Stock() {
                   <td style={{ padding: '11px 14px', color: '#636363' }}>{a.unite}</td>
                   <td style={{ padding: '11px 14px', textAlign: 'right', color: '#636363' }}>{a.seuilAlerte}</td>
                   <td style={{ padding: '11px 14px', textAlign: 'right' }}>{formatCur(a.valeurUnitaire)}</td>
-                  <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700 }}>{formatCur(a.quantite * a.valeurUnitaire)}</td>
+                  <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700 }}>{formatCur((Number(a.quantite) || 0) * (Number(a.valeurUnitaire) || 0))}</td>
                   <td style={{ padding: '11px 14px', color: '#6E6E73', fontSize: 12 }}>{a.fournisseur || '—'}</td>
                   <td style={{ padding: '11px 14px' }}>
                     {isAlerte ? (
@@ -266,7 +355,7 @@ export default function Stock() {
           <tfoot>
             <tr style={{ borderTop: '2px solid #E5E5EA', background: '#F8F9FA', fontWeight: 700 }}>
               <td colSpan={7} style={{ padding: '10px 14px', fontSize: 13 }}>VALEUR TOTALE DU STOCK</td>
-              <td style={{ padding: '10px 14px', textAlign: 'right', fontSize: 15, color: '#34C759' }}>{formatCur(filtered.reduce((s, a) => s + a.quantite * a.valeurUnitaire, 0))}</td>
+              <td style={{ padding: '10px 14px', textAlign: 'right', fontSize: 15, color: '#34C759' }}>{formatCur(filtered.reduce((s, a) => s + (Number(a.quantite) || 0) * (Number(a.valeurUnitaire) || 0), 0))}</td>
               <td colSpan={3} />
             </tr>
           </tfoot>
@@ -286,7 +375,44 @@ export default function Stock() {
             <form onSubmit={handleSubmit}>
               <div className="grid-2">
                 <div><label style={lbl}>Référence</label><input {...f('ref')} placeholder="MAT-001" style={inp}/></div>
-                <div><label style={lbl}>Désignation *</label><input {...f('designation')} required placeholder="Nom de l'article" style={inp}/></div>
+                <div style={{ position: 'relative' }}>
+                  <label style={lbl}>Désignation *</label>
+                  <input
+                    value={form.designation} required placeholder="Commencez à taper..."
+                    onChange={e => {
+                      const val = e.target.value;
+                      setForm(p => ({ ...p, designation: val }));
+                      if (val.length >= 2) {
+                        const matches = articles.filter(a => a.designation.toLowerCase().includes(val.toLowerCase()) && a.designation !== val);
+                        setSuggestions(matches.slice(0, 5));
+                        setShowSuggestions(matches.length > 0);
+                      } else { setShowSuggestions(false); }
+                    }}
+                    onFocus={() => { if (form.designation.length >= 2) { const m = articles.filter(a => a.designation.toLowerCase().includes(form.designation.toLowerCase())); setSuggestions(m.slice(0, 5)); setShowSuggestions(m.length > 0); } }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    style={inp}
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #E5E5EA', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', zIndex: 10, overflow: 'hidden', marginTop: 2 }}>
+                      {suggestions.map(s => (
+                        <div key={s.id}
+                          onMouseDown={() => {
+                            setForm(p => ({ ...p, designation: s.designation, categorie: s.categorie, unite: s.unite, valeurUnitaire: s.valeurUnitaire || '', fournisseur: s.fournisseur || '', ref: modal === 'add' ? p.ref : s.ref }));
+                            setShowSuggestions(false);
+                          }}
+                          style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F2F2F7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#F8F7F4'}
+                          onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                          <div>
+                            <div style={{ fontWeight: 600, color: '#1C1C1E' }}>{s.designation}</div>
+                            <div style={{ fontSize: 11, color: '#636363' }}>{s.categorie} · {s.quantite} {s.unite} en stock</div>
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#A68B4B' }}>{formatCur(s.valeurUnitaire)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div>
                   <label style={lbl}>Catégorie</label>
                   <select {...f('categorie')} style={inp}>

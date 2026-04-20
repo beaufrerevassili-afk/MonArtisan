@@ -584,7 +584,7 @@ export default function Register() {
   }
 
   function validateStep2() {
-    if (!profil.metier)          return 'Sélectionnez votre métier';
+    if (!(profil.metiers?.length > 0 || profil.metier)) return 'Sélectionnez au moins un métier';
     if (!profil.siret.trim())    return 'Le numéro SIRET est requis';
     if (profil.siret.replace(/\s/g, '').length !== 14) return 'Le SIRET doit contenir 14 chiffres';
     if (siretStatus === 'checking') return 'Vérification du SIRET en cours, veuillez patienter...';
@@ -651,6 +651,32 @@ export default function Register() {
 
       // Sauvegarder le type de compte pour le dashboard
       localStorage.setItem('freample_account_type', JSON.stringify({ clientType, entrepriseType, secteur }));
+
+      // Sauvegarder le profil entreprise centralisé (pour patron et AE)
+      if (role === 'patron' && entrepriseType !== 'sci') {
+        const profilKey = entrepriseType === 'ae' ? 'freample_ae_profil' : 'freample_profil_patron';
+        const profilEntreprise = {
+          nom: compte.nom || '',
+          email: compte.email || '',
+          telephone: compte.telephone || '',
+          siret: profil.siret || '',
+          metier: profil.metier || '',
+          metiers: profil.metiers || (profil.metier ? [profil.metier] : []),
+          adresse: profil.adresse || '',
+          ville: profil.ville || '',
+          forme: entrepriseType === 'ae' ? 'Auto-entrepreneur' : 'SAS',
+          regimeTVA: entrepriseType === 'ae' ? 'franchise' : 'standard',
+          experience: profil.experience || '',
+          description: profil.description || '',
+        };
+        // Fusion avec un éventuel profil existant
+        try {
+          const existing = JSON.parse(localStorage.getItem(profilKey) || '{}');
+          localStorage.setItem(profilKey, JSON.stringify({ ...existing, ...profilEntreprise }));
+        } catch {
+          localStorage.setItem(profilKey, JSON.stringify(profilEntreprise));
+        }
+      }
 
       if (role === 'artisan') {
         setStep(5); // Page de confirmation, compte en attente de vérification
@@ -1011,11 +1037,23 @@ export default function Register() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               <div>
-                <label className="reg-label">Métier principal <span style={{ color: '#F87171' }}>*</span></label>
-                <select className="reg-select" value={profil.metier} onChange={e => setProfil({ ...profil, metier: e.target.value })}>
-                  <option value="">Sélectionnez votre métier</option>
-                  {currentMetiers.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
+                <label className="reg-label">Corps de métier <span style={{ color: '#F87171' }}>*</span></label>
+                <p style={{ fontSize: 12, color: DS.subtle, margin: '4px 0 10px' }}>Sélectionnez tous les métiers que vous exercez (filtrera les projets du marketplace)</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {currentMetiers.map(m => {
+                    const selected = (profil.metiers || []).includes(m) || profil.metier === m;
+                    return (
+                      <button key={m} type="button" onClick={() => {
+                        const current = profil.metiers || (profil.metier ? [profil.metier] : []);
+                        const next = selected ? current.filter(x => x !== m) : [...current, m];
+                        setProfil({ ...profil, metiers: next, metier: next[0] || '' });
+                      }} style={{ padding: '6px 14px', borderRadius: 8, border: selected ? 'none' : '1px solid #E5E5EA', background: selected ? '#A68B4B' : 'transparent', color: selected ? '#fff' : '#555', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                        {m}
+                      </button>
+                    );
+                  })}
+                </div>
+                {(profil.metiers || []).length === 0 && !profil.metier && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 6 }}>Sélectionnez au moins un métier</p>}
               </div>
 
               <div>
@@ -1035,8 +1073,13 @@ export default function Register() {
                       borderColor: siretStatus === 'valid' ? 'rgba(52,211,153,0.5)' : siretStatus === 'invalid' || siretStatus === 'error' ? 'rgba(248,113,113,0.5)' : undefined,
                     }}
                     onChange={e => {
-                      const v = e.target.value.replace(/[^\d]/g, '');
-                      const f = v.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+                      // SIRET = SIREN (9 chiffres) + NIC (5 chiffres) = 14 chiffres
+                      // Format standard : "123 456 789 01234" = 17 caractères (3 espaces)
+                      const v = e.target.value.replace(/[^\d]/g, '').slice(0, 14);
+                      let f = v;
+                      if (v.length > 3) f = v.slice(0, 3) + ' ' + v.slice(3);
+                      if (v.length > 6) f = v.slice(0, 3) + ' ' + v.slice(3, 6) + ' ' + v.slice(6);
+                      if (v.length > 9) f = v.slice(0, 3) + ' ' + v.slice(3, 6) + ' ' + v.slice(6, 9) + ' ' + v.slice(9);
                       setProfil({ ...profil, siret: f });
                     }}
                   />
@@ -1210,7 +1253,7 @@ export default function Register() {
             </RecapSection>
 
             <RecapSection title="Profil professionnel">
-              <RecapRow label="Métier"      value={profil.metier}     />
+              <RecapRow label="Métiers"     value={(profil.metiers || []).join(', ') || profil.metier || '—'} />
               <RecapRow label="SIRET"       value={profil.siret}      />
               <RecapRow label="Ville"       value={profil.ville}      />
               <RecapRow label="Expérience"  value={profil.experience} />

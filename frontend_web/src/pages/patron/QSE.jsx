@@ -120,10 +120,11 @@ function QSELegalBanner() {
 }
 
 const QHSE_SECTIONS = [
-  { id:'qualite', label:'Qualité', color:'#2563EB', tabs:['Non-conformités','Certifications','Audits','Documents QSE'] },
-  { id:'securite', label:'Sécurité', color:'#DC2626', tabs:['DUERP','Habilitations','EPI','Incidents','Plans de prévention','Formulaires AMELI'] },
-  { id:'hygiene', label:'Hygiène', color:'#16A34A', tabs:['Tableau de bord','Rapport annuel'] },
-  { id:'environnement', label:'Environnement', color:'#D97706', tabs:['BSDD'] },
+  { id:'qualite', label:'Qualité', color:'#2563EB', desc:'Non-conformités, certifications, audits, charte qualité', tabs:['Non-conformités','Certifications','Audits','Documents QSE','Rapport annuel'] },
+  { id:'hygiene', label:'Hygiène', color:'#16A34A', desc:'FDS, registre incendie, permis de feu, affichage obligatoire', tabs:['Documents QSE','Tableau de bord'] },
+  { id:'securite', label:'Sécurité', color:'#DC2626', desc:'DUERP, habilitations, EPI, incidents, plans de prévention', tabs:['DUERP','Habilitations','EPI','Incidents','Plans de prévention','Formulaires AMELI'] },
+  { id:'environnement', label:'Environnement', color:'#D97706', desc:'BSDD, plan déchets, diagnostic démolition', tabs:['BSDD','Documents QSE'] },
+  { id:'chantier', label:'Sécurité chantier', color:'#8B5CF6', desc:'Documents de sécurité par chantier : PPSPS, permis de feu, vérifications', tabs:[] },
 ];
 
 function getSectionFromOnglet(onglet) {
@@ -138,7 +139,7 @@ function getTabFromOnglet(onglet) {
 export default function QSE() {
   const [searchParams] = useSearchParams();
   const onglet = searchParams.get('onglet');
-  const [activeSection, setActiveSection] = useState(() => getSectionFromOnglet(onglet));
+  const [activeSection, setActiveSection] = useState(() => onglet ? getSectionFromOnglet(onglet) : 'hub');
   const [tab, setTab] = useState(() => {
     const t = getTabFromOnglet(onglet);
     if (t) return t;
@@ -167,7 +168,7 @@ export default function QSE() {
     { id:3, chantier:'Réfection toiture Immeuble Bellecour', date:'2025-01-10', entreprises:['Toiture Express'], statut:'clôturé', risques:['Chute hauteur','Poussières amiante'] },
   ]);
   const [dueDate] = useState(new Date().toLocaleDateString('fr-FR'));
-  const token = localStorage.getItem ? (JSON.parse(localStorage.getItem('auth') || '{}').token) : null;
+  const token = localStorage.getItem('token') || null;
   const authHeaders = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
   useEffect(() => {
@@ -184,7 +185,24 @@ export default function QSE() {
       setTdb(t.data);
       setHabilitations(h.habilitations || []);
       setEmployes(e.employes || []);
-    }).catch(()=>{}).finally(()=>setLoading(false));
+    }).catch(() => {
+      // Fallback données demo quand backend non disponible
+      setHabilitations([
+        { id:1, employe:'Pierre Martin', type:'CACES R489', dateObtention:'2024-03-15', dateExpiration:'2029-03-15', organisme:'AFTRAL', statut:'valide' },
+        { id:2, employe:'Sophie Duval', type:'Habilitation électrique B1', dateObtention:'2024-02-10', dateExpiration:'2027-02-10', organisme:'APAVE', statut:'valide' },
+        { id:3, employe:'Claire Bernard', type:'Habilitation électrique B2', dateObtention:'2024-06-15', dateExpiration:'2027-06-15', organisme:'APAVE', statut:'valide' },
+        { id:4, employe:'Lucas Garcia', type:'Travail en hauteur', dateObtention:'2024-09-01', dateExpiration:'2027-09-01', organisme:'APAVE', statut:'valide' },
+        { id:5, employe:'Pierre Martin', type:'Travail en hauteur', dateObtention:'2024-06-01', dateExpiration:'2027-06-01', organisme:'APAVE', statut:'valide' },
+      ]);
+      setEmployes([
+        { id:1, prenom:'Pierre', nom:'Martin', poste:'Maçon', email:'pierre.martin@lambertbtp.fr' },
+        { id:2, prenom:'Sophie', nom:'Duval', poste:'Plombière', email:'sophie.duval@lambertbtp.fr' },
+        { id:3, prenom:'Lucas', nom:'Garcia', poste:'Carreleur', email:'lucas.garcia@lambertbtp.fr' },
+        { id:4, prenom:'Luc', nom:'Moreau', poste:'Peintre', email:'luc.moreau@lambertbtp.fr' },
+        { id:5, prenom:'Claire', nom:'Bernard', poste:'Électricienne', email:'claire.bernard@lambertbtp.fr' },
+      ]);
+      setTdb({ score: 72, incidents_ouverts: 2, habilitations_expirees: 1, epi_a_remplacer: 3, derniere_maj: new Date().toISOString() });
+    }).finally(()=>setLoading(false));
   }, []);
 
   async function reloadHabilitations() {
@@ -714,7 +732,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
         </div>
 
         {/* Summary */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:12 }}>
           {[
             { label:'Total produits', val:fds.length, color:'#5B5BD6' },
             { label:'FDS valides', val:fds.filter(f=>f.statut==='valide').length, color:'#34C759' },
@@ -825,7 +843,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
         </div>
 
         {/* KPI Cards */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:12 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:12 }}>
           {[
             { label:`Accidents ${currentYear}`, val:accidentsAnnee.length, color:'#FF3B30', suffix:'' },
             { label:'Avec arrêt de travail', val:accidentsAvecArret, color:'#FF9500', suffix:'' },
@@ -1460,18 +1478,251 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
 
   const tabContent = { 'Tableau de bord':<TabDashboard/>, 'DUERP':<TabDUERP/>, 'Habilitations':<TabHabilitations/>, 'EPI':<EPIModule/>, 'Incidents':<IncidentsModule/>, 'Non-conformités':<NonConformitesModule/>, 'BSDD':<BSDDModule/>, 'Certifications':<CertificationsModule/>, 'Formulaires AMELI':<FormulairesAMELI/>, 'Audits':<AuditsModule/>, 'Rapport annuel':<RapportAnnuelQHSE/>, 'Documents QSE':<TabDocuments/>, 'Plans de prévention':<TabPlansPrevention/> };
 
+  // Chantiers pour la vue "Sécurité chantier"
+  const [chantiers, setChantiers] = useState([]);
+  const [selectedChantier, setSelectedChantier] = useState(null);
+  const [chantierDoc, setChantierDoc] = useState(null); // doc actif pour un chantier
+  useEffect(() => {
+    api.get('/patron/chantiers').then(r => setChantiers(r.data?.chantiers || [])).catch(() => {
+      const lsChantiers = (() => { try { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); return c?.length ? c : null; } catch { return null; } })();
+      setChantiers(lsChantiers || [
+        { id:'ch1', nom:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
+        { id:'ch3', nom:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', equipe:['Luc Moreau','Pierre Martin'] },
+        { id:'ch2', nom:'Mise aux normes électriques — SCI Horizon', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', equipe:['Claire Bernard'] },
+      ]);
+    });
+  }, []);
+
+  const CHANTIER_DOCS = [
+    { id:'ppsps', label:'PPSPS', desc:'Plan Particulier de Sécurité et de Protection de la Santé', obligatoire:true, ref:'Art. R4532-66 CT' },
+    { id:'plan-prevention', label:'Plan de prévention', desc:'Obligatoire si co-activité avec d\'autres entreprises', obligatoire:true, ref:'Art. R4512-6 CT' },
+    { id:'permis-feu', label:'Permis de feu', desc:'Avant tout travail par points chauds (soudure, meulage)', obligatoire:false, ref:'Recommandation APSAD R6' },
+    { id:'registre-verif', label:'Registre des vérifications', desc:'Échafaudages, nacelles, appareils de levage, installations électriques', obligatoire:true, ref:'Art. R4323-23 CT' },
+    { id:'accueil-securite', label:'Accueil sécurité', desc:'Fiche d\'accueil signée par chaque ouvrier arrivant sur ce chantier', obligatoire:true, ref:'Art. R4141-2 CT' },
+    { id:'affichage-chantier', label:'Affichage chantier', desc:'Panneau chantier, plan évacuation, EPI obligatoires, consignes urgence', obligatoire:true, ref:'Art. L421-3 CU' },
+    { id:'protocole-livraison', label:'Protocole chargement/déchargement', desc:'Pour toute livraison de matériaux sur le chantier', obligatoire:true, ref:'Art. R4515-4 CT' },
+    { id:'diagnostic-amiante', label:'Diagnostic amiante/plomb', desc:'Obligatoire avant travaux sur bâtiment construit avant 1997', obligatoire:true, ref:'Art. R4412-97 CT' },
+  ];
+
+  function getChantierDocStatus(chantierId, docId) {
+    const key = `freample_qse_${docId}_${chantierId}`;
+    return localStorage.getItem(key) ? 'fait' : 'a_faire';
+  }
+  function markChantierDoc(chantierId, docId) {
+    const key = `freample_qse_${docId}_${chantierId}`;
+    localStorage.setItem(key, JSON.stringify({ date: new Date().toISOString(), statut: 'fait' }));
+    setChantierDoc(null); // force re-render
+    setSelectedChantier(null);
+    setTimeout(() => setSelectedChantier(chantierId), 10);
+  }
+
+  // ══════════════════════════════════════
+  //  RENDU — Hub → Thème → Contenu
+  // ══════════════════════════════════════
+
+  // Mode HUB (aucune section sélectionnée ou section='hub')
+  if (activeSection === 'hub') {
+    return (
+      <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
+        <QSELegalBanner />
+        <h1 style={{ fontSize:26, fontWeight:700, margin:'0 0 6px' }}>QHSE</h1>
+        <p style={{ color:'#6E6E73', fontSize:14, margin:'0 0 28px' }}>Qualité, Hygiène, Sécurité, Environnement — choisissez un thème.</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:14 }}>
+          {QHSE_SECTIONS.map(s => {
+            const nbDocs = s.id === 'chantier' ? chantiers.filter(c=>c.statut==='en_cours'||c.statut==='planifie').length + ' chantiers' : s.tabs.length + ' modules';
+            return (
+              <button key={s.id} onClick={() => { setActiveSection(s.id); if(s.tabs.length) setTab(s.tabs[0]); }}
+                style={{ background:'#fff', border:`1px solid #E8E6E1`, borderTop:`4px solid ${s.color}`, padding:'24px 20px', textAlign:'left', cursor:'pointer', fontFamily:'inherit', transition:'box-shadow .15s' }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                <div style={{ fontSize:18, fontWeight:800, color:s.color, marginBottom:6 }}>{s.label}</div>
+                <div style={{ fontSize:12, color:'#6E6E73', lineHeight:1.5, marginBottom:12 }}>{s.desc}</div>
+                <div style={{ fontSize:11, fontWeight:600, color:'#999' }}>{nbDocs}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Mode SÉCURITÉ CHANTIER (par chantier)
+  if (activeSection === 'chantier') {
+    return (
+      <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
+        <button onClick={() => setActiveSection('hub')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:600, color:'#A68B4B', marginBottom:16, fontFamily:'inherit' }}>← Retour QHSE</button>
+        <h1 style={{ fontSize:26, fontWeight:700, margin:'0 0 6px' }}>Sécurité chantier</h1>
+        <p style={{ color:'#6E6E73', fontSize:14, margin:'0 0 24px' }}>Documents de sécurité obligatoires par chantier.</p>
+
+        {!selectedChantier ? (
+          <>
+            <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Sélectionnez un chantier</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {chantiers.filter(c => c.statut !== 'terminee' && c.statut !== 'annulee').map(c => {
+                const docsTotal = CHANTIER_DOCS.length;
+                const docsFaits = CHANTIER_DOCS.filter(d => getChantierDocStatus(c.id, d.id) === 'fait').length;
+                const pct = Math.round(docsFaits / docsTotal * 100);
+                const allDone = docsFaits === docsTotal;
+                return (
+                  <button key={c.id} onClick={() => setSelectedChantier(c.id)}
+                    style={{ background:'#fff', border:`1px solid #E8E6E1`, borderLeft:`4px solid ${allDone ? '#16A34A' : pct > 0 ? '#D97706' : '#DC2626'}`, padding:'16px 20px', textAlign:'left', cursor:'pointer', fontFamily:'inherit', display:'flex', justifyContent:'space-between', alignItems:'center', gap:16 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:700 }}>{c.nom || c.titre}</div>
+                      <div style={{ fontSize:12, color:'#6E6E73', marginTop:2 }}>{c.adresse}</div>
+                      {(c.equipe || []).length > 0 && <div style={{ fontSize:11, color:'#999', marginTop:2 }}>{c.equipe.join(', ')}</div>}
+                    </div>
+                    <div style={{ textAlign:'right', flexShrink:0 }}>
+                      <div style={{ fontSize:20, fontWeight:200, color: allDone ? '#16A34A' : pct > 0 ? '#D97706' : '#DC2626' }}>{docsFaits}/{docsTotal}</div>
+                      <div style={{ fontSize:10, color:'#999' }}>documents</div>
+                      <div style={{ width:80, height:4, background:'#E8E6E1', borderRadius:2, marginTop:4 }}>
+                        <div style={{ width:`${pct}%`, height:4, background: allDone ? '#16A34A' : '#D97706', borderRadius:2 }} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+              {chantiers.filter(c => c.statut !== 'terminee' && c.statut !== 'annulee').length === 0 && (
+                <div style={{ padding:32, textAlign:'center', color:'#999', fontSize:13 }}>Aucun chantier actif.</div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <button onClick={() => { setSelectedChantier(null); setChantierDoc(null); }} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:600, color:'#A68B4B', marginBottom:16, fontFamily:'inherit' }}>← Retour liste chantiers</button>
+            {(() => {
+              const c = chantiers.find(x => x.id === selectedChantier);
+              if (!c) return null;
+              return (
+                <div>
+                  <div style={{ marginBottom:20 }}>
+                    <h2 style={{ fontSize:18, fontWeight:800, margin:'0 0 4px' }}>{c.nom || c.titre}</h2>
+                    <div style={{ fontSize:13, color:'#6E6E73' }}>{c.adresse}</div>
+                  </div>
+
+                  {!chantierDoc ? (
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {CHANTIER_DOCS.map(doc => {
+                        const status = getChantierDocStatus(c.id, doc.id);
+                        const done = status === 'fait';
+                        return (
+                          <div key={doc.id} style={{ background:'#fff', border:`1px solid #E8E6E1`, borderLeft:`3px solid ${done ? '#16A34A' : doc.obligatoire ? '#DC2626' : '#D97706'}`, padding:'14px 18px', display:'flex', justifyContent:'space-between', alignItems:'center', gap:12 }}>
+                            <div style={{ flex:1 }}>
+                              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
+                                <span style={{ fontSize:13, fontWeight:700 }}>{doc.label}</span>
+                                {doc.obligatoire && <span style={{ fontSize:9, fontWeight:700, color:'#DC2626', background:'#FEF2F2', padding:'1px 6px' }}>Obligatoire</span>}
+                                <span style={{ fontSize:10, fontWeight:600, color: done ? '#16A34A' : '#DC2626', background: done ? '#F0FDF4' : '#FEF2F2', padding:'2px 8px' }}>{done ? 'Fait' : 'A faire'}</span>
+                              </div>
+                              <div style={{ fontSize:11, color:'#6E6E73' }}>{doc.desc}</div>
+                              <div style={{ fontSize:10, color:'#999', marginTop:2 }}>{doc.ref}</div>
+                            </div>
+                            <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+                              {!done && (
+                                <button onClick={() => markChantierDoc(c.id, doc.id)}
+                                  style={{ padding:'6px 14px', background:'#16A34A', color:'#fff', border:'none', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
+                                  Marquer fait
+                                </button>
+                              )}
+                              <button onClick={() => setChantierDoc(doc.id)}
+                                style={{ padding:'6px 14px', background:'transparent', color:'#1A1A1A', border:'1px solid #E8E6E1', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
+                                {done ? 'Voir' : 'Créer'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div>
+                      <button onClick={() => setChantierDoc(null)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:600, color:'#A68B4B', marginBottom:16, fontFamily:'inherit' }}>← Retour documents</button>
+                      {chantierDoc === 'ppsps' && <PPSPS />}
+                      {chantierDoc === 'plan-prevention' && <TabPlansPrevention />}
+                      {chantierDoc === 'permis-feu' && <PermisFeu />}
+                      {chantierDoc === 'affichage-chantier' && <AffichageObligatoire />}
+                      {chantierDoc === 'diagnostic-amiante' && <DiagnosticDemolition />}
+                      {chantierDoc === 'registre-verif' && (
+                        <div style={{ background:'#fff', border:'1px solid #E8E6E1', padding:20 }}>
+                          <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px' }}>Registre des vérifications périodiques</h3>
+                          <p style={{ fontSize:12, color:'#6E6E73', marginBottom:16 }}>Art. R4323-23 CT — Vérification obligatoire des équipements avant utilisation.</p>
+                          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                            {['Échafaudages — montage conforme, amarrages, platelages', 'Nacelles élévatrices — contrôle technique à jour', 'Appareils de levage — élingues, crochets, limiteurs de charge', 'Installations électriques provisoires — différentiel, terres, IP44', 'Garde-corps et filets de sécurité — fixation, état', 'Extincteurs — vérification annuelle, accessibilité'].map((item, i) => (
+                              <label key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background: i%2===0 ? '#FAFAF8' : 'transparent', cursor:'pointer', fontSize:13 }}>
+                                <input type="checkbox" style={{ accentColor:'#16A34A', width:18, height:18 }} />
+                                <span>{item}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div style={{ marginTop:16 }}>
+                            <button onClick={() => markChantierDoc(c.id, 'registre-verif')}
+                              style={{ padding:'10px 24px', background:'#16A34A', color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Valider les vérifications</button>
+                          </div>
+                        </div>
+                      )}
+                      {chantierDoc === 'accueil-securite' && (
+                        <div style={{ background:'#fff', border:'1px solid #E8E6E1', padding:20 }}>
+                          <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px' }}>Accueil sécurité — {c.nom}</h3>
+                          <p style={{ fontSize:12, color:'#6E6E73', marginBottom:16 }}>Art. R4141-2 CT — Chaque ouvrier arrivant sur ce chantier doit recevoir une formation sécurité et signer cette fiche.</p>
+                          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                            {(c.equipe || ['Ouvrier 1']).map((nom, i) => (
+                              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', background:'#FAFAF8', border:'1px solid #E8E6E1' }}>
+                                <div>
+                                  <div style={{ fontSize:14, fontWeight:600 }}>{nom}</div>
+                                  <div style={{ fontSize:11, color:'#999' }}>Points abordés : risques du chantier, EPI obligatoires, consignes urgence, plan évacuation</div>
+                                </div>
+                                <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600, cursor:'pointer' }}>
+                                  <input type="checkbox" style={{ accentColor:'#16A34A', width:18, height:18 }} />
+                                  Signé
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ marginTop:16 }}>
+                            <button onClick={() => markChantierDoc(c.id, 'accueil-securite')}
+                              style={{ padding:'10px 24px', background:'#16A34A', color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Valider l'accueil</button>
+                          </div>
+                        </div>
+                      )}
+                      {chantierDoc === 'protocole-livraison' && (
+                        <div style={{ background:'#fff', border:'1px solid #E8E6E1', padding:20 }}>
+                          <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 12px' }}>Protocole de sécurité chargement/déchargement</h3>
+                          <p style={{ fontSize:12, color:'#6E6E73', marginBottom:16 }}>Art. R4515-4 CT — Obligatoire pour toute opération de chargement/déchargement sur le chantier.</p>
+                          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                            {['Zone de déchargement balisée et signalée', 'Accès véhicules sécurisé (marche arrière, giration)', 'Moyens de manutention disponibles (grue, chariot, transpalette)', 'EPI spécifiques (casque, chaussures, gants, gilet HV)', 'Consignes communiquées au chauffeur (vitesse, itinéraire, stationnement)', 'Interdit de passer sous la charge', 'Responsable réception identifié'].map((item, i) => (
+                              <label key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background: i%2===0 ? '#FAFAF8' : 'transparent', cursor:'pointer', fontSize:13 }}>
+                                <input type="checkbox" style={{ accentColor:'#16A34A', width:18, height:18 }} />
+                                <span>{item}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div style={{ marginTop:16 }}>
+                            <button onClick={() => markChantierDoc(c.id, 'protocole-livraison')}
+                              style={{ padding:'10px 24px', background:'#16A34A', color:'#fff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Valider le protocole</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Mode THÈME (Q, H, S, E)
   return (
     <div style={{ padding:28, maxWidth:1200, margin:'0 auto' }}>
+      <button onClick={() => setActiveSection('hub')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:600, color:'#A68B4B', marginBottom:16, fontFamily:'inherit' }}>← Retour QHSE</button>
       <QSELegalBanner />
       {(() => {
-        const section = QHSE_SECTIONS.find(s => s.id === activeSection) || QHSE_SECTIONS[1];
+        const section = QHSE_SECTIONS.find(s => s.id === activeSection) || QHSE_SECTIONS[2];
         return <>
           <div style={{ marginBottom:22 }}>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
               <div style={{ width:5, height:28, borderRadius:3, background:section.color }} />
               <h1 style={{ fontSize:26, fontWeight:700, margin:0 }}>{section.label}</h1>
             </div>
-            <p style={{ color:'#6E6E73', marginTop:4, fontSize:13, paddingLeft:15 }}>QHSE — {section.label}</p>
           </div>
           {section.tabs.length > 1 && (
             <div className="no-print" style={{ display:'flex', gap:4, background:'#F2F2F7', borderRadius:12, padding:4, marginBottom:22, overflowX:'auto' }}>

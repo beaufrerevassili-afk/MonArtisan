@@ -1,50 +1,47 @@
 import React, { Component, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { API_URL } from './services/api';
-import Landing from './pages/public/Landing';
+// ── Imports directs (pages légères, chargées immédiatement) ──
 import Login from './pages/Login';
 import Register from './pages/Register';
-import DashboardClient from './pages/client/Dashboard';
-import Messagerie from './pages/client/Messagerie';
-import DashboardPatron from './pages/patron/Dashboard';
-import ProjetsClients from './pages/patron/ProjetsClients';
-import DashboardAE from './pages/patron/DashboardAE';
-import DashboardCoiffure from './pages/patron/DashboardCoiffure';
-import DashboardCom from './pages/patron/DashboardCom';
-import FreampleCom from './pages/public/FreampleCom';
-import SuiviCommande from './pages/public/SuiviCommande';
-import DashboardAdmin from './pages/admin/Dashboard';
-import Finance from './pages/patron/Finance';
-import RH from './pages/patron/RH';
-import QSE from './pages/patron/QSE';
-import ChantiersEtMissions from './pages/patron/ChantiersEtMissions';
-import BanqueDocuments from './pages/patron/BanqueDocuments';
-import Stock from './pages/patron/Stock';
-import ClientsRFM from './pages/patron/ClientsRFM';
-import Agenda from './pages/patron/Agenda';
-import ProfilPatron from './pages/patron/Profil';
-import DashboardArtisan from './pages/artisan/Dashboard';
-import DashboardMonteur from './pages/artisan/DashboardMonteur';
-import CGU from './pages/public/CGU';
-import RecrutementPage from './pages/public/RecrutementPage';
 import SecteurSelect from './pages/public/SecteurSelect';
-import SecteurLanding from './pages/public/SecteurLanding';
-import CoiffurePage from './pages/public/CoiffurePage';
-import SignatureDevis from './pages/public/SignatureDevis';
-import SalonDetailPage from './pages/public/SalonDetailPage';
-import DocumentView from './pages/public/DocumentView';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
 
-// ── Lazy-loaded heavy pages ──
-const ImmoDemo = React.lazy(() => import('./pages/public/ImmoDemo'));
-const FreampleDroit = React.lazy(() => import('./pages/public/FreampleDroit'));
-const PortfolioCom = React.lazy(() => import('./pages/public/PortfolioCom'));
+// ── Lazy-loaded (chargées à la demande, réduit le bundle initial) ──
+const Landing = React.lazy(() => import('./pages/public/Landing'));
+const DashboardClient = React.lazy(() => import('./pages/client/Dashboard'));
+const Messagerie = React.lazy(() => import('./pages/client/Messagerie'));
+const DashboardPatron = React.lazy(() => import('./pages/patron/Dashboard'));
+const Employes = React.lazy(() => import('./pages/patron/Employes'));
+const ProjetsClients = React.lazy(() => import('./pages/patron/ProjetsClients'));
+const DashboardAE = React.lazy(() => import('./pages/patron/DashboardAE'));
+const DashboardCom = React.lazy(() => import('./pages/patron/DashboardCom'));
+const SuiviCommande = React.lazy(() => import('./pages/public/SuiviCommande'));
+const DashboardAdmin = React.lazy(() => import('./pages/admin/Dashboard'));
+const Finance = React.lazy(() => import('./pages/patron/Finance'));
+const RH = React.lazy(() => import('./pages/patron/RH'));
+const QSE = React.lazy(() => import('./pages/patron/QSE'));
+const ChantiersEtMissions = React.lazy(() => import('./pages/patron/ChantiersEtMissions'));
+const BanqueDocuments = React.lazy(() => import('./pages/patron/BanqueDocuments'));
+const Stock = React.lazy(() => import('./pages/patron/Stock'));
+const ClientsRFM = React.lazy(() => import('./pages/patron/ClientsRFM'));
+const Agenda = React.lazy(() => import('./pages/patron/Agenda'));
+const ProfilPatron = React.lazy(() => import('./pages/patron/Profil'));
+const DashboardArtisan = React.lazy(() => import('./pages/artisan/Dashboard'));
+const DashboardMonteur = React.lazy(() => import('./pages/artisan/DashboardMonteur'));
+const CGU = React.lazy(() => import('./pages/public/CGU'));
+const RecrutementPage = React.lazy(() => import('./pages/public/RecrutementPage'));
+const SecteurLanding = React.lazy(() => import('./pages/public/SecteurLanding'));
+const SignatureDevis = React.lazy(() => import('./pages/public/SignatureDevis'));
+const SetupCompte = React.lazy(() => import('./pages/public/SetupCompte'));
+const DocumentView = React.lazy(() => import('./pages/public/DocumentView'));
 const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
 const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
+const DevisFactures = React.lazy(() => import('./pages/patron/DevisFactures'));
 const DashboardEmploye = React.lazy(() => import('./pages/employe/Dashboard'));
 
 const LazySpinner = () => (
@@ -54,18 +51,45 @@ const LazySpinner = () => (
   </div>
 );
 
+// Détection des erreurs de chargement de chunk (redéploiement Vercel = anciens bundles obsolètes)
+function isChunkLoadError(error) {
+  const msg = error?.message || '';
+  return (
+    msg.includes('is not a valid JavaScript MIME type') ||
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Loading chunk') ||
+    msg.includes('Loading CSS chunk') ||
+    msg.includes("'text/html' is not a valid") ||
+    error?.name === 'ChunkLoadError'
+  );
+}
+
 class ErrorBoundary extends Component {
-  state = { hasError: false, error: null };
+  state = { hasError: false, error: null, reloadAttempted: false };
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error) {
+    // Si c'est un chunk obsolete, rechargement automatique 1 seule fois
+    if (isChunkLoadError(error) && !sessionStorage.getItem('chunkReloadAttempted')) {
+      sessionStorage.setItem('chunkReloadAttempted', '1');
+      window.location.reload();
+    }
+  }
   render() {
     if (this.state.hasError) {
+      const chunkError = isChunkLoadError(this.state.error);
       return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 24, textAlign: 'center', background: '#F9FAFB' }}>
-          <div style={{ fontSize: '3rem', marginBottom: 16 }}>⚠️</div>
-          <h1 style={{ color: '#1C1C1E', fontSize: '1.5rem', fontWeight: 700, marginBottom: 8 }}>Une erreur est survenue</h1>
-          <p style={{ color: '#6E6E73', marginBottom: 12 }}>Rechargez la page pour continuer.</p>
-          <pre style={{ color: '#DC2626', fontSize: 12, textAlign: 'left', background: '#FEF2F2', padding: 16, borderRadius: 8, maxWidth: 500, overflow: 'auto', marginBottom: 24 }}>{this.state.error?.message}{'\n'}{this.state.error?.stack?.split('\n').slice(0,5).join('\n')}</pre>
-          <button onClick={() => window.location.reload()} style={{ padding: '10px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>{chunkError ? '🔄' : '⚠️'}</div>
+          <h1 style={{ color: '#1C1C1E', fontSize: '1.5rem', fontWeight: 700, marginBottom: 8 }}>
+            {chunkError ? 'Mise à jour de l\'application...' : 'Une erreur est survenue'}
+          </h1>
+          <p style={{ color: '#6E6E73', marginBottom: 12 }}>
+            {chunkError ? 'Rechargement automatique en cours.' : 'Rechargez la page pour continuer.'}
+          </p>
+          {!chunkError && (
+            <pre style={{ color: '#DC2626', fontSize: 12, textAlign: 'left', background: '#FEF2F2', padding: 16, borderRadius: 8, maxWidth: 500, overflow: 'auto', marginBottom: 24 }}>{this.state.error?.message}{'\n'}{this.state.error?.stack?.split('\n').slice(0,5).join('\n')}</pre>
+          )}
+          <button onClick={() => { sessionStorage.removeItem('chunkReloadAttempted'); window.location.reload(); }} style={{ padding: '10px 24px', background: '#5B5BD6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>
             Recharger
           </button>
         </div>
@@ -75,11 +99,29 @@ class ErrorBoundary extends Component {
   }
 }
 
+// Handler global pour les erreurs non-catchées (rejections de promesses, erreurs window)
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    if (isChunkLoadError(event.error || event) && !sessionStorage.getItem('chunkReloadAttempted')) {
+      sessionStorage.setItem('chunkReloadAttempted', '1');
+      window.location.reload();
+    }
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    if (isChunkLoadError(event.reason) && !sessionStorage.getItem('chunkReloadAttempted')) {
+      sessionStorage.setItem('chunkReloadAttempted', '1');
+      window.location.reload();
+    }
+  });
+  // Une fois chargé avec succès, on clear le flag (prochaine visite peut re-tenter)
+  window.addEventListener('load', () => {
+    setTimeout(() => sessionStorage.removeItem('chunkReloadAttempted'), 2000);
+  });
+}
+
 function PatronDashboard() {
   const { user } = useAuth();
-  const secteur = user?.secteur;
-  if (secteur === 'coiffure')   return <DashboardCoiffure />;
-  if (secteur === 'com')        return <DashboardCom />;
+  if (user?.secteur === 'com') return <DashboardCom />;
   return <DashboardPatron />;
 }
 
@@ -103,11 +145,10 @@ function ProtectedRoute({ children, roles }) {
 }
 
 function usePageTracker() {
-  const loc = typeof window !== 'undefined' ? window.location : null;
+  const location = useLocation();
   React.useEffect(() => {
-    if (!loc) return;
-    fetch(`${API_URL}/analytics/visit`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ page:loc.pathname }) }).catch(()=>{});
-  }, [loc?.pathname]);
+    fetch(`${API_URL}/analytics/visit`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ page:location.pathname }) }).catch(()=>{});
+  }, [location.pathname]);
 }
 
 function AppRoutes() {
@@ -120,22 +161,20 @@ function AppRoutes() {
       {/* ── Routes publiques ── */}
       <Route path="/" element={<SecteurSelect />} />
       <Route path="/btp" element={<Landing />} />
-      <Route path="/coiffure" element={<CoiffurePage />} />
-      <Route path="/coiffure/salon/:salonId" element={<SalonDetailPage />} />
-      <Route path="/com" element={<FreampleCom />} />
-      <Route path="/com/portfolio" element={<PortfolioCom />} />
-      <Route path="/pro" element={<ProLanding />} />
       <Route path="/admin/stats" element={<StatsAdmin />} />
-      <Route path="/immo" element={<Navigate to="/immo/gestion" replace />} />
-      <Route path="/immo/gestion" element={<ImmoDemo />} />
-      <Route path="/immo/demo" element={<ImmoDemo />} />
-      <Route path="/droit" element={<FreampleDroit />} />
+      {/* Anciennes routes redirigées vers l'accueil */}
+      <Route path="/coiffure" element={<Navigate to="/" replace />} />
+      <Route path="/com" element={<Navigate to="/" replace />} />
+      <Route path="/immo" element={<Navigate to="/" replace />} />
+      <Route path="/droit" element={<Navigate to="/" replace />} />
+      <Route path="/pro" element={<ProLanding />} />
       <Route path="/suivi/:token" element={<SuiviCommande />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />
       <Route path="/recrutement" element={<RecrutementPage />} />
       <Route path="/devis/:id/signer" element={<SignatureDevis />} />
+      <Route path="/setup-compte/:token" element={<SetupCompte />} />
       <Route path="/documents/:type/:id" element={<DocumentView />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -163,6 +202,7 @@ function AppRoutes() {
               <Route path="missions"   element={<ChantiersEtMissions />} />
               <Route path="chantiers"  element={<Navigate to="/patron/missions" replace />} />
               <Route path="finance"   element={<Finance />} />
+              <Route path="employes"  element={<Employes />} />
               <Route path="rh"        element={<RH />} />
               <Route path="qse"       element={<QSE />} />
               <Route path="urssaf"    element={<Navigate to="/patron/finance?onglet=urssaf" replace />} />
@@ -175,6 +215,7 @@ function AppRoutes() {
               <Route path="agenda"           element={<Agenda />} />
               <Route path="rappel-juridique" element={<Navigate to="/patron/documents" replace />} />
               <Route path="reputation"       element={<Navigate to="/patron/clients-rfm" replace />} />
+              <Route path="devis-factures"   element={<DevisFactures />} />
               <Route path="profil"           element={<ProfilPatron />} />
             </Routes>
           </Layout>

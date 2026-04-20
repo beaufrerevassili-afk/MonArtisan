@@ -115,7 +115,7 @@ export default function BanqueDocuments() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 24 }}>
         {[
           { label: 'Total documents', value: stats.total, color: '#5B5BD6' },
           { label: 'Devis',           value: stats.devis, color: '#1565C0' },

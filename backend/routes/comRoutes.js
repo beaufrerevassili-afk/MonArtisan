@@ -7,8 +7,14 @@ const { query } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 const { Resend } = require('resend');
 
+// ── XSS protection ──
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── Email config (Resend) ──
-const resend = new Resend(process.env.RESEND_API_KEY || ''); // Clé requise via env var
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 async function sendEmail(to, subject, html) {
   try {
@@ -55,22 +61,22 @@ router.post('/briefs', async (req, res) => {
     // Envoyer email à l'équipe
     await sendEmail(
       process.env.COM_EMAIL || 'freamplecom@gmail.com',
-      `🎬 Nouvelle demande Freample Com — ${nom}`,
+      `🎬 Nouvelle demande Freample Com — ${escapeHtml(nom)}`,
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#8B5CF6;">🎬 Nouvelle demande reçue !</h2>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Client</td><td style="padding:8px;border-bottom:1px solid #eee;">${nom}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;"><a href="mailto:${email}">${email}</a></td></tr>
-          ${telephone ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Téléphone</td><td style="padding:8px;border-bottom:1px solid #eee;">${telephone}</td></tr>` : ''}
-          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Service</td><td style="padding:8px;border-bottom:1px solid #eee;">${type}${format ? ' · ' + format : ''}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Quantité</td><td style="padding:8px;border-bottom:1px solid #eee;">${quantite || '1'}</td></tr>
-          ${style ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Style</td><td style="padding:8px;border-bottom:1px solid #eee;">${style}</td></tr>` : ''}
-          ${options?.length ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Options</td><td style="padding:8px;border-bottom:1px solid #eee;">${options.join(', ')}</td></tr>` : ''}
-          ${reference ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Référence</td><td style="padding:8px;border-bottom:1px solid #eee;"><a href="${reference}">${reference}</a></td></tr>` : ''}
-          ${deadline ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Deadline</td><td style="padding:8px;border-bottom:1px solid #eee;">${deadline}</td></tr>` : ''}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Client</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(nom)}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+          ${telephone ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Téléphone</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(telephone)}</td></tr>` : ''}
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Service</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(type)}${format ? ' · ' + escapeHtml(format) : ''}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Quantité</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(quantite || '1')}</td></tr>
+          ${style ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Style</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(style)}</td></tr>` : ''}
+          ${options?.length ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Options</td><td style="padding:8px;border-bottom:1px solid #eee;">${options.map(o => escapeHtml(o)).join(', ')}</td></tr>` : ''}
+          ${reference ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Référence</td><td style="padding:8px;border-bottom:1px solid #eee;"><a href="${escapeHtml(reference)}">${escapeHtml(reference)}</a></td></tr>` : ''}
+          ${deadline ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Deadline</td><td style="padding:8px;border-bottom:1px solid #eee;">${escapeHtml(deadline)}</td></tr>` : ''}
         </table>
-        ${description ? `<div style="margin-top:16px;padding:12px;background:#F5F3FF;border-radius:8px;"><strong>Instructions :</strong><br/>${description}</div>` : ''}
+        ${description ? `<div style="margin-top:16px;padding:12px;background:#F5F3FF;border-radius:8px;"><strong>Instructions :</strong><br/>${escapeHtml(description)}</div>` : ''}
         <p style="margin-top:20px;color:#888;">Projet #${projetId} — Répondez au client dans les 24h</p>
       </div>
       `
@@ -82,14 +88,14 @@ router.post('/briefs', async (req, res) => {
       'Votre demande Freample Com a bien été reçue ✓',
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#8B5CF6;">Merci ${nom} ! 🎬</h2>
+        <h2 style="color:#8B5CF6;">Merci ${escapeHtml(nom)} ! 🎬</h2>
         <p>Nous avons bien reçu votre demande. Notre équipe l'analyse et vous répondra sous <strong>24 heures</strong> avec un devis personnalisé.</p>
         <div style="margin:20px 0;padding:16px;background:#F5F3FF;border-radius:8px;">
           <strong>Récapitulatif :</strong><br/>
-          Service : ${type}${format ? ' · ' + format : ''}<br/>
-          Quantité : ${quantite || '1'}<br/>
-          ${style ? 'Style : ' + style + '<br/>' : ''}
-          ${options?.length ? 'Options : ' + options.join(', ') + '<br/>' : ''}
+          Service : ${escapeHtml(type)}${format ? ' · ' + escapeHtml(format) : ''}<br/>
+          Quantité : ${escapeHtml(quantite || '1')}<br/>
+          ${style ? 'Style : ' + escapeHtml(style) + '<br/>' : ''}
+          ${options?.length ? 'Options : ' + options.map(o => escapeHtml(o)).join(', ') + '<br/>' : ''}
         </div>
         <div style="margin:20px 0;padding:20px;background:#0F0A1A;border-radius:12px;text-align:center;">
           <p style="color:rgba(255,255,255,0.7);margin:0 0 12px;font-size:14px;">Suivez votre commande en temps réel :</p>
@@ -190,7 +196,7 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
     if (!projet.rows.length) return res.status(404).json({ erreur: 'Projet non trouvé' });
     
     const p = projet.rows[0];
-    const montantTTC = Math.round(montantHT * (1 + (tva || 20) / 100));
+    const montantTTC = Math.round(montantHT * (1 + (tva || 20) / 100) * 100) / 100;
     const devisRef = `DC-${new Date().getFullYear()}-${String(req.params.id).padStart(3, '0')}`;
 
     await query(
@@ -199,8 +205,8 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
     );
 
     // Envoyer le devis par email au client
-    const lignesHTML = (lignes || []).map(l => 
-      `<tr><td style="padding:6px;border-bottom:1px solid #eee;">${l.description}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">${l.quantite}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">${l.prixUnitaire}€</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;font-weight:bold;">${l.quantite * l.prixUnitaire}€</td></tr>`
+    const lignesHTML = (lignes || []).map(l =>
+      `<tr><td style="padding:6px;border-bottom:1px solid #eee;">${escapeHtml(l.description)}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">${escapeHtml(String(l.quantite))}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;">${escapeHtml(String(l.prixUnitaire))}€</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:right;font-weight:bold;">${l.quantite * l.prixUnitaire}€</td></tr>`
     ).join('');
 
     await sendEmail(
@@ -209,12 +215,12 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#8B5CF6;">Votre devis est prêt ! 📝</h2>
-        <p>Bonjour ${p.client_nom},</p>
+        <p>Bonjour ${escapeHtml(p.client_nom)},</p>
         <p>Suite à votre demande, voici notre proposition :</p>
-        
+
         <div style="border:1px solid #E9E5F5;border-radius:12px;overflow:hidden;margin:20px 0;">
           <div style="padding:16px;background:#F5F3FF;">
-            <strong>Devis ${devisRef}</strong> · ${p.type}${p.format ? ' · ' + p.format : ''}
+            <strong>Devis ${escapeHtml(devisRef)}</strong> · ${escapeHtml(p.type)}${p.format ? ' · ' + escapeHtml(p.format) : ''}
           </div>
           ${lignesHTML ? `<table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#FAFAFA;"><th style="padding:8px;text-align:left;">Description</th><th style="padding:8px;text-align:right;">Qté</th><th style="padding:8px;text-align:right;">P.U.</th><th style="padding:8px;text-align:right;">Total</th></tr></thead><tbody>${lignesHTML}</tbody></table>` : ''}
           <div style="padding:16px;border-top:1px solid #E9E5F5;">
@@ -261,7 +267,7 @@ router.post('/projets/:id/refuser', authenticateToken, async (req, res) => {
       'Votre demande Freample Com',
       `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#8B5CF6;">Merci pour votre demande, ${p.client_nom} 🙏</h2>
+        <h2 style="color:#8B5CF6;">Merci pour votre demande, ${escapeHtml(p.client_nom)} 🙏</h2>
         <p>Après analyse de votre demande, nous ne sommes malheureusement pas en mesure de répondre à cette demande pour le moment.</p>
         <p>N'hésitez pas à nous recontacter pour un futur projet — nous serions ravis de travailler avec vous !</p>
         <p style="color:#888;">— L'équipe Freample Com</p>

@@ -93,6 +93,8 @@ export default function OnboardingModule({ employes = [] }) {
         <button onClick={() => { setForm({}); setModal('add'); }} style={BTN}>+ Nouveau parcours</button>
       </div>
 
+      {!selected && view === 'onboarding' && <CartesBTPWidget employes={employes} parcours={parcours} />}
+
       {!selected && <>
         {filtered.map(p => {
           const progress = getProgress(p);
@@ -149,6 +151,103 @@ export default function OnboardingModule({ employes = [] }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Widget Cartes BTP avec dates d'expiration ──
+function CartesBTPWidget({ employes, parcours }) {
+  const [cartes, setCartes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('freample_cartes_btp') || '[]'); } catch { return []; }
+  });
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ numero: '', dateDemande: '', dateExpiration: '' });
+  useEffect(() => { localStorage.setItem('freample_cartes_btp', JSON.stringify(cartes)); }, [cartes]);
+
+  const INP_S = { padding: '6px 10px', border: '1px solid #E8E6E1', borderRadius: 6, fontSize: 12, fontFamily: DS.font, outline: 'none' };
+  const today = new Date();
+
+  // Employés qui doivent avoir une carte BTP (depuis parcours onboarding)
+  const besoinCarte = parcours
+    .filter(p => p.type === 'onboarding')
+    .map(p => p.employe)
+    .filter((v, i, a) => a.indexOf(v) === i);
+
+  const getCarte = nom => cartes.find(c => c.employe === nom);
+  const getStatut = (c) => {
+    if (!c?.dateExpiration) return { label: 'Non renseignée', color: '#92400E', bg: '#FFFBEB' };
+    const j = Math.round((new Date(c.dateExpiration) - today) / 86400000);
+    if (j < 0) return { label: 'EXPIREE', color: '#DC2626', bg: '#FEF2F2' };
+    if (j < 30) return { label: `Expire dans ${j}j`, color: '#DC2626', bg: '#FEF2F2' };
+    if (j < 90) return { label: `Expire dans ${j}j`, color: '#D97706', bg: '#FFFBEB' };
+    return { label: `Valide (${j}j)`, color: '#16A34A', bg: '#F0FDF4' };
+  };
+
+  const save = (nom) => {
+    setCartes(prev => {
+      const idx = prev.findIndex(c => c.employe === nom);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...form };
+        return next;
+      }
+      return [...prev, { employe: nom, ...form }];
+    });
+    setEditing(null); setForm({ numero: '', dateDemande: '', dateExpiration: '' });
+  };
+
+  if (besoinCarte.length === 0) return null;
+
+  const alertes = besoinCarte.filter(nom => {
+    const c = getCarte(nom);
+    if (!c?.dateExpiration) return true;
+    const j = Math.round((new Date(c.dateExpiration) - today) / 86400000);
+    return j < 30;
+  });
+
+  return (
+    <div style={{ ...CARD, marginBottom: 14, borderLeft: alertes.length > 0 ? '4px solid #DC2626' : '4px solid #16A34A' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800 }}>Cartes BTP — obligatoire BTP</div>
+          <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>
+            {alertes.length > 0 ? `${alertes.length} carte${alertes.length > 1 ? 's' : ''} en alerte (non renseignée ou expirant sous 30j)` : 'Toutes les cartes sont à jour'}
+          </div>
+        </div>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead><tr style={{ background: '#FAFAF8' }}>
+          {['Salarié', 'Numéro', 'Demandée le', 'Expire le', 'Statut', ''].map(h => <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#555', textTransform: 'uppercase' }}>{h}</th>)}
+        </tr></thead>
+        <tbody>
+          {besoinCarte.map(nom => {
+            const c = getCarte(nom);
+            const st = getStatut(c);
+            const isEdit = editing === nom;
+            return (
+              <tr key={nom} style={{ borderBottom: '1px solid #F2F1ED' }}>
+                <td style={{ padding: '8px 10px', fontWeight: 600 }}>{nom}</td>
+                <td style={{ padding: '8px 10px' }}>{isEdit ? <input value={form.numero} onChange={e => setForm(f => ({ ...f, numero: e.target.value }))} style={{ ...INP_S, width: 120 }} /> : (c?.numero || '—')}</td>
+                <td style={{ padding: '8px 10px' }}>{isEdit ? <input type="date" value={form.dateDemande} onChange={e => setForm(f => ({ ...f, dateDemande: e.target.value }))} style={INP_S} /> : (c?.dateDemande || '—')}</td>
+                <td style={{ padding: '8px 10px' }}>{isEdit ? <input type="date" value={form.dateExpiration} onChange={e => setForm(f => ({ ...f, dateExpiration: e.target.value }))} style={INP_S} /> : (c?.dateExpiration || '—')}</td>
+                <td style={{ padding: '8px 10px' }}><span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 4 }}>{st.label}</span></td>
+                <td style={{ padding: '8px 10px' }}>
+                  {isEdit ? (
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button onClick={() => save(nom)} style={{ padding: '4px 10px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, cursor: 'pointer' }}>OK</button>
+                      <button onClick={() => setEditing(null)} style={{ padding: '4px 10px', background: 'transparent', color: '#555', border: '1px solid #E8E6E1', borderRadius: 6, fontSize: 11, cursor: 'pointer' }}>X</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => { setEditing(nom); setForm({ numero: c?.numero || '', dateDemande: c?.dateDemande || '', dateExpiration: c?.dateExpiration || '' }); }} style={{ padding: '4px 10px', background: 'transparent', color: '#A68B4B', border: '1px solid #A68B4B', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                      {c?.numero ? 'Modifier' : 'Renseigner'}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -370,7 +370,7 @@ export default function URSSAF() {
       )}
 
       {/* Prochaine DSN automatique */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         <div className="card" style={{ padding: '16px 18px', borderLeft: '3px solid var(--primary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <IconCalendar size={14} style={{ color: 'var(--primary)' }} />

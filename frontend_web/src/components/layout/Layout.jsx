@@ -61,7 +61,12 @@ const MENUS = {
     { label: 'Administration',  path: '/admin/dashboard',  Icon: IconSettings },
   ],
   fondateur: [
-    { label: 'Administration',  path: '/fondateur/dashboard', Icon: IconSettings },
+    { label: 'Vue d\'ensemble',  path: '/fondateur/dashboard',                    Icon: IconHome       },
+    { label: 'Utilisateurs',     path: '/fondateur/dashboard?tab=users',          Icon: IconTeam       },
+    { label: 'Transactions',     path: '/fondateur/dashboard?tab=transactions',   Icon: IconCreditCard },
+    { label: 'Moderation',       path: '/fondateur/dashboard?tab=moderation',     Icon: IconShield     },
+    { label: 'Freample SAS',     path: '/fondateur/dashboard?tab=entreprise',     Icon: IconBuilding   },
+    { label: 'Parametres',       path: '/fondateur/dashboard?tab=parametres',     Icon: IconSettings   },
   ],
   artisan: [
     { label: 'Tableau de bord', path: '/artisan/dashboard',                    Icon: IconHome       },
@@ -85,12 +90,11 @@ const MENUS = {
   ],
 };
 
-// Grouped menu for patron role
-// Sidebar simplifiée — chaque entrée = 1 page avec ses onglets internes
+// 5 espaces patron BTP — navigation simplifiée
 const PATRON_GROUPS = [
   {
-    id: 'pilotage',
-    label: 'Pilotage',
+    id: 'activite',
+    label: 'Mon activité',
     items: [
       { label: 'Tableau de bord',      path: '/patron/dashboard',   Icon: IconHome     },
       { label: 'Projets clients',      path: '/patron/projets',     Icon: IconSearch   },
@@ -99,50 +103,37 @@ const PATRON_GROUPS = [
   },
   {
     id: 'chantiers',
-    label: 'Chantiers',
+    label: 'Mes chantiers',
     items: [
-      { label: 'Missions & Chantiers', path: '/patron/missions',    Icon: IconBuilding },
+      { label: 'Chantiers & Missions', path: '/patron/missions',    Icon: IconBuilding },
       { label: 'Stock & Matériel',     path: '/patron/stock',       Icon: IconBox      },
     ],
   },
   {
     id: 'commercial',
-    label: 'Commercial',
+    label: 'Devis & Factures',
     items: [
-      { label: 'Devis & Factures',     path: '/patron/finance?onglet=facturation', Icon: IconDocument },
+      { label: 'Devis',                path: '/patron/devis-factures?tab=devis',      Icon: IconDocument },
+      { label: 'Factures',             path: '/patron/devis-factures?tab=factures', Icon: IconCreditCard },
       { label: 'Clients & Avis',       path: '/patron/clients-rfm', Icon: IconTeam       },
     ],
   },
   {
-    id: 'rh',
-    label: 'Ressources Humaines',
+    id: 'equipe',
+    label: 'Mon équipe',
     items: [
-      { label: 'Gestion du personnel', path: '/patron/rh',          Icon: IconTeam       },
+      { label: 'Employés',              path: '/patron/employes',    Icon: IconUser       },
+      { label: 'RH',                     path: '/patron/rh',          Icon: IconTeam       },
+      { label: 'QHSE',                   path: '/patron/qse',         Icon: IconShield     },
     ],
   },
   {
-    id: 'paie',
-    label: 'Paie & Finances',
-    items: [
-      { label: 'Comptabilité',         path: '/patron/finance',     Icon: IconFinance    },
-    ],
-  },
-  {
-    id: 'qhse',
-    label: 'QHSE',
-    items: [
-      { label: 'Qualité',              path: '/patron/qse?onglet=qualite',        Icon: IconCheck      },
-      { label: 'Sécurité',             path: '/patron/qse?onglet=securite',       Icon: IconShield     },
-      { label: 'Hygiène',              path: '/patron/qse?onglet=hygiene',        Icon: IconDocument   },
-      { label: 'Environnement',        path: '/patron/qse?onglet=environnement',  Icon: IconAlert      },
-    ],
-  },
-  {
-    id: 'admin',
+    id: 'entreprise',
     label: 'Mon entreprise',
     items: [
-      { label: 'Documents',            path: '/patron/documents',   Icon: IconDownload },
-      { label: 'Paramètres',           path: '/patron/profil',      Icon: IconSettings },
+      { label: 'Finances & Compta',    path: '/patron/finance',     Icon: IconFinance    },
+      { label: 'Documents',            path: '/patron/documents',   Icon: IconDownload   },
+      { label: 'Paramètres',           path: '/patron/profil',      Icon: IconSettings   },
     ],
   },
 ];
@@ -274,6 +265,16 @@ function NavGroup({ group, collapsed, location, onNavigate }) {
   );
 }
 
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60) return 'À l\'instant';
+  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+  if (diff < 604800) return `Il y a ${Math.floor(diff / 86400)} j`;
+  return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
 /* ── Notification bell ─────────────────────────────────── */
 function NotifBell({ isMobile }) {
   const [open, setOpen] = useState(false);
@@ -282,67 +283,48 @@ function NotifBell({ isMobile }) {
   const { user } = useAuth();
   const unreadCount = notifs.filter(n => n.unread).length;
 
-  // Charger les vraies notifications pour Freample Com
+  // Charger les notifications depuis l'API
   useEffect(() => {
-    if (user?.secteur === 'com') {
-      // api already imported at top
-      api.get('/com/projets').then(r => {
-        if (r.data?.projets?.length) {
-          const realNotifs = r.data.projets
-            .filter(p => p.statut === 'brief_recu')
-            .map((p, i) => ({
-              id: p.id,
-              text: `🎬 Nouvelle demande de ${p.client_nom} — ${p.type || 'Projet'}`,
-              time: p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Récent',
-              unread: true,
-            }));
-          // Ajouter les projets en attente de réponse
-          const waiting = r.data.projets
-            .filter(p => p.statut === 'devis_envoye')
-            .map(p => ({
-              id: 1000 + p.id,
-              text: `⏳ Devis en attente — ${p.client_nom}`,
-              time: 'En cours',
-              unread: false,
-            }));
-          setNotifs([...realNotifs, ...waiting]);
-        } else {
-          setNotifs([{ id:0, text:'Aucune notification', time:'', unread:false }]);
-        }
-      }).catch(() => {
-        setNotifs([{ id:0, text:'Aucune notification', time:'', unread:false }]);
-      });
-    } else {
-      // Autres secteurs : garder les notifs démo
-      setNotifs(DEMO_NOTIFS);
-    }
-  }, [user?.secteur]);
+    if (!user?.id) { setNotifs(DEMO_NOTIFS); return; }
+    api.get(`/notifications?userId=${user.id}`).then(r => {
+      if (r.data?.notifications?.length) {
+        setNotifs(r.data.notifications.map(n => ({
+          id: n.id, text: n.titre || n.contenu, time: n.cree_le ? timeAgo(n.cree_le) : '', unread: !n.lu,
+        })));
+      } else if (user?.secteur === 'com') {
+        // Fallback: charger depuis les projets Com
+        api.get('/com/projets').then(r2 => {
+          const briefs = (r2.data?.projets || []).filter(p => p.statut === 'brief_recu').map(p => ({
+            id: p.id, text: `🎬 Nouvelle demande de ${p.client_nom} — ${p.type || 'Projet'}`,
+            time: p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) : 'Récent', unread: true,
+          }));
+          setNotifs(briefs.length ? briefs : DEMO_NOTIFS);
+        }).catch(() => setNotifs(DEMO_NOTIFS));
+      } else {
+        setNotifs(DEMO_NOTIFS);
+      }
+    }).catch(() => setNotifs(DEMO_NOTIFS));
+  }, [user?.id, user?.secteur]);
 
-  // Polling toutes les 30s pour les nouvelles demandes (Com uniquement)
+  // Polling toutes les 30s
   useEffect(() => {
-    if (user?.secteur !== 'com') return;
+    if (!user?.id) return;
     const interval = setInterval(() => {
-      // api already imported at top
-      api.get('/com/projets').then(r => {
-        if (r.data?.projets) {
-          const briefs = r.data.projets.filter(p => p.statut === 'brief_recu');
-          if (briefs.length > 0) {
-            setNotifs(prev => {
-              const existingIds = prev.map(n => n.id);
-              const newOnes = briefs.filter(p => !existingIds.includes(p.id)).map(p => ({
-                id: p.id,
-                text: `🎬 Nouvelle demande de ${p.client_nom} — ${p.type || 'Projet'}`,
-                time: 'À l\'instant',
-                unread: true,
-              }));
-              return newOnes.length ? [...newOnes, ...prev] : prev;
-            });
-          }
+      api.get(`/notifications?userId=${user.id}`).then(r => {
+        if (r.data?.notifications?.length) {
+          setNotifs(prev => {
+            const existingIds = prev.map(n => n.id);
+            const mapped = r.data.notifications.map(n => ({
+              id: n.id, text: n.titre || n.contenu, time: n.cree_le ? timeAgo(n.cree_le) : '', unread: !n.lu,
+            }));
+            const newOnes = mapped.filter(n => !existingIds.includes(n.id));
+            return newOnes.length ? [...newOnes, ...prev] : prev;
+          });
         }
       }).catch(() => {});
     }, 30000);
     return () => clearInterval(interval);
-  }, [user?.secteur]);
+  }, [user?.id]);
 
   useEffect(() => {
     function onClickOutside(e) {
@@ -354,6 +336,7 @@ function NotifBell({ isMobile }) {
 
   function markAllRead() {
     setNotifs(n => n.map(x => ({ ...x, unread: false })));
+    if (user?.id) api.put('/notifications/tout-lire', { userId: user.id }).catch(() => {});
   }
 
   return (
@@ -406,7 +389,7 @@ function NotifBell({ isMobile }) {
             ) : notifs.map(n => (
               <div
                 key={n.id}
-                onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x))}
+                onClick={() => { setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, unread: false } : x)); api.put(`/notifications/${n.id}/lire`).catch(() => {}); }}
                 style={{
                   padding: '12px 16px', borderBottom: '1px solid var(--border-light)',
                   background: n.unread ? 'var(--primary-light)' : 'transparent',
@@ -515,7 +498,7 @@ export default function Layout({ children }) {
           flexShrink: 0,
         }}>
           {!collapsed && (
-            <div onClick={() => navigate(user?.role === 'client' ? '/' : `/${user?.role || ''}/dashboard`)}
+            <div onClick={() => navigate('/')}
               style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 9, overflow: 'hidden', cursor: 'pointer' }}>
               <div style={{
                 width: 30, height: 30, borderRadius: 9,

@@ -3,919 +3,784 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import DS from '../../design/ds';
 import { useAuth } from '../../context/AuthContext';
-import InvestirJugeModule from '../../components/immo/InvestirJugeModule';
-
-const STORAGE_BIEN = 'freample_mon_bien';
-
-const TABS = [
-  { id: 'projets', label: 'Suivi de projets', icon: '📋' },
-  { id: 'paiements', label: 'Paiements', icon: '💳' },
-  { id: 'messagerie', label: 'Messagerie', icon: '💬' },
-  { id: 'favoris', label: 'Artisans favoris', icon: '⭐' },
-  { id: 'bien', label: 'Mon bien', icon: '🏠' },
-  { id: 'investir', label: 'Investir', icon: '📊' },
-  { id: 'profil', label: 'Mon profil', icon: '👤' },
-];
-
-const STATUT_PROJET = {
-  publie: { label: 'Publié', color: '#2563EB', bg: '#EFF6FF' },
-  en_cours: { label: 'En cours', color: '#D97706', bg: '#FFFBEB' },
-  termine: { label: 'Terminé', color: '#16A34A', bg: '#F0FDF4' },
-  annule: { label: 'Annulé', color: '#DC2626', bg: '#FEF2F2' },
-};
-
-const DEMO_PROJETS = [
-  { id: 1, metier: 'Plomberie', titre: 'Rénovation salle de bain', description: 'Douche à l\'italienne, nouveau carrelage, meuble vasque.', ville: 'Nice', budget: 3500, commission: null, urgence: 'normal', statut: 'publie', date: '2026-04-06', nbOffres: 2 },
-  { id: 2, metier: 'Peinture', titre: 'Peinture salon + chambre', description: 'Peinture complète 2 pièces, murs et plafonds.', ville: 'Nice', budget: 1200, commission: null, urgence: 'flexible', statut: 'en_cours', date: '2026-03-28', nbOffres: 3, artisan: 'Sophie Duval' },
-  { id: 3, metier: 'Électricité', titre: 'Mise aux normes tableau', description: 'Remplacement tableau électrique vétuste.', ville: 'Antibes', budget: 800, commission: null, urgence: 'urgent', statut: 'termine', date: '2026-03-15', nbOffres: 1, artisan: 'Marc Lambert' },
-];
-
-const STATUT_PAIEMENT = {
-  acompte_bloque: { label: 'Acompte bloqué (30%)', color: '#2563EB', bg: '#EFF6FF', icon: '🔒' },
-  en_cours: { label: 'Travaux en cours', color: '#D97706', bg: '#FFFBEB', icon: '🏗️' },
-  validation: { label: 'En attente de validation', color: '#8B5CF6', bg: '#F5F3FF', icon: '✋' },
-  libere: { label: 'Paiement libéré', color: '#16A34A', bg: '#F0FDF4', icon: '✓' },
-  litige: { label: 'Litige en cours', color: '#DC2626', bg: '#FEF2F2', icon: '⚠️' },
-};
-
-const DEMO_PAIEMENTS = [
-  { id: 1, projetTitre: 'Peinture salon + chambre', artisan: 'Sophie Duval', montant: 1200, acompte: 360, solde: 840, commission: 12, fraisPaiement: 2, total: 1214, date: '2026-04-02', statut: 'validation', dateLimiteValidation: '2026-04-09' },
-  { id: 2, projetTitre: 'Mise aux normes tableau', artisan: 'Marc Lambert', montant: 800, acompte: 240, solde: 560, commission: 8, fraisPaiement: 1.80, total: 809.80, date: '2026-03-20', statut: 'libere', dateValidation: '2026-03-25' },
-  { id: 3, projetTitre: 'Rénovation salle de bain', artisan: 'Lucas Garcia', montant: 3500, acompte: 1050, solde: 2450, commission: 35, fraisPaiement: 2, total: 3537, date: '2026-04-06', statut: 'en_cours' },
-];
-
-const DEMO_FAVORIS = [
-  { id: 1, nom: 'Lucas Garcia', metier: 'Plomberie', ville: 'Nice', note: 4.8, nbAvis: 47 },
-  { id: 2, nom: 'Sophie Duval', metier: 'Peinture', ville: 'Antibes', note: 4.7, nbAvis: 31 },
-  { id: 3, nom: 'Marc Lambert', metier: 'Électricité', ville: 'Nice', note: 4.9, nbAvis: 62 },
-];
-
-const DEMO_MESSAGES = [
-  { id: 1, artisan: 'Sophie Duval', dernier: 'Très bien, on commence lundi !', date: '2026-04-05', unread: 0 },
-  { id: 2, artisan: 'Lucas Garcia', dernier: 'Je peux passer demain matin pour le devis.', date: '2026-04-06', unread: 1 },
-];
+import { useToast } from '../../context/ToastContext';
+import NotificationBell from '../../components/ui/NotificationBell';
+import { CORPS_METIER_BTP } from '../../utils/profilEntreprise';
+import PVReception from '../../components/chantier/PVReception';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
 const BTN = { padding: '10px 20px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font };
+const INP = { width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, fontFamily: DS.font, outline: 'none', boxSizing: 'border-box' };
+
+function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+
+function useIsMobile(bp = 640) {
+  const [m, setM] = useState(() => window.innerWidth <= bp);
+  useEffect(() => { const h = () => setM(window.innerWidth <= bp); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, [bp]);
+  return m;
+}
 
 export default function DashboardClient() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('projets');
+  const isMobile = useIsMobile();
   const [projets, setProjets] = useState([]);
-  const [paiements, setPaiements] = useState(DEMO_PAIEMENTS);
-  const [favoris, setFavoris] = useState([]);
-  const [messages, setMessages] = useState(DEMO_MESSAGES);
-  const [monBien, setMonBien] = useState(() => { try { return JSON.parse(localStorage.getItem(STORAGE_BIEN)) || null; } catch { return null; } });
-  const [bienForm, setBienForm] = useState({});
-  const [bienEdit, setBienEdit] = useState(false);
-  const [estimLoading, setEstimLoading] = useState(false);
-  const [estimResult, setEstimResult] = useState(null);
-  // Données pour InvestirJugeModule (partagées avec l'onglet investir)
-  const [immoData, setImmoData] = useState(() => { try { return JSON.parse(localStorage.getItem('freample_immo_data')) || { scis: [], biens: monBien ? [monBien] : [], dossiers: [], nextId: 10 }; } catch { return { scis: [], biens: [], dossiers: [], nextId: 10 }; } });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [newProjet, setNewProjet] = useState({ metier: '', description: '', ville: 'Marseille', budget: '', urgence: 'normal' });
+  const [projetDetail, setProjetDetail] = useState(null);
+  const [reviewNote, setReviewNote] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSent, setReviewSent] = useState(() => lsGet('freample_reviews', {}));
+  const [clientMessage, setClientMessage] = useState('');
+  const [showPaiements, setShowPaiements] = useState(false);
+  const [showProfil, setShowProfil] = useState(false);
+  const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirm: '' });
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
   useEffect(() => {
-    // Charger projets depuis localStorage + API
-    try {
-      const local = JSON.parse(localStorage.getItem('freample_projets') || '[]');
-      setProjets(local.length > 0 ? local : DEMO_PROJETS);
-    } catch { setProjets(DEMO_PROJETS); }
+    const local = lsGet('freample_projets', []);
+    setProjets(local.length > 0 ? local : []);
     api.get('/projets/mes-projets').then(({ data }) => { if (data.projets?.length) setProjets(data.projets); }).catch(() => {});
-
-    // Charger favoris
-    try {
-      const fav = JSON.parse(localStorage.getItem('freample_favoris') || '[]');
-      setFavoris(fav.length > 0 ? fav : DEMO_FAVORIS);
-    } catch { setFavoris(DEMO_FAVORIS); }
   }, []);
 
-  // Persister mon bien
-  useEffect(() => { if (monBien) localStorage.setItem(STORAGE_BIEN, JSON.stringify(monBien)); }, [monBien]);
-  useEffect(() => { localStorage.setItem('freample_immo_data', JSON.stringify(immoData)); }, [immoData]);
+  // Données dérivées
+  const allOffres = lsGet('freample_offres', []);
+  const allDevis = lsGet('freample_devis', []);
+  const offresActives = allOffres.filter(o => o.statut !== 'retiree');
+  const projetsPublies = projets.filter(p => p.statut === 'publie');
+  const projetsEnCours = projets.filter(p => p.statut === 'en_cours' || p.statut === 'reception');
+  const projetsReception = projets.filter(p => p.statut === 'reception');
+  const projetsTermines = projets.filter(p => p.statut === 'termine');
+  const totalOffresEnAttente = projetsPublies.reduce((s, p) => s + offresActives.filter(o => o.projetId === p.id && (!o.statut || o.statut === 'proposee')).length, 0);
 
-  // Prix moyens par département (données INSEE/Notaires 2024, €/m²)
-  const PRIX_M2_DEPT = {
-    '06':4800,'13':3200,'31':3100,'33':3500,'34':3000,'38':2600,'44':3400,'59':2200,'67':2800,'69':3800,
-    '75':10500,'76':2100,'77':3200,'78':4200,'91':3000,'92':6500,'93':3800,'94':5000,'95':3200,
-    '83':3600,'84':2400,'01':2800,'02':1600,'03':1200,'04':2200,'05':2000,'07':1800,'08':1100,
-    '09':1400,'10':1300,'11':1700,'12':1400,'14':2200,'15':1200,'16':1300,'17':2200,'18':1200,
-    '19':1300,'21':2000,'22':1800,'23':900,'24':1500,'25':2000,'26':2200,'27':1800,'28':1700,
-    '29':2000,'2A':2800,'2B':2600,'30':2200,'32':1200,'35':2800,'36':1100,'37':2200,'39':1500,
-    '40':2000,'41':1500,'42':1800,'43':1400,'45':1800,'46':1400,'47':1400,'48':1200,'49':2200,
-    '50':1700,'51':1800,'52':1000,'53':1500,'54':1800,'55':1000,'56':2400,'57':1600,'58':1100,
-    '60':2200,'61':1200,'62':1800,'63':2000,'64':2600,'65':1600,'66':2200,'68':2200,'70':1100,
-    '71':1400,'72':1500,'73':3200,'74':4200,'79':1400,'80':1800,'81':1600,'82':1400,'85':2200,
-    '86':1500,'87':1400,'88':1100,'89':1300,'90':1500,'971':2800,'972':2600,'973':2000,'974':2400,
+  // Créer un projet
+  const creerProjet = () => {
+    if (!newProjet.metier || !newProjet.description) return;
+    const projet = { id: Date.now(), ...newProjet, budget: Number(newProjet.budget) || 0, statut: 'publie', date: new Date().toISOString().slice(0, 10), nbOffres: 0, clientNom: user?.nom || '' };
+    const updated = [...projets, projet];
+    setProjets(updated);
+    localStorage.setItem('freample_projets', JSON.stringify(updated));
+    api.post('/projets', projet).catch(() => {});
+    setShowForm(false);
+    setNewProjet({ metier: '', description: '', ville: 'Marseille', budget: '', urgence: 'normal' });
+    addToast('Projet publié ! Les artisans vont le voir.', 'success');
   };
-  // Prix/m² par arrondissement (données notaires 2024)
-  const PRIX_ARR_PARIS = { 1:12500,2:11000,3:11500,4:12800,5:11800,6:14500,7:14000,8:12000,9:10500,10:9800,11:10200,12:9500,13:8500,14:10000,15:10200,16:11800,17:10000,18:8200,19:7500,20:8000 };
-  const PRIX_ARR_LYON = { 1:4800,2:5200,3:4500,4:4200,5:3800,6:5500,7:4000,8:3600,9:3200 };
-  const PRIX_ARR_MARSEILLE = { 1:2800,2:3200,3:2200,4:2400,5:2600,6:3800,7:4200,8:4500,9:3000,10:2600,11:2400,12:2800,13:2200,14:2000,15:2000,16:2600 };
-  const VILLES_ARRONDISSEMENTS = { 'Paris': PRIX_ARR_PARIS, 'Lyon': PRIX_ARR_LYON, 'Marseille': PRIX_ARR_MARSEILLE };
 
-  const estimerPrix = async () => {
-    const ville = bienForm.ville;
-    const adresse = bienForm.adresse ? `${bienForm.adresse}, ${ville}` : ville;
-    const surface = Number(bienForm.surface);
-    if (!ville || !surface) { setEstimResult({ erreur: 'Ville et surface requises' }); return; }
-    setEstimLoading(true); setEstimResult(null);
+  // Accepter une offre
+  const accepterOffre = (offre, projet) => {
+    // 1. Mettre à jour le projet
+    const updProjets = projets.map(x => x.id === projet.id ? { ...x, statut: 'en_cours', artisan: offre.artisanNom } : x);
+    setProjets(updProjets);
+    localStorage.setItem('freample_projets', JSON.stringify(updProjets));
+
+    // 2. Marquer les offres (acceptée / refusées)
+    const updOffres = allOffres.map(o => o.id === offre.id ? { ...o, statut: 'acceptee' } : o.projetId === projet.id ? { ...o, statut: 'refusee' } : o);
+    localStorage.setItem('freample_offres', JSON.stringify(updOffres));
+
+    // 3. CRÉER LE CHANTIER dans freample_chantiers_custom → visible par patron + salarié
+    const chantierId = 'ch_' + Date.now();
+    const chantierData = {
+      id: chantierId,
+      projetId: projet.id,
+      titre: `${projet.metier} — ${projet.titre || projet.description?.slice(0, 40) || 'Travaux'}`,
+      description: projet.description || '',
+      client: user?.nom || projet.clientNom || 'Client',
+      adresse: projet.ville || '',
+      budgetPrevu: projet.budget || 0,
+      caDevis: offre.prix || projet.budget || 0,
+      statut: 'en_cours',
+      avancement: 0,
+      dateDebut: new Date().toISOString().slice(0, 10),
+      dateFin: null,
+      equipe: [],
+      source: 'marketplace',
+    };
     try {
-      // 1. Géocoder l'adresse
-      const geoR = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`);
-      const geoJ = await geoR.json();
-      if (!geoJ.features?.length) { setEstimResult({ erreur: 'Adresse non trouvée' }); setEstimLoading(false); return; }
-      const [lon, lat] = geoJ.features[0].geometry.coordinates;
-      const commune = geoJ.features[0].properties.city;
-      const codeInsee = geoJ.features[0].properties.citycode;
-      const dept = codeInsee.slice(0, 2) === '97' ? codeInsee.slice(0, 3) : codeInsee.slice(0, 2);
-      const codePostal = geoJ.features[0].properties.postcode;
+      const chantiers = JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]');
+      chantiers.push(chantierData);
+      localStorage.setItem('freample_chantiers_custom', JSON.stringify(chantiers));
+    } catch {}
 
-      // 2. Tenter les APIs DVF (avec timeout court)
-      const ventes = [];
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      try {
-        const dvfR = await fetch(`https://apidf-preprod.cerema.fr/dvf_opendata/mutations?code_insee=${codeInsee}&nature_mutation=Vente&page_size=100`, { signal: controller.signal });
-        const dvfJ = await dvfR.json();
-        (dvfJ.results || []).forEach(m => {
-          if (m.valeur_fonciere > 0) {
-            (m.locaux || []).forEach(l => { if (l.surface_reelle_bati > 0) ventes.push({ vf: m.valeur_fonciere, surf: l.surface_reelle_bati }); });
-          }
-        });
-      } catch {} finally { clearTimeout(timeout); }
+    // 4. Passer le devis marketplace en statut "accepte" (si trouvé)
+    try {
+      const devisAll = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+      const updated = devisAll.map(d => d.projetId === projet.id && d.source === 'marketplace' && d.statut === 'envoye'
+        ? { ...d, statut: 'accepte', chantierId } : d);
+      localStorage.setItem('freample_devis', JSON.stringify(updated));
+    } catch {}
 
-      let prixM2, source, nbRef;
-      const arr = Number(bienForm.arrondissement) || 0;
+    // 5. Notif patron
+    const notifs = lsGet('freample_notifs_patron', []);
+    notifs.push({
+      id: Date.now(), date: new Date().toISOString(), type: 'offre_acceptee',
+      titre: 'Un client vous a choisi !',
+      message: `${user?.nom || 'Le client'} a choisi votre offre sur "${projet.titre || projet.metier}". Le chantier a été créé automatiquement.`,
+      lien: '/patron/missions', lu: false,
+    });
+    localStorage.setItem('freample_notifs_patron', JSON.stringify(notifs));
 
-      if (ventes.length >= 5) {
-        const prixM2List = ventes.map(v => v.vf / v.surf).filter(p => p > 500 && p < 25000).sort((a, b) => a - b);
-        if (prixM2List.length >= 3) {
-          prixM2 = Math.round(prixM2List[Math.floor(prixM2List.length / 2)]);
-          source = 'DVF (ventes réelles)';
-          nbRef = prixM2List.length;
-        }
-      }
-
-      if (!prixM2) {
-        // Vérifier si c'est une ville à arrondissements
-        const villeArr = Object.keys(VILLES_ARRONDISSEMENTS).find(v => commune?.toLowerCase().includes(v.toLowerCase()));
-        if (villeArr && arr > 0 && VILLES_ARRONDISSEMENTS[villeArr][arr]) {
-          prixM2 = VILLES_ARRONDISSEMENTS[villeArr][arr];
-          source = `Données notaires — ${villeArr} ${arr}e arr.`;
-        } else if (villeArr) {
-          const arrPrix = Object.values(VILLES_ARRONDISSEMENTS[villeArr]);
-          prixM2 = Math.round(arrPrix.reduce((s, p) => s + p, 0) / arrPrix.length);
-          source = `Moyenne ${villeArr} (précisez l'arrondissement pour affiner)`;
-        } else {
-          prixM2 = PRIX_M2_DEPT[dept] || 2500;
-          source = 'Données notaires départementales';
-        }
-        nbRef = 0;
-      }
-
-      // Ajustement DPE (impact prix réel, données notaires + loi Climat)
-      const DPE_IMPACT = { A: 1.12, B: 1.06, C: 1.03, D: 1, E: 0.95, F: 0.88, G: 0.80 };
-      const dpe = bienForm.dpe || 'D';
-      const coefDpe = DPE_IMPACT[dpe] || 1;
-      const prixM2Ajuste = Math.round(prixM2 * coefDpe);
-      const prixEstime = Math.round(prixM2Ajuste * surface);
-      const prixBas = Math.round(prixM2Ajuste * 0.85 * surface);
-      const prixHaut = Math.round(prixM2Ajuste * 1.15 * surface);
-      const impactDpe = Math.round((coefDpe - 1) * 100);
-
-      setBienForm(f => ({ ...f, valeur: String(prixEstime) }));
-      setEstimResult({ prixEstime, prixM2: prixM2Ajuste, prixM2Base: prixM2, prixBas, prixHaut, commune, dept, codePostal, nbReferences: nbRef, source, dpe, impactDpe });
-    } catch (err) { setEstimResult({ erreur: 'Erreur lors de l\'estimation. Vérifiez l\'adresse.' }); }
-    setEstimLoading(false);
+    api.post(`/projets/offres/${offre.id}/accepter`).catch(() => {});
+    addToast(`${offre.artisanNom} sélectionné ! Le chantier est créé.`, 'success');
+    setProjetDetail(null);
   };
 
-  const sauverBien = () => {
-    const b = { id: 1, nom: bienForm.nom || 'Ma maison', ville: bienForm.ville || '', arrondissement: bienForm.arrondissement || '', adresse: bienForm.adresse || '', surface: Number(bienForm.surface) || 0, pieces: Number(bienForm.pieces) || 0, valeur: Number(bienForm.valeur) || 0, dpe: bienForm.dpe || 'D', anneeAchat: bienForm.anneeAchat || '', prixAchat: Number(bienForm.prixAchat) || 0, creditMensuel: Number(bienForm.creditMensuel) || 0, taxeFonciere: Number(bienForm.taxeFonciere) || 0, assurance: Number(bienForm.assurance) || 0, travaux: [] };
-    setMonBien(b);
-    setImmoData(d => ({ ...d, biens: [b] }));
-    setBienEdit(false);
+  // Supprimer projet
+  const supprimerProjet = (id) => {
+    if (!window.confirm('Retirer ce projet ?')) return;
+    const updated = projets.filter(x => x.id !== id);
+    setProjets(updated);
+    localStorage.setItem('freample_projets', JSON.stringify(updated));
+    setProjetDetail(null);
   };
 
-  const removeFavori = (id) => {
-    const updated = favoris.filter(f => f.id !== id);
-    setFavoris(updated);
-    localStorage.setItem('freample_favoris', JSON.stringify(updated));
-  };
-
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [projetOpen, setProjetOpen] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [editForm, setEditForm] = useState({});
+  // Déterminer la "phase" du client
+  const phase = projets.length === 0 ? 'nouveau'
+    : totalOffresEnAttente > 0 ? 'offres'
+    : projetsReception.length > 0 ? 'reception'
+    : projetsEnCours.length > 0 ? 'chantier'
+    : projetsTermines.length > 0 && projetsPublies.length === 0 ? 'termine'
+    : 'projets';
 
   return (
-    <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
-      {/* Header */}
-      <div style={{ background: '#2C2520', padding: '0 clamp(20px,4vw,40px)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          {/* Burger */}
+    <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font, color: '#1A1A1A' }}>
+      {/* ══ HEADER ══ */}
+      <div style={{ background: '#2C2520', padding: isMobile ? '0 12px' : '0 clamp(20px,4vw,40px)', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, padding: 6 }}>
             <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
             <span style={{ width: 18, height: 2, background: '#F5EFE0', borderRadius: 1 }} />
           </button>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: isMobile ? 14 : 16, fontWeight: 900, color: '#F5EFE0', fontFamily: DS.font, letterSpacing: '-0.04em' }}>
             Freample<span style={{ color: '#A68B4B' }}>.</span>
           </button>
         </div>
-        <div style={{ color: '#F5EFE0', fontSize: 13, fontWeight: 500 }}>Bonjour, {prenom}</div>
-        <button onClick={() => navigate('/')} style={{ padding: '8px 20px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font }}>
-          + Nouveau projet
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {!isMobile && <span style={{ color: '#F5EFE0', fontSize: 13 }}>Bonjour, {prenom}</span>}
+          <NotificationBell dark />
+        </div>
       </div>
 
-      {/* Sidebar mobile */}
+      {/* ══ SIDEBAR ══ */}
       {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 }} />}
       <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, background: '#fff', zIndex: 1000, transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform .3s', boxShadow: menuOpen ? '4px 0 20px rgba(0,0,0,0.1)' : 'none', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${DS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>Mon espace</span>
-          <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
+          <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#444' }}>×</button>
         </div>
-        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => { setTab(t.id); setMenuOpen(false); }}
-              style={{ width: '100%', padding: '12px 20px', background: tab === t.id ? '#F8F7F4' : 'none', border: 'none', borderLeft: `3px solid ${tab === t.id ? '#2C2520' : 'transparent'}`, cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? DS.ink : DS.muted, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all .1s' }}
-              onMouseEnter={e => { if (tab !== t.id) e.currentTarget.style.background = '#FAFAF8'; }}
-              onMouseLeave={e => { if (tab !== t.id) e.currentTarget.style.background = 'none'; }}>
-              <span style={{ fontSize: 16 }}>{t.icon}</span> {t.label}
+        <nav style={{ flex: 1, padding: '12px 0' }}>
+          {[
+            { label: 'Accueil', action: () => { setProjetDetail(null); setShowPaiements(false); setShowProfil(false); } },
+            { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setProjetDetail(null); } },
+            { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setProjetDetail(null); } },
+            { label: 'Trouver un artisan', action: () => navigate('/btp') },
+          ].map(t => (
+            <button key={t.label} onClick={() => { setMenuOpen(false); t.action(); }}
+              style={{ width: '100%', padding: '12px 20px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: 500, color: DS.ink, textAlign: 'left' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+              {t.label}
             </button>
           ))}
         </nav>
-        <div style={{ padding: '12px 20px', borderTop: `1px solid ${DS.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <button onClick={() => { setMenuOpen(false); navigate('/'); }} style={{ width: '100%', padding: '10px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>📋 Proposer un projet</button>
-          <button onClick={() => { setMenuOpen(false); navigate('/btp'); }} style={{ width: '100%', padding: '10px', background: 'transparent', color: DS.ink, border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>🔍 Trouver un artisan</button>
+        <div style={{ padding: '12px 20px', borderTop: `1px solid ${DS.border}` }}>
+          <button onClick={() => { setMenuOpen(false); setShowForm(true); }} style={{ width: '100%', ...BTN, marginBottom: 8 }}>+ Nouveau projet</button>
+          <button onClick={async () => { if (logout) await logout(); navigate('/login'); }}
+            style={{ width: '100%', padding: '10px', background: 'transparent', color: '#DC2626', border: '1px solid #DC2626', borderRadius: 8, cursor: 'pointer', fontFamily: DS.font, fontSize: 13, fontWeight: 600 }}>Se déconnecter</button>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
+      <div style={{ maxWidth: 700, margin: '0 auto', padding: '24px clamp(16px,4vw,40px)' }}>
 
-        {/* ═══ SUIVI DE PROJETS ═══ */}
-        {tab === 'projets' && (() => {
-          const PIPELINE = [
-            { id: 'publie', label: 'Publié', icon: '📋', color: '#2563EB' },
-            { id: 'en_cours', label: 'En cours', icon: '🏗️', color: '#D97706' },
-            { id: 'termine', label: 'Terminé', icon: '✅', color: '#16A34A' },
-          ];
-          const saveEdit = (id) => {
-            const updated = projets.map(p => p.id === id ? { ...p, ...editForm } : p);
-            setProjets(updated);
-            localStorage.setItem('freample_projets', JSON.stringify(updated));
-            setEditMode(false);
-          };
-          const removeProjet = (id) => {
-            if (!window.confirm('Retirer ce projet ?')) return;
-            const updated = projets.filter(x => x.id !== id);
-            setProjets(updated);
-            localStorage.setItem('freample_projets', JSON.stringify(updated));
-            setProjetOpen(null);
-          };
+        {/* ══ VUE PAIEMENTS ══ */}
+        {showPaiements && !projetDetail && (
+          <div>
+            <button onClick={() => setShowPaiements(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 12px', color: '#1A1A1A' }}>Mes paiements</h2>
+            <div style={{ ...CARD, marginBottom: 16, borderLeft: '4px solid #2563EB', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Paiement sécurisé par séquestre</div>
+                <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>Vos paiements sont bloqués sur un compte sécurisé. L'artisan ne reçoit les fonds qu'après votre validation. Commission Freample : 1%.</div>
+              </div>
+            </div>
+            {projets.filter(p => p.artisan).length === 0 ? (
+              <div style={{ ...CARD, textAlign: 'center', padding: 40, color: '#444', fontSize: 13 }}>Aucun paiement — choisissez d'abord un artisan sur un de vos projets.</div>
+            ) : projets.filter(p => p.artisan).map(p => (
+              <div key={p.id} style={{ ...CARD, marginBottom: 10, borderLeft: `4px solid ${p.statut === 'termine' ? '#16A34A' : '#D97706'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{p.titre || p.metier}</div>
+                    <div style={{ fontSize: 12, color: '#444' }}>🔨 {p.artisan} · {(p.budget || 0).toLocaleString('fr-FR')}€</div>
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: p.statut === 'termine' ? '#F0FDF4' : '#FFFBEB', color: p.statut === 'termine' ? '#16A34A' : '#D97706' }}>
+                    {p.statut === 'termine' ? 'Payé' : 'En cours'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ══ VUE PROFIL ══ */}
+        {showProfil && !projetDetail && (
+          <div>
+            <button onClick={() => setShowProfil(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: '#1A1A1A' }}>Mon profil</h2>
+            <div style={{ ...CARD }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[['Nom', user?.nom], ['Email', user?.email], ['Téléphone', user?.telephone || '—'], ['Membre depuis', user?.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : '2026']].map(([k, v]) => (
+                  <div key={k} style={{ background: '#F8F7F4', padding: '10px 14px', borderRadius: 8 }}>
+                    <div style={{ fontSize: 10, color: '#444', fontWeight: 600, textTransform: 'uppercase' }}>{k}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{v || '—'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ DÉTAIL PROJET (modal inline) ══ */}
+        {projetDetail && (() => {
+          const p = projetDetail;
+          const offres = offresActives.filter(o => o.projetId === p.id && (!o.statut || o.statut === 'proposee'));
+          const offresAll = offresActives.filter(o => o.projetId === p.id);
+          const devis = allDevis.filter(d => d.projetId === p.id && d.statut !== 'retire_marketplace');
+          const chantier = lsGet('freample_chantiers_custom', []).find(c => c.projetId === p.id);
+          const rapports = lsGet(`freample_rapports_${p.id}`, []).slice(-5).reverse();
+          const chatMessages = lsGet(`freample_messages_${p.id}`, []);
 
           return <div>
-            {/* KPI rapides */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
-              {PIPELINE.map(s => {
-                const count = projets.filter(p => p.statut === s.id).length;
-                return <div key={s.id} style={{ ...CARD, textAlign: 'center', borderTop: `3px solid ${s.color}`, cursor: 'pointer' }}
-                  onClick={() => {}}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: s.color }}>{count}</div>
-                  <div style={{ fontSize: 12, color: DS.muted, marginTop: 2 }}>{s.icon} {s.label}</div>
-                </div>;
-              })}
+            <button onClick={() => setProjetDetail(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour à l'accueil</button>
+
+            {/* Header projet */}
+            <div style={{ ...CARD, marginBottom: 16, borderLeft: `4px solid ${p.statut === 'termine' ? '#16A34A' : p.statut === 'en_cours' ? '#D97706' : '#2563EB'}` }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{p.metier}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: '#1A1A1A' }}>{p.titre || p.description?.slice(0, 50)}</div>
+              <div style={{ fontSize: 12, color: '#444' }}>{p.ville} · {(p.budget || 0).toLocaleString('fr-FR')}€ · {p.urgence === 'urgent' ? 'Urgent' : p.urgence === 'flexible' ? 'Flexible' : 'Normal'}</div>
+              {p.artisan && <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginTop: 8 }}>🔨 Artisan : {p.artisan}</div>}
             </div>
 
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 12px' }}>Mes projets</h2>
-            {projets.length === 0 ? (
-              <div style={{ ...CARD, textAlign: 'center', padding: 48 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Aucun projet</div>
-                <div style={{ fontSize: 13, color: DS.muted, marginBottom: 16 }}>Publiez votre premier projet pour recevoir des offres d'artisans.</div>
-                <button onClick={() => navigate('/')} style={BTN}>Proposer un projet</button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {projets.map(p => {
-                  const st = STATUT_PROJET[p.statut] || STATUT_PROJET.publie;
-                  const isOpen = projetOpen === p.id;
-                  return (
-                    <div key={p.id}>
-                      <div onClick={() => setProjetOpen(isOpen ? null : p.id)}
-                        style={{ ...CARD, cursor: 'pointer', borderLeft: `4px solid ${st.color}`, transition: 'all .15s' }}
-                        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'}
-                        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                              <span style={{ fontSize: 14, fontWeight: 700 }}>{p.metier} — {p.titre || p.description?.slice(0, 40)}</span>
-                              <span style={{ fontSize: 9, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 6 }}>{st.label}</span>
-                            </div>
-                            <div style={{ fontSize: 11, color: DS.muted }}>📍 {p.ville} · 💰 {p.budget || '?'}€ · {new Date(p.date || p.created_at).toLocaleDateString('fr-FR')}</div>
+            {/* Offres à comparer */}
+            {p.statut === 'publie' && offres.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{offres.length} artisan{offres.length > 1 ? 's' : ''} {offres.length > 1 ? 'ont' : 'a'} répondu</div>
+                {offres.length > 1 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(offres.length, 3)}, 1fr)`, gap: 10, marginBottom: 12 }}>
+                    {offres.slice(0, 3).map(o => {
+                      const isBest = offres.every(x => Number(o.prix) <= Number(x.prix));
+                      return (
+                        <div key={o.id} onClick={() => accepterOffre(o, p)}
+                          style={{ ...CARD, textAlign: 'center', cursor: 'pointer', border: isBest ? '2px solid #16A34A' : `1px solid ${DS.border}`, transition: 'all .15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, margin: '0 auto 8px' }}>
+                            {(o.artisanNom || 'A').charAt(0)}
                           </div>
-                          <div style={{ fontSize: 12, color: isOpen ? '#2C2520' : DS.muted }}>{isOpen ? '▼' : '▶'}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{o.artisanNom}</div>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: isBest ? '#16A34A' : '#2C2520', margin: '6px 0' }}>{Number(o.prix).toLocaleString('fr-FR')}€</div>
+                          {isBest && <div style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', marginBottom: 4 }}>MEILLEUR PRIX</div>}
+                          <div style={{ fontSize: 11, color: '#444' }}>{o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : ''}</div>
+                          <button style={{ marginTop: 8, padding: '8px 16px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }}>
+                            Choisir
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {offres.length === 1 && (
+                  <div style={{ ...CARD, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>🔨 {offres[0].artisanNom}</div>
+                      <div style={{ fontSize: 12, color: '#444' }}>{offres[0].createdAt ? `Envoyé le ${new Date(offres[0].createdAt).toLocaleDateString('fr-FR')}` : ''}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 20, fontWeight: 800 }}>{Number(offres[0].prix).toLocaleString('fr-FR')}€</div>
+                      <button onClick={() => accepterOffre(offres[0], p)} style={{ marginTop: 4, padding: '6px 16px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Choisir cet artisan</button>
+                    </div>
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: '#444', textAlign: 'center' }}>Cliquez sur un artisan pour le sélectionner. Les autres seront informés.</div>
+              </div>
+            )}
+
+            {/* En attente d'offres */}
+            {p.statut === 'publie' && offres.length === 0 && (
+              <div style={{ ...CARD, textAlign: 'center', marginBottom: 16, padding: 32 }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>En attente de réponses</div>
+                <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>Les artisans de votre zone consultent votre projet. Vous recevrez leurs devis ici.</div>
+                <div style={{ fontSize: 11, color: '#A68B4B', fontWeight: 600, marginTop: 8 }}>En moyenne, première offre sous 24h</div>
+              </div>
+            )}
+
+            {/* Suivi chantier */}
+            {(p.statut === 'en_cours' || p.statut === 'termine') && (() => {
+              const profilPatron = lsGet('freample_profil_patron', {});
+              const patronTel = profilPatron.telephone || profilPatron.tel || '';
+              const patronNom = profilPatron.nom || p.artisan || 'Artisan';
+              const avancement = chantier?.avancement || (p.statut === 'termine' ? 100 : 25);
+              const dateDebut = chantier?.dateDebut || p.date;
+              const dateFin = chantier?.dateFin;
+              const equipe = chantier?.equipe || [];
+              const today = new Date().toISOString().slice(0, 10);
+              const todayPointages = lsGet('freample_pointages', []).filter(pt => pt.date === today && (pt.chantierId === p.id || pt.chantierId === chantier?.id));
+              const ouvriersPresents = todayPointages.filter(pt => pt.type === 'arrivee');
+              const photos = chantier ? lsGet(`freample_photos_${chantier.id}`, []) : [];
+              const devisAccepte = allDevis.find(d => d.projetId === p.id && (d.statut === 'envoye' || d.statut === 'accepte' || d.statut === 'signe'));
+
+              return (
+              <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                {/* Carte artisan + contact */}
+                <div style={{ ...CARD, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, background: '#2C2520', borderColor: '#2C2520' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#A68B4B', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }}>
+                      {(patronNom || 'A').charAt(0)}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: '#F5EFE0' }}>{patronNom}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)' }}>Votre artisan · {p.metier}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {patronTel && (
+                      <a href={`tel:${patronTel}`} style={{ padding: '8px 14px', background: '#16A34A', color: '#fff', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        📞 Appeler
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Avancement */}
+                <div style={CARD}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>Avancement des travaux</div>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: avancement >= 100 ? '#16A34A' : '#A68B4B' }}>{avancement}%</span>
+                  </div>
+                  <div style={{ height: 10, background: '#E8E6E1', borderRadius: 5, overflow: 'hidden', marginBottom: 10 }}>
+                    <div style={{ width: `${avancement}%`, height: '100%', background: avancement >= 100 ? '#16A34A' : '#A68B4B', borderRadius: 5, transition: 'width .5s' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+                    {[
+                      ['Début', dateDebut ? new Date(dateDebut).toLocaleDateString('fr-FR') : '—'],
+                      ['Fin prévue', dateFin ? new Date(dateFin).toLocaleDateString('fr-FR') : 'À définir'],
+                      ['Budget', `${(p.budget || 0).toLocaleString('fr-FR')}€`],
+                      ['Statut', p.statut === 'termine' ? 'Terminé' : 'En cours'],
+                    ].map(([k, v]) => (
+                      <div key={k} style={{ background: '#F8F7F4', padding: '8px 10px', borderRadius: 6 }}>
+                        <div style={{ fontSize: 10, color: '#444', fontWeight: 600, textTransform: 'uppercase' }}>{k}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', marginTop: 2 }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Paiement */}
+                <div style={{ ...CARD, borderLeft: '4px solid #2563EB' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 10 }}>Paiement sécurisé</div>
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+                    <div style={{ flex: 30, height: 8, borderRadius: 4, background: '#2563EB' }} />
+                    <div style={{ flex: 70, height: 8, borderRadius: 4, background: p.statut === 'termine' ? '#16A34A' : '#E8E6E1' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12 }}>
+                    <div style={{ padding: '6px 10px', background: '#EFF6FF', borderRadius: 6 }}>
+                      <span style={{ color: '#444' }}>Acompte (30%) </span><strong style={{ color: '#2563EB' }}>{Math.round((p.budget || 0) * 0.3).toLocaleString('fr-FR')}€ ✓</strong>
+                    </div>
+                    <div style={{ padding: '6px 10px', background: p.statut === 'termine' ? '#F0FDF4' : '#F8F7F4', borderRadius: 6 }}>
+                      <span style={{ color: '#444' }}>Solde (70%) </span><strong style={{ color: p.statut === 'termine' ? '#16A34A' : '#333' }}>{Math.round((p.budget || 0) * 0.7).toLocaleString('fr-FR')}€ {p.statut === 'termine' ? '✓' : '🔒'}</strong>
+                    </div>
+                    <div style={{ padding: '6px 10px', background: '#F8F7F4', borderRadius: 6 }}>
+                      <span style={{ color: '#444' }}>Commission </span><strong>{Math.max(1, Math.round((p.budget || 0) * 0.01))}€</strong>
+                    </div>
+                  </div>
+                  {p.statut === 'en_cours' && (
+                    <div style={{ fontSize: 11, color: '#2563EB', fontWeight: 600, marginTop: 8 }}>🔒 Le solde sera libéré quand vous validerez la fin des travaux</div>
+                  )}
+                  {p.statut === 'termine' && (
+                    <div style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, marginTop: 8 }}>✓ Paiement libéré à {patronNom}</div>
+                  )}
+                </div>
+
+                {/* Équipe sur place aujourd'hui */}
+                {p.statut === 'en_cours' && (
+                  <div style={CARD}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 }}>Aujourd'hui sur votre chantier</div>
+                    {ouvriersPresents.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {ouvriersPresents.map((pt, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#F0FDF4', borderRadius: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#16A34A', flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: '#1A1A1A' }}>{pt.salarie || 'Ouvrier'}</span>
+                            <span style={{ fontSize: 11, color: '#444' }}>arrivé à {pt.heure}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : equipe.length > 0 ? (
+                      <div>
+                        <div style={{ fontSize: 12, color: '#444', marginBottom: 6 }}>Équipe assignée :</div>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {equipe.map((nom, i) => (
+                            <span key={i} style={{ padding: '4px 10px', background: '#F8F7F4', borderRadius: 6, fontSize: 12, fontWeight: 600, color: '#1A1A1A' }}>{nom}</span>
+                          ))}
                         </div>
                       </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: '#444' }}>Pas d'intervention signalée aujourd'hui</div>
+                    )}
+                  </div>
+                )}
 
-                      {/* Détail ouvert */}
-                      {isOpen && (
-                        <div style={{ background: '#fff', border: `1px solid ${DS.border}`, borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px 20px' }}>
-                          {/* Barre de progression */}
-                          <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-                            {PIPELINE.map((s, i) => {
-                              const pIdx = PIPELINE.findIndex(x => x.id === p.statut);
-                              const done = i <= pIdx;
-                              return <div key={s.id} style={{ flex: 1, textAlign: 'center' }}>
-                                <div style={{ height: 4, borderRadius: 2, background: done ? s.color : '#E5E7EB', marginBottom: 4, transition: 'background .3s' }} />
-                                <span style={{ fontSize: 9, fontWeight: 600, color: done ? s.color : DS.muted }}>{s.icon} {s.label}</span>
-                              </div>;
-                            })}
-                          </div>
-
-                          {!editMode ? (() => {
-                            // Charger les offres pour ce projet
-                            const allOffres = (() => { try { return JSON.parse(localStorage.getItem('freample_offres') || '[]'); } catch { return []; } })();
-                            const offres = allOffres.filter(o => o.projetId === p.id);
-                            const devis = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]'); } catch { return []; } })().filter(d => d.projetId === p.id);
-
-                            const accepterOffre = (offre) => {
-                              // Mettre à jour le projet
-                              const updated = projets.map(x => x.id === p.id ? { ...x, statut: 'en_cours', artisan: offre.artisanNom, nbOffres: offres.length } : x);
-                              setProjets(updated);
-                              localStorage.setItem('freample_projets', JSON.stringify(updated));
-                              // Marquer l'offre comme acceptée
-                              const updOffres = allOffres.map(o => o.id === offre.id ? { ...o, statut: 'acceptee' } : o.projetId === p.id ? { ...o, statut: 'refusee' } : o);
-                              localStorage.setItem('freample_offres', JSON.stringify(updOffres));
-                            };
-
-                            return <>
-                            {/* Infos */}
-                            <div style={{ fontSize: 13, color: '#333', lineHeight: 1.6, marginBottom: 12 }}>{p.description}</div>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-                              {[['Métier', p.metier], ['Ville', p.ville], ['Budget', `${p.budget || '?'}€`], ['Urgence', p.urgence === 'urgent' ? '🚨 Urgent' : p.urgence === 'flexible' ? '🕐 Flexible' : '📅 Normal']].map(([k, v]) => (
-                                <div key={k} style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6, fontSize: 11 }}>
-                                  <span style={{ color: DS.muted }}>{k} : </span><strong>{v}</strong>
-                                </div>
-                              ))}
-                            </div>
-                            {p.artisan && <div style={{ fontSize: 13, color: '#16A34A', fontWeight: 600, marginBottom: 8 }}>🔨 Artisan assigné : {p.artisan}</div>}
-
-                            {/* Offres reçues */}
-                            {offres.length > 0 && (
-                              <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#2563EB' }}>📩 {offres.length} offre{offres.length > 1 ? 's' : ''} reçue{offres.length > 1 ? 's' : ''}</div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                  {offres.map(o => (
-                                    <div key={o.id} style={{ background: '#F8F7F4', borderRadius: 10, padding: '12px 14px', border: o.statut === 'acceptee' ? '2px solid #16A34A' : `1px solid ${DS.border}` }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                                        <div>
-                                          <div style={{ fontSize: 13, fontWeight: 700 }}>🔨 {o.artisanNom}</div>
-                                          <div style={{ fontSize: 11, color: DS.muted }}>{o.date ? `Disponible le ${new Date(o.date).toLocaleDateString('fr-FR')}` : ''}{o.delai ? ` · ${o.delai} jours` : ''}</div>
-                                        </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                          <div style={{ fontSize: 17, fontWeight: 800, color: '#2C2520' }}>{Number(o.prix).toLocaleString('fr-FR')} €</div>
-                                          {o.statut === 'acceptee' && <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '2px 6px', borderRadius: 4 }}>✓ Acceptée</span>}
-                                          {o.statut === 'refusee' && <span style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', background: '#FEF2F2', padding: '2px 6px', borderRadius: 4 }}>Refusée</span>}
-                                        </div>
-                                      </div>
-                                      {o.message && <div style={{ fontSize: 12, color: '#555', lineHeight: 1.5, marginBottom: 8, fontStyle: 'italic' }}>"{o.message}"</div>}
-                                      {(!o.statut || o.statut === 'proposee') && p.statut === 'publie' && (
-                                        <div style={{ display: 'flex', gap: 6 }}>
-                                          <button onClick={() => accepterOffre(o)}
-                                            style={{ padding: '7px 14px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>✓ Accepter cette offre</button>
-                                          <button onClick={() => { const upd = allOffres.map(x => x.id === o.id ? { ...x, statut: 'refusee' } : x); localStorage.setItem('freample_offres', JSON.stringify(upd)); setProjets([...projets]); }}
-                                            style={{ padding: '7px 14px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Refuser</button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Devis reçus */}
-                            {devis.length > 0 && (
-                              <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#A68B4B' }}>📋 {devis.length} devis reçu{devis.length > 1 ? 's' : ''}</div>
-                                {devis.map(d => (
-                                  <div key={d.id} style={{ background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 10, padding: '12px 14px', marginBottom: 6 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                      <div style={{ fontSize: 12, fontWeight: 600 }}>Devis de {d.client || 'Artisan'}</div>
-                                      <div style={{ fontSize: 15, fontWeight: 800 }}>{d.ttc?.toLocaleString('fr-FR') || '?'} € TTC</div>
-                                    </div>
-                                    {d.lignes?.map((l, i) => (
-                                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: DS.muted, padding: '2px 0' }}>
-                                        <span>{l.desc || l.description}</span>
-                                        <span>{(l.qte || l.quantite || 1)} × {(l.pu || l.prixUnitaireHT || 0)}€</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            {offres.length === 0 && devis.length === 0 && p.statut === 'publie' && (
-                              <div style={{ padding: '12px 14px', background: '#FFFBEB', borderRadius: 8, border: '1px solid rgba(217,119,6,0.15)', fontSize: 12, color: '#92400E', marginBottom: 12 }}>
-                                ⏳ En attente d'offres — les artisans de votre zone verront votre projet et vous enverront leurs propositions.
-                              </div>
-                            )}
-
-                            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                              <button onClick={() => { setEditForm({ metier: p.metier, description: p.description, ville: p.ville, budget: p.budget, urgence: p.urgence }); setEditMode(true); }}
-                                style={{ padding: '8px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✏️ Modifier</button>
-                              <button onClick={() => removeProjet(p.id)}
-                                style={{ padding: '8px 16px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Retirer</button>
-                            </div>
-                          </>; })() : <>
-                            {/* Formulaire de modification */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                              <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Description</label><textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: DS.font }} /></div>
-                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Ville</label><input value={editForm.ville || ''} onChange={e => setEditForm(f => ({ ...f, ville: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} /></div>
-                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Budget (€)</label><input type="number" value={editForm.budget || ''} onChange={e => setEditForm(f => ({ ...f, budget: Number(e.target.value) }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} /></div>
-                              <div><label style={{ fontSize: 10, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 3 }}>Urgence</label><select value={editForm.urgence || 'normal'} onChange={e => setEditForm(f => ({ ...f, urgence: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box' }}><option value="urgent">Urgent</option><option value="normal">Normal</option><option value="flexible">Flexible</option></select></div>
-                            </div>
-                            <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-                              <button onClick={() => saveEdit(p.id)} style={{ padding: '8px 16px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>✓ Enregistrer</button>
-                              <button onClick={() => setEditMode(false)} style={{ padding: '8px 16px', background: '#F2F2F7', color: DS.muted, border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Annuler</button>
-                            </div>
-                          </>}
+                {/* Photos */}
+                {photos.length > 0 && (
+                  <div style={CARD}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 }}>Photos du chantier ({photos.length})</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 6 }}>
+                      {photos.slice(-6).reverse().map((photo, i) => (
+                        <div key={i} style={{ background: '#F8F7F4', borderRadius: 8, overflow: 'hidden', border: `1px solid ${DS.border}` }}>
+                          <div style={{ width: '100%', height: 80, background: photo.url ? `url(${photo.url}) center/cover` : '#E8E6E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: 11 }}>{!photo.url && '📷'}</div>
+                          <div style={{ padding: '4px 6px', fontSize: 9, color: '#444' }}>{photo.date ? new Date(photo.date).toLocaleDateString('fr-FR') : ''}</div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  );
-                })}
+                  </div>
+                )}
+
+                {/* Rapports */}
+                {rapports.length > 0 && (
+                  <div style={CARD}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 10 }}>Derniers rapports</div>
+                    {rapports.map((r, i) => (
+                      <div key={i} style={{ padding: '8px 0', borderBottom: i < rapports.length - 1 ? '1px solid #F2F2F7' : 'none' }}>
+                        <div style={{ fontSize: 10, color: '#444' }}>{new Date(r.date).toLocaleDateString('fr-FR')}{r.salarie ? ` — ${r.salarie}` : ''}</div>
+                        <div style={{ fontSize: 12, color: '#333', marginTop: 2 }}>{r.note || r.texte || '—'}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Devis accepté */}
+                {devisAccepte && (
+                  <div style={CARD}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>Devis {devisAccepte.numero || ''}</div>
+                        <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>{(devisAccepte.lignes || []).length} ligne{(devisAccepte.lignes || []).length > 1 ? 's' : ''} · {(devisAccepte.montantTTC || 0).toLocaleString('fr-FR')}€ TTC</div>
+                      </div>
+                      <button onClick={() => window.open(`/devis/${devisAccepte.id}/signer`, '_blank')}
+                        style={{ padding: '7px 14px', background: '#fff', color: '#A68B4B', border: '1px solid #A68B4B', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                        Voir le devis
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Chat */}
+                <div style={CARD}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 10 }}>Messagerie chantier</div>
+                  <div style={{ background: '#F8F7F4', borderRadius: 10, padding: '10px 12px', maxHeight: 200, overflowY: 'auto', marginBottom: 8 }}>
+                    {chatMessages.length > 0 ? chatMessages.map((m, i) => (
+                      <div key={m.id || i} style={{ display: 'flex', justifyContent: m.from === 'client' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
+                        <div style={{ maxWidth: '75%', padding: '8px 12px', borderRadius: m.from === 'client' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: m.from === 'client' ? '#2C2520' : '#fff', color: m.from === 'client' ? '#F5EFE0' : '#333', border: m.from === 'client' ? 'none' : `1px solid ${DS.border}`, fontSize: 12, lineHeight: 1.5 }}>
+                          <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 2, color: m.from === 'client' ? '#A68B4B' : '#2563EB' }}>{m.auteur || (m.from === 'client' ? 'Vous' : 'Artisan')}</div>
+                          <div>{m.texte}</div>
+                        </div>
+                      </div>
+                    )) : <div style={{ fontSize: 12, color: '#444', fontStyle: 'italic', textAlign: 'center', padding: 16 }}>Envoyez un message à votre artisan</div>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input value={clientMessage} onChange={e => setClientMessage(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (!clientMessage.trim()) return; const msg = { id: Date.now(), date: new Date().toISOString(), from: 'client', auteur: user?.nom || 'Client', texte: clientMessage.trim() }; const updated = [...chatMessages, msg]; localStorage.setItem(`freample_messages_${p.id}`, JSON.stringify(updated)); setClientMessage(''); setProjetDetail({ ...p }); } }}
+                      placeholder="Écrire un message…" style={{ flex: 1, ...INP, fontSize: 12 }} />
+                    <button onClick={() => { if (!clientMessage.trim()) return; const msg = { id: Date.now(), date: new Date().toISOString(), from: 'client', auteur: user?.nom || 'Client', texte: clientMessage.trim() }; const updated = [...chatMessages, msg]; localStorage.setItem(`freample_messages_${p.id}`, JSON.stringify(updated)); setClientMessage(''); setProjetDetail({ ...p }); }}
+                      style={{ padding: '9px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Envoyer</button>
+                  </div>
+                </div>
+              </div>
+              );
+            })()}
+
+            {/* PV de réception */}
+            {(p.statut === 'reception' || p.statut === 'termine') && (() => {
+              const pvs = lsGet('freample_pv_receptions', []);
+              const pv = pvs.find(v => v.projetId === p.id || v.chantierId === chantier?.id);
+              if (!pv && p.statut !== 'termine') return null;
+              const profilPatron = lsGet('freample_profil_patron', {});
+              const devisLie = allDevis.find(d => d.projetId === p.id);
+
+              const handleSigner = (pvData) => {
+                // 1. Sauver le PV signé
+                const allPvs = lsGet('freample_pv_receptions', []);
+                const updPvs = allPvs.map(v => v.id === pvData.id ? { ...pvData, statut: 'signe' } : v);
+                localStorage.setItem('freample_pv_receptions', JSON.stringify(updPvs));
+
+                // 2. Passer le projet en terminé
+                const updProjets = projets.map(x => x.id === p.id ? { ...x, statut: 'termine' } : x);
+                setProjets(updProjets);
+                localStorage.setItem('freample_projets', JSON.stringify(updProjets));
+
+                // 3. Passer le chantier en terminé
+                try {
+                  const ch = JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]');
+                  const updCh = ch.map(c => (c.id === chantier?.id || c.projetId === p.id) ? { ...c, statut: 'terminee', avancement: 100 } : c);
+                  localStorage.setItem('freample_chantiers_custom', JSON.stringify(updCh));
+                } catch {}
+
+                // 4. Libérer le séquestre (marquer les factures comme payées)
+                try {
+                  const factures = JSON.parse(localStorage.getItem('freample_factures') || '[]');
+                  const updFact = factures.map(f => f.projetId === p.id ? { ...f, statut: pvData.sansReserve ? 'sequestre_libere' : 'sequestre_partiel' } : f);
+                  localStorage.setItem('freample_factures', JSON.stringify(updFact));
+                } catch {}
+
+                // 5. Notif patron
+                const notifs = lsGet('freample_notifs_patron', []);
+                notifs.push({
+                  id: Date.now(), date: new Date().toISOString(), type: 'pv_signe',
+                  titre: pvData.sansReserve ? 'PV signé sans réserve — paiement libéré' : 'PV signé avec réserves — paiement partiel',
+                  message: `${user?.nom || 'Le client'} a signé le PV de réception pour "${p.titre || p.metier}".${!pvData.sansReserve ? ` ${pvData.reserves.length} réserve(s) à corriger.` : ' Le séquestre est libéré.'}`,
+                  lien: '/patron/missions', lu: false,
+                });
+                localStorage.setItem('freample_notifs_patron', JSON.stringify(notifs));
+
+                addToast(pvData.sansReserve ? 'PV signé — paiement libéré à l\'artisan' : 'PV signé avec réserves — paiement partiel libéré', 'success');
+                setProjetDetail({ ...p, statut: 'termine' });
+              };
+
+              const handleRefuser = (motif) => {
+                // Notif patron
+                const notifs = lsGet('freample_notifs_patron', []);
+                notifs.push({
+                  id: Date.now(), date: new Date().toISOString(), type: 'pv_refuse',
+                  titre: 'PV de réception refusé',
+                  message: `${user?.nom || 'Le client'} a refusé la réception pour "${p.titre || p.metier}". Motif : ${motif}`,
+                  lien: '/patron/missions', lu: false,
+                });
+                localStorage.setItem('freample_notifs_patron', JSON.stringify(notifs));
+
+                // Repasser le chantier en cours
+                try {
+                  const ch = JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]');
+                  const updCh = ch.map(c => (c.id === chantier?.id || c.projetId === p.id) ? { ...c, statut: 'en_cours', avancement: 90 } : c);
+                  localStorage.setItem('freample_chantiers_custom', JSON.stringify(updCh));
+                } catch {}
+                // Repasser le projet en cours
+                const updProjets = projets.map(x => x.id === p.id ? { ...x, statut: 'en_cours' } : x);
+                setProjets(updProjets);
+                localStorage.setItem('freample_projets', JSON.stringify(updProjets));
+
+                addToast('Réception refusée — l\'artisan sera informé', 'success');
+                setProjetDetail({ ...p, statut: 'en_cours' });
+              };
+
+              if (pv) return (
+                <div style={{ marginBottom: 16 }}>
+                  <PVReception
+                    chantier={chantier || { id: p.id, titre: p.titre || p.metier, client: user?.nom, adresse: p.ville, budgetPrevu: p.budget, dateDebut: p.date }}
+                    devis={devisLie ? { numero: devisLie.numero, montantHT: devisLie.montantHT, montantTTC: devisLie.montantTTC, lignes: devisLie.lignes } : null}
+                    profilEntreprise={profilPatron}
+                    clientNom={user?.nom || ''}
+                    onSigner={handleSigner}
+                    onRefuser={handleRefuser}
+                    readOnly={pv.statut === 'signe'}
+                    role="client"
+                    pvExistant={pv.statut === 'signe' ? pv : null}
+                  />
+                </div>
+              );
+              return null;
+            })()}
+
+            {/* Avis */}
+            {p.statut === 'termine' && p.artisan && !reviewSent[p.id] && (
+              <div style={{ ...CARD, borderLeft: '4px solid #A68B4B', marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Notez {p.artisan}</div>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setReviewNote(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: n <= reviewNote ? '#A68B4B' : '#D1D5DB' }}>★</button>
+                  ))}
+                </div>
+                <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)} rows={2} placeholder="Votre expérience..." style={{ ...INP, resize: 'vertical', marginBottom: 8 }} />
+                <button onClick={() => {
+                  if (!reviewNote) return;
+                  const updated = { ...reviewSent, [p.id]: { note: reviewNote, commentaire: reviewComment, date: new Date().toISOString() } };
+                  setReviewSent(updated);
+                  localStorage.setItem('freample_reviews', JSON.stringify(updated));
+                  addToast('Merci pour votre avis !', 'success');
+                }} disabled={!reviewNote} style={{ ...BTN, opacity: reviewNote ? 1 : 0.5, background: '#A68B4B' }}>Publier mon avis</button>
+              </div>
+            )}
+
+            {/* Actions */}
+            {p.statut === 'publie' && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => supprimerProjet(p.id)} style={{ padding: '8px 16px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Retirer le projet</button>
               </div>
             )}
           </div>;
         })()}
 
-        {/* ═══ PAIEMENTS — SÉQUESTRE ═══ */}
-        {tab === 'paiements' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Paiements sécurisés</h2>
-            </div>
+        {/* ══ VUE PRINCIPALE ADAPTATIVE ══ */}
+        {!projetDetail && !showPaiements && !showProfil && (<>
 
-            {/* Explication séquestre */}
-            <div style={{ ...CARD, marginBottom: 16, borderLeft: '4px solid #2563EB', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Paiement sécurisé par séquestre</div>
-                <div style={{ fontSize: 12, color: DS.muted, lineHeight: 1.6 }}>
-                  Vos paiements sont bloqués sur un compte sécurisé (GoCardless). L'artisan ne reçoit les fonds qu'après votre validation. En cas de litige, Freample intervient comme arbitre.
-                </div>
-                <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: DS.muted }}>
-                  <span>🔒 30% bloqué au démarrage</span>
-                  <span>✓ 70% libéré après validation</span>
-                  <span>⏱️ Auto-libéré après 7 jours</span>
-                </div>
-              </div>
-            </div>
+          {/* ── SCÉNARIO 1 : Nouveau client ── */}
+          {phase === 'nouveau' && !showForm && (
+            <div style={{ textAlign: 'center', paddingTop: 20 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Bonjour {prenom}</div>
+              <div style={{ fontSize: 14, color: '#444', marginBottom: 32 }}>Vous avez un projet de travaux ?</div>
 
-            {paiements.length === 0 ? (
-              <div style={{ ...CARD, textAlign: 'center', padding: 48, color: DS.muted }}>Aucun paiement pour le moment.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {paiements.map(p => {
-                  const st = STATUT_PAIEMENT[p.statut] || STATUT_PAIEMENT.en_cours;
-                  return (
-                    <div key={p.id} style={{ ...CARD, borderLeft: `4px solid ${st.color}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>{p.projetTitre}</span>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 6 }}>{st.icon} {st.label}</span>
-                          </div>
-                          <div style={{ fontSize: 12, color: DS.muted }}>🔨 {p.artisan} · {new Date(p.date).toLocaleDateString('fr-FR')}</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 18, fontWeight: 800 }}>{p.total}€</div>
-                          <div style={{ fontSize: 10, color: DS.muted }}>total TTC</div>
-                        </div>
-                      </div>
+              <button onClick={() => setShowForm(true)}
+                style={{ padding: '18px 32px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: DS.font, width: '100%', maxWidth: 400, transition: 'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(44,37,32,0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                Recevoir des devis gratuits →
+              </button>
 
-                      {/* Barre de progression paiement */}
-                      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
-                        <div style={{ flex: 30, height: 6, borderRadius: 3, background: ['acompte_bloque', 'en_cours', 'validation', 'libere'].includes(p.statut) ? '#2563EB' : '#E5E7EB' }} />
-                        <div style={{ flex: 70, height: 6, borderRadius: 3, background: p.statut === 'libere' ? '#16A34A' : p.statut === 'validation' ? '#8B5CF6' : '#E5E7EB' }} />
-                      </div>
-
-                      {/* Détail */}
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 11 }}>
-                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
-                          <span style={{ color: DS.muted }}>Acompte (30%)</span> <strong>{p.acompte}€</strong>
-                        </div>
-                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
-                          <span style={{ color: DS.muted }}>Solde (70%)</span> <strong>{p.solde}€</strong>
-                        </div>
-                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
-                          <span style={{ color: DS.muted }}>Commission</span> <strong>{p.commission}€</strong>
-                        </div>
-                        <div style={{ background: '#F8F7F4', padding: '6px 10px', borderRadius: 6 }}>
-                          <span style={{ color: DS.muted }}>Frais paiement</span> <strong>{p.fraisPaiement}€</strong>
-                        </div>
-                      </div>
-
-                      {/* Actions selon statut */}
-                      {p.statut === 'validation' && (
-                        <div style={{ marginTop: 12, padding: '12px 14px', background: '#F5F3FF', borderRadius: 10, border: '1px solid rgba(139,92,246,0.15)' }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#8B5CF6', marginBottom: 6 }}>✋ Les travaux sont terminés ?</div>
-                          <div style={{ fontSize: 12, color: DS.muted, marginBottom: 10 }}>
-                            Confirmez la bonne exécution pour libérer le paiement à {p.artisan}.
-                            {p.dateLimiteValidation && <span> Auto-libération le {new Date(p.dateLimiteValidation).toLocaleDateString('fr-FR')}.</span>}
-                          </div>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button onClick={() => {
-                              setPaiements(prev => prev.map(x => x.id === p.id ? { ...x, statut: 'libere', dateValidation: new Date().toISOString() } : x));
-                            }} style={{ padding: '8px 18px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                              ✓ Valider — Libérer le paiement
-                            </button>
-                            <button onClick={() => {
-                              setPaiements(prev => prev.map(x => x.id === p.id ? { ...x, statut: 'litige' } : x));
-                            }} style={{ padding: '8px 18px', background: '#FEF2F2', color: '#DC2626', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                              Signaler un problème
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {p.statut === 'libere' && (
-                        <div style={{ marginTop: 10, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>
-                          ✓ Paiement libéré à {p.artisan}{p.dateValidation ? ` le ${new Date(p.dateValidation).toLocaleDateString('fr-FR')}` : ''}
-                        </div>
-                      )}
-
-                      {p.statut === 'litige' && (
-                        <div style={{ marginTop: 10, padding: '10px 14px', background: '#FEF2F2', borderRadius: 8, fontSize: 12, color: '#DC2626' }}>
-                          ⚠️ Litige en cours — Freample analyse les preuves (photos, devis, messages) et vous recontactera sous 48h.
-                        </div>
-                      )}
-
-                      {p.statut === 'en_cours' && (
-                        <div style={{ marginTop: 10, fontSize: 12, color: '#D97706' }}>
-                          🏗️ Travaux en cours — l'acompte de {p.acompte}€ est bloqué sur le compte séquestre.
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ═══ MESSAGERIE ═══ */}
-        {tab === 'messagerie' && (
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Messagerie</h2>
-            {messages.length === 0 ? (
-              <div style={{ ...CARD, textAlign: 'center', padding: 48, color: DS.muted }}>Aucune conversation.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {messages.map(m => (
-                  <div key={m.id} onClick={() => navigate('/client/messagerie')}
-                    style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all .15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#2C2520'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.boxShadow = 'none'; }}>
-                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
-                      {m.artisan.charAt(0)}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{m.artisan}</div>
-                      <div style={{ fontSize: 12, color: DS.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.dernier}</div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 11, color: DS.muted }}>{new Date(m.date).toLocaleDateString('fr-FR')}</div>
-                      {m.unread > 0 && <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#DC2626', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 'auto', marginTop: 4 }}>{m.unread}</div>}
+              <div style={{ marginTop: 40, textAlign: 'left', maxWidth: 500, margin: '40px auto 0' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>Comment ça marche ?</div>
+                {[
+                  { step: '1', title: 'Décrivez votre besoin', desc: 'Métier, budget, ville — en 30 secondes' },
+                  { step: '2', title: 'Les artisans répondent', desc: 'Recevez des devis d\'artisans certifiés de votre zone' },
+                  { step: '3', title: 'Comparez et choisissez', desc: 'Prix, avis, disponibilité — vous décidez' },
+                  { step: '4', title: 'Paiement sécurisé', desc: 'Votre argent est bloqué en séquestre jusqu\'à la fin des travaux' },
+                ].map(s => (
+                  <div key={s.step} style={{ display: 'flex', gap: 14, marginBottom: 16 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: '#444', marginTop: 2 }}>{s.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* ═══ ARTISANS FAVORIS ═══ */}
-        {tab === 'favoris' && (
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Artisans favoris ({favoris.length})</h2>
-            {favoris.length === 0 ? (
-              <div style={{ ...CARD, textAlign: 'center', padding: 48 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
-                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Aucun favori</div>
-                <div style={{ fontSize: 13, color: DS.muted, marginBottom: 16 }}>Ajoutez des artisans en favoris depuis la page de recherche.</div>
-                <button onClick={() => navigate('/btp')} style={BTN}>Trouver un artisan</button>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-                {favoris.map(f => (
-                  <div key={f.id} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, flexShrink: 0 }}>
-                      {f.nom.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{f.nom}</div>
-                      <div style={{ fontSize: 12, color: DS.muted }}>{f.metier} · {f.ville}</div>
-                      <div style={{ fontSize: 12, color: '#D97706', marginTop: 2 }}>⭐ {f.note} ({f.nbAvis} avis)</div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <button onClick={() => navigate(`/btp?metier=${f.metier}`)} style={{ padding: '6px 12px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Contacter</button>
-                      <button onClick={() => removeFavori(f.id)} style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Retirer</button>
-                    </div>
-                  </div>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
+                {['Gratuit', 'Sans engagement', 'Artisans certifiés', 'Paiement séquestre'].map(t => (
+                  <div key={t} style={{ fontSize: 12, color: '#16A34A', fontWeight: 600 }}>✓ {t}</div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* ═══ MON BIEN ═══ */}
-        {tab === 'bien' && (
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Mon bien</h2>
+          {/* ── FORMULAIRE NOUVEAU PROJET ── */}
+          {showForm && (
+            <div>
+              {projets.length > 0 && <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>}
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: '#1A1A1A' }}>Décrivez votre projet</div>
+              <div style={{ fontSize: 13, color: '#444', marginBottom: 20 }}>Les artisans de votre zone vous enverront leurs devis.</div>
 
-            {!monBien || bienEdit ? (
               <div style={{ ...CARD }}>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>{monBien ? '✏️ Modifier mon bien' : '🏠 Renseignez votre logement'}</div>
-                <p style={{ fontSize: 12, color: DS.muted, marginBottom: 16 }}>Ces informations vous aident à suivre votre patrimoine et à trouver les bons artisans.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Nom du bien</label><input value={bienForm.nom || ''} onChange={e => setBienForm(f => ({ ...f, nom: e.target.value }))} placeholder="Ma maison, Mon appartement..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  {/* Ville */}
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Ville</label><input value={bienForm.ville || ''} onChange={e => { setBienForm(f => ({ ...f, ville: e.target.value, arrondissement: '' })); setEstimResult(null); }} placeholder="Nice, Paris, Lyon..." style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  {/* Arrondissement — apparaît auto pour Paris, Lyon, Marseille */}
-                  {(() => { const v = (bienForm.ville || '').toLowerCase().trim(); const isArr = v.includes('paris') || v === 'lyon' || v.includes('marseille'); return isArr ? (
-                    <div><label style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', display: 'block', marginBottom: 4 }}>Arrondissement</label>
-                      <select value={bienForm.arrondissement || ''} onChange={e => setBienForm(f => ({ ...f, arrondissement: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #A68B4B', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#FFFBEB' }}>
-                        <option value="">Sélectionner l'arrondissement...</option>
-                        {(v.includes('paris') ? Array.from({length:20},(_,i)=>i+1) : v === 'lyon' ? Array.from({length:9},(_,i)=>i+1) : Array.from({length:16},(_,i)=>i+1)).map(n => <option key={n} value={n}>{n}{n===1?'er':'e'} arrondissement</option>)}
-                      </select>
-                      <div style={{ fontSize: 10, color: '#A68B4B', marginTop: 3 }}>Le prix varie selon l'arrondissement.</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Type de travaux *</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {['Plomberie', 'Électricité', 'Maçonnerie', 'Peinture', 'Carrelage', 'Menuiserie', 'Couverture', 'Chauffage', 'Isolation', 'Autre'].map(m => (
+                        <button key={m} onClick={() => setNewProjet(f => ({ ...f, metier: m }))}
+                          style={{ padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, border: newProjet.metier === m ? '2px solid #2C2520' : `1px solid ${DS.border}`, background: newProjet.metier === m ? '#2C2520' : '#fff', color: newProjet.metier === m ? '#F5EFE0' : DS.ink }}>
+                          {m}
+                        </button>
+                      ))}
                     </div>
-                  ) : null; })()}
-                  {/* Adresse */}
-                  <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Adresse</label><input value={bienForm.adresse || ''} onChange={e => setBienForm(f => ({ ...f, adresse: e.target.value }))} placeholder="12 rue de la Liberté" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Surface (m²)</label><input type="number" value={bienForm.surface || ''} onChange={e => setBienForm(f => ({ ...f, surface: e.target.value }))} placeholder="85" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Pièces</label><input type="number" value={bienForm.pieces || ''} onChange={e => setBienForm(f => ({ ...f, pieces: e.target.value }))} placeholder="4" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div style={{ gridColumn: '1/-1' }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Valeur estimée (€)</label>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Titre du projet *</label>
+                    <input value={newProjet.titre || ''} onChange={e => setNewProjet(f => ({ ...f, titre: e.target.value }))} placeholder="Ex: Rénovation salle de bain" style={INP} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Description *</label>
+                    <textarea value={newProjet.description} onChange={e => setNewProjet(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Décrivez les travaux souhaités, la surface, les contraintes..." style={{ ...INP, resize: 'vertical' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Ville</label>
+                      <input value={newProjet.ville} onChange={e => setNewProjet(f => ({ ...f, ville: e.target.value }))} style={INP} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Budget estimé (€)</label>
+                      <input type="number" value={newProjet.budget} onChange={e => setNewProjet(f => ({ ...f, budget: e.target.value }))} placeholder="3000" style={INP} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Urgence</label>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <input type="number" value={bienForm.valeur || ''} onChange={e => setBienForm(f => ({ ...f, valeur: e.target.value }))} placeholder="250000" style={{ flex: 1, padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
-                      <button onClick={estimerPrix} disabled={estimLoading}
-                        style={{ padding: '10px 16px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: estimLoading ? 'wait' : 'pointer', whiteSpace: 'nowrap', opacity: estimLoading ? 0.6 : 1 }}>
-                        {estimLoading ? '⏳ Analyse...' : '🔍 Estimer auto'}
-                      </button>
-                    </div>
-                    {/* Résultat estimation */}
-                    {estimResult && !estimResult.erreur && (
-                      <div style={{ marginTop: 10, padding: '12px 14px', background: '#F0FDF4', border: '1px solid rgba(22,163,74,0.15)', borderRadius: 10 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginBottom: 8 }}>📊 Estimation — {estimResult.commune} ({estimResult.codePostal || estimResult.dept})</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 }}>
-                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center' }}>
-                            <div style={{ fontSize: 10, color: DS.muted }}>Estimation basse</div>
-                            <div style={{ fontSize: 15, fontWeight: 700 }}>{estimResult.prixBas?.toLocaleString('fr-FR')} €</div>
-                          </div>
-                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center', border: '2px solid #16A34A' }}>
-                            <div style={{ fontSize: 10, color: '#16A34A', fontWeight: 600 }}>Estimation médiane</div>
-                            <div style={{ fontSize: 17, fontWeight: 800, color: '#16A34A' }}>{estimResult.prixEstime?.toLocaleString('fr-FR')} €</div>
-                          </div>
-                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: 6, textAlign: 'center' }}>
-                            <div style={{ fontSize: 10, color: DS.muted }}>Estimation haute</div>
-                            <div style={{ fontSize: 15, fontWeight: 700 }}>{estimResult.prixHaut?.toLocaleString('fr-FR')} €</div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: DS.muted, flexWrap: 'wrap' }}>
-                          <span>Prix/m² ajusté : <strong>{estimResult.prixM2?.toLocaleString('fr-FR')} €</strong></span>
-                          {estimResult.prixM2Base && estimResult.prixM2Base !== estimResult.prixM2 && <span>Base : {estimResult.prixM2Base?.toLocaleString('fr-FR')} €/m²</span>}
-                          {estimResult.nbReferences > 0 && <span>{estimResult.nbReferences} ventes</span>}
-                          <span>Source : {estimResult.source}</span>
-                        </div>
-                        {estimResult.impactDpe !== undefined && estimResult.impactDpe !== 0 && (
-                          <div style={{ marginTop: 6, padding: '8px 12px', background: estimResult.impactDpe > 0 ? '#F0FDF4' : '#FEF2F2', borderRadius: 8, fontSize: 11, color: estimResult.impactDpe > 0 ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
-                            DPE {estimResult.dpe} → {estimResult.impactDpe > 0 ? '+' : ''}{estimResult.impactDpe}% sur le prix
-                          </div>
-                        )}
-                        {estimResult.impactDpe < -10 && (
-                          <div style={{ marginTop: 6, padding: '12px 14px', background: '#2C2520', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                            <div>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: '#F5EFE0' }}>⚠️ Passoire énergétique — DPE {estimResult.dpe}</div>
-                              <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)', marginTop: 2 }}>Des travaux de rénovation peuvent augmenter la valeur de votre bien de {Math.abs(estimResult.impactDpe)}% et réduire vos factures d'énergie. Artisans certifiés RGE éligibles MaPrimeRénov'.</div>
-                            </div>
-                            <button onClick={() => navigate('/')}
-                              style={{ padding: '8px 16px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                              Trouver un artisan RGE →
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {estimResult?.erreur && (
-                      <div style={{ marginTop: 8, fontSize: 12, color: '#DC2626', padding: '8px 12px', background: '#FEF2F2', borderRadius: 6 }}>{estimResult.erreur}</div>
-                    )}
-                  </div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>DPE</label><select value={bienForm.dpe || 'D'} onChange={e => setBienForm(f => ({ ...f, dpe: e.target.value }))} style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>{'ABCDEFG'.split('').map(d => <option key={d}>{d}</option>)}</select></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Prix d'achat (€)</label><input type="number" value={bienForm.prixAchat || ''} onChange={e => setBienForm(f => ({ ...f, prixAchat: e.target.value }))} placeholder="200000" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Année d'achat</label><input value={bienForm.anneeAchat || ''} onChange={e => setBienForm(f => ({ ...f, anneeAchat: e.target.value }))} placeholder="2020" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Crédit mensuel (€)</label><input type="number" value={bienForm.creditMensuel || ''} onChange={e => setBienForm(f => ({ ...f, creditMensuel: e.target.value }))} placeholder="850" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Taxe foncière/an (€)</label><input type="number" value={bienForm.taxeFonciere || ''} onChange={e => setBienForm(f => ({ ...f, taxeFonciere: e.target.value }))} placeholder="1200" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                  <div><label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Assurance habitation/an (€)</label><input type="number" value={bienForm.assurance || ''} onChange={e => setBienForm(f => ({ ...f, assurance: e.target.value }))} placeholder="600" style={{ width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} /></div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                  <button onClick={sauverBien} style={{ ...BTN, flex: 1 }}>Enregistrer</button>
-                  {monBien && <button onClick={() => setBienEdit(false)} style={{ ...BTN, flex: 1, background: 'transparent', color: DS.ink, border: `1px solid ${DS.border}` }}>Annuler</button>}
-                </div>
-              </div>
-            ) : (
-              <div>
-                {/* Fiche bien */}
-                <div style={{ ...CARD, marginBottom: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 800 }}>{monBien.nom}</div>
-                      <div style={{ fontSize: 13, color: DS.muted }}>📍 {[monBien.adresse, monBien.arrondissement ? `${monBien.arrondissement}e arr.` : '', monBien.ville].filter(Boolean).join(', ') || '—'}</div>
-                    </div>
-                    <button onClick={() => { setBienForm({ ...monBien }); setBienEdit(true); }} style={{ ...BTN, padding: '6px 14px', fontSize: 11 }}>✏️ Modifier</button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
-                    {[
-                      ['Surface', `${monBien.surface || '?'} m²`],
-                      ['Pièces', monBien.pieces || '?'],
-                      ['DPE', monBien.dpe || '?'],
-                      ['Valeur', `${(monBien.valeur || 0).toLocaleString('fr-FR')} €`],
-                      ['Prix d\'achat', `${(monBien.prixAchat || 0).toLocaleString('fr-FR')} €`],
-                      ['Année', monBien.anneeAchat || '?'],
-                      ['Crédit/mois', `${(monBien.creditMensuel || 0).toLocaleString('fr-FR')} €`],
-                      ['Taxe foncière/an', `${(monBien.taxeFonciere || 0).toLocaleString('fr-FR')} €`],
-                      ['Assurance/an', `${(monBien.assurance || 0).toLocaleString('fr-FR')} €`],
-                    ].map(([k, v]) => (
-                      <div key={k} style={{ background: '#F8F7F4', borderRadius: 8, padding: '8px 12px' }}>
-                        <div style={{ fontSize: 10, color: DS.muted }}>{k}</div>
-                        <div style={{ fontSize: 14, fontWeight: 700 }}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Plus-value estimée */}
-                {monBien.prixAchat > 0 && monBien.valeur > 0 && (
-                  <div style={{ ...CARD, borderLeft: `4px solid ${monBien.valeur > monBien.prixAchat ? '#16A34A' : '#DC2626'}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700 }}>Plus-value latente</div>
-                        <div style={{ fontSize: 12, color: DS.muted }}>Valeur actuelle - prix d'achat</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: monBien.valeur > monBien.prixAchat ? '#16A34A' : '#DC2626' }}>
-                          {monBien.valeur > monBien.prixAchat ? '+' : ''}{(monBien.valeur - monBien.prixAchat).toLocaleString('fr-FR')} €
-                        </div>
-                        <div style={{ fontSize: 11, color: DS.muted }}>{monBien.prixAchat > 0 ? `${((monBien.valeur - monBien.prixAchat) / monBien.prixAchat * 100).toFixed(1)}%` : ''}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Alerte DPE passoire */}
-                {(monBien.dpe === 'F' || monBien.dpe === 'G') && (
-                  <div style={{ ...CARD, marginTop: 12, background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderColor: '#2C2520' }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>⚠️ Passoire énergétique — DPE {monBien.dpe}</div>
-                      <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)', marginTop: 2 }}>
-                        Votre bien perd {monBien.dpe === 'G' ? '20' : '12'}% de sa valeur à cause du DPE. Des travaux de rénovation énergétique (isolation, chauffage, fenêtres) peuvent récupérer cette valeur et réduire vos factures. Artisans certifiés RGE éligibles MaPrimeRénov'.
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/')}
-                      style={{ padding: '10px 18px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      Trouver un artisan RGE →
-                    </button>
-                  </div>
-                )}
-
-                {/* DPE bon */}
-                {monBien.dpe && ['A', 'B'].includes(monBien.dpe) && (
-                  <div style={{ ...CARD, marginTop: 12, borderLeft: '4px solid #16A34A' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A' }}>✅ DPE {monBien.dpe} — Excellent</div>
-                    <div style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>Votre bien bénéficie d'un bonus de {monBien.dpe === 'A' ? '12' : '6'}% sur sa valeur grâce à sa performance énergétique.</div>
-                  </div>
-                )}
-
-                {/* Coûts annuels */}
-                <div style={{ ...CARD, marginTop: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Coûts annuels</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {[
-                      ['Crédit immobilier', (monBien.creditMensuel || 0) * 12],
-                      ['Taxe foncière', monBien.taxeFonciere || 0],
-                      ['Assurance habitation', monBien.assurance || 0],
-                    ].map(([k, v]) => (
-                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${DS.border}`, fontSize: 13 }}>
-                        <span style={{ color: DS.muted }}>{k}</span>
-                        <span style={{ fontWeight: 600 }}>{v.toLocaleString('fr-FR')} €</span>
-                      </div>
-                    ))}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 14, fontWeight: 800 }}>
-                      <span>Total annuel</span>
-                      <span>{((monBien.creditMensuel || 0) * 12 + (monBien.taxeFonciere || 0) + (monBien.assurance || 0)).toLocaleString('fr-FR')} €</span>
+                      {[['urgent', '🚨 Urgent (48h)'], ['normal', '📅 Normal'], ['flexible', '🕐 Flexible']].map(([v, l]) => (
+                        <button key={v} onClick={() => setNewProjet(f => ({ ...f, urgence: v }))}
+                          style={{ flex: 1, padding: '10px 8px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font, border: newProjet.urgence === v ? '2px solid #2C2520' : `1px solid ${DS.border}`, background: newProjet.urgence === v ? '#2C2520' : '#fff', color: newProjet.urgence === v ? '#F5EFE0' : DS.ink, textAlign: 'center' }}>
+                          {l}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
-
-                {/* Travaux réalisés — connectés aux projets terminés */}
-                {(() => {
-                  const travauxTermines = projets.filter(p => p.statut === 'termine' || p.statut === 'en_cours');
-                  const totalInvesti = travauxTermines.reduce((s, p) => s + (Number(p.budget) || 0), 0);
-                  const totalAchat = (monBien.prixAchat || 0) + totalInvesti;
-                  return (
-                    <div style={{ ...CARD, marginTop: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700 }}>🔨 Travaux réalisés</div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#A68B4B' }}>{totalInvesti.toLocaleString('fr-FR')} € investis</div>
-                      </div>
-                      {travauxTermines.length === 0 ? (
-                        <div style={{ fontSize: 12, color: DS.muted, padding: '8px 0' }}>Aucun travaux pour le moment. Vos projets terminés apparaîtront ici automatiquement.</div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {travauxTermines.map(t => (
-                            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#F8F7F4', borderRadius: 6, fontSize: 12 }}>
-                              <div>
-                                <span style={{ fontWeight: 600 }}>{t.metier}</span>
-                                <span style={{ color: DS.muted, marginLeft: 6 }}>{t.titre || t.description?.slice(0, 30)}</span>
-                                {t.artisan && <span style={{ color: '#16A34A', marginLeft: 6 }}>· {t.artisan}</span>}
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ fontWeight: 700 }}>{(Number(t.budget) || 0).toLocaleString('fr-FR')} €</span>
-                                <span style={{ fontSize: 9, fontWeight: 600, color: t.statut === 'termine' ? '#16A34A' : '#D97706', background: t.statut === 'termine' ? '#F0FDF4' : '#FFFBEB', padding: '2px 6px', borderRadius: 4 }}>{t.statut === 'termine' ? '✓ Terminé' : '🏗️ En cours'}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {/* Récap investissement total */}
-                      <div style={{ marginTop: 10, padding: '10px 12px', background: '#2C2520', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)' }}>Investissement total dans le bien</div>
-                          <div style={{ fontSize: 10, color: 'rgba(245,239,224,0.4)', marginTop: 1 }}>Prix d'achat + travaux</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0' }}>{totalAchat.toLocaleString('fr-FR')} €</div>
-                          {monBien.valeur > 0 && totalAchat > 0 && (
-                            <div style={{ fontSize: 10, color: monBien.valeur > totalAchat ? '#16A34A' : '#DC2626' }}>
-                              {monBien.valeur > totalAchat ? '+' : ''}{(monBien.valeur - totalAchat).toLocaleString('fr-FR')} € ({monBien.valeur > totalAchat ? '+' : ''}{((monBien.valeur - totalAchat) / totalAchat * 100).toFixed(1)}%)
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Bouton trouver artisan */}
-                <button onClick={() => navigate('/')} style={{ ...BTN, width: '100%', marginTop: 12, padding: 14, fontSize: 14 }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
-                  🔨 Trouver un artisan pour des travaux
+                <button onClick={creerProjet} disabled={!newProjet.metier || !newProjet.description}
+                  style={{ ...BTN, width: '100%', marginTop: 20, padding: 14, fontSize: 15, opacity: (newProjet.metier && newProjet.description) ? 1 : 0.5 }}>
+                  Publier mon projet — C'est gratuit
                 </button>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* ═══ INVESTIR ═══ */}
-        {tab === 'investir' && (
-          <div>
-            <InvestirJugeModule data={immoData} setData={setImmoData} showToast={() => {}} />
-          </div>
-        )}
-
-        {/* ═══ MON PROFIL ═══ */}
-        {tab === 'profil' && (
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px' }}>Mon profil</h2>
-            <div style={{ ...CARD }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700 }}>
-                  {(user?.nom || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800 }}>{user?.nom || 'Utilisateur'}</div>
-                  <div style={{ fontSize: 13, color: DS.muted }}>{user?.email || '—'}</div>
-                  <div style={{ fontSize: 11, color: '#A68B4B', fontWeight: 600, marginTop: 2 }}>Compte client</div>
-                </div>
+          {/* ── SCÉNARIO 2+ : Client avec projets ── */}
+          {phase !== 'nouveau' && !showForm && (<>
+            {/* Header adaptatif */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#1A1A1A' }}>
+                {phase === 'offres' ? `${prenom}, ${totalOffresEnAttente} artisan${totalOffresEnAttente > 1 ? 's' : ''} ${totalOffresEnAttente > 1 ? 'ont' : 'a'} répondu !`
+                  : phase === 'reception' ? `${prenom}, signez le PV de réception`
+                  : phase === 'chantier' ? `${prenom}, vos travaux avancent`
+                  : phase === 'termine' ? `${prenom}, vos travaux sont terminés !`
+                  : `Bonjour ${prenom}`}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                {[
-                  { label: 'Projets publiés', value: projets.length },
-                  { label: 'Artisans favoris', value: favoris.length },
-                  { label: 'Messages', value: messages.length },
-                ].map(k => (
-                  <div key={k.label} style={{ background: '#F8F7F4', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 22, fontWeight: 700 }}>{k.value}</div>
-                    <div style={{ fontSize: 11, color: DS.muted }}>{k.label}</div>
-                  </div>
-                ))}
+              <div style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
+                {projets.length} projet{projets.length > 1 ? 's' : ''} · {projetsPublies.length} en recherche · {projetsEnCours.length} en cours
               </div>
             </div>
-          </div>
-        )}
+
+            {/* Projets triés par priorité : offres en attente > en cours > publiés > terminés */}
+            {[...projets].sort((a, b) => {
+              const prio = { publie: 1, en_cours: 2, termine: 3, annule: 4 };
+              const aOffres = offresActives.filter(o => o.projetId === a.id && (!o.statut || o.statut === 'proposee')).length;
+              const bOffres = offresActives.filter(o => o.projetId === b.id && (!o.statut || o.statut === 'proposee')).length;
+              if (aOffres > 0 && bOffres === 0) return -1;
+              if (bOffres > 0 && aOffres === 0) return 1;
+              return (prio[a.statut] || 5) - (prio[b.statut] || 5);
+            }).map(p => {
+              const pOffres = offresActives.filter(o => o.projetId === p.id && (!o.statut || o.statut === 'proposee'));
+              const statusConfig = p.statut === 'reception' ? { label: '📋 PV à signer', color: '#8B5CF6', bg: '#F5F3FF' }
+                : p.statut === 'en_cours' ? { label: '🏗️ En cours', color: '#D97706', bg: '#FFFBEB' }
+                : p.statut === 'termine' ? { label: '✅ Terminé', color: '#16A34A', bg: '#F0FDF4' }
+                : pOffres.length > 0 ? { label: `📩 ${pOffres.length} offre${pOffres.length > 1 ? 's' : ''}`, color: '#2563EB', bg: '#EFF6FF' }
+                : { label: '⏳ En attente', color: '#D97706', bg: '#FFFBEB' };
+
+              return (
+                <div key={p.id} onClick={() => setProjetDetail(p)}
+                  style={{ ...CARD, marginBottom: 10, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, transition: 'all .15s', borderLeft: `4px solid ${statusConfig.color}` }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{p.titre || p.metier}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: statusConfig.color, background: statusConfig.bg, padding: '2px 8px', borderRadius: 4 }}>{statusConfig.label}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#444' }}>{p.metier} · {p.ville} · {(p.budget || 0).toLocaleString('fr-FR')}€</div>
+                    {p.artisan && <div style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, marginTop: 2 }}>🔨 {p.artisan}</div>}
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              );
+            })}
+
+            {/* Bouton ajouter */}
+            <button onClick={() => setShowForm(true)}
+              style={{ width: '100%', padding: '14px', background: '#F8F7F4', border: `2px dashed ${DS.border}`, borderRadius: 12, fontSize: 14, fontWeight: 600, color: '#444', cursor: 'pointer', fontFamily: DS.font, marginTop: 8, transition: 'all .15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.color = '#A68B4B'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.color = DS.muted; }}>
+              + Ajouter un autre projet
+            </button>
+          </>)}
+        </>)}
       </div>
     </div>
   );

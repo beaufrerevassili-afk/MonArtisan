@@ -40,11 +40,32 @@ const PROJET_STATUS = {
   archive:    { label:'Archivé',    bg:'#F3F3F3', border:'#E5E5E5', color:'#636363' },
 };
 
-// ── Données vides — les vrais projets viennent de la base via /com/projets ──
-const PROJETS_INIT = [];
-const DEVIS_INIT = [];
-const FACTURES_INIT = [];
-const CLIENTS_INIT = [];
+// ── Données démo cohérentes pour présentation ──
+const PROJETS_INIT = [
+  { id: 1, titre: 'Clip promo Salon de coiffure Nice', client: 'Salon Excellence', type: 'Clip promo', budget: 1800, statut: 'en_cours', dateDebut: '2026-04-10', dateFin: '2026-04-25', avancement: 45, equipe: ['Vassili', 'Mathieu'], color: '#8B5CF6' },
+  { id: 2, titre: 'Reportage inauguration boutique', client: 'Mode & Co', type: 'Reportage', budget: 950, statut: 'tournage', dateDebut: '2026-04-18', dateFin: '2026-04-20', avancement: 20, equipe: ['Mathieu'], color: '#3B82F6' },
+  { id: 3, titre: 'Publicité restaurant — 30 secondes', client: 'La Bella Vita', type: 'Publicité', budget: 2400, statut: 'montage', dateDebut: '2026-03-28', dateFin: '2026-04-15', avancement: 85, equipe: ['Vassili'], color: '#8B5CF6' },
+  { id: 4, titre: 'Video corporate entreprise BTP', client: 'Bernard BTP', type: 'Corporate', budget: 3200, statut: 'proposition', dateDebut: '', dateFin: '', avancement: 0, equipe: [], color: '#6B7280' },
+  { id: 5, titre: 'Montage témoignages clients', client: 'Freample', type: 'Montage', budget: 600, statut: 'livre', dateDebut: '2026-03-10', dateFin: '2026-03-20', avancement: 100, equipe: ['Mathieu'], color: '#3B82F6' },
+];
+const DEVIS_INIT = [
+  { id: 1, numero: 'DEV-COM-2026-001', client: 'Salon Excellence', objet: 'Clip promo 60s + 3 versions réseaux', montantHT: 1500, tva: 300, montantTTC: 1800, statut: 'signe', date: '2026-04-02' },
+  { id: 2, numero: 'DEV-COM-2026-002', client: 'Mode & Co', objet: 'Reportage inauguration 2 jours', montantHT: 792, tva: 158, montantTTC: 950, statut: 'envoye', date: '2026-04-08' },
+  { id: 3, numero: 'DEV-COM-2026-003', client: 'Bernard BTP', objet: 'Corporate vidéo 3 min + drone', montantHT: 2667, tva: 533, montantTTC: 3200, statut: 'envoye', date: '2026-04-11' },
+  { id: 4, numero: 'DEV-COM-2026-004', client: 'Pizzeria Luigi', objet: 'Spot TikTok 15s', montantHT: 400, tva: 80, montantTTC: 480, statut: 'brouillon', date: '2026-04-12' },
+];
+const FACTURES_INIT = [
+  { id: 1, numero: 'FAC-COM-2026-001', client: 'Freample', objet: 'Montage témoignages clients', montantTTC: 600, statut: 'payee', date: '2026-03-25', echeance: '2026-04-25' },
+  { id: 2, numero: 'FAC-COM-2026-002', client: 'Salon Excellence', objet: 'Acompte 30% — Clip promo', montantTTC: 540, statut: 'payee', date: '2026-04-03', echeance: '2026-04-15' },
+  { id: 3, numero: 'FAC-COM-2026-003', client: 'La Bella Vita', objet: 'Publicité restaurant 30s', montantTTC: 2400, statut: 'en_attente', date: '2026-04-10', echeance: '2026-05-10' },
+];
+const CLIENTS_INIT = [
+  { id: 1, nom: 'Salon Excellence', contact: 'Sophie Martin', email: 'contact@salon-excellence.fr', tel: '04 93 00 00 00', ville: 'Nice', projets: 2, caGenere: 2340 },
+  { id: 2, nom: 'Mode & Co', contact: 'Julien Dupont', email: 'jdupont@modeco.fr', tel: '04 93 11 11 11', ville: 'Cannes', projets: 1, caGenere: 950 },
+  { id: 3, nom: 'La Bella Vita', contact: 'Marco Rossi', email: 'mrossi@bellavita.fr', tel: '04 93 22 22 22', ville: 'Nice', projets: 1, caGenere: 2400 },
+  { id: 4, nom: 'Bernard BTP', contact: 'Michel Bernard', email: 'mbernard@bernard-btp.fr', tel: '04 93 33 33 33', ville: 'Antibes', projets: 1, caGenere: 0 },
+  { id: 5, nom: 'Freample', contact: 'Vassili', email: 'contact@freample.com', tel: '', ville: 'Nice', projets: 1, caGenere: 600 },
+];
 
 const EQUIPE_INIT = [
   { id:1, nom:'Vassili', poste:'Admin · Tech & Stratégie', specialite:'Développement, Produit, Direction', projetsActifs:0, projetsTotal:0, charge:0, dispo:true, color:'#8B5CF6' },

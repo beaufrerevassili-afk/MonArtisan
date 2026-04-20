@@ -529,7 +529,7 @@ CREATE TABLE IF NOT EXISTS incidents (
   jours_arret   INTEGER DEFAULT 0,
   statut        VARCHAR(50) DEFAULT 'ouvert',
   actions       JSONB DEFAULT '[]',
-  analyse       TEXT,
+  "analyse"     TEXT,
   cree_le       TIMESTAMPTZ DEFAULT NOW()
 );
 

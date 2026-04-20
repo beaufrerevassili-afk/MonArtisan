@@ -88,7 +88,7 @@ router.post('/score-investissement', async (req, res) => {
       const geoResult = await geo.geocoder(dossier.adresse);
       if (geoResult?.codeInsee) {
         try {
-          const fetch = require('node-fetch') || globalThis.fetch;
+          const fetch = globalThis.fetch;
           const BASE = 'https://www.georisques.gouv.fr/api/v1';
           const [risques, sism, radon, catnat] = await Promise.all([
             fetch(`${BASE}/gaspar/risques?code_insee=${geoResult.codeInsee}&page_size=50`).then(r => r.json()).catch(() => ({ data: [] })),

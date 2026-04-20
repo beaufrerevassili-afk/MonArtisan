@@ -264,7 +264,7 @@ router.get('/mon-profil', async (req, res) => {
 // PUT /rh/employes/:id — Modifier une fiche employé
 router.put('/employes/:id', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM employes WHERE id = $1', [req.params.id]);
+    const result = await db.query('SELECT * FROM employes WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
     if (result.rows.length === 0) return res.status(404).json({ erreur: 'Employé introuvable' });
 
     const { prenom, nom, poste, email, telephone, salaireBase, typeContrat, statut, adresse, numeroSecu } = req.body;
@@ -283,7 +283,7 @@ router.put('/employes/:id', async (req, res) => {
         adresse      = $9,
         numero_secu  = $10,
         modifie_le   = NOW()
-       WHERE id = $11
+       WHERE id = $11 AND patron_id = $12
        RETURNING *`,
       [
         prenom       !== undefined ? prenom       : emp.prenom,
@@ -297,6 +297,7 @@ router.put('/employes/:id', async (req, res) => {
         adresse      !== undefined ? adresse      : emp.adresse,
         numeroSecu   !== undefined ? numeroSecu   : emp.numero_secu,
         req.params.id,
+        req.user.id,
       ]
     );
 

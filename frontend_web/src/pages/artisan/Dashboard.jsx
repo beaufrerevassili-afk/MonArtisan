@@ -185,7 +185,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
       {/* Quick actions */}
       <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 14px', color: '#6E6E73', textTransform: 'uppercase', letterSpacing: 0.5 }}>Actions rapides</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
           {[
             { label: 'Note de frais perso', icon: '🧾', tab: 'Notes de frais' },
             { label: 'Frais chantier', icon: '🏗️', tab: 'Frais chantier' },
@@ -615,7 +615,7 @@ function PlanningMini({ onTabChange }) {
         <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Planning de la semaine</h3>
         <button onClick={() => onTabChange('Planning')} style={{ fontSize: 12, color: '#5B5BD6', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Voir tout →</button>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
         {days.map((d, i) => {
           const ds = d.toISOString().split('T')[0];
           const isToday = ds === todayStr;

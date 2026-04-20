@@ -99,7 +99,34 @@ const POINTAGES_MOIS = [
 
 const STORAGE_POINTAGES = 'freample_pointages_mois';
 const STORAGE_DEPOT = 'freample_depot';
-function loadPointages() { try { const d=localStorage.getItem(STORAGE_POINTAGES); return d?JSON.parse(d):POINTAGES_MOIS; } catch { return POINTAGES_MOIS; } }
+function loadPointages() {
+  try {
+    // Lire les pointages du module paie
+    const paie = JSON.parse(localStorage.getItem(STORAGE_POINTAGES) || 'null');
+    // Lire aussi les vrais pointages des salariés (freample_pointages)
+    const reels = JSON.parse(localStorage.getItem('freample_pointages') || '[]');
+    // Convertir les pointages réels au format paie (arrivée+départ = heures)
+    const reelsConvertis = [];
+    const dates = [...new Set(reels.map(p => p.date))];
+    dates.forEach(date => {
+      const arrivee = reels.find(p => p.date === date && p.type === 'arrivee');
+      const depart = reels.find(p => p.date === date && p.type === 'depart');
+      if (arrivee && depart) {
+        const [ah, am] = (arrivee.heure || '08:00').split(':').map(Number);
+        const [dh, dm] = (depart.heure || '17:00').split(':').map(Number);
+        const heures = Math.max(0, (dh * 60 + dm - ah * 60 - am) / 60);
+        reelsConvertis.push({ employeId: arrivee.employeId || 0, chantierId: arrivee.chantierId, date, heures: Math.round(heures), heuresSupp: Math.max(0, Math.round(heures) - 8) });
+      }
+    });
+    // Fusionner : priorité aux pointages réels
+    if (reelsConvertis.length > 0) {
+      const base = paie || POINTAGES_MOIS;
+      const existingDates = new Set(reelsConvertis.map(p => p.date));
+      return [...base.filter(p => !existingDates.has(p.date)), ...reelsConvertis];
+    }
+    return paie || POINTAGES_MOIS;
+  } catch { return POINTAGES_MOIS; }
+}
 
 export default function SuiviPaieModule() {
   const [depot, setDepot] = useState(localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT);

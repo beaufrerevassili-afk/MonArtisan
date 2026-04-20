@@ -217,6 +217,10 @@ function immoCrud(table, responseKey) {
     try {
       const data = req.body;
       const cols = Object.keys(data).filter(k => k !== 'id' && k !== 'cree_le');
+      const validCol = /^[a-z][a-z0-9_]*$/;
+      if (!cols.every(c => validCol.test(c.replace(/([A-Z])/g, '_$1').toLowerCase()))) {
+        return res.status(400).json({ erreur: 'Nom de colonne invalide' });
+      }
       const vals = cols.map(k => data[k]);
       cols.push('patron_id'); vals.push(req.user.id);
       const placeholders = cols.map((_, i) => `$${i + 1}`).join(',');
@@ -231,6 +235,10 @@ function immoCrud(table, responseKey) {
       const data = req.body;
       const cols = Object.keys(data).filter(k => k !== 'id' && k !== 'cree_le' && k !== 'patron_id');
       if (!cols.length) return res.status(400).json({ erreur: 'Rien à mettre à jour' });
+      const validCol = /^[a-z][a-z0-9_]*$/;
+      if (!cols.every(c => validCol.test(c.replace(/([A-Z])/g, '_$1').toLowerCase()))) {
+        return res.status(400).json({ erreur: 'Nom de colonne invalide' });
+      }
       const sets = cols.map((c, i) => `${c.replace(/([A-Z])/g, '_$1').toLowerCase()} = $${i + 1}`).join(', ');
       const vals = cols.map(k => data[k]);
       vals.push(req.params.id, req.user.id);

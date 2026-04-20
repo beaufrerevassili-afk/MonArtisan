@@ -26,7 +26,7 @@ router.get('/public/artisans', async (req, res) => {
       FROM users u
       LEFT JOIN notations n ON n.artisan_id = u.id
       WHERE u.role = 'artisan'
-        AND u.statut_validation = 'validé'
+        AND u.statut_validation = 'valide'
         AND (u.suspendu IS NULL OR u.suspendu = false)
     `;
     const params = [];

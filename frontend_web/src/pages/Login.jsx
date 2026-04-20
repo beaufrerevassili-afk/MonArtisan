@@ -4,26 +4,18 @@ import { useAuth } from '../context/AuthContext';
 import L from '../design/luxe';
 
 // ── Comptes démo (alignés avec AuthContext) ──
-const CLIENT_DEMO = { role:'Client', email:'demo-client@freample.fr', motdepasse:'demo', icon:'👤', universal:true };
-const SECTEUR_COMPTES = {
-  btp: [
-    { role:'Chef d\'entreprise BTP', email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏗️' },
-    { role:'Employé BTP', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
-    { role:'Artisan BTP', email:'demo-artisan@freample.fr', motdepasse:'demo', icon:'🔨' },
-  ],
-};
-const GENERIC_DEMO = [
-  CLIENT_DEMO,
-  { role:'Client entreprise', email:'demo-entreprise@freample.fr', motdepasse:'demo', icon:'🏢' },
-  { role:'Gestion SCI', email:'demo-sci@freample.fr', motdepasse:'demo', icon:'🏠' },
-  { role:"Chef d'entreprise BTP", email:'demo-patron@freample.fr', motdepasse:'demo', icon:'🏗️' },
-  { role:'Auto-entrepreneur', email:'demo-ae@freample.fr', motdepasse:'demo', icon:'👤' },
-  { role:'Employé', email:'demo-employe@freample.fr', motdepasse:'demo', icon:'👷' },
+const DEMO_COMPTES = [
+  { role:'Client particulier', desc:'Publiez un projet, recevez des offres', email:'demo-client@freample.fr', motdepasse:'demo', color:'#5B5BD6' },
+  { role:'Client entreprise', desc:'Gestion projets pro (SAS, SARL…)', email:'demo-entreprise@freample.fr', motdepasse:'demo', color:'#2563EB' },
+  { role:'Chef d\'entreprise BTP', desc:'ERP complet : devis, RH, finance, QSE', email:'demo-patron@freample.fr', motdepasse:'demo', color:'#0A0A0A' },
+  { role:'Auto-entrepreneur', desc:'Tableau de bord simplifié, CA, URSSAF', email:'demo-ae@freample.fr', motdepasse:'demo', color:'#A68B4B' },
+  { role:'Gestion SCI', desc:'Comptabilité SCI, biens, déclarations fiscales', email:'demo-sci@freample.fr', motdepasse:'demo', color:'#16A34A' },
+  { role:'Salarié BTP', desc:'Planning, fiches de paie, congés, notes de frais', email:'demo-employe@freample.fr', motdepasse:'demo', color:'#D97706' },
 ];
 const SECTOR_CONFIG = {
-  btp: { label:'BTP', icon:'🏗️' },
+  btp: { label:'BTP' },
 };
-const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/patron/dashboard' };
+const REDIRECTIONS = { client:'/', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard', super_admin:'/admin/dashboard', fondateur:'/fondateur/dashboard' };
 const PUBLIC_SECTORS = ['btp'];
 
 const inp = { width:'100%', boxSizing:'border-box', padding:'14px 16px', border:`1px solid ${L.border}`, background:L.white, fontSize:15, color:L.text, outline:'none', fontFamily:L.font, transition:'border-color .2s' };
@@ -39,8 +31,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [demoSector, setDemoSector] = useState(null);
-  const [pendingRole, setPendingRole] = useState(null);
 
   const getDestination = (role, userData) => {
     // SCI → gestion immo
@@ -71,8 +61,7 @@ export default function Login() {
     </div>
   );
 
-  const activeSector = sector || demoSector;
-  const demoAccounts = activeSector ? [CLIENT_DEMO, ...(SECTEUR_COMPTES[activeSector]||[])] : GENERIC_DEMO;
+  const demoAccounts = DEMO_COMPTES;
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true);
@@ -82,22 +71,10 @@ export default function Login() {
   }
 
   async function remplirDemo(compte) {
-    const isGeneric = !compte.universal && !activeSector && ["Chef d'entreprise",'Employé'].includes(compte.role);
-    if (isGeneric) { setPendingRole(compte.role === "Chef d'entreprise" ? 'patron' : 'artisan'); return; }
     setError(''); setLoading(true);
     try { const data = await login(compte.email, compte.motdepasse); navigate(getDestination(data.role, data)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
-  }
-
-  function handleSectorSelect(id) {
-    if (demoSector === id && !pendingRole) { setDemoSector(null); return; }
-    setDemoSector(id);
-    if (pendingRole) {
-      const comptes = SECTEUR_COMPTES[id] || [];
-      const compte = pendingRole === 'patron' ? comptes[0] : comptes[1];
-      if (compte) { setPendingRole(null); setTimeout(()=>remplirDemo(compte), 300); }
-    }
   }
 
   return (
@@ -147,7 +124,7 @@ export default function Login() {
                   onFocus={e=>e.currentTarget.style.borderColor=L.gold} onBlur={e=>e.currentTarget.style.borderColor=L.border} />
                 <button type="button" onClick={()=>setShowPwd(!showPwd)}
                   style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:L.textLight, fontSize:14 }}>
-                  {showPwd ? '🙈' : '👁️'}
+                  {showPwd ? 'Masquer' : 'Voir'}
                 </button>
               </div>
             </div>
@@ -168,32 +145,11 @@ export default function Login() {
           <div style={{ display:'flex', alignItems:'center', gap:14, margin:'28px 0 20px' }}>
             <div style={{ flex:1, height:1, background:L.border }} />
             <span style={{ fontSize:11, color:L.textLight, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em' }}>
-              {activeSector ? SECTOR_CONFIG[activeSector]?.label : 'Démonstration'}
+              Accès rapide
             </span>
             <div style={{ flex:1, height:1, background:L.border }} />
           </div>
 
-          {/* Sélecteur secteur */}
-          {!sector && (
-            <div style={{ marginBottom:16, ...(pendingRole ? { background:L.cream, border:`1px solid ${L.gold}40`, padding:'14px 16px' } : {}) }}>
-              {pendingRole && (
-                <div style={{ fontSize:12, fontWeight:600, color:L.goldDark, marginBottom:10 }}>
-                  Choisissez un secteur pour le compte {pendingRole === 'patron' ? "Chef d'entreprise" : 'Employé'}
-                </div>
-              )}
-              <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                {Object.entries(SECTOR_CONFIG).map(([id, cfg]) => (
-                  <button key={id} onClick={()=>handleSectorSelect(id)}
-                    style={{ padding:'7px 14px', fontSize:12, fontWeight:600, border:`1px solid ${demoSector===id ? L.gold : L.border}`, background:demoSector===id ? L.cream : 'transparent', color:demoSector===id ? L.goldDark : L.textLight, cursor:'pointer', fontFamily:L.font, transition:'all .15s' }}
-                    onMouseEnter={e=>{if(demoSector!==id){e.currentTarget.style.borderColor=L.textSec;e.currentTarget.style.color=L.text;}}}
-                    onMouseLeave={e=>{if(demoSector!==id){e.currentTarget.style.borderColor=L.border;e.currentTarget.style.color=L.textLight;}}}>
-                    {cfg.icon} {cfg.label}
-                  </button>
-                ))}
-              </div>
-              {pendingRole && <button onClick={()=>setPendingRole(null)} style={{ marginTop:10, fontSize:12, color:L.textLight, background:'none', border:'none', cursor:'pointer', fontFamily:L.font }}>Annuler</button>}
-            </div>
-          )}
 
           {/* Comptes démo */}
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
@@ -202,12 +158,11 @@ export default function Login() {
                 style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 16px', background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', fontFamily:L.font, width:'100%', textAlign:'left', transition:'all .2s' }}
                 onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.borderColor=L.gold;}}
                 onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.borderColor=L.border;}}>
-                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, background:L.cream, flexShrink:0 }}>{c.icon}</div>
+                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700, color:'#fff', background:c.color, borderRadius:8, flexShrink:0, letterSpacing:'-0.02em' }}>{c.role[0]}</div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:13, fontWeight:600, color:L.text }}>{c.role}</div>
-                  <div style={{ fontSize:11, color:L.textLight, marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.email}</div>
+                  <div style={{ fontSize:11, color:L.textLight, marginTop:2 }}>{c.desc}</div>
                 </div>
-                {c.universal && <div style={{ fontSize:10, fontWeight:700, color:L.goldDark, background:L.cream, border:`1px solid ${L.gold}40`, padding:'2px 8px', flexShrink:0, letterSpacing:'0.04em' }}>Universel</div>}
               </button>
             ))}
           </div>
