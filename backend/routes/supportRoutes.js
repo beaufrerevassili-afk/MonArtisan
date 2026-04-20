@@ -81,4 +81,42 @@ router.put('/tickets/:id/close', authenticateToken, authorizeRole('fondateur', '
   }
 });
 
+// GET /support/mes-tickets?email=xxx — Voir mes tickets (public, par email)
+router.get('/mes-tickets', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ erreur: 'Email requis' });
+    const { rows } = await db.query('SELECT * FROM support_tickets WHERE email = $1 ORDER BY cree_le DESC', [email]);
+    res.json({ tickets: rows });
+  } catch (err) {
+    console.error('Erreur GET /support/mes-tickets :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /support/tickets/:id/user-reply — L'utilisateur répond à son ticket
+router.put('/tickets/:id/user-reply', async (req, res) => {
+  try {
+    const { email, reponse } = req.body;
+    if (!email || !reponse) return res.status(400).json({ erreur: 'Email et réponse requis' });
+
+    // Vérifier que le ticket appartient à cet email
+    const { rows: existing } = await db.query('SELECT * FROM support_tickets WHERE id = $1 AND email = $2', [req.params.id, email]);
+    if (!existing[0]) return res.status(404).json({ erreur: 'Ticket introuvable' });
+
+    const reponses = existing[0].reponses || [];
+    reponses.push({ auteur: existing[0].nom || email, message: reponse, date: new Date().toISOString() });
+
+    const { rows } = await db.query(
+      "UPDATE support_tickets SET reponses = $1, modifie_le = NOW(), statut = 'ouvert' WHERE id = $2 RETURNING *",
+      [JSON.stringify(reponses), req.params.id]
+    );
+
+    res.json({ message: 'Réponse envoyée', ticket: rows[0] });
+  } catch (err) {
+    console.error('Erreur PUT /support/tickets/:id/user-reply :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
