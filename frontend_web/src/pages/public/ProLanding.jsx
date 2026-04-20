@@ -63,7 +63,7 @@ export default function ProLanding() {
       {/* ══ COMMENT ÇA MARCHE — 3 étapes ══ */}
       <section ref={r1} style={{ padding: 'clamp(56px,9vh,88px) 32px', background: L.cream, borderBottom: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 40px' }}>Comment ça marche</h2>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 40px', color: '#1A1A1A' }}>Comment ça marche</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
             {[
               { step: '1', icon: '📋', title: 'Les clients publient', desc: 'Un particulier décrit son projet (plomberie, peinture...), fixe son budget et sa ville. Le projet apparaît dans votre zone.', color: '#2563EB' },
@@ -76,7 +76,7 @@ export default function ProLanding() {
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color + '15', color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800 }}>{s.icon}</div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Étape {s.step}</div>
                 </div>
-                <h3 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 8px' }}>{s.title}</h3>
+                <h3 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 8px', color: '#1A1A1A' }}>{s.title}</h3>
                 <p style={{ fontSize: 13, color: L.textSec, lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
               </div>
             ))}
@@ -87,14 +87,14 @@ export default function ProLanding() {
       {/* ══ 2 VOLETS : Projets + Gestion ══ */}
       <section ref={r2} style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', textAlign: 'center' }}>Deux outils, un seul espace</h2>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', textAlign: 'center', color: '#1A1A1A' }}>Deux outils, un seul espace</h2>
           <p style={{ fontSize: 15, color: L.textSec, textAlign: 'center', margin: '0 auto 40px', maxWidth: 520 }}>Trouvez des chantiers ET gérez votre entreprise depuis le même compte.</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             {/* Projets clients */}
             <div style={{ background: L.noir, borderRadius: 16, padding: 'clamp(28px,4vw,36px)', color: '#fff' }}>
               <div style={{ fontSize: 28, marginBottom: 12 }}>📋</div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 12px' }}>Projets clients</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 12px', color: '#1A1A1A' }}>Projets clients</h3>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 20 }}>Des particuliers publient leurs projets dans votre zone. Vous choisissez, vous proposez, vous gagnez.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {['Projets géolocalisés dans votre rayon', 'Devis automatique ou personnalisé', 'Proposition de RDV intégrée', 'Messagerie directe avec le client', 'Commission 1% payée par le client'].map(f => (
@@ -108,7 +108,7 @@ export default function ProLanding() {
             {/* Gestion entreprise */}
             <div style={{ background: '#fff', borderRadius: 16, padding: 'clamp(28px,4vw,36px)', border: `1px solid ${L.border}` }}>
               <div style={{ fontSize: 28, marginBottom: 12 }}>🏢</div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 12px' }}>Mon entreprise</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 12px', color: '#1A1A1A' }}>Mon entreprise</h3>
               <p style={{ fontSize: 13, color: L.textSec, lineHeight: 1.6, marginBottom: 20 }}>Un ERP complet pour gérer votre activité au quotidien. RH, paie, conformité, finances — tout inclus.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {['Pipeline commercial & facturation', 'Gestion du personnel & paie BTP', 'QHSE : audits, EPI, incidents', 'Comptabilité & export Sage/EBP', 'Recrutement & onboarding', 'Chantiers, planning, documents'].map(f => (
@@ -137,7 +137,7 @@ export default function ProLanding() {
       {/* ══ TARIFS DÉTAILLÉ ══ */}
       <section style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
         <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px' }}>Gratuit pour vous.</h2>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', color: '#1A1A1A' }}>Gratuit pour vous.</h2>
           <p style={{ fontSize: 15, color: L.textSec, marginBottom: 32 }}>Pas d'abonnement. La commission de 1% est payée par le client, pas par l'artisan. Vous recevez 100% du montant des travaux.</p>
           <div style={{ background: L.noir, borderRadius: 16, padding: '28px 24px', color: '#fff', textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -165,7 +165,7 @@ export default function ProLanding() {
       {/* ══ FAQ ══ */}
       <section ref={r3} id="faq" style={{ background: L.bg, padding: 'clamp(56px,9vh,88px) 32px', borderTop: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 650, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 32px', textAlign: 'center' }}>Questions fréquentes</h2>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 32px', textAlign: 'center', color: '#1A1A1A' }}>Questions fréquentes</h2>
           {[
             { q: 'Comment je reçois des projets ?', a: 'Les particuliers publient leurs projets sur Freample avec leur budget et leur ville. Vous configurez votre zone d\'intervention (adresse + rayon en km) et seuls les projets proches de vous apparaissent.' },
             { q: 'Combien ça coûte ?', a: 'Rien. L\'inscription, l\'accès aux projets, les devis, la gestion d\'entreprise — tout est gratuit. La commission de 1% est payée par le client, pas par vous.' },
