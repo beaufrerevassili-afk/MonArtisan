@@ -290,6 +290,7 @@ function AppRoutes() {
       {/* ── Redirection post-login ── */}
       <Route path="/app" element={
         !user ? <Navigate to="/login" replace /> :
+        user?.suspendu ? <Navigate to="/compte-suspendu" replace /> :
         user?.role === 'client'      ? <Navigate to="/"  replace /> :
         user?.role === 'patron'      ? <Navigate to="/patron/dashboard"  replace /> :
         user?.role === 'super_admin' ? <Navigate to="/admin/dashboard"      replace /> :

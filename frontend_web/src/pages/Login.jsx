@@ -68,14 +68,14 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true); setSuspendedEmail('');
-    try { const data = await login(form.email, form.motdepasse); navigate(getDestination(data.role, data)); }
+    try { const data = await login(form.email, form.motdepasse); navigate(data.suspendu ? '/compte-suspendu' : getDestination(data.role, data)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }
 
   async function remplirDemo(compte) {
     setError(''); setLoading(true);
-    try { const data = await login(compte.email, compte.motdepasse); navigate(getDestination(data.role, data)); }
+    try { const data = await login(compte.email, compte.motdepasse); navigate(data.suspendu ? '/compte-suspendu' : getDestination(data.role, data)); }
     catch(err) { setError(err.response?.data?.erreur || 'Identifiants incorrects'); }
     finally { setLoading(false); }
   }
