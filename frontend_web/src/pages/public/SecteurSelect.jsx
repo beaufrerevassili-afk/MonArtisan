@@ -384,7 +384,7 @@ export default function SecteurSelect() {
       {/* ══ Comment ça marche ══ */}
       <section ref={r2} style={{ background: L.white, borderTop: `1px solid ${L.border}`, borderBottom: `1px solid ${L.border}`, padding: 'clamp(48px,7vh,72px) clamp(20px,4vw,40px)' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 800, textAlign: 'center', margin: '0 0 48px', letterSpacing: '-0.03em' }}>
+          <h2 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 800, textAlign: 'center', margin: '0 0 48px', letterSpacing: '-0.03em', color: '#1A1A1A' }}>
             Comment ça marche
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -396,7 +396,7 @@ export default function SecteurSelect() {
               <div key={s.n} style={{ display: 'flex', gap: 'clamp(16px,3vw,32px)', alignItems: 'flex-start', padding: '28px 0', borderTop: i > 0 ? `1px solid ${L.border}` : 'none' }}>
                 <span style={{ fontSize: 32, fontWeight: 200, color: L.textLight, fontFamily: L.serif, lineHeight: 1, flexShrink: 0, minWidth: 48 }}>{s.n}</span>
                 <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px' }}>{s.title}</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: '#1A1A1A' }}>{s.title}</h3>
                   <p style={{ fontSize: 14, color: L.textSec, lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function SecteurSelect() {
       {/* ══ Qui nous sommes ══ */}
       <section id="qui-nous-sommes" ref={r3} style={{ padding: 'clamp(56px,8vh,88px) clamp(20px,4vw,40px)' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: L.serif, fontSize: 'clamp(26px,4vw,40px)', fontWeight: 700, margin: '0 0 20px', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+          <h2 style={{ fontFamily: L.serif, fontSize: 'clamp(26px,4vw,40px)', fontWeight: 700, margin: '0 0 20px', letterSpacing: '-0.02em', lineHeight: 1.15, color: '#1A1A1A' }}>
             Qui nous sommes
           </h2>
           <p style={{ fontSize: 16, color: L.textSec, lineHeight: 1.75, margin: '0 0 28px' }}>
@@ -429,7 +429,7 @@ export default function SecteurSelect() {
       <section id="nos-objectifs" style={{ padding: 'clamp(56px,8vh,88px) clamp(20px,4vw,40px)', background: L.white, borderTop: `1px solid ${L.border}`, borderBottom: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: L.gold, letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px' }}>Nos objectifs</p>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, margin: '0 0 16px', letterSpacing: '-0.03em', color: '#1A1A1A' }}>
             Simplifier votre quotidien.
           </h2>
           <p style={{ fontSize: 15, color: L.textSec, lineHeight: 1.7, margin: '0 0 40px', maxWidth: 560 }}>
@@ -443,7 +443,7 @@ export default function SecteurSelect() {
               { title: 'Écosystème', desc: 'Marketplace, devis, chantiers, RH, finance — tout est connecté dans une seule plateforme BTP.' },
             ].map(o => (
               <div key={o.title} style={{ background: L.white, padding: 'clamp(20px,3vw,32px)' }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 8px' }}>{o.title}</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 8px', color: '#1A1A1A' }}>{o.title}</h3>
                 <p style={{ fontSize: 13, color: L.textSec, lineHeight: 1.6, margin: 0 }}>{o.desc}</p>
               </div>
             ))}
