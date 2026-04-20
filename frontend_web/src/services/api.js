@@ -41,7 +41,11 @@ api.interceptors.response.use(
     if (_errorToast && !isDemo) {
       const status = error.response?.status;
       const msg = error.response?.data?.erreur || error.response?.data?.message;
-      if (status === 403) {
+      if (status === 403 && msg === 'Compte suspendu') {
+        _errorToast('Votre compte a été suspendu', 'error');
+        localStorage.removeItem('token');
+        setTimeout(() => { window.location.href = '/login'; }, 1500);
+      } else if (status === 403) {
         _errorToast('Accès refusé', 'error');
       } else if (status === 404) {
         _errorToast('Ressource introuvable', 'warning');

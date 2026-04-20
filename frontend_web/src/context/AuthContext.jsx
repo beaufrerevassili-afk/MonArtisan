@@ -17,6 +17,16 @@ export function AuthProvider({ children }) {
         if (payload.exp * 1000 > Date.now()) {
           setUser({ id: payload.id, nom: payload.nom, email: payload.email, role: payload.role, secteur: payload.secteur || null, patronId: payload.patronId || null });
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          // Vérifier si le compte est toujours actif (pas suspendu)
+          if (!token.endsWith('.dev')) {
+            api.get('/notifications').catch(err => {
+              if (err.response?.status === 403 && err.response?.data?.erreur === 'Compte suspendu') {
+                localStorage.removeItem('token');
+                setToken(null);
+                setUser(null);
+              }
+            });
+          }
         } else {
           localStorage.removeItem('token');
           setToken(null);

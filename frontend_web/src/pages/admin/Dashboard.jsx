@@ -252,7 +252,20 @@ function Utilisateurs({ users, setUsers }) {
     return true;
   }), [users, filterRole, search]);
 
-  const toggleSuspend = (id) => {
+  const toggleSuspend = async (id) => {
+    const token = localStorage.getItem('token');
+    const isDemo = token && token.endsWith('.dev');
+    if (!isDemo) {
+      try {
+        const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+        const r = await fetch(`${API}/admin/toggle-suspend/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+        const data = await r.json();
+        if (data.user) {
+          setUsers(prev => prev.map(u => u.id === id ? { ...u, actif: !data.user.suspendu } : u));
+          return;
+        }
+      } catch {}
+    }
     setUsers(prev => prev.map(u => u.id === id ? { ...u, actif: !u.actif } : u));
   };
 
