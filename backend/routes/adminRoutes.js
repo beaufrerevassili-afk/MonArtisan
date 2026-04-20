@@ -188,4 +188,34 @@ router.put('/suspendre/:id', authenticateToken, authorizeRole(...ADMIN_ROLES), a
   }
 });
 
+// GET /admin/config — Lire la config Freample (frais, trésorerie)
+router.get('/config', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT cle, valeur FROM freample_config ORDER BY cle');
+    const config = {};
+    rows.forEach(r => { config[r.cle] = r.valeur; });
+    res.json({ config });
+  } catch (err) {
+    console.error('Erreur GET /admin/config :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /admin/config — Mettre à jour la config Freample
+router.put('/config', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
+  try {
+    const updates = req.body; // { cle: valeur, cle2: valeur2, ... }
+    for (const [cle, valeur] of Object.entries(updates)) {
+      await db.query(
+        'INSERT INTO freample_config (cle, valeur, modifie_le) VALUES ($1, $2, NOW()) ON CONFLICT (cle) DO UPDATE SET valeur = $2, modifie_le = NOW()',
+        [cle, String(valeur)]
+      );
+    }
+    res.json({ message: 'Configuration mise à jour' });
+  } catch (err) {
+    console.error('Erreur PUT /admin/config :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

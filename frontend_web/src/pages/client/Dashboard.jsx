@@ -41,9 +41,17 @@ export default function DashboardClient() {
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
   useEffect(() => {
-    const local = lsGet('freample_projets', []);
-    setProjets(local.length > 0 ? local : []);
-    api.get('/projets/mes-projets').then(({ data }) => { if (data.projets?.length) setProjets(data.projets); }).catch(() => {});
+    const token = localStorage.getItem('token');
+    const isDemo = token && token.endsWith('.dev');
+    // Comptes réels → uniquement les données du backend
+    // Comptes démo → données localStorage
+    if (isDemo) {
+      const local = lsGet('freample_projets', []);
+      setProjets(local.length > 0 ? local : []);
+    } else {
+      setProjets([]); // Vide par défaut pour les vrais comptes
+      api.get('/projets/mes-projets').then(({ data }) => { if (data.projets?.length) setProjets(data.projets); }).catch(() => {});
+    }
   }, []);
 
   // Données dérivées

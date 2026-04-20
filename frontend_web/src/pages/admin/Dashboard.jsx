@@ -103,56 +103,65 @@ function KpiCard({ label, value, sub, trend, color=DS.gold }) {
 // ══════════════════════════════════════════════════
 // ── TAB 1 : VUE D'ENSEMBLE ──
 // ══════════════════════════════════════════════════
-function VueEnsemble({ data, users }) {
-  const projets = data.projets;
-  const devis = data.devis;
-  const factures = data.factures;
+function VueEnsemble({ data, users, backendStats }) {
+  // Utiliser les données RÉELLES du backend si disponibles
+  const bs = backendStats;
+  const usersTotal = bs?.users?.total || users.length;
+  const usersActifs = bs ? bs.users.parRole.reduce((s, r) => s + r.actifs, 0) : users.filter(u => u.actif).length;
+  const inscriptionsMois = bs?.users?.inscriptionsMois || 0;
+  const inscriptionsSemaine = bs?.users?.inscriptionsSemaine || 0;
+  const totalMissions = bs?.missions?.total || 0;
+  const totalDevis = bs?.devis?.total || 0;
+  const caDevis = bs?.devis?.ca || 0;
+  const caCommissions = caDevis * 0.01;
+  const chantiersEnCours = parseInt(bs?.chantiers?.en_cours || 0);
+  const chantiersTermines = parseInt(bs?.chantiers?.termines || 0);
+  const totalMessages = bs?.messages?.total || 0;
 
-  // CA = commissions Freample (1% sur chaque transaction)
-  const totalTransactions = factures.filter(f => f.statut === 'payee').reduce((s,f) => s + (Number(f.montant)||0), 0);
-  const caCommissions = factures.filter(f => f.statut === 'payee').reduce((s,f) => s + (Number(f.commission)||Number(f.montant)*0.01||0), 0);
-  const projetsPublies = projets.filter(p => p.statut === 'publie').length;
-  const projetsPourvus = projets.filter(p => ['en_cours','termine'].includes(p.statut)).length;
-  const txConversion = pct(projetsPourvus, projets.length);
-  const usersActifs = users.filter(u => u.actif).length;
-  const litiges = data.signalements.length;
+  // Répartition par rôle (données réelles)
+  const parRole = { patron: 0, client: 0, artisan: 0, employe: 0, fondateur: 0 };
+  if (bs?.users?.parRole) {
+    bs.users.parRole.forEach(r => { if (parRole[r.role] !== undefined) parRole[r.role] = r.total; });
+  } else {
+    users.forEach(u => { if (parRole[u.role] !== undefined) parRole[u.role]++; });
+  }
 
-  // Répartition par rôle
-  const parRole = { patron:0, client:0, artisan:0, employe:0 };
-  users.forEach(u => { if (parRole[u.role] !== undefined) parRole[u.role]++; });
-
-  // Projets par mois (6 derniers mois)
+  // Inscriptions par jour (30 derniers jours)
+  const inscriptionsParJour = bs?.users?.inscriptionsParJour || [];
   const moisLabels = [];
   const moisCounts = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(); d.setMonth(d.getMonth() - i);
-    const m = d.toISOString().slice(0,7);
-    moisLabels.push(d.toLocaleDateString('fr-FR',{month:'short'}));
-    moisCounts.push(projets.filter(p => p.date?.startsWith(m)).length);
+    const m = d.toISOString().slice(0, 7);
+    moisLabels.push(d.toLocaleDateString('fr-FR', { month: 'short' }));
+    moisCounts.push(inscriptionsParJour.filter(j => j.jour?.startsWith(m)).reduce((s, j) => s + j.count, 0));
   }
   const maxCount = Math.max(...moisCounts, 1);
 
+  // Derniers inscrits
+  const derniers = bs?.users?.derniers || [];
+
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* KPIs principaux */}
       <div style={KPI_GRID}>
-        <KpiCard label="CA Commissions" value={fmt(caCommissions || 428)} sub={`sur ${fmt(totalTransactions || 42800)} de volume`} trend={12} />
-        <KpiCard label="Projets publies" value={fmtN(projetsPublies || 47)} sub={`${txConversion || 68}% de conversion`} trend={8} />
-        <KpiCard label="Utilisateurs actifs" value={fmtN(usersActifs)} sub={`${users.length} inscrits au total`} trend={15} />
-        <KpiCard label="Signalements" value={fmtN(litiges || 2)} sub="en attente de traitement" color={DS.orange} />
+        <KpiCard label="Utilisateurs" value={fmtN(usersTotal)} sub={`${inscriptionsMois} ce mois · ${inscriptionsSemaine} cette semaine`} trend={inscriptionsSemaine} color={DS.blue} />
+        <KpiCard label="Missions" value={fmtN(totalMissions)} sub={`${chantiersEnCours} en cours · ${chantiersTermines} terminés`} />
+        <KpiCard label="Devis" value={fmtN(totalDevis)} sub={`${fmt(caDevis)} de volume total`} color={DS.green} />
+        <KpiCard label="Commission (1%)" value={fmt(caCommissions)} sub={`sur ${fmt(caDevis)} de transactions`} />
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-        {/* Graphique activité */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {/* Graphique inscriptions */}
         <div style={CARD}>
-          <p style={SECTION_TITLE}>Activite mensuelle</p>
-          <p style={{ fontSize:11, color:DS.subtle, marginTop:2 }}>Projets publies par mois</p>
-          <div style={{ display:'flex', alignItems:'flex-end', gap:8, height:120, marginTop:16 }}>
-            {moisLabels.map((m,i) => (
-              <div key={m} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
-                <span style={{ fontSize:10, fontWeight:700, color:DS.text }}>{moisCounts[i]}</span>
-                <div style={{ width:'100%', height:`${Math.max(8, moisCounts[i]/maxCount*90)}px`, background: i===moisLabels.length-1 ? DS.gold : DS.borderLight, borderRadius:4, transition:'height .3s' }} />
-                <span style={{ fontSize:10, color:DS.subtle }}>{m}</span>
+          <p style={SECTION_TITLE}>Inscriptions mensuelles</p>
+          <p style={{ fontSize: 11, color: DS.subtle, marginTop: 2 }}>Nouveaux comptes par mois</p>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120, marginTop: 16 }}>
+            {moisLabels.map((m, i) => (
+              <div key={m} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: DS.text }}>{moisCounts[i]}</span>
+                <div style={{ width: '100%', height: `${Math.max(8, moisCounts[i] / maxCount * 90)}px`, background: i === moisLabels.length - 1 ? DS.gold : DS.borderLight, borderRadius: 4, transition: 'height .3s' }} />
+                <span style={{ fontSize: 10, color: DS.subtle }}>{m}</span>
               </div>
             ))}
           </div>
@@ -160,57 +169,70 @@ function VueEnsemble({ data, users }) {
 
         {/* Répartition utilisateurs */}
         <div style={CARD}>
-          <p style={SECTION_TITLE}>Repartition utilisateurs</p>
-          <div style={{ marginTop:16, display:'flex', flexDirection:'column', gap:10 }}>
+          <p style={SECTION_TITLE}>Répartition utilisateurs</p>
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { label:'Patrons', count:parRole.patron, color:DS.gold },
-              { label:'Artisans', count:parRole.artisan, color:DS.green },
-              { label:'Clients', count:parRole.client, color:DS.blue },
-              { label:'Employes', count:parRole.employe, color:DS.orange },
+              { label: 'Patrons', count: parRole.patron, color: DS.gold },
+              { label: 'Artisans', count: parRole.artisan, color: DS.green },
+              { label: 'Clients', count: parRole.client, color: DS.blue },
+              { label: 'Employés', count: parRole.employe, color: DS.orange },
             ].map(r => (
-              <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ fontSize:12, fontWeight:600, color:DS.muted, width:70 }}>{r.label}</span>
-                <div style={{ flex:1, height:8, background:DS.borderLight, borderRadius:4, overflow:'hidden' }}>
-                  <div style={{ width:`${pct(r.count, users.length)}%`, height:'100%', background:r.color, borderRadius:4, transition:'width .3s' }} />
+              <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: DS.muted, width: 70 }}>{r.label}</span>
+                <div style={{ flex: 1, height: 8, background: DS.borderLight, borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ width: `${pct(r.count, usersTotal)}%`, height: '100%', background: r.color, borderRadius: 4, transition: 'width .3s' }} />
                 </div>
-                <span style={{ fontSize:12, fontWeight:700, color:DS.text, minWidth:20, textAlign:'right' }}>{r.count}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: DS.text, minWidth: 20, textAlign: 'right' }}>{r.count}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Derniers projets */}
+      {/* Derniers inscrits */}
       <div style={CARD}>
-        <p style={SECTION_TITLE}>Derniers projets</p>
-        <div style={{ overflowX:'auto', marginTop:12 }}>
-          <table style={{ width:'100%', borderCollapse:'collapse' }}>
-            <thead><tr>
-              {['Projet','Client','Budget','Commission','Statut','Date'].map(h => <th key={h} style={TH}>{h}</th>)}
-            </tr></thead>
-            <tbody>
-              {(projets.length > 0 ? projets : [
-                { id:1, metier:'Renovation salle de bain', clientNom:'Marie Dupont', budget:8500, commission:85, statut:'en_cours', date:'2026-04-10' },
-                { id:2, metier:'Extension garage', clientNom:'Sophie Leroy', budget:22000, commission:220, statut:'publie', date:'2026-04-08' },
-                { id:3, metier:'Plomberie cuisine', clientNom:'Claire Fontaine', budget:3200, commission:32, statut:'termine', date:'2026-03-28' },
-              ]).slice(-8).reverse().map(p => (
-                <tr key={p.id}>
-                  <td style={TD}><span style={{ fontWeight:600 }}>{p.metier || 'Projet'}</span></td>
-                  <td style={TD}>{p.clientNom || '-'}</td>
-                  <td style={TD}>{fmt(p.budget||0)}</td>
-                  <td style={{...TD, color:DS.gold, fontWeight:700}}>{fmt(p.commission || (p.budget||0)*0.01)}</td>
-                  <td style={TD}>
-                    <span style={BADGE(
-                      p.statut==='termine' ? DS.greenBg : p.statut==='en_cours' ? DS.blueBg : DS.orangeBg,
-                      p.statut==='termine' ? DS.green : p.statut==='en_cours' ? DS.blue : DS.orange
-                    )}>{p.statut==='termine' ? 'Termine' : p.statut==='en_cours' ? 'En cours' : 'Publie'}</span>
-                  </td>
-                  <td style={{...TD, color:DS.subtle, fontSize:12}}>{p.date?.slice(0,10) || '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <p style={SECTION_TITLE}>Derniers inscrits</p>
+        {derniers.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: DS.subtle, fontSize: 13 }}>Aucun utilisateur inscrit pour le moment. Les inscriptions apparaîtront ici en temps réel.</div>
+        ) : (
+          <div style={{ overflowX: 'auto', marginTop: 12 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr>
+                {['Nom', 'Email', 'Rôle', 'Ville', 'Inscrit le'].map(h => <th key={h} style={TH}>{h}</th>)}
+              </tr></thead>
+              <tbody>
+                {derniers.map(u => (
+                  <tr key={u.id}>
+                    <td style={TD}><span style={{ fontWeight: 600 }}>{u.nom}</span></td>
+                    <td style={{ ...TD, fontSize: 12, color: DS.subtle }}>{u.email}</td>
+                    <td style={TD}>
+                      <span style={BADGE(
+                        u.role === 'patron' ? DS.goldLight : u.role === 'client' ? DS.blueBg : u.role === 'artisan' ? DS.greenBg : DS.orangeBg,
+                        u.role === 'patron' ? DS.gold : u.role === 'client' ? DS.blue : u.role === 'artisan' ? DS.green : DS.orange
+                      )}>{u.role}</span>
+                    </td>
+                    <td style={TD}>{u.ville || '—'}</td>
+                    <td style={{ ...TD, color: DS.subtle, fontSize: 12 }}>{u.cree_le ? new Date(u.cree_le).toLocaleDateString('fr-FR') : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Stats rapides */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {[
+          ['Messages échangés', totalMessages, DS.blue],
+          ['Chantiers en cours', chantiersEnCours, DS.orange],
+          ['Chantiers terminés', chantiersTermines, DS.green],
+        ].map(([label, val, color]) => (
+          <div key={label} style={{ padding: '10px 16px', background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: DS.muted }}>{label}</span>
+            <span style={{ fontSize: 16, fontWeight: 800, color }}>{val}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -394,13 +416,7 @@ function Transactions({ data }) {
         });
       }
     });
-    return tx.length > 0 ? tx.sort((a,b) => (b.date||'').localeCompare(a.date||'')) : [
-      { id:1, type:'facture', label:'Renovation salle de bain', montant:8500, commission:85, statut:'payee', date:'2026-04-10', client:'Marie Dupont', patron:'Vassili B.' },
-      { id:2, type:'facture', label:'Extension garage', montant:22000, commission:220, statut:'en_attente', date:'2026-04-08', client:'Sophie Leroy', patron:'Jean Moreau' },
-      { id:3, type:'facture', label:'Plomberie cuisine', montant:3200, commission:32, statut:'payee', date:'2026-03-28', client:'Claire Fontaine', patron:'Vassili B.' },
-      { id:4, type:'projet', label:'Isolation combles', montant:15000, commission:150, statut:'en_cours', date:'2026-04-12', client:'Marie Dupont', patron:'Jean Moreau' },
-      { id:5, type:'facture', label:'Peinture appartement', montant:4800, commission:48, statut:'sequestre', date:'2026-04-05', client:'Sophie Leroy', patron:'Vassili B.' },
-    ];
+    return tx.sort((a,b) => (b.date||'').localeCompare(a.date||''));
   }, [data]);
 
   const filtered = filtre === 'tous' ? transactions : transactions.filter(t => t.statut === filtre);
@@ -460,12 +476,7 @@ function Transactions({ data }) {
 // ══════════════════════════════════════════════════
 function Moderation({ data }) {
   const [signalements, setSignalements] = useState(() => {
-    const s = data.signalements;
-    return s.length > 0 ? s : [
-      { id:1, type:'litige', chantier:'Renovation salle de bain', auteur:'Marie Dupont', message:'Travaux non conformes au devis initial, carrelage different de celui convenu.', date:'2026-04-12', urgence:'haute', statut:'ouvert' },
-      { id:2, type:'signalement', chantier:'Peinture appartement', auteur:'Sophie Leroy', message:'Retard de 2 semaines sans explication, aucune communication du patron.', date:'2026-04-10', urgence:'moyenne', statut:'ouvert' },
-      { id:3, type:'avis', chantier:null, auteur:'Pierre Duval', message:'Avis suspect : 5 etoiles sans commentaire, compte cree le meme jour.', date:'2026-04-08', urgence:'basse', statut:'ouvert' },
-    ];
+    return data.signalements || [];
   });
 
   const traiter = (id, action) => {
@@ -544,24 +555,50 @@ function Moderation({ data }) {
 // ══════════════════════════════════════════════════
 // ── TAB 5 : FREAMPLE SAS (gestion entreprise) ──
 // ══════════════════════════════════════════════════
-function EntrepriseFreample({ data }) {
+function EntrepriseFreample({ data, backendStats }) {
   const [sousTab, setSousTab] = useState('tresorerie');
+  const [config, setConfig] = useState({});
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({});
+
+  const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+
+  // Charger la config depuis le backend
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || token.endsWith('.dev')) return;
+    fetch(`${API}/admin/config`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => { if (d.config) { setConfig(d.config); setEditForm(d.config); } }).catch(() => {});
+  }, []);
+
+  const sauverConfig = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API}/admin/config`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(editForm) });
+      setConfig(editForm);
+      setEditMode(false);
+    } catch {} finally { setSaving(false); }
+  };
+
   const SOUS_TABS = [
-    { id:'tresorerie', label:'Tresorerie' },
-    { id:'urssaf',     label:'URSSAF & Cotisations' },
-    { id:'tva',        label:'TVA' },
-    { id:'compta',     label:'Comptabilite' },
+    { id:'tresorerie', label:'Trésorerie' },
+    { id:'frais',      label:'Mes frais' },
   ];
 
-  // Données financières Freample SAS (basées sur les commissions)
-  const factures = data.factures;
-  const totalCommissions = factures.filter(f => f.statut === 'payee').reduce((s,f) => s + (Number(f.commission)||Number(f.montant)*0.01||0), 0) || 4280;
-  const chargesSociales = Math.round(totalCommissions * 0.45); // ~45% charges patronales
-  const tvaCollectee = Math.round(totalCommissions * 0.20);
-  const tvaDeductible = Math.round(totalCommissions * 0.05); // charges deductibles
-  const tvaNette = tvaCollectee - tvaDeductible;
-  const urssaf = Math.round(totalCommissions * 0.22); // part salariale + patronale simplifiee
-  const resultatNet = totalCommissions - chargesSociales - 850; // 850 = frais fixes estimes
+  const fraisHebergement = Number(config.frais_hebergement || 0);
+  const fraisComptable = Number(config.frais_comptable || 0);
+  const fraisAssurance = Number(config.frais_assurance || 0);
+  const fraisDomiciliation = Number(config.frais_domiciliation || 0);
+  const fraisStripe = Number(config.frais_stripe || 0);
+  const fraisDivers = Number(config.frais_divers || 0);
+  const tresorerieInitiale = Number(config.tresorerie_initiale || 0);
+  const totalFrais = fraisHebergement + fraisComptable + fraisAssurance + fraisDomiciliation + fraisStripe + fraisDivers;
+
+  const totalCommissions = backendStats?.devis?.ca ? backendStats.devis.ca * 0.01 : 0;
+  const resultatNet = totalCommissions - totalFrais;
+  const tresorerie = tresorerieInitiale + resultatNet;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
@@ -577,29 +614,75 @@ function EntrepriseFreample({ data }) {
       {sousTab === 'tresorerie' && (
         <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
           <div style={KPI_GRID}>
-            <KpiCard label="CA Commissions (cumul)" value={fmt(totalCommissions)} trend={12} />
-            <KpiCard label="Charges sociales" value={fmt(chargesSociales)} sub="~45% du CA" />
-            <KpiCard label="Resultat net" value={fmt(resultatNet)} color={resultatNet > 0 ? DS.green : DS.red} />
-            <KpiCard label="Tresorerie estimee" value={fmt(resultatNet + 2500)} sub="Compte Freample SAS" />
+            <KpiCard label="CA Commissions" value={fmt(totalCommissions)} sub="1% des transactions" />
+            <KpiCard label="Total frais mensuels" value={fmt(totalFrais)} sub={`${totalFrais === 0 ? 'Configurez vos frais →' : 'Par mois'}`} color={DS.orange} />
+            <KpiCard label="Résultat net" value={fmt(resultatNet)} color={resultatNet >= 0 ? DS.green : DS.red} />
+            <KpiCard label="Trésorerie" value={fmt(tresorerie)} sub="Solde estimé" />
           </div>
           <div style={CARD}>
-            <p style={SECTION_TITLE}>Flux de tresorerie</p>
+            <p style={SECTION_TITLE}>Flux de trésorerie</p>
             <div style={{ marginTop:16, display:'flex', flexDirection:'column', gap:8 }}>
               {[
-                { label:'Commissions encaissees', montant:totalCommissions, type:'entree' },
-                { label:'Frais GoCardless (SEPA)', montant:-Math.round(totalCommissions*0.015+12), type:'sortie' },
-                { label:'Charges sociales', montant:-chargesSociales, type:'sortie' },
-                { label:'Hebergement & infra (Vercel, Neon)', montant:-45, type:'sortie' },
-                { label:'Assurance RC Pro', montant:-85, type:'sortie' },
-                { label:'Comptable', montant:-250, type:'sortie' },
-                { label:'Domiciliation', montant:-50, type:'sortie' },
-              ].map((l,i) => (
-                <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', background: i%2===0 ? DS.bgSoft : 'transparent', borderRadius:DS.r.sm }}>
-                  <span style={{ fontSize:13, color:DS.text }}>{l.label}</span>
-                  <span style={{ fontSize:14, fontWeight:700, color: l.type==='entree' ? DS.green : DS.red }}>{l.type==='entree' ? '+' : ''}{fmt(l.montant)}</span>
+                { label: 'Commissions encaissées', montant: totalCommissions, type: 'entree' },
+                ...(fraisHebergement > 0 ? [{ label: 'Hébergement & infra', montant: -fraisHebergement, type: 'sortie' }] : []),
+                ...(fraisComptable > 0 ? [{ label: 'Comptable', montant: -fraisComptable, type: 'sortie' }] : []),
+                ...(fraisAssurance > 0 ? [{ label: 'Assurance RC Pro', montant: -fraisAssurance, type: 'sortie' }] : []),
+                ...(fraisDomiciliation > 0 ? [{ label: 'Domiciliation', montant: -fraisDomiciliation, type: 'sortie' }] : []),
+                ...(fraisStripe > 0 ? [{ label: 'Frais Stripe/paiement', montant: -fraisStripe, type: 'sortie' }] : []),
+                ...(fraisDivers > 0 ? [{ label: 'Frais divers', montant: -fraisDivers, type: 'sortie' }] : []),
+              ].map((l, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: i % 2 === 0 ? DS.bgSoft : 'transparent', borderRadius: DS.r.sm }}>
+                  <span style={{ fontSize: 13, color: DS.text }}>{l.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: l.type === 'entree' ? DS.green : DS.red }}>{l.type === 'entree' ? '+' : ''}{fmt(l.montant)}</span>
                 </div>
               ))}
+              {totalFrais === 0 && (
+                <div style={{ padding: '16px', textAlign: 'center', color: DS.subtle, fontSize: 13 }}>
+                  Aucun frais configuré — allez dans l'onglet "Mes frais" pour saisir vos charges mensuelles.
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {sousTab === 'frais' && (
+        <div style={CARD}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <p style={SECTION_TITLE}>Frais mensuels Freample SAS</p>
+            {!editMode ? (
+              <button onClick={() => { setEditForm({ ...config }); setEditMode(true); }} style={BTN_PRIMARY}>Modifier</button>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={sauverConfig} disabled={saving} style={{ ...BTN_PRIMARY, opacity: saving ? 0.5 : 1 }}>{saving ? 'Sauvegarde...' : 'Sauvegarder'}</button>
+                <button onClick={() => setEditMode(false)} style={BTN_GHOST}>Annuler</button>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {[
+              { cle: 'frais_hebergement', label: 'Hébergement & infra (Vercel, Render...)', icon: '🖥️' },
+              { cle: 'frais_comptable', label: 'Comptable', icon: '📊' },
+              { cle: 'frais_assurance', label: 'Assurance RC Pro', icon: '🛡️' },
+              { cle: 'frais_domiciliation', label: 'Domiciliation', icon: '📍' },
+              { cle: 'frais_stripe', label: 'Frais Stripe / paiement', icon: '💳' },
+              { cle: 'frais_divers', label: 'Frais divers', icon: '📋' },
+              { cle: 'tresorerie_initiale', label: 'Trésorerie initiale (solde compte)', icon: '🏦' },
+            ].map(f => (
+              <div key={f.cle} style={{ padding: '12px 14px', background: DS.bgSoft, borderRadius: DS.r.sm }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: DS.muted, display: 'block', marginBottom: 6 }}>{f.icon} {f.label}</label>
+                {editMode ? (
+                  <input type="number" value={editForm[f.cle] || ''} onChange={e => setEditForm(p => ({ ...p, [f.cle]: e.target.value }))}
+                    placeholder="0" style={{ width: '100%', padding: '8px 10px', border: `1px solid ${DS.border}`, borderRadius: 6, fontSize: 14, fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
+                ) : (
+                  <div style={{ fontSize: 16, fontWeight: 800, color: DS.text }}>{fmt(Number(config[f.cle] || 0))}</div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 16, padding: '12px 16px', background: DS.goldLight, borderRadius: DS.r.sm, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: DS.gold }}>Total frais mensuels</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: DS.gold }}>{fmt(totalFrais)}</span>
           </div>
         </div>
       )}
@@ -846,7 +929,9 @@ export default function DashboardAdmin() {
   const [tab, setTab] = useState(urlTab || 'overview');
   const [users, setUsers] = useState(DEMO_USERS);
   const [backendStats, setBackendStats] = useState(null);
-  const data = useMemo(() => getAllData(), []);
+  const token = localStorage.getItem('token');
+  const isDemo = token && token.endsWith('.dev');
+  const data = useMemo(() => isDemo ? getAllData() : { projets:[], chantiers:[], devis:[], factures:[], ecritures:[], pointages:[], conges:[], signalements:[], rapports:[] }, [isDemo]);
 
   // Charger les vrais utilisateurs et stats depuis le backend
   useEffect(() => {
@@ -905,11 +990,11 @@ export default function DashboardAdmin() {
       </div>
 
       {/* Content */}
-      {tab === 'overview' && <VueEnsemble data={data} users={users} />}
+      {tab === 'overview' && <VueEnsemble data={data} users={users} backendStats={backendStats} />}
       {tab === 'users' && <Utilisateurs users={users} setUsers={setUsers} />}
       {tab === 'transactions' && <Transactions data={data} />}
       {tab === 'moderation' && <Moderation data={data} />}
-      {tab === 'entreprise' && <EntrepriseFreample data={data} />}
+      {tab === 'entreprise' && <EntrepriseFreample data={data} backendStats={backendStats} />}
       {tab === 'parametres' && <Parametres />}
     </div>
   );
