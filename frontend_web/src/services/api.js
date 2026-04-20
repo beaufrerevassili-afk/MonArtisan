@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Source unique de l'URL backend — importer API_URL partout au lieu de dupliquer
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
 
 // Callback pour les toasts d'erreur (connecté par ToastProvider au mount)
 let _errorToast = null;
