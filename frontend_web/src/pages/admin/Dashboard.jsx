@@ -915,6 +915,23 @@ function SupportTab() {
     }
   };
 
+  const reactiverCompte = async (ticketId, userEmail) => {
+    const token = localStorage.getItem('token');
+    // 1. Réactiver le compte
+    const usersResp = await fetch(`${API}/admin/users`, { headers: { Authorization: `Bearer ${token}` } });
+    const usersData = await usersResp.json();
+    const targetUser = (usersData.users || []).find(u => u.email === userEmail);
+    if (targetUser) {
+      await fetch(`${API}/admin/toggle-suspend/${targetUser.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ motif: '' }) });
+    }
+    // 2. Envoyer un message automatique + fermer le ticket
+    await fetch(`${API}/support/tickets/${ticketId}/reply`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reponse: 'Votre ticket a été traité, votre compte a été réactivé. Veuillez rafraîchir la page.' }) });
+    await fetch(`${API}/support/tickets/${ticketId}/close`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+    // 3. Refresh
+    refreshTickets();
+    setSelectedTicket(null);
+  };
+
   const ouverts = tickets.filter(t => t.statut === 'ouvert');
   const fermes = tickets.filter(t => t.statut === 'ferme');
 
@@ -961,6 +978,7 @@ function SupportTab() {
                 <button onClick={() => repondre(t.id)} disabled={sending || !reponse.trim()} style={{ ...BTN_PRIMARY, opacity: (sending || !reponse.trim()) ? 0.5 : 1 }}>
                   {sending ? 'Envoi...' : 'Répondre'}
                 </button>
+                <button onClick={() => reactiverCompte(t.id, t.email)} style={{ ...BTN, background: '#16A34A', color: '#fff' }}>Réactiver le compte</button>
                 <button onClick={() => fermerTicket(t.id)} style={BTN_GHOST}>Fermer le ticket</button>
               </div>
             </div>
