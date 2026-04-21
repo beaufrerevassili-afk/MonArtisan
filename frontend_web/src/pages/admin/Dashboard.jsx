@@ -338,6 +338,19 @@ function Utilisateurs({ users, setUsers }) {
               }
               alert('Message envoyé à ' + u.nom);
             }} style={BTN_GHOST}>Envoyer un message</button>
+            <button onClick={async () => {
+              if (!window.confirm(`Supprimer définitivement le compte de ${u.nom} (${u.email}) ? Cette action est IRRÉVERSIBLE.`)) return;
+              if (!window.confirm('Êtes-vous vraiment sûr ? Toutes les données seront perdues.')) return;
+              const token = localStorage.getItem('token');
+              const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+              const r = await fetch(`${API}/admin/users/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+              const data = await r.json();
+              if (r.ok) {
+                alert('Compte supprimé définitivement');
+                setUsers(prev => prev.filter(x => x.id !== u.id));
+                setSelectedUser(null);
+              } else { alert(data.erreur || 'Erreur'); }
+            }} style={{ ...BTN, background: '#DC2626', color: '#fff', fontSize: 11 }}>Supprimer définitivement</button>
           </div>
         </div>
       </div>
