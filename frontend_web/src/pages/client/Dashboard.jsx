@@ -183,11 +183,16 @@ export default function DashboardClient() {
   };
 
   // Supprimer projet
-  const supprimerProjet = (id) => {
+  const supprimerProjet = async (id) => {
     if (!window.confirm('Retirer ce projet ?')) return;
-    const updated = projets.filter(x => x.id !== id);
-    setProjets(updated);
-    localStorage.setItem('freample_projets', JSON.stringify(updated));
+    if (!isDemo) {
+      try { await api.delete(`/projets/${id}`); } catch {}
+      await chargerProjets();
+    } else {
+      const updated = projets.filter(x => x.id !== id);
+      setProjets(updated);
+      localStorage.setItem('freample_projets', JSON.stringify(updated));
+    }
     setProjetDetail(null);
   };
 

@@ -268,4 +268,21 @@ router.get('/mes-offres', authenticateToken, async (req, res) => {
   }
 });
 
+// DELETE /projets/:id — Client retire son projet
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'DELETE FROM projets_clients WHERE id = $1 AND client_id = $2 RETURNING id',
+      [req.params.id, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Projet introuvable' });
+    // Supprimer les offres liées
+    await db.query('DELETE FROM projet_offres WHERE projet_id = $1', [req.params.id]);
+    res.json({ message: 'Projet retiré' });
+  } catch (err) {
+    console.error('DELETE /projets/:id:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
