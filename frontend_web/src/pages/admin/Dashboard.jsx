@@ -320,9 +320,11 @@ function Utilisateurs({ users, setUsers }) {
             )}
           </div>
           <div style={{ display:'flex', gap:10, marginTop:20 }}>
-            <button onClick={() => { toggleSuspend(u.id); setSelectedUser({...u, actif:!u.actif}); }} style={u.actif ? BTN_DANGER : BTN_PRIMARY}>
-              {u.actif ? 'Suspendre le compte' : 'Reactiver le compte'}
-            </button>
+            {u.role !== 'fondateur' && (
+              <button onClick={() => { toggleSuspend(u.id); setSelectedUser({...u, actif:!u.actif}); }} style={u.actif ? BTN_DANGER : BTN_PRIMARY}>
+                {u.actif ? 'Suspendre le compte' : 'Reactiver le compte'}
+              </button>
+            )}
             <button onClick={async () => {
               const msg = prompt(`Message à ${u.nom} :`);
               if (!msg) return;
