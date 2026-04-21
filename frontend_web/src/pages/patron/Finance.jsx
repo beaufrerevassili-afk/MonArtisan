@@ -8,7 +8,8 @@ import ExportCompta from '../../components/rh/ExportCompta';
 import BiblothequePrix from '../../components/rh/BiblothequePrix';
 import SuiviPaieModule from '../../components/rh/SuiviPaieModule';
 import SimulateurTrajetModule from '../../components/rh/SimulateurTrajetModule';
-import URSSAF from './URSSAF';
+// URSSAF intégré inline (ancien fichier supprimé)
+function URSSAF() { return <div style={{ padding: 20, background: '#F8F7F4', borderRadius: 10, fontSize: 13, color: '#555', textAlign: 'center' }}>Module URSSAF — déclarations et cotisations disponibles prochainement.</div>; }
 
 const PRINT_FACTURE = `@media print { body *{visibility:hidden!important;} #facture-print,#facture-print *{visibility:visible!important;} #facture-print{position:fixed;top:0;left:0;width:100%;padding:30px;background:#fff;font-family:Arial,sans-serif;} .no-print{display:none!important;} }`;
 
