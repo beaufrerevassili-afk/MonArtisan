@@ -18,6 +18,7 @@ const Messagerie = React.lazy(() => import('./pages/client/Messagerie'));
 const DashboardPatron = React.lazy(() => import('./pages/patron/Dashboard'));
 const Employes = React.lazy(() => import('./pages/patron/Employes'));
 const ProjetsClients = React.lazy(() => import('./pages/patron/ProjetsClients'));
+const SuiviProjets = React.lazy(() => import('./pages/patron/SuiviProjets'));
 const DashboardAE = React.lazy(() => import('./pages/patron/DashboardAE'));
 const DashboardCom = React.lazy(() => import('./pages/patron/DashboardCom'));
 const SuiviCommande = React.lazy(() => import('./pages/public/SuiviCommande'));
@@ -223,6 +224,7 @@ function AppRoutes() {
             <Routes>
               <Route path="dashboard" element={<PatronDashboard />} />
               <Route path="projets"  element={<ProjetsClients />} />
+              <Route path="suivi-projets" element={<SuiviProjets />} />
               <Route path="missions"   element={<ChantiersEtMissions />} />
               <Route path="chantiers"  element={<Navigate to="/patron/missions" replace />} />
               <Route path="finance"   element={<Finance />} />
