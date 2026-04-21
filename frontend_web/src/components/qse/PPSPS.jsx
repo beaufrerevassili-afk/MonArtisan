@@ -73,7 +73,7 @@ export default function PPSPS({ onRetour }) {
   const [entreprise, setEntreprise] = useState({
     nom: 'Bernard Martin BTP',
     siret: '123 456 789 00012',
-    adresse: '12 rue des Artisans, 75011 Paris',
+    adresse: '12 rue des Artisans, 13005 Marseille',
     telephone: '',
     email: '',
     activite: 'BTP — Maçonnerie, Plomberie, Électricité',

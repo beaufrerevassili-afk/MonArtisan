@@ -125,7 +125,7 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
         const active = missions.find(m => m.statut === 'en_cours') || missions[0] || null;
         setMissionDuJour(active);
       }).catch(() => {
-        setMissionDuJour({ titre: 'Rénovation façade — Immeuble Leblanc', client: 'M. Leblanc', adresse: '24 rue Victor Hugo, 75015 Paris', statut: 'en_cours', dateDebut: new Date().toISOString().split('T')[0] });
+        setMissionDuJour({ titre: 'Rénovation façade — Immeuble Leblanc', client: 'M. Leblanc', adresse: '24 rue Victor Hugo, 13006 Marseille', statut: 'en_cours', dateDebut: new Date().toISOString().split('T')[0] });
       });
   }, []);
 

@@ -29,9 +29,9 @@ const BULLETINS_DEMO = [
 ];
 
 const CONTRATS_DEMO = [
-  { id: 'CDI-2021-001', employe: { prenom: 'Thomas', nom: 'Martin', poste: 'Chef de chantier', adresse: '8 allée des Acacias, 69003 Lyon' }, type: 'CDI', dateDebut: '2021-03-15', salaire: 3200, dureeHebdo: 39, periode: 'Période d\'essai : 4 mois' },
-  { id: 'CDI-2020-001', employe: { prenom: 'Julien', nom: 'Petit', poste: 'Maçon qualifié', adresse: '3 rue Gambetta, 69007 Lyon' }, type: 'CDI', dateDebut: '2020-06-01', salaire: 2400, dureeHebdo: 39, periode: 'Période d\'essai : 2 mois' },
-  { id: 'CDD-2025-001', employe: { prenom: 'Lucas', nom: 'Bernard', poste: 'Plombier', adresse: '15 cours Charlemagne, 69002 Lyon' }, type: 'CDD', dateDebut: '2025-01-10', dateFin: '2025-07-09', salaire: 2100, dureeHebdo: 35, periode: 'Durée : 6 mois' },
+  { id: 'CDI-2021-001', employe: { prenom: 'Thomas', nom: 'Martin', poste: 'Chef de chantier', adresse: '12 rue Paradis, 13001 Marseille' }, type: 'CDI', dateDebut: '2021-03-15', salaire: 3200, dureeHebdo: 39, periode: 'Période d\'essai : 4 mois' },
+  { id: 'CDI-2020-001', employe: { prenom: 'Julien', nom: 'Petit', poste: 'Maçon qualifié', adresse: '8 bd Longchamp, 13005 Marseille' }, type: 'CDI', dateDebut: '2020-06-01', salaire: 2400, dureeHebdo: 39, periode: 'Période d\'essai : 2 mois' },
+  { id: 'CDD-2025-001', employe: { prenom: 'Lucas', nom: 'Bernard', poste: 'Plombier', adresse: '5 rue Sainte, 13006 Marseille' }, type: 'CDD', dateDebut: '2025-01-10', dateFin: '2025-07-09', salaire: 2100, dureeHebdo: 35, periode: 'Durée : 6 mois' },
 ];
 
 /* ─── Devis viewer (reuse SignatureDevis logic, view-only) ─── */
@@ -59,7 +59,7 @@ function DevisView({ id }) {
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
           <div style={{ fontSize: 13, color: '#6E6E73', lineHeight: 1.8, marginTop: 4 }}>
-            12 rue des Artisans, 69002 Lyon<br />
+            45 bd de la Libération, 13006 Marseille<br />
             Tél : 04 78 00 00 00 · contact@bernardmartin-btp.fr<br />
             SIRET : 123 456 789 00012 · TVA : FR12 123 456 789
           </div>
@@ -165,7 +165,7 @@ function BulletinView({ id }) {
         <div>
           <div style={{ fontSize: 20, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
           <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.8, marginTop: 4 }}>
-            12 rue des Artisans, 69002 Lyon<br />
+            45 bd de la Libération, 13006 Marseille<br />
             SIRET : 123 456 789 00012 · NAF : 4329A<br />
             Convention collective BTP (IDCC 1597/1596)
           </div>
@@ -253,13 +253,13 @@ function ContratView({ id }) {
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32, paddingBottom: 24, borderBottom: '2px solid #1C1C1E' }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: '#5B5BD6', marginBottom: 4 }}>Bernard Martin BTP</div>
-        <div style={{ fontSize: 12, color: '#6E6E73' }}>12 rue des Artisans, 69002 Lyon · SIRET 123 456 789 00012</div>
+        <div style={{ fontSize: 12, color: '#6E6E73' }}>45 bd de la Libération, 13006 Marseille · SIRET 123 456 789 00012</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: '#1C1C1E', marginTop: 16 }}>CONTRAT DE TRAVAIL À {type}</div>
         <div style={{ fontSize: 14, color: '#6E6E73', marginTop: 4 }}>{type === 'CDD' ? `Durée déterminée — ${periode}` : 'Durée indéterminée'}</div>
       </div>
 
       <ClauseSection title="ENTRE LES SOUSSIGNÉS">
-        <p><strong>L'employeur :</strong> La société Bernard Martin BTP, SARL au capital de 50 000 €, immatriculée au RCS de Lyon sous le numéro 123 456 789, dont le siège social est situé 12 rue des Artisans, 69002 Lyon, représentée par M. Bernard Martin en qualité de Gérant.</p>
+        <p><strong>L'employeur :</strong> La société Bernard Martin BTP, SARL au capital de 50 000 €, immatriculée au RCS de Lyon sous le numéro 123 456 789, dont le siège social est situé 45 bd de la Libération, 13006 Marseille, représentée par M. Bernard Martin en qualité de Gérant.</p>
         <p style={{ marginTop: 10 }}><strong>Le salarié :</strong> M./Mme {employe.prenom} {employe.nom}, demeurant {employe.adresse}, ci-après dénommé(e) « le Salarié ».</p>
       </ClauseSection>
 
@@ -333,7 +333,7 @@ function QSEDocView({ id }) {
     <DocWrapper title={doc.titre} badge="QSE" badgeColors={{ QSE: '#1565C0' }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
-        <div style={{ fontSize: 12, color: '#6E6E73' }}>SIRET 123 456 789 00012 · 12 rue des Artisans, 69002 Lyon</div>
+        <div style={{ fontSize: 12, color: '#6E6E73' }}>SIRET 123 456 789 00012 · 45 bd de la Libération, 13006 Marseille</div>
         <div style={{ fontSize: 18, fontWeight: 700, marginTop: 16, color: '#1C1C1E' }}>{doc.titre}</div>
         <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 4 }}>Réf. : {doc.ref} · Mis à jour le {new Date().toLocaleDateString('fr-FR')}</div>
       </div>

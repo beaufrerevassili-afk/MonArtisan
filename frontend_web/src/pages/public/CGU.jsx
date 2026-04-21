@@ -215,7 +215,7 @@ export default function CGU() {
         <h2 style={H2}>Politique de confidentialité et protection des données</h2>
 
         <S title="Article 1 — Responsable du traitement">
-          <p>Le responsable du traitement des données personnelles est Freample SAS, dont le siège social est situé à Nice, France. Contact : <strong>privacy@freample.com</strong>.</p>
+          <p>Le responsable du traitement des données personnelles est Freample SAS, dont le siège social est situé à Marseille, France. Contact : <strong>privacy@freample.com</strong>.</p>
         </S>
 
         <S title="Article 2 — Données collectées">
@@ -306,7 +306,7 @@ export default function CGU() {
         <S title="Éditeur">
           <p><strong>Freample SAS</strong></p>
           <p>Société par Actions Simplifiée</p>
-          <p>Siège social : Nice, France</p>
+          <p>Siège social : Marseille, France</p>
           <p>Email : contact@freample.com</p>
           <p>Directeur de la publication : Vassili Beaufrere</p>
         </S>
@@ -330,7 +330,7 @@ export default function CGU() {
       {/* Footer */}
       <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid #E8E6E1', textAlign: 'center' }}>
         <a href="/" style={{ fontSize: 16, fontWeight: 800, color: '#A68B4B', textDecoration: 'none' }}>Freample</a>
-        <p style={{ fontSize: 12, color: '#6E6E73', marginTop: 8 }}>Freample SAS — Nice, France — contact@freample.com</p>
+        <p style={{ fontSize: 12, color: '#6E6E73', marginTop: 8 }}>Freample SAS — Marseille, France — contact@freample.com</p>
       </div>
     </div>
   );

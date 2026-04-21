@@ -79,7 +79,7 @@ export default function DashboardAE() {
   // ── Profil AE ──
   const [profil, setProfil] = useState(() => readLS('freample_ae_profil', {
     nom: user?.nom || '', prenom: '', siret: '', metiers: ['Plomberie'],
-    activite: 'services', ville: 'Nice', rayon: 30,
+    activite: 'services', ville: 'Marseille', rayon: 30,
     decennale: '', decennaleExpire: '', rcpro: '', rcproExpire: '',
     acre: false, acreDebut: '', versementLib: false,
     declarationFreq: 'trimestriel', email: user?.email || '', tel: '',

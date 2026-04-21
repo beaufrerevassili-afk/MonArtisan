@@ -13,7 +13,7 @@ import { calculerIndemniteTrajet } from '../../utils/calculPaie';
 import ChantierDetail from '../../components/chantier/ChantierDetail';
 
 // Adresse dépôt — en prod, viendrait du profil entreprise
-const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '24 rue de la Liberté, Nice';
+const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '45 boulevard de la Libération, 13001 Marseille';
 
 /* ── Helpers ── */
 function formatDate(iso) {
@@ -880,7 +880,7 @@ export default function ChantiersEtMissions() {
           <div>
             <label style={lbl}>Adresse du chantier</label>
             <div style={{ display:'flex', gap:6 }}>
-              <input value={form.adresse} onChange={e => setForm(p => ({ ...p, adresse: e.target.value }))} onBlur={() => calculerDistance(form.adresse)} placeholder="12 rue des Fleurs, Nice" style={{ ...inp, flex:1 }} />
+              <input value={form.adresse} onChange={e => setForm(p => ({ ...p, adresse: e.target.value }))} onBlur={() => calculerDistance(form.adresse)} placeholder="12 rue des Fleurs, Marseille" style={{ ...inp, flex:1 }} />
               <button type="button" onClick={() => calculerDistance(form.adresse)} disabled={calcDistance} style={{ padding:'8px 14px', border:'none', borderRadius:8, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontSize:11, fontWeight:600, whiteSpace:'nowrap', opacity:calcDistance?0.5:1 }}>{calcDistance ? '...' : 'Calculer'}</button>
             </div>
             {distanceInfo && distanceInfo.km !== null && (

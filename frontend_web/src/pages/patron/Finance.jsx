@@ -785,7 +785,7 @@ function FacturesView({ factures, setFac }) {
             </div>
             <div style={{ textAlign: 'right', fontSize: 13 }}>
               <div style={{ fontWeight: 700, fontSize: 15 }}>Bernard Martin BTP</div>
-              <div style={{ color: '#6E6E73' }}>12 rue des Artisans, 75011 Paris</div>
+              <div style={{ color: '#6E6E73' }}>12 rue des Artisans, 13005 Marseille</div>
               <div style={{ color: '#6E6E73' }}>SIRET : 123 456 789 00012</div>
               <div style={{ color: '#6E6E73' }}>APE : 4391A · N° TVA : FR12 123456789</div>
             </div>
@@ -858,7 +858,7 @@ function FacturesView({ factures, setFac }) {
           <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#636363', lineHeight: 1.6 }}>
             <div style={{ fontWeight: 700, fontSize: 11, color: '#6E6E73', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Mentions légales</div>
             {MENTIONS_LEGALES.map((m, i) => <div key={i} style={{ marginBottom: 3 }}>• {m}</div>)}
-            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Paris B 123 456 789 · Siège social : 12 rue des Artisans, 75011 Paris · N° TVA intracommunautaire : FR12 123456789</div>
+            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Paris B 123 456 789 · Siège social : 12 rue des Artisans, 13005 Marseille · N° TVA intracommunautaire : FR12 123456789</div>
           </div>
         </div>
       </div>

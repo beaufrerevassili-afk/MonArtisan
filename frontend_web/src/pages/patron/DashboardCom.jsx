@@ -42,7 +42,7 @@ const PROJET_STATUS = {
 
 // ── Données démo cohérentes pour présentation ──
 const PROJETS_INIT = [
-  { id: 1, titre: 'Clip promo Salon de coiffure Nice', client: 'Salon Excellence', type: 'Clip promo', budget: 1800, statut: 'en_cours', dateDebut: '2026-04-10', dateFin: '2026-04-25', avancement: 45, equipe: ['Vassili', 'Mathieu'], color: '#8B5CF6' },
+  { id: 1, titre: 'Clip promo Salon de coiffure Marseille', client: 'Salon Excellence', type: 'Clip promo', budget: 1800, statut: 'en_cours', dateDebut: '2026-04-10', dateFin: '2026-04-25', avancement: 45, equipe: ['Vassili', 'Mathieu'], color: '#8B5CF6' },
   { id: 2, titre: 'Reportage inauguration boutique', client: 'Mode & Co', type: 'Reportage', budget: 950, statut: 'tournage', dateDebut: '2026-04-18', dateFin: '2026-04-20', avancement: 20, equipe: ['Mathieu'], color: '#3B82F6' },
   { id: 3, titre: 'Publicité restaurant — 30 secondes', client: 'La Bella Vita', type: 'Publicité', budget: 2400, statut: 'montage', dateDebut: '2026-03-28', dateFin: '2026-04-15', avancement: 85, equipe: ['Vassili'], color: '#8B5CF6' },
   { id: 4, titre: 'Video corporate entreprise BTP', client: 'Bernard BTP', type: 'Corporate', budget: 3200, statut: 'proposition', dateDebut: '', dateFin: '', avancement: 0, equipe: [], color: '#6B7280' },
@@ -60,11 +60,11 @@ const FACTURES_INIT = [
   { id: 3, numero: 'FAC-COM-2026-003', client: 'La Bella Vita', objet: 'Publicité restaurant 30s', montantTTC: 2400, statut: 'en_attente', date: '2026-04-10', echeance: '2026-05-10' },
 ];
 const CLIENTS_INIT = [
-  { id: 1, nom: 'Salon Excellence', contact: 'Sophie Martin', email: 'contact@salon-excellence.fr', tel: '04 93 00 00 00', ville: 'Nice', projets: 2, caGenere: 2340 },
+  { id: 1, nom: 'Salon Excellence', contact: 'Sophie Martin', email: 'contact@salon-excellence.fr', tel: '04 93 00 00 00', ville: 'Marseille', projets: 2, caGenere: 2340 },
   { id: 2, nom: 'Mode & Co', contact: 'Julien Dupont', email: 'jdupont@modeco.fr', tel: '04 93 11 11 11', ville: 'Cannes', projets: 1, caGenere: 950 },
-  { id: 3, nom: 'La Bella Vita', contact: 'Marco Rossi', email: 'mrossi@bellavita.fr', tel: '04 93 22 22 22', ville: 'Nice', projets: 1, caGenere: 2400 },
+  { id: 3, nom: 'La Bella Vita', contact: 'Marco Rossi', email: 'mrossi@bellavita.fr', tel: '04 93 22 22 22', ville: 'Marseille', projets: 1, caGenere: 2400 },
   { id: 4, nom: 'Bernard BTP', contact: 'Michel Bernard', email: 'mbernard@bernard-btp.fr', tel: '04 93 33 33 33', ville: 'Antibes', projets: 1, caGenere: 0 },
-  { id: 5, nom: 'Freample', contact: 'Vassili', email: 'contact@freample.com', tel: '', ville: 'Nice', projets: 1, caGenere: 600 },
+  { id: 5, nom: 'Freample', contact: 'Vassili', email: 'contact@freample.com', tel: '', ville: 'Marseille', projets: 1, caGenere: 600 },
 ];
 
 const EQUIPE_INIT = [

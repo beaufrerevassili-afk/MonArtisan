@@ -13,15 +13,15 @@ const TD = { padding:'8px 10px', fontSize:12, borderBottom:'1px solid #E8E6E1' }
 const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 // ══ Adresse dépôt entreprise (configurable) ══
-const DEPOT_DEFAULT = '24 rue de la Liberté, Nice';
+const DEPOT_DEFAULT = '45 boulevard de la Libération, 13001 Marseille';
 
 // ══ Chantiers avec adresses (simulé — en prod vient de ChantiersEtMissions) ══
 const CHANTIERS_INIT = [
-  { id:1, nom:'Rénovation Dupont', adresse:'12 rue de France, Nice', distanceDepot:null },
-  { id:2, nom:'Bureau Médecin', adresse:'8 avenue Jean Médecin, Nice', distanceDepot:null },
-  { id:3, nom:'Peinture Pastorelli', adresse:'24 rue Pastorelli, Nice', distanceDepot:null },
+  { id:1, nom:'Rénovation Dupont', adresse:'12 rue de France, Marseille', distanceDepot:null },
+  { id:2, nom:'Bureau Médecin', adresse:'8 avenue Jean Médecin, Marseille', distanceDepot:null },
+  { id:3, nom:'Peinture Pastorelli', adresse:'24 rue Pastorelli, Marseille', distanceDepot:null },
   { id:4, nom:'Villa Rousseau', adresse:'15 chemin des Collines, Cagnes-sur-Mer', distanceDepot:null },
-  { id:5, nom:'Résidence Garibaldi', adresse:'10 place Garibaldi, Nice', distanceDepot:null },
+  { id:5, nom:'Résidence Garibaldi', adresse:'10 place Garibaldi, Marseille', distanceDepot:null },
   { id:6, nom:'Entrepôt Carros', adresse:'Zone industrielle, Carros', distanceDepot:null },
   { id:7, nom:'Maison Antibes', adresse:'8 rue de la République, Antibes', distanceDepot:null },
   { id:8, nom:'Chantier Grasse', adresse:'12 boulevard du Jeu de Ballon, Grasse', distanceDepot:null },

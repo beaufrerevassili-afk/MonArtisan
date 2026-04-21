@@ -311,7 +311,7 @@ export default function AffichageObligatoire({ onRetour }) {
   const [entrepriseInfo, setEntrepriseInfo] = useState({
     nom: 'Bernard Martin BTP',
     siret: '123 456 789 00012',
-    adresse: '12 rue des Artisans, 75011 Paris',
+    adresse: '12 rue des Artisans, 13005 Marseille',
     telephone: '',
     email: '',
     inspectionTravail: '',

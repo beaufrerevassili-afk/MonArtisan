@@ -53,7 +53,7 @@ export default function PermisFeu({ onRetour }) {
   const [identification, setId] = useState({
     entreprise: 'Bernard Martin BTP',
     siret: '123 456 789 00012',
-    adresseEntreprise: '12 rue des Artisans, 75011 Paris',
+    adresseEntreprise: '12 rue des Artisans, 13005 Marseille',
     chantier: '',
     adresseChantier: '',
     donneur: '',

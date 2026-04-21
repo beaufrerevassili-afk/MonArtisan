@@ -13,7 +13,7 @@ const SUBSEC = { fontSize:12, fontWeight:700, color:'#555', margin:'12px 0 6px' 
 const G = (cols='1fr 1fr') => ({ display:'grid', gridTemplateColumns:cols, gap:8, marginBottom:8 });
 const CHK = { display:'flex', alignItems:'center', gap:6, fontSize:12, cursor:'pointer', padding:'3px 0' };
 
-const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'12345678900012', adresse:'24 rue de la Liberté', cp:'06000', ville:'Nice', codeNAF:'4399C', codeRisque:'452BB', tel:'0493XXXXXX', cpam:'CPAM des Alpes-Maritimes, 48 av du Roi Robert, 06000 Nice', representant:'Vassili Beaufrere', fonction:'Gérant' };
+const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'12345678900012', adresse:'24 rue de la Liberté', cp:'06000', ville:'Marseille', codeNAF:'4399C', codeRisque:'452BB', tel:'0493XXXXXX', cpam:'CPAM des Alpes-Maritimes, 48 av du Roi Robert, 13001 Marseille', representant:'Vassili Beaufrere', fonction:'Gérant' };
 
 const SALARIES = [
   { id:1, civ:'M.', nom:'Martin', prenom:'Pierre', nomUsage:'', numSecu:'196031345678901', dn:'03/08/1996', lieuN:'Marseille', sexe:'M', nat:'Française', poste:'Maçon', qualif:'Ouvrier qualifié', emb:'15/03/2022', contrat:'CDI', adr:'12 rue Paradis', cp:'13001', ville:'Marseille', tel:'0612345678', email:'pierre.martin@lambertbtp.fr', dateFin:'' },

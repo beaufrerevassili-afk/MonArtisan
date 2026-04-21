@@ -8,7 +8,7 @@ const BTN_O = { ...BTN, background:'transparent', color:'#0A0A0A', border:'1px s
 const INP = { width:'100%', padding:'9px 11px', border:'1px solid #E8E6E1', borderRadius:8, fontSize:12, fontFamily:DS.font, outline:'none', boxSizing:'border-box' };
 const LBL = { fontSize:10, fontWeight:600, color:'#555', display:'block', marginBottom:3 };
 
-const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'123 456 789 000 12', adresse:'24 rue de la Liberté, 06000 Nice', rcs:'Nice B 123 456 789', assuranceDecennale:'AXA n° POL-2026-DEC-001', rcPro:'SMABTP n° RC-2026-PRO-002', representant:'Vassili Beaufrere', fonction:'Gérant' };
+const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'123 456 789 000 12', adresse:'45 boulevard de la Libération, 13001 Marseille', rcs:'Nice B 123 456 789', assuranceDecennale:'AXA n° POL-2026-DEC-001', rcPro:'SMABTP n° RC-2026-PRO-002', representant:'Vassili Beaufrere', fonction:'Gérant' };
 
 // ══ CLAUSES ÉDITABLES PAR CONTRAT ══
 const CONTRATS = [

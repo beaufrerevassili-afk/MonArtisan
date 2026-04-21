@@ -6,7 +6,7 @@
 
 /**
  * Géocode une adresse française → coordonnées GPS
- * @param {string} adresse - Adresse complète (ex: "24 rue de la Liberté, Nice")
+ * @param {string} adresse - Adresse complète (ex: "45 boulevard de la Libération, 13001 Marseille")
  * @returns {Promise<{lat: number, lon: number, label: string} | null>}
  */
 export async function geocoder(adresse) {

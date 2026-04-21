@@ -146,7 +146,7 @@ export default function RegistreIncendie({ onRetour }) {
             { k: 'entreprise', label: 'Nom de l\'entreprise *', ph: 'Bernard Martin BTP' },
             { k: 'siret', label: 'SIRET', ph: '123 456 789 00012' },
             { k: 'etablissement', label: 'Nom de l\'établissement / chantier', ph: 'Chantier Dupont, Bâtiment A' },
-            { k: 'adresse', label: 'Adresse complète *', ph: '12 rue des Artisans, 75011 Paris' },
+            { k: 'adresse', label: 'Adresse complète *', ph: '12 rue des Artisans, 13005 Marseille' },
             { k: 'typeEtablissement', label: 'Type d\'établissement', type: 'select', options: ['Chantier BTP', 'Bureau', 'Entrepôt / Atelier', 'ERP (Établissement Recevant du Public)', 'Immeuble de Grande Hauteur (IGH)', 'Autre'] },
             { k: 'categorieERP', label: 'Catégorie ERP', ph: 'Non applicable / 1ère à 5ème catégorie' },
             { k: 'responsableIncendie', label: 'Responsable sécurité incendie *', ph: 'Nom Prénom' },

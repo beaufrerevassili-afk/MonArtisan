@@ -14,7 +14,7 @@ const FILIERES = ['ISDI (inerte)','ISDND (non dangereux)','ISDD (dangereux)','Ce
 const DEMO = [
   { id:1, numero:'BSDD-2026-001', date:'2026-04-02', chantier:'Rénovation Dupont', typeDechet:'Amiante', quantite:0.5, unite:'tonnes', filiere:'ISDD (dangereux)', transporteur:'Veolia Propreté', destinataire:'Centre ISDD Lyon', numeroCAP:'CAP-06-2026-0421', statut:'traite', dateTraitement:'2026-04-05', certificat:true },
   { id:2, numero:'BSDD-2026-002', date:'2026-04-04', chantier:'Bureau Médecin', typeDechet:'Gravats inertes', quantite:3.2, unite:'tonnes', filiere:'ISDI (inerte)', transporteur:'Nicollin', destinataire:'Carrière ISDI Carros', numeroCAP:'', statut:'en_transit', dateTraitement:null, certificat:false },
-  { id:3, numero:'BSDD-2026-003', date:'2026-04-06', chantier:'Peinture Pastorelli', typeDechet:'Peintures/solvants', quantite:0.08, unite:'tonnes', filiere:'Incinération', transporteur:'Suez RV', destinataire:'UIOM Nice', numeroCAP:'CAP-06-2026-0435', statut:'emis', dateTraitement:null, certificat:false },
+  { id:3, numero:'BSDD-2026-003', date:'2026-04-06', chantier:'Peinture Pastorelli', typeDechet:'Peintures/solvants', quantite:0.08, unite:'tonnes', filiere:'Incinération', transporteur:'Suez RV', destinataire:'UIOM Marseille', numeroCAP:'CAP-06-2026-0435', statut:'emis', dateTraitement:null, certificat:false },
 ];
 
 const statutColors = { emis:'#D97706', en_transit:'#2563EB', traite:'#16A34A', refuse:'#DC2626' };

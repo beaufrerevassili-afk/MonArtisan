@@ -57,7 +57,7 @@ export default function IncidentsModule() {
     txt += `1. EMPLOYEUR\n${'─'.repeat(40)}\n`;
     txt += `Nom / Raison sociale : Freample Artisans BTP\n`;
     txt += `SIRET              : 123 456 789 000 12\n`;
-    txt += `Adresse            : 24 rue de la Liberté, Nice\n`;
+    txt += `Adresse            : 45 boulevard de la Libération, 13001 Marseille\n`;
     txt += `Code risque AT/MP  : 452BB\n`;
     txt += `N° Adhérent        : _______________\n\n`;
 
@@ -129,7 +129,7 @@ export default function IncidentsModule() {
     txt += `ENGAGEMENT DE L'EMPLOYEUR\n\n`;
     txt += `Je soussigné(e), en qualité d'employeur, déclare que les\n`;
     txt += `informations ci-dessus sont exactes et complètes.\n\n`;
-    txt += `Fait à Nice, le ${date}\n\n`;
+    txt += `Fait à Marseille, le ${date}\n\n`;
     txt += `Signature et cachet de l'employeur :\n\n\n`;
     txt += `_________________________________\n\n`;
 
