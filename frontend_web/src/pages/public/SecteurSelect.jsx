@@ -45,24 +45,7 @@ export default function SecteurSelect() {
         setShowProjet(true);
         setProjetSent(true);
       } else {
-        // Restaurer le brouillon uniquement pour les clients ou visiteurs (pas patron/artisan/etc.)
-        const canDraft = !user || user.role === 'client';
-        const draft = canDraft ? localStorage.getItem('freample_projet_brouillon') : null;
-        if (draft) {
-          const d = JSON.parse(draft);
-          const hasContent = d.metier || d.description || d.ville || d.budget;
-          if (hasContent) {
-            setProjet(d);
-            setShowProjet(true);
-            // Déterminer l'étape en fonction des champs remplis
-            if (d.budget) setProjetStep(4);
-            else if (d.ville) setProjetStep(3);
-            else if (d.description) setProjetStep(2);
-            else if (d.metier) setProjetStep(2);
-            setDraftRestored(true);
-            setTimeout(() => setDraftRestored(false), 3000);
-          }
-        }
+        // Ne PAS restaurer le brouillon automatiquement — l'utilisateur doit cliquer sur "Reprendre mon brouillon"
       }
     } catch {}
   }, [user]);
@@ -230,17 +213,41 @@ export default function SecteurSelect() {
               ))}
             </div>
 
-            {/* Brouillon restauré toast */}
-            {draftRestored && (
-              <div style={{ marginBottom: 16, padding: '10px 16px', background: 'rgba(166,139,75,0.15)', border: '1px solid rgba(166,139,75,0.3)', borderRadius: 10, fontSize: 12, fontWeight: 600, color: L.gold, textAlign: 'center', animation: 'fadeIn .3s' }}>
-                Brouillon restauré
-              </div>
-            )}
+            {/* Bandeau brouillon en attente */}
+            {(() => {
+              try {
+                const draft = localStorage.getItem('freample_projet_brouillon');
+                if (!draft || showProjet) return null;
+                const d = JSON.parse(draft);
+                if (!d.metier && !d.description) return null;
+                return (
+                  <div onClick={() => {
+                    setProjet(d);
+                    setShowProjet(true);
+                    if (d.budget) setProjetStep(4);
+                    else if (d.ville) setProjetStep(3);
+                    else if (d.description) setProjetStep(2);
+                    else setProjetStep(1);
+                  }} style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(166,139,75,0.15)', border: '1px solid rgba(166,139,75,0.3)', borderRadius: 10, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: L.gold }}>Brouillon en attente</div>
+                      <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)', marginTop: 2 }}>{d.metier || 'Projet'}{d.ville ? ' — ' + d.ville : ''}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 12, color: L.gold, fontWeight: 600 }}>Reprendre →</span>
+                      <button onClick={e => { e.stopPropagation(); localStorage.removeItem('freample_projet_brouillon'); window.location.reload(); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(245,239,224,0.4)' }}>✕</button>
+                    </div>
+                  </div>
+                );
+              } catch { return null; }
+            })()}
 
             <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {projetStep === 1 && <>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#F5EFE0', marginBottom: 4 }}>Quel type de travaux ?</div>
-                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 20 }}>Sélectionnez le métier concerné</p>
+                <p style={{ fontSize: 13, color: 'rgba(245,239,224,0.5)', marginBottom: 12 }}>Sélectionnez le métier concerné</p>
+                <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.35)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 4 }}>💾 Votre avancée est sauvegardée automatiquement en brouillon</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
                   {['Plomberie', 'Électricité', 'Peinture', 'Maçonnerie', 'Menuiserie', 'Carrelage', 'Chauffage', 'Serrurerie', 'Couverture', 'Isolation', 'Autre'].map(m => (
                     <button key={m} onClick={() => { setProjet(p => ({ ...p, metier: m })); setProjetStep(2); }}

@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import NotificationBell from '../../components/ui/NotificationBell';
 import { CORPS_METIER_BTP } from '../../utils/profilEntreprise';
 import ProjetNegociation from '../../components/marketplace/ProjetNegociation';
+import ProfilClient from '../../components/client/ProfilClient';
 import PVReception from '../../components/chantier/PVReception';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
@@ -82,7 +83,17 @@ export default function DashboardClient() {
     } catch {}
   };
 
-  useEffect(() => { chargerProjets(); }, []);
+  useEffect(() => {
+    chargerProjets();
+    // Vérifier suspension côté serveur (le token peut être stale)
+    if (!isDemo) {
+      api.get('/projets/mes-projets').catch(err => {
+        if (err.response?.status === 403) {
+          window.location.href = '/compte-suspendu';
+        }
+      });
+    }
+  }, []);
   useEffect(() => { if (!isDemo && projets.length > 0) chargerOffres(); }, [projets.length]);
 
   // Données dérivées
@@ -284,23 +295,8 @@ export default function DashboardClient() {
           </div>
         )}
 
-        {/* ══ VUE PROFIL ══ */}
-        {showProfil && !projetDetail && (
-          <div>
-            <button onClick={() => setShowProfil(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: '#1A1A1A' }}>Mon profil</h2>
-            <div style={{ ...CARD }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {[['Nom', user?.nom], ['Email', user?.email], ['Téléphone', user?.telephone || '—'], ['Membre depuis', user?.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : '2026']].map(([k, v]) => (
-                  <div key={k} style={{ background: '#F8F7F4', padding: '10px 14px', borderRadius: 8 }}>
-                    <div style={{ fontSize: 10, color: '#444', fontWeight: 600, textTransform: 'uppercase' }}>{k}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{v || '—'}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ══ VUE PROFIL MODIFIABLE ══ */}
+        {showProfil && !projetDetail && <ProfilClient user={user} isDemo={isDemo} />}
 
         {/* ══ DÉTAIL PROJET (modal inline) ══ */}
         {projetDetail && (() => {

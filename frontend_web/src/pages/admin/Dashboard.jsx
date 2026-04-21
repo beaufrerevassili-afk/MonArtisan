@@ -323,7 +323,21 @@ function Utilisateurs({ users, setUsers }) {
             <button onClick={() => { toggleSuspend(u.id); setSelectedUser({...u, actif:!u.actif}); }} style={u.actif ? BTN_DANGER : BTN_PRIMARY}>
               {u.actif ? 'Suspendre le compte' : 'Reactiver le compte'}
             </button>
-            <button style={BTN_GHOST}>Envoyer un message</button>
+            <button onClick={async () => {
+              const msg = prompt(`Message à ${u.nom} :`);
+              if (!msg) return;
+              const token = localStorage.getItem('token');
+              const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+              // Créer un ticket support au nom du fondateur
+              await fetch(`${API}/support/ticket`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email, nom: 'Freample', sujet: 'Message de Freample', message: msg }) });
+              // Immédiatement répondre en tant que Freample pour que ce soit dans les réponses
+              const tickets = await fetch(`${API}/support/mes-tickets?email=${encodeURIComponent(u.email)}`).then(r => r.json());
+              const lastTicket = tickets.tickets?.[0];
+              if (lastTicket) {
+                await fetch(`${API}/support/tickets/${lastTicket.id}/reply`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reponse: msg }) });
+              }
+              alert('Message envoyé à ' + u.nom);
+            }} style={BTN_GHOST}>Envoyer un message</button>
           </div>
         </div>
       </div>
