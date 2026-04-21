@@ -227,7 +227,7 @@ router.get('/disponibles', authenticateToken, async (req, res) => {
 router.post('/:id/offre', authenticateToken, async (req, res) => {
   try {
     const { prixPropose, message, dateProposee, delaiJours } = req.body;
-    if (!prixPropose) return res.status(400).json({ erreur: 'Prix requis' });
+    if (!prixPropose && !message && !dateProposee) return res.status(400).json({ erreur: 'Prix, message ou date requis' });
     // Vérifier pas de doublon
     const exist = await db.query('SELECT id FROM projet_offres WHERE projet_id = $1 AND artisan_id = $2', [req.params.id, req.user.id]);
     if (exist.rows[0]) return res.status(409).json({ erreur: 'Vous avez déjà fait une offre sur ce projet' });
