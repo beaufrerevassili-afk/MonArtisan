@@ -40,22 +40,53 @@ export default function DashboardClient() {
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const isDemo = token && token.endsWith('.dev');
-    // Comptes réels → uniquement les données du backend
-    // Comptes démo → données localStorage
+  const token = localStorage.getItem('token');
+  const isDemo = token && token.endsWith('.dev');
+
+  const chargerProjets = async () => {
     if (isDemo) {
       const local = lsGet('freample_projets', []);
       setProjets(local.length > 0 ? local : []);
     } else {
-      setProjets([]); // Vide par défaut pour les vrais comptes
-      api.get('/projets/mes-projets').then(({ data }) => { if (data.projets?.length) setProjets(data.projets); }).catch(() => {});
+      try {
+        const { data } = await api.get('/projets/mes-projets');
+        if (data.projets) {
+          // Mapper les champs backend → frontend
+          setProjets(data.projets.map(p => ({
+            id: p.id, metier: p.metier, titre: p.titre, description: p.description,
+            ville: p.ville, budget: Number(p.budget_estime) || 0, urgence: p.urgence,
+            statut: p.statut, date: p.created_at?.slice(0, 10), nbOffres: Number(p.nb_offres) || 0,
+            clientNom: p.client_nom || user?.nom || '', artisan: p.artisan_nom || null,
+          })));
+        }
+      } catch { setProjets([]); }
     }
-  }, []);
+  };
+
+  const chargerOffres = async () => {
+    if (isDemo) return;
+    try {
+      let toutes = [];
+      for (const p of projets) {
+        const { data } = await api.get(`/projets/${p.id}/offres`);
+        if (data.offres) {
+          toutes.push(...data.offres.map(o => ({
+            id: o.id, projetId: p.id, artisanNom: o.artisan_nom || 'Artisan',
+            prix: Number(o.prix_propose) || 0, message: o.message,
+            statut: o.statut, createdAt: o.created_at,
+          })));
+        }
+      }
+      setAllOffresBackend(toutes);
+    } catch {}
+  };
+
+  useEffect(() => { chargerProjets(); }, []);
+  useEffect(() => { if (!isDemo && projets.length > 0) chargerOffres(); }, [projets.length]);
 
   // Données dérivées
-  const allOffres = lsGet('freample_offres', []);
+  const [allOffresBackend, setAllOffresBackend] = useState([]);
+  const allOffres = isDemo ? lsGet('freample_offres', []) : allOffresBackend;
   const allDevis = lsGet('freample_devis', []);
   const offresActives = allOffres.filter(o => o.statut !== 'retiree');
   const projetsPublies = projets.filter(p => p.statut === 'publie');
@@ -65,13 +96,29 @@ export default function DashboardClient() {
   const totalOffresEnAttente = projetsPublies.reduce((s, p) => s + offresActives.filter(o => o.projetId === p.id && (!o.statut || o.statut === 'proposee')).length, 0);
 
   // Créer un projet
-  const creerProjet = () => {
+  const creerProjet = async () => {
     if (!newProjet.metier || !newProjet.description) return;
-    const projet = { id: Date.now(), ...newProjet, budget: Number(newProjet.budget) || 0, statut: 'publie', date: new Date().toISOString().slice(0, 10), nbOffres: 0, clientNom: user?.nom || '' };
-    const updated = [...projets, projet];
-    setProjets(updated);
-    localStorage.setItem('freample_projets', JSON.stringify(updated));
-    api.post('/projets', projet).catch(() => {});
+    if (isDemo) {
+      const projet = { id: Date.now(), ...newProjet, budget: Number(newProjet.budget) || 0, statut: 'publie', date: new Date().toISOString().slice(0, 10), nbOffres: 0, clientNom: user?.nom || '' };
+      const updated = [...projets, projet];
+      setProjets(updated);
+      localStorage.setItem('freample_projets', JSON.stringify(updated));
+    } else {
+      try {
+        await api.post('/projets', {
+          titre: newProjet.titre || newProjet.metier,
+          description: newProjet.description,
+          metier: newProjet.metier,
+          ville: newProjet.ville || 'Marseille',
+          budgetEstime: Number(newProjet.budget) || 0,
+          urgence: newProjet.urgence || 'normal',
+        });
+        await chargerProjets();
+      } catch (err) {
+        addToast(err.response?.data?.erreur || 'Erreur lors de la création', 'error');
+        return;
+      }
+    }
     setShowForm(false);
     setNewProjet({ metier: '', description: '', ville: 'Marseille', budget: '', urgence: 'normal' });
     addToast('Projet publié ! Les artisans vont le voir.', 'success');

@@ -29,26 +29,42 @@ export default function ProjetsClients() {
   const [filtreMet, setFiltreMet] = useState('');
   const [showMesDevis, setShowMesDevis] = useState(false);
   const [voirDevisId, setVoirDevisId] = useState(null);
+  const tokenVal = localStorage.getItem('token');
+  const isDemo = tokenVal && tokenVal.endsWith('.dev');
   const [mesOffres, setMesOffres] = useState(() => {
     try { return JSON.parse(localStorage.getItem('freample_offres') || '[]'); } catch { return []; }
   });
 
   // Charger les projets
   useEffect(() => {
-    api.get('/projets/disponibles').then(({ data }) => {
-      if (data.projets?.length) setProjets(data.projets);
-      else {
-        try {
-          const local = JSON.parse(localStorage.getItem('freample_projets') || '[]').filter(p => p.statut === 'publie');
-          setProjets(local.length > 0 ? local : DEMO_PROJETS);
-        } catch { setProjets(DEMO_PROJETS); }
-      }
-    }).catch(() => {
+    if (isDemo) {
       try {
         const local = JSON.parse(localStorage.getItem('freample_projets') || '[]').filter(p => p.statut === 'publie');
         setProjets(local.length > 0 ? local : DEMO_PROJETS);
       } catch { setProjets(DEMO_PROJETS); }
-    }).finally(() => setLoading(false));
+      setLoading(false);
+      return;
+    }
+    // Vrais comptes → API backend
+    api.get('/projets/disponibles').then(({ data }) => {
+      if (data.projets?.length) {
+        setProjets(data.projets.map(p => ({
+          id: p.id, metier: p.metier, titre: p.titre, description: p.description,
+          ville: p.ville, budget: Number(p.budget_estime) || 0, urgence: p.urgence,
+          statut: p.statut, date: p.created_at?.slice(0, 10), clientNom: p.client_nom || '',
+          nbOffres: Number(p.nb_offres) || 0,
+        })));
+      } else { setProjets([]); }
+    }).catch(() => { setProjets([]); }).finally(() => setLoading(false));
+    // Charger mes offres envoyées
+    api.get('/projets/mes-offres').then(({ data }) => {
+      if (data.offres) {
+        setMesOffres(data.offres.map(o => ({
+          id: o.id, projetId: o.projet_id, artisanNom: o.artisan_nom || user?.nom,
+          prix: Number(o.prix_propose) || 0, statut: o.statut, createdAt: o.created_at,
+        })));
+      }
+    }).catch(() => {});
   }, []);
 
   // Filtrer par métiers du patron + filtre UI
@@ -523,19 +539,33 @@ export default function ProjetsClients() {
                       } catch { return {}; }
                     })()}
                     compact={false}
-                    onSoumettre={(devisData) => {
-                      // Sauver l'offre
-                      const offre = {
-                        id: Date.now(), projetId: selected.id, artisanNom: user?.nom,
-                        prix: devisData.totalTTC, statut: 'proposee', createdAt: new Date().toISOString(),
-                      };
-                      try {
-                        const offres = JSON.parse(localStorage.getItem('freample_offres') || '[]');
-                        offres.push(offre);
-                        localStorage.setItem('freample_offres', JSON.stringify(offres));
-                        setMesOffres(offres);
-                      } catch {}
-                      // Sauver le devis complet
+                    onSoumettre={async (devisData) => {
+                      if (!isDemo) {
+                        // Backend — envoyer l'offre via API
+                        try {
+                          await api.post(`/projets/${selected.id}/offre`, {
+                            prixPropose: devisData.totalTTC,
+                            message: devisData.objet || '',
+                          });
+                          // Recharger les offres
+                          api.get('/projets/mes-offres').then(({ data }) => {
+                            if (data.offres) setMesOffres(data.offres.map(o => ({
+                              id: o.id, projetId: o.projet_id, artisanNom: o.artisan_nom || user?.nom,
+                              prix: Number(o.prix_propose) || 0, statut: o.statut, createdAt: o.created_at,
+                            })));
+                          }).catch(() => {});
+                        } catch {}
+                      } else {
+                        // Démo — localStorage
+                        const offre = { id: Date.now(), projetId: selected.id, artisanNom: user?.nom, prix: devisData.totalTTC, statut: 'proposee', createdAt: new Date().toISOString() };
+                        try {
+                          const offres = JSON.parse(localStorage.getItem('freample_offres') || '[]');
+                          offres.push(offre);
+                          localStorage.setItem('freample_offres', JSON.stringify(offres));
+                          setMesOffres(offres);
+                        } catch {}
+                      }
+                      // Sauver le devis complet (localStorage pour les deux, backend à venir)
                       try {
                         const devis = JSON.parse(localStorage.getItem('freample_devis') || '[]');
                         const nextNum = devis.length + 1;
@@ -543,20 +573,12 @@ export default function ProjetsClients() {
                           id: Date.now(), numero: `DEV-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`,
                           projetId: selected.id,
                           client: devisData.client?.nom || selected.clientNom, clientEmail: devisData.client?.email || '',
-                          clientTel: devisData.client?.telephone || '', clientAdresse: devisData.client?.adresse || '',
-                          adresseChantier: devisData.client?.adresseChantier || '',
-                          objet: devisData.objet, lignes: devisData.lignes, lots: devisData.lots,
-                          options: devisData.options, echeancier: devisData.echeancier,
-                          conditions: devisData.conditions, notes: devisData.notes, emetteur: devisData.emetteur,
+                          objet: devisData.objet, lignes: devisData.lignes,
                           montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
-                          tvaDetails: devisData.tvaDetails, parType: devisData.parType,
-                          validiteJours: devisData.validiteJours, dateDebut: devisData.dateDebut, dureeEstimee: devisData.dureeEstimee,
-                          remiseGlobale: devisData.remiseGlobale,
-                          date: new Date().toISOString().slice(0, 10), statut: 'envoye', source: 'marketplace', versions: [],
+                          date: new Date().toISOString().slice(0, 10), statut: 'envoye', source: 'marketplace',
                         });
                         localStorage.setItem('freample_devis', JSON.stringify(devis));
                       } catch {}
-                      // Incrémenter nbOffres sur le projet
                       setProjets(prev => prev.map(p => p.id === selected.id ? { ...p, nbOffres: (p.nbOffres || 0) + 1 } : p));
                       setModalView('sent');
                     }}
@@ -589,12 +611,22 @@ export default function ProjetsClients() {
                       style={{ ...INP, resize: 'vertical' }} />
                   </div>
                 </div>
-                <button onClick={() => {
-                  try {
-                    const rdvs = JSON.parse(localStorage.getItem('freample_rdv') || '[]');
-                    rdvs.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, ...rdvForm, statut: 'propose', createdAt: new Date().toISOString() });
-                    localStorage.setItem('freample_rdv', JSON.stringify(rdvs));
-                  } catch {}
+                <button onClick={async () => {
+                  if (!isDemo) {
+                    try {
+                      await api.post(`/projets/${selected.id}/offre`, {
+                        prixPropose: 0,
+                        message: `RDV proposé le ${rdvForm.date} à ${rdvForm.heure}${rdvForm.lieu ? ' — ' + rdvForm.lieu : ''}${rdvForm.message ? '. ' + rdvForm.message : ''}`,
+                        dateProposee: rdvForm.date,
+                      });
+                    } catch {}
+                  } else {
+                    try {
+                      const rdvs = JSON.parse(localStorage.getItem('freample_rdv') || '[]');
+                      rdvs.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, ...rdvForm, statut: 'propose', createdAt: new Date().toISOString() });
+                      localStorage.setItem('freample_rdv', JSON.stringify(rdvs));
+                    } catch {}
+                  }
                   setModalView('sent');
                 }} disabled={!rdvForm.date}
                   style={{ ...BTN, width: '100%', marginTop: 14, padding: 14, fontSize: 14, opacity: rdvForm.date ? 1 : 0.5 }}>
