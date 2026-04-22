@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 /* ── Helpers ───────────────────────────────────────────── */
 const TODAY = new Date();
@@ -134,7 +135,7 @@ function DemoBanner() {
 /* ── Main ──────────────────────────────────────────────── */
 export default function Agenda() {
   const { token, user } = useAuth();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [view, setView] = useState('month'); // 'month' | 'week'
   const [cursor, setCursor] = useState(new Date(TODAY));
   const [events, setEvents] = useState([]);
@@ -173,9 +174,9 @@ export default function Agenda() {
     // Charger les events : d'abord API, sinon localStorage, sinon démo
     if (isDemo) {
       try {
-        const stored = JSON.parse(localStorage.getItem('freample_agenda_events') || '[]');
+        const stored = demoGet('freample_agenda_events', []);
         setEvents(stored.length ? stored : DEMO_EVENTS);
-        if (!stored.length) localStorage.setItem('freample_agenda_events', JSON.stringify(DEMO_EVENTS));
+        if (!stored.length) demoSet('freample_agenda_events', DEMO_EVENTS);
       } catch { setEvents(DEMO_EVENTS); }
     } else {
       api.get('/patron/agenda')

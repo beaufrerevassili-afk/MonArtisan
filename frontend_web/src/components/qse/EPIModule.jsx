@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -26,10 +27,10 @@ const DEMO = [
 ];
 
 export default function EPIModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const STORE_EPI='freample_epi'; function loadEPI(){try{const d=localStorage.getItem(STORE_EPI);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
-  const [epis, setEpis] = useState(loadEPI);
-  useEffect(()=>{localStorage.setItem(STORE_EPI,JSON.stringify(epis));},[epis]);
+  const isDemo = _isDemo();
+  const STORE_EPI='freample_epi';
+  const [epis, setEpis] = useState(() => demoGet(STORE_EPI, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_EPI,epis);},[epis]);
   useEffect(()=>{api.get('/modules/epi').then(({data})=>{if(data.epi?.length) setEpis(data.epi);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

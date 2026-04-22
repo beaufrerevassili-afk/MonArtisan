@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -27,10 +28,10 @@ const DEMO = [
 const statutColors = { valide:'#16A34A', expire:'#DC2626', en_cours:'#D97706', a_renouveler:'#D97706' };
 
 export default function CertificationsModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const STORE_C='freample_certifs'; function loadC(){try{const d=localStorage.getItem(STORE_C);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
-  const [certifs, setCertifs] = useState(loadC);
-  useEffect(()=>{localStorage.setItem(STORE_C,JSON.stringify(certifs));},[certifs]);
+  const isDemo = _isDemo();
+  const STORE_C='freample_certifs';
+  const [certifs, setCertifs] = useState(() => demoGet(STORE_C, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_C,certifs);},[certifs]);
   useEffect(()=>{api.get('/modules/certifications').then(({data})=>{if(data.certifications?.length) setCertifs(data.certifications);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

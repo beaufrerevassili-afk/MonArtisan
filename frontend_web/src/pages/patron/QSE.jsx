@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import {
   IconShield, IconAlert, IconDocument, IconCheck, IconSearch,
   IconPlus, IconX, IconDownload, IconUser, IconRefresh,
@@ -159,7 +160,7 @@ export default function QSE() {
   const [tdb, setTdb] = useState(null);
   const [habilitations, setHabilitations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [risques, setRisques] = useState(isDemo ? RISQUES_INIT : []);
   const [filterUT, setFilterUT] = useState('Tous les postes');
   const [employes, setEmployes] = useState([]);
@@ -1486,7 +1487,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
   const [chantierDoc, setChantierDoc] = useState(null); // doc actif pour un chantier
   useEffect(() => {
     api.get('/patron/chantiers').then(r => setChantiers(r.data?.chantiers || [])).catch(() => {
-      const lsChantiers = (() => { try { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); return c?.length ? c : null; } catch { return null; } })();
+      const lsChantiers = (() => { try { const c = demoGet('freample_chantiers_custom', null); return c?.length ? c : null; } catch { return null; } })();
       setChantiers(lsChantiers || [
         { id:'ch1', nom:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
         { id:'ch3', nom:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', equipe:['Luc Moreau','Pierre Martin'] },
@@ -1508,9 +1509,10 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
 
   function getChantierDocStatus(chantierId, docId) {
     const key = `freample_qse_${docId}_${chantierId}`;
-    return localStorage.getItem(key) ? 'fait' : 'a_faire';
+    return (_isDemo() && localStorage.getItem(key)) ? 'fait' : 'a_faire';
   }
   function markChantierDoc(chantierId, docId) {
+    if (!_isDemo()) return;
     const key = `freample_qse_${docId}_${chantierId}`;
     localStorage.setItem(key, JSON.stringify({ date: new Date().toISOString(), statut: 'fait' }));
     setChantierDoc(null); // force re-render

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import DS from '../../design/luxe';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'10px 22px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -169,7 +170,7 @@ const D_EMPTY = {
 };
 
 export default function RapportAnnuelQHSE() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const D = isDemo ? D_DEMO : D_EMPTY;
   const actionsRealisees = D.actions.filter(a=>a.statut==='Réalisé').length;
   const tauxRealisation = D.actions.length > 0 ? Math.round(actionsRealisees/D.actions.length*100) : 0;

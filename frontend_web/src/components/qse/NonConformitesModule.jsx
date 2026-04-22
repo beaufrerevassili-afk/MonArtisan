@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -20,10 +21,10 @@ const DEMO = [
 const graviteColors = { mineure:'#D97706', majeure:'#DC2626', critique:'#7C2D12' };
 
 export default function NonConformitesModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const STORE_NC='freample_nc'; function loadNC(){try{const d=localStorage.getItem(STORE_NC);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
-  const [ncs, setNcs] = useState(loadNC);
-  useEffect(()=>{localStorage.setItem(STORE_NC,JSON.stringify(ncs));},[ncs]);
+  const isDemo = _isDemo();
+  const STORE_NC='freample_nc';
+  const [ncs, setNcs] = useState(() => demoGet(STORE_NC, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_NC,ncs);},[ncs]);
   useEffect(()=>{api.get('/modules/non_conformites').then(({data})=>{if(data.non_conformites?.length) setNcs(data.non_conformites);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

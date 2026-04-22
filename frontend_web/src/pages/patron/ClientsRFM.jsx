@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Reputation from './Reputation';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 /* ── RFM scoring helpers ── */
 function scoreRecency(daysSince) {
@@ -118,7 +119,7 @@ function DemoBanner() {
 
 /* ── Main component ── */
 export default function ClientsRFM() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [mainTab, setMainTab] = useState('clients');
   const [filtreSegment, setFiltreSegment] = useState('tous');
   const [search, setSearch] = useState('');
@@ -342,7 +343,7 @@ export default function ClientsRFM() {
 }
 
 /* ── Client detail panel ── */
-function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+function lsGet(k, fb) { return demoGet(k, fb); }
 
 function ClientDetail({ client: c, onClose }) {
   const seg = SEGMENTS[c.segment];
@@ -389,14 +390,14 @@ function ClientDetail({ client: c, onClose }) {
     const comment = { id: Date.now(), texte: newComment.trim(), date: new Date().toISOString() };
     const updated = { ...commentaires, [c.id]: [...mesCommentaires, comment] };
     setCommentaires(updated);
-    localStorage.setItem('freample_client_commentaires', JSON.stringify(updated));
+    demoSet('freample_client_commentaires', updated);
     setNewComment('');
   };
 
   const supprimerCommentaire = (commentId) => {
     const updated = { ...commentaires, [c.id]: mesCommentaires.filter(cm => cm.id !== commentId) };
     setCommentaires(updated);
-    localStorage.setItem('freample_client_commentaires', JSON.stringify(updated));
+    demoSet('freample_client_commentaires', updated);
   };
 
   // KPIs client

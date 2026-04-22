@@ -51,9 +51,10 @@ const SECTION_TITLE = { fontSize:15, fontWeight:800, color:DS.text, letterSpacin
 const fmt = n => new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0}).format(n);
 const todayStr = new Date().toISOString().slice(0,10);
 
-// ── localStorage helpers ──
-function readLS(key, fb=[]) { try { return JSON.parse(localStorage.getItem(key)||JSON.stringify(fb)); } catch { return fb; } }
-function writeLS(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+// ── localStorage helpers (demo-safe) ──
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
+function readLS(key, fb=[]) { return demoGet(key, fb); }
+function writeLS(key, val) { demoSet(key, val); }
 
 function useIsMobile(bp=640) {
   const [m,setM]=useState(()=>window.innerWidth<=bp);

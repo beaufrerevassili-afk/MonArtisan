@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 import NotificationBell from '../../components/ui/NotificationBell';
 import { IconHome, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield } from '../../components/ui/Icons';
@@ -29,7 +30,7 @@ const DOCUMENTS_REQUIS = [
   { id: 'casier_judiciaire',   label: 'Extrait de casier judiciaire', icon: '📄' },
 ];
 
-const DEMO_CHANTIERS = (() => { try { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); if (c?.length) return c; } catch {} return [
+const DEMO_CHANTIERS = (() => { try { if (_isDemo()) { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); if (c?.length) return c; } } catch {} return [
   { id:'ch1', titre:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', dateDebut:'2026-04-01', dateFin:'2026-04-25', chef:'Marc Lambert', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
   { id:'ch2', titre:'Mise aux normes électriques — Copropriété Les Oliviers', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', dateDebut:'2026-04-28', dateFin:'2026-05-10', chef:'Marc Lambert', equipe:['Claire Bernard'] },
   { id:'ch3', titre:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', dateDebut:'2026-04-07', dateFin:'2026-04-18', chef:'Marc Lambert', equipe:['Luc Moreau','Pierre Martin'] },
@@ -113,7 +114,7 @@ export default function DashboardEmploye() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [tab, setTab] = useState('matin');
   const [chantiers, setChantiers] = useState(isDemo ? DEMO_CHANTIERS : []);
   const [bulletins, setBulletins] = useState(isDemo ? DEMO_BULLETINS : []);

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import L from '../../design/luxe';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 // ─── Style constants ───────────────────────────────────────────────
 const CARD = { background: L.white, border: `1px solid ${L.border}`, padding: '20px' };
@@ -19,11 +20,8 @@ function getBTPZone(km) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
-function lsGet(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
-}
-function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function lsGet(key, fallback) { return demoGet(key, fallback); }
+function lsSet(key, val) { demoSet(key, val); }
 function today() { return new Date().toISOString().slice(0, 10); }
 function fmt(n) { return Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
@@ -267,14 +265,14 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
       lsSet('freample_stock_articles', globalStock);
     }
     // Écriture comptable auto — sortie stock
-    const ecrituresStk = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+    const ecrituresStk = demoGet('freample_ecritures', []);
     const montantStk = (parseFloat(msQte) || 0) * (parseFloat(msPrix) || 0);
     const refStk = `STK-${Date.now()}`;
     ecrituresStk.push(
       { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: refStk, compte: '601000', libelle: `Sortie stock ${msArticle} — Chantier`, debit: montantStk, credit: 0 },
       { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: refStk, compte: '601000', libelle: 'Contrepartie stock', debit: 0, credit: montantStk },
     );
-    localStorage.setItem('freample_ecritures', JSON.stringify(ecrituresStk));
+    demoSet('freample_ecritures', ecrituresStk);
     setMsArticle(''); setMsQte(''); setMsPrix('');
     showToast?.('Sortie stock ajoutée');
   };
@@ -284,7 +282,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
     const item = { id: Date.now(), fournisseur: maFourn.trim(), description: maDesc.trim(), montantHT: maMontant, tva: maTva, date: today() };
     persistMatAchat([item, ...matAchat]);
     // Écriture comptable auto — achat matériaux
-    const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+    const ecritures = demoGet('freample_ecritures', []);
     const montantHT = parseFloat(maMontant) || 0;
     const tvaRate = parseFloat(maTva) || 20;
     const montantTVA = Math.round(montantHT * tvaRate / 100);
@@ -294,7 +292,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
       { date: new Date().toISOString().slice(0,10), journal: 'HA', piece: ref, compte: '445660', libelle: 'TVA déductible', debit: montantTVA, credit: 0 },
       { date: new Date().toISOString().slice(0,10), journal: 'HA', piece: ref, compte: '401000', libelle: `Fournisseur ${maFourn}`, debit: 0, credit: montantHT + montantTVA },
     );
-    localStorage.setItem('freample_ecritures', JSON.stringify(ecritures));
+    demoSet('freample_ecritures', ecritures);
     setMaFourn(''); setMaDesc(''); setMaMontant(''); setMaTva('20');
     showToast?.('Achat ajouté');
   };

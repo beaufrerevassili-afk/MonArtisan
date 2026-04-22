@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import DS from '../../design/luxe';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -37,19 +38,16 @@ const DEMO_ARTICLES = [
   { id:20, ref:'DEM-001', designation:'Démolition cloison plâtre', categorie:'Démolition', unite:'m²', prixHT:18, tva:20, fournisseur:'Interne', notes:'Fourniture + main d\'œuvre' },
 ];
 
-function loadData(fallback) { try { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : fallback; } catch { return fallback; } }
-function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-
 export default function BiblothequePrix() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [articles, setArticles] = useState(() => loadData(isDemo ? DEMO_ARTICLES : []));
+  const isDemo = _isDemo();
+  const [articles, setArticles] = useState(() => demoGet(STORAGE_KEY, isDemo ? DEMO_ARTICLES : []));
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [editId, setEditId] = useState(null);
 
-  useEffect(() => { saveData(articles); }, [articles]);
+  useEffect(() => { demoSet(STORAGE_KEY, articles); }, [articles]);
 
   const filtered = useMemo(() => {
     let list = articles;

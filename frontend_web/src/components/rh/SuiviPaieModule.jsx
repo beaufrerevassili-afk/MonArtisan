@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import DS from '../../design/luxe';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { calculerIndemniteTrajet, PANIER_REPAS_BTP } from '../../utils/calculPaie';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
 
@@ -100,12 +101,10 @@ const POINTAGES_MOIS = [
 const STORAGE_POINTAGES = 'freample_pointages_mois';
 const STORAGE_DEPOT = 'freample_depot';
 function loadPointages(demoFallback) {
+  if (!_isDemo()) return demoFallback;
   try {
-    // Lire les pointages du module paie
     const paie = JSON.parse(localStorage.getItem(STORAGE_POINTAGES) || 'null');
-    // Lire aussi les vrais pointages des salariés (freample_pointages)
     const reels = JSON.parse(localStorage.getItem('freample_pointages') || '[]');
-    // Convertir les pointages réels au format paie (arrivée+départ = heures)
     const reelsConvertis = [];
     const dates = [...new Set(reels.map(p => p.date))];
     dates.forEach(date => {
@@ -118,7 +117,6 @@ function loadPointages(demoFallback) {
         reelsConvertis.push({ employeId: arrivee.employeId || 0, chantierId: arrivee.chantierId, date, heures: Math.round(heures), heuresSupp: Math.max(0, Math.round(heures) - 8) });
       }
     });
-    // Fusionner : priorité aux pointages réels
     if (reelsConvertis.length > 0) {
       const base = paie || demoFallback;
       const existingDates = new Set(reelsConvertis.map(p => p.date));
@@ -129,8 +127,8 @@ function loadPointages(demoFallback) {
 }
 
 export default function SuiviPaieModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [depot, setDepot] = useState(localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT);
+  const isDemo = _isDemo();
+  const [depot, setDepot] = useState(isDemo ? (localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT) : DEPOT_DEFAULT);
   const [chantiers, setChantiers] = useState(isDemo ? CHANTIERS_INIT : []);
   const [salaries, setSalaries] = useState(isDemo ? SALARIES : []);
   const pointages = loadPointages(isDemo ? POINTAGES_MOIS : []);
@@ -139,9 +137,9 @@ export default function SuiviPaieModule() {
   const [distancesCalculees, setDistancesCalculees] = useState(false);
   const moisActuel = `${MOIS[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
-  // Sauvegarder depot et pointages
-  useEffect(() => { localStorage.setItem(STORAGE_DEPOT, depot); }, [depot]);
-  useEffect(() => { localStorage.setItem(STORAGE_POINTAGES, JSON.stringify(pointages)); }, [pointages]);
+  // Sauvegarder depot et pointages (demo only for business data)
+  useEffect(() => { if (isDemo) localStorage.setItem(STORAGE_DEPOT, depot); }, [depot]);
+  useEffect(() => { demoSet(STORAGE_POINTAGES, pointages); }, [pointages]);
 
   // Charger les vrais employés depuis l'API
   useEffect(() => {

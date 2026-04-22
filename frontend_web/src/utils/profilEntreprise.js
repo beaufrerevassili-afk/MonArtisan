@@ -1,5 +1,6 @@
 // ── Profil entreprise unifié (patron + AE) ──
 // Structure centralisée utilisée pour pré-remplir les devis, factures, etc.
+import { isDemo as _isDemo } from './storage';
 
 export const CHAMPS_PROFIL_ENTREPRISE = {
   // Identité
@@ -119,10 +120,11 @@ export const DEMO_FICHES_SALARIES = [
 
 // ── Helpers fiches salariés ──
 export function getFichesSalaries() {
+  if (!_isDemo()) return DEMO_FICHES_SALARIES; // real accounts get data from API, fallback to demo structure
   try { const s = localStorage.getItem('freample_fiches_salaries'); return s ? JSON.parse(s) : DEMO_FICHES_SALARIES; }
   catch { return DEMO_FICHES_SALARIES; }
 }
-export function setFichesSalaries(fiches) { localStorage.setItem('freample_fiches_salaries', JSON.stringify(fiches)); }
+export function setFichesSalaries(fiches) { if (_isDemo()) localStorage.setItem('freample_fiches_salaries', JSON.stringify(fiches)); }
 
 export function getCompetencesEquipe() {
   const fiches = getFichesSalaries().filter(f => f.actif);

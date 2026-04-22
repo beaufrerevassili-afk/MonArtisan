@@ -11,6 +11,7 @@ import { secureToken } from '../../utils/security';
 import { IconDocument, IconCreditCard, IconTrendUp, IconPlus, IconCheck, IconSearch } from '../../components/ui/Icons';
 import DevisFormulaire from '../../components/DevisFormulaire';
 import EnvoyerDevisButton from '../../components/devis/EnvoyerDevisButton';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background: '#fff', border: '1px solid #E5E5EA', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
 const BTN = { padding: '8px 18px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
@@ -18,8 +19,8 @@ const BTN_O = { ...BTN, background: 'transparent', color: '#1C1C1E', border: '1p
 const INP = { width: '100%', padding: '10px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' };
 const LBL = { fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' };
 
-function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
-function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function lsGet(k, fb) { return demoGet(k, fb); }
+function lsSet(k, v) { demoSet(k, v); }
 function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
 function fmtE(n) { return `${fmt(n)} €`; }
 
@@ -58,7 +59,7 @@ export default function DevisFactures() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useToast();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
   const [tab, setTab] = useState(urlTab || 'devis');

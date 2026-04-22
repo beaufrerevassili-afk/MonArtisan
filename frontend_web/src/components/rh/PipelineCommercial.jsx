@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/luxe';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
 const BTN = { padding:'8px 16px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -25,14 +26,13 @@ const DEMO = [
 ];
 
 const STORAGE = 'freample_pipeline';
-function load(fallback) { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function PipelineCommercial() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [affaires, setAffaires] = useState(() => load(isDemo ? DEMO : []));
+  const isDemo = _isDemo();
+  const [affaires, setAffaires] = useState(() => demoGet(STORAGE, isDemo ? DEMO : []));
   const [selected, setSelected] = useState(null);
   const [showArchives, setShowArchives] = useState(false);
-  useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(affaires)); }, [affaires]);
+  useEffect(() => { demoSet(STORAGE, affaires); }, [affaires]);
   useEffect(() => { api.get('/patron/pipeline').then(({data})=>{ if(data.affaires?.length) setAffaires(data.affaires); }).catch(()=>{}); }, []);
 
   const avancer = (id) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconBox, IconPlus, IconAlert, IconCheck } from '../../components/ui/Icons';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CATS = ['Matériaux', 'Outillage', 'EPI / Sécurité', 'Fournitures', 'Produits chimiques', 'Équipement'];
 const UNITES = ['u', 'kg', 't', 'm', 'm²', 'm³', 'L', 'sac', 'palette', 'rouleau', 'boîte'];
@@ -24,11 +25,10 @@ function formatCur(n) {
 }
 
 export default function Stock() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  // Charger immédiatement depuis localStorage ou ARTICLES_INIT (zéro flash blanc)
+  const isDemo = _isDemo();
   const [articles, setArticles] = useState(() => {
     if (!isDemo) return [];
-    try { const s = localStorage.getItem('freample_stock_articles'); return s ? JSON.parse(s) : ARTICLES_INIT; } catch { return ARTICLES_INIT; }
+    return demoGet('freample_stock_articles', ARTICLES_INIT);
   });
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ export default function Stock() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { if(isDemo && articles.length > 0) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); }, [articles]);
+  useEffect(() => { if(isDemo && articles.length > 0) demoSet('freample_stock_articles', articles); }, [articles]);
 
   const [modal, setModal] = useState(null); // null | 'add' | article-object
   const [form, setForm] = useState(ARTICLE_VIDE);
@@ -54,8 +54,8 @@ export default function Stock() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('freample_stock_mouvements');
-    if (saved) setMouvements(JSON.parse(saved));
+    const saved = demoGet('freample_stock_mouvements', []);
+    if (saved.length) setMouvements(saved);
   }, []);
 
   const alertes = articles.filter(a => a.quantite <= a.seuilAlerte);

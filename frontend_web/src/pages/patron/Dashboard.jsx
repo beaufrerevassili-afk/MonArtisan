@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AlertesInterModules from '../../components/rh/AlertesInterModules';
 import OnboardingWizard, { isOnboardingDone, getOnboardingType } from '../../components/onboarding/OnboardingWizard';
 import { DEMO_PLANNING as PLANNING_DEMO } from '../../utils/demoData';
+import { isDemo as _isDemo, demoGet } from '../../utils/storage';
 
 const STOCK_ALERTS = [
   { materiau: 'Ciment CEM II 32.5', stock: 8, seuil: 20, unite: 'sacs' },
@@ -14,20 +15,17 @@ const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
 // Nombre d'alertes inter-modules (démo = 7, réel = 0)
 function countAlertes() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  if (!isDemo) return 0;
+  if (!_isDemo()) return 0;
   try {
     const dismissed = new Set(JSON.parse(localStorage.getItem('freample_alertes_dismissed') || '[]'));
     return Math.max(7 - dismissed.size, 0);
   } catch { return 7; }
 }
 
-function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
-
 export default function DashboardPatron() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone() && getOnboardingType(user) === 'patron');
   const [showAlertes, setShowAlertes] = useState(false);
   const [alerteCount, setAlerteCount] = useState(countAlertes);
@@ -37,9 +35,9 @@ export default function DashboardPatron() {
   const prenom = user?.nom?.split(' ')[0] || 'Patron';
 
   // ── Données écosystème depuis localStorage ──
-  const lsDevis = isDemo ? lsGet('freample_devis', []) : lsGet('freample_devis', []);
-  const lsFactures = isDemo ? lsGet('freample_factures', []) : lsGet('freample_factures', []);
-  const lsChantiers = isDemo ? lsGet('freample_chantiers_custom', []) : lsGet('freample_chantiers_custom', []);
+  const lsDevis = demoGet('freample_devis', []);
+  const lsFactures = demoGet('freample_factures', []);
+  const lsChantiers = demoGet('freample_chantiers_custom', []);
 
   const moisCourant = new Date().toISOString().slice(0, 7);
   const facturesPayees = lsFactures.filter(f => f.statut === 'payee' || f.statut === 'sequestre_libere');

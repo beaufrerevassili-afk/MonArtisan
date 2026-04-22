@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { IconDocument, IconSearch, IconUser, IconShield, IconTeam } from '../../components/ui/Icons';
 import { API_URL } from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 const BASE_URL = window.location.origin;
 
 /* ── Static demo documents (non-devis) ── */
@@ -53,7 +54,7 @@ function docUrl(type, id) {
 
 export default function BanqueDocuments() {
   const { token } = useAuth();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [devis, setDevis] = useState([]);
   const [loadingDevis, setLoadingDevis] = useState(true);
   const [search, setSearch] = useState('');

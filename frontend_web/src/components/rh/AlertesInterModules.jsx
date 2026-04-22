@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
 
@@ -17,7 +18,7 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
   const now = new Date();
 
   // Si aucune donnée n'est passée, générer des alertes démo réalistes (uniquement comptes démo)
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const noData = employes.length===0 && habilitations.length===0 && devis.length===0 && incidents.length===0 && epis.length===0;
   if (noData && isDemo) {
     alertes.push({ type:'danger', module:'QSE → Planning', icon:'🚫', message:'Habilitation CACES R489 expirée — Marc Lambert ne peut pas conduire le chariot sur chantier', action:'Renouveler', link:'/patron/qse?onglet=habilitations' });

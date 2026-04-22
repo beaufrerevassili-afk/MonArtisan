@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/luxe';
+import { isDemo as _isDemo } from '../../utils/storage';
 import { genererPDF_DAT, genererPDF_FAT, genererPDF_DMP, genererPDF_ITI, genererPDF_ATT } from '../../utils/pdfCerfa';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -52,7 +53,7 @@ function AutoBlock({s,e}) {
 }
 
 export default function FormulairesAMELI() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const salaries = isDemo ? SALARIES : [];
   const [sel, setSel] = useState(null);
   const [sid, setSid] = useState('');

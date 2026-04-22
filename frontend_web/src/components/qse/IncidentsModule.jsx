@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -19,10 +20,10 @@ const DEMO = [
 ];
 
 export default function IncidentsModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const STORE_I='freample_incidents'; function loadI(){try{const d=localStorage.getItem(STORE_I);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
-  const [incidents, setIncidents] = useState(loadI);
-  useEffect(()=>{localStorage.setItem(STORE_I,JSON.stringify(incidents));},[incidents]);
+  const isDemo = _isDemo();
+  const STORE_I='freample_incidents';
+  const [incidents, setIncidents] = useState(() => demoGet(STORE_I, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_I,incidents);},[incidents]);
   useEffect(()=>{api.get('/modules/incidents').then(({data})=>{if(data.incidents?.length) setIncidents(data.incidents);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

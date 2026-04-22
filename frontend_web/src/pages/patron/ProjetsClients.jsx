@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import DS from '../../design/luxe';
 import DevisFormulaire from '../../components/DevisFormulaire';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
 const BTN = { padding: '10px 20px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font };
@@ -29,19 +30,14 @@ export default function ProjetsClients() {
   const [filtreMet, setFiltreMet] = useState('');
   const [showMesDevis, setShowMesDevis] = useState(false);
   const [voirDevisId, setVoirDevisId] = useState(null);
-  const tokenVal = localStorage.getItem('token');
-  const isDemo = tokenVal && tokenVal.endsWith('.dev');
-  const [mesOffres, setMesOffres] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('freample_offres') || '[]'); } catch { return []; }
-  });
+  const isDemo = _isDemo();
+  const [mesOffres, setMesOffres] = useState(() => demoGet('freample_offres', []));
 
   // Charger les projets
   useEffect(() => {
     if (isDemo) {
-      try {
-        const local = JSON.parse(localStorage.getItem('freample_projets') || '[]').filter(p => p.statut === 'publie');
-        setProjets(local.length > 0 ? local : DEMO_PROJETS);
-      } catch { setProjets(DEMO_PROJETS); }
+      const local = demoGet('freample_projets', []).filter(p => p.statut === 'publie');
+      setProjets(local.length > 0 ? local : DEMO_PROJETS);
       setLoading(false);
       return;
     }
@@ -90,7 +86,7 @@ export default function ProjetsClients() {
 
   // Lire les devis complets depuis localStorage
   function getDevisComplets() {
-    try { return JSON.parse(localStorage.getItem('freample_devis') || '[]'); } catch { return []; }
+    return demoGet('freample_devis', []);
   }
 
   // Trouver le projet correspondant à une offre
@@ -103,15 +99,13 @@ export default function ProjetsClients() {
     // 1. Marquer l'offre comme retirée
     const updatedOffres = mesOffres.map(o => o.id === offre.id ? { ...o, statut: 'retiree' } : o);
     setMesOffres(updatedOffres);
-    try { localStorage.setItem('freample_offres', JSON.stringify(updatedOffres)); } catch {}
+    demoSet('freample_offres', updatedOffres);
 
     // 2. Passer le devis lié en statut retire_marketplace
-    try {
-      const devis = JSON.parse(localStorage.getItem('freample_devis') || '[]');
-      const updated = devis.map(d => d.projetId === offre.projetId && d.statut === 'envoye' && d.source === 'marketplace'
-        ? { ...d, statut: 'retire_marketplace' } : d);
-      localStorage.setItem('freample_devis', JSON.stringify(updated));
-    } catch {}
+    const devis = demoGet('freample_devis', []);
+    const updated = devis.map(d => d.projetId === offre.projetId && d.statut === 'envoye' && d.source === 'marketplace'
+      ? { ...d, statut: 'retire_marketplace' } : d);
+    demoSet('freample_devis', updated);
 
     // 3. Décrémenter nbOffres sur le projet
     setProjets(prev => prev.map(p => p.id === offre.projetId ? { ...p, nbOffres: Math.max(0, (p.nbOffres || 1) - 1) } : p));
@@ -559,15 +553,15 @@ export default function ProjetsClients() {
                         // Démo — localStorage
                         const offre = { id: Date.now(), projetId: selected.id, artisanNom: user?.nom, prix: devisData.totalTTC, statut: 'proposee', createdAt: new Date().toISOString() };
                         try {
-                          const offres = JSON.parse(localStorage.getItem('freample_offres') || '[]');
+                          const offres = demoGet('freample_offres', []);
                           offres.push(offre);
-                          localStorage.setItem('freample_offres', JSON.stringify(offres));
+                          demoSet('freample_offres', offres);
                           setMesOffres(offres);
                         } catch {}
                       }
-                      // Sauver le devis complet (localStorage pour les deux, backend à venir)
+                      // Sauver le devis complet (demo only for localStorage)
                       try {
-                        const devis = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+                        const devis = demoGet('freample_devis', []);
                         const nextNum = devis.length + 1;
                         devis.push({
                           id: Date.now(), numero: `DEV-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`,
@@ -577,7 +571,7 @@ export default function ProjetsClients() {
                           montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
                           date: new Date().toISOString().slice(0, 10), statut: 'envoye', source: 'marketplace',
                         });
-                        localStorage.setItem('freample_devis', JSON.stringify(devis));
+                        demoSet('freample_devis', devis);
                       } catch {}
                       setProjets(prev => prev.map(p => p.id === selected.id ? { ...p, nbOffres: (p.nbOffres || 0) + 1 } : p));
                       setModalView('sent');
@@ -622,9 +616,9 @@ export default function ProjetsClients() {
                     } catch {}
                   } else {
                     try {
-                      const rdvs = JSON.parse(localStorage.getItem('freample_rdv') || '[]');
+                      const rdvs = demoGet('freample_rdv', []);
                       rdvs.push({ id: Date.now(), projetId: selected.id, client: selected.clientNom || selected.client_nom, ...rdvForm, statut: 'propose', createdAt: new Date().toISOString() });
-                      localStorage.setItem('freample_rdv', JSON.stringify(rdvs));
+                      demoSet('freample_rdv', rdvs);
                     } catch {}
                   }
                   setModalView('sent');

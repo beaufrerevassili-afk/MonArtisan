@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DevisFormulaire from '../../components/DevisFormulaire';
 import GanttPlanning from '../../components/chantier/GanttPlanning';
 import {
@@ -13,7 +14,7 @@ import { calculerIndemniteTrajet } from '../../utils/calculPaie';
 import ChantierDetail from '../../components/chantier/ChantierDetail';
 
 // Adresse dépôt — en prod, viendrait du profil entreprise
-const ADRESSE_DEPOT = localStorage.getItem('freample_depot') || '45 boulevard de la Libération, 13001 Marseille';
+const ADRESSE_DEPOT = (_isDemo() && localStorage.getItem('freample_depot')) || '45 boulevard de la Libération, 13001 Marseille';
 
 /* ── Helpers ── */
 function formatDate(iso) {
@@ -116,7 +117,7 @@ const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', b
 /* ════════════════════════════════════════ */
 export default function ChantiersEtMissions() {
   const { token } = useAuth();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [tab, setTab] = useState('Chantiers');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1104,7 +1105,7 @@ function ItemCard({ item, onClick, isSelected, onOpenDetail }) {
 
 /* ════════ DetailPanel ════════ */
 function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setDevisMode, devisEnvoye, onDevisSoumis, onUpdate, headers }) {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [panelTab, setPanelTab] = useState('infos');
   const [equipeIds, setEquipeIds] = useState(
     (isDemo ? DEMO_EMPLOYES : []).filter(e => (item.equipe || []).some(n => n.toLowerCase().includes(e.nom.toLowerCase()))).map(e => e.id)
@@ -1235,10 +1236,10 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                   // Passer le chantier en réception
                   const updated = items.map(c => c.id === item.id ? { ...c, statut: 'reception', avancement: 100 } : c);
                   setItems(updated);
-                  localStorage.setItem('freample_chantiers_custom', JSON.stringify(updated));
+                  demoSet('freample_chantiers_custom', updated);
                   // Créer le PV dans localStorage
                   const profilPatron = (() => { try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; } })();
-                  const devisLie = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]').find(d => d.projetId === item.projetId || d.chantierId === item.id); } catch { return null; } })();
+                  const devisLie = (() => { try { return demoGet('freample_devis', []).find(d => d.projetId === item.projetId || d.chantierId === item.id); } catch { return null; } })();
                   const pv = {
                     id: 'pv_' + Date.now(), chantierId: item.id, projetId: item.projetId,
                     dateReception: new Date().toISOString().slice(0, 10), dateSignature: null,
@@ -1249,18 +1250,18 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                     lignes: devisLie?.lignes || [],
                     sansReserve: null, reserves: [], statut: 'en_attente_signature',
                   };
-                  const pvs = (() => { try { return JSON.parse(localStorage.getItem('freample_pv_receptions') || '[]'); } catch { return []; } })();
+                  const pvs = demoGet('freample_pv_receptions', []);
                   pvs.push(pv);
-                  localStorage.setItem('freample_pv_receptions', JSON.stringify(pvs));
+                  demoSet('freample_pv_receptions', pvs);
                   // Notif client
-                  const notifs = (() => { try { return JSON.parse(localStorage.getItem('freample_notifs_client') || '[]'); } catch { return []; } })();
+                  const notifs = demoGet('freample_notifs_client', []);
                   notifs.push({ id: Date.now(), date: new Date().toISOString(), type: 'pv_reception', titre: 'Travaux terminés — PV de réception à signer', message: `L'entreprise a terminé les travaux "${item.titre}". Signez le PV de réception pour libérer le paiement.`, lu: false });
-                  localStorage.setItem('freample_notifs_client', JSON.stringify(notifs));
+                  demoSet('freample_notifs_client', notifs);
                   // Mettre à jour le projet marketplace
                   try {
-                    const projets = JSON.parse(localStorage.getItem('freample_projets') || '[]');
+                    const projets = demoGet('freample_projets', []);
                     const updProjets = projets.map(p => p.id === item.projetId ? { ...p, statut: 'reception' } : p);
-                    localStorage.setItem('freample_projets', JSON.stringify(updProjets));
+                    demoSet('freample_projets', updProjets);
                   } catch {}
                 }} style={{ padding: '12px 0', border: 'none', borderRadius: 10, background: '#16A34A', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'inherit' }}>
                   Terminer le chantier → Envoyer le PV de réception
@@ -1308,7 +1309,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
                 const isMatch = !filtreMetier || emp.metier === filtreMetier;
                 // Vérification compétences depuis fiches salariés
                 const chantierMetier = item?.metier || '';
-                const fichesSalaries = (() => { try { return JSON.parse(localStorage.getItem('freample_fiches_salaries') || '[]'); } catch { return []; } })();
+                const fichesSalaries = demoGet('freample_fiches_salaries', []);
                 const fiche = fichesSalaries.find(f => f.actif && (`${f.prenom} ${f.nom}`).toLowerCase().includes(emp.nom?.toLowerCase() || ''));
                 const hasCompetence = !chantierMetier || !fiche || (fiche.competences || []).some(c => c.toLowerCase().includes(chantierMetier.toLowerCase()) || chantierMetier.toLowerCase().includes(c.toLowerCase()));
                 // Vérifier habilitation requise
@@ -1507,12 +1508,14 @@ function EditModal({ item, onClose, onSave, headers }) {
 
 /* ── Fuel tracking helpers ── */
 function getCarburantEntries(vehiculeId) {
+  if (!_isDemo()) return [];
   try {
     const s = localStorage.getItem(`freample_carburant_${vehiculeId}`);
     return s ? JSON.parse(s) : [];
   } catch { return []; }
 }
 function saveCarburantEntries(vehiculeId, entries) {
+  if (!_isDemo()) return;
   localStorage.setItem(`freample_carburant_${vehiculeId}`, JSON.stringify(entries));
 }
 function calculerConsoReelle(entries) {
@@ -1553,14 +1556,11 @@ function calculerCoutKm(consoReelle, dernierPrixLitre, assuranceAnnuelle, kmMoye
 const FORM_VEHICULE_VIDE = { immatriculation: '', modele: '', type: 'Fourgon', capacite: '', kilometrage: '', vidangeKm: '', vidangeIntervalleKm: 10000, ctDate: '', assuranceExp: '', statut: 'disponible' };
 
 function FlotteView() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [vehicules, setVehicules] = useState(() => {
-    try { const s = localStorage.getItem('flotte_vehicules'); return s ? JSON.parse(s) : (isDemo ? DEMO_VEHICULES : []); }
-    catch { return isDemo ? DEMO_VEHICULES : []; }
-  });
+  const isDemo = _isDemo();
+  const [vehicules, setVehicules] = useState(() => demoGet('flotte_vehicules', isDemo ? DEMO_VEHICULES : []));
 
   useEffect(() => {
-    localStorage.setItem('flotte_vehicules', JSON.stringify(vehicules));
+    demoSet('flotte_vehicules', vehicules);
   }, [vehicules]);
   const [selected, setSelected] = useState(null);
   const [kmEdit, setKmEdit] = useState({});
@@ -1990,8 +1990,8 @@ function InlineSousTraiter({ item, onOpenDetail }) {
   const publier = () => {
     if (!form.metier) return;
     try {
-      const all = JSON.parse(localStorage.getItem('freample_soustraitance') || '[]');
-      const patronProfil = JSON.parse(localStorage.getItem('freample_profil_patron') || '{}');
+      const all = demoGet('freample_soustraitance', []);
+      const patronProfil = (() => { try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; } })();
       all.push({
         id: Date.now(), chantierId: item.id, chantierTitre: item.titre || item.metier || 'Chantier',
         patronNom: patronProfil.nom || 'Patron', metier: form.metier,
@@ -2000,7 +2000,7 @@ function InlineSousTraiter({ item, onOpenDetail }) {
         ville: item.ville || item.adresse || '', dateDebut: item.dateDebut || '', dateFin: item.dateFin || '',
         statut: 'ouverte', reponses: [], date: new Date().toISOString().slice(0, 10),
       });
-      localStorage.setItem('freample_soustraitance', JSON.stringify(all));
+      demoSet('freample_soustraitance', all);
       setSent(true);
     } catch {}
   };

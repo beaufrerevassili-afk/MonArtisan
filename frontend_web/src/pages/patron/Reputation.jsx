@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 // Avis démo représentant ce que les clients ont laissé
 const AVIS_DEMO = [
@@ -105,7 +106,7 @@ function ReponseModal({ avis, onClose, onSave }) {
 
 export default function Reputation() {
   const { token } = useAuth();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [avis, setAvis]     = useState([]);
   const [apiOk, setApiOk]   = useState(false);
   const [filtre, setFiltre] = useState('tous');

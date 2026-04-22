@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { demoGet } from '../../utils/storage';
 
 const PHASES_DEFAUT = [
   { id: 'preparation', label: 'Préparation', pct: 10, color: '#6B7280' },
@@ -77,13 +78,13 @@ export default function GanttPlanning({ items = [], employes = [], onOpenDetail 
 
   // Pointages du jour
   const pointages = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('freample_pointages') || '[]'); } catch { return []; }
+    return demoGet('freample_pointages', []);
   }, []);
   const todayPointages = pointages.filter(p => p.date === today && p.type === 'arrivee');
 
   // Factures par chantier
   const factures = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('freample_factures') || '[]'); } catch { return []; }
+    return demoGet('freample_factures', []);
   }, []);
 
   // Conflits d'équipe (même personne sur 2 chantiers qui se chevauchent)

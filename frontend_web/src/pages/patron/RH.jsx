@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { DEMO_FICHES_SALARIES } from '../../utils/profilEntreprise';
 import {
   IconTeam, IconDocument, IconAlert, IconPlus, IconCheck, IconX,
@@ -134,7 +135,7 @@ const TABS_LABELS = ['Tableau de bord', 'Employés', 'Planning', 'Congés', 'Rec
 const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement' };
 
 export default function RH() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
   const [tab, setTab] = useState(RH_ONGLET_MAP[urlOnglet] || 'Tableau de bord');
   const [employes, setEmployes] = useState([]);
@@ -156,18 +157,16 @@ export default function RH() {
       setEmployes(e.data.employes);
       setTdb(t.data);
     }).catch(() => {
-      // Fallback localStorage — charger depuis les fiches salariés
-      try {
-        const fiches = JSON.parse(localStorage.getItem('freample_fiches_salaries') || '[]');
-        if (fiches.length > 0) {
-          setEmployes(fiches.map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: f.salaireBase || 2500, typeContrat: f.typeContrat || 'CDI', statut: f.actif ? 'actif' : 'inactif' })));
-        } else {
-          // Fallback démo depuis profilEntreprise (seulement pour comptes démo)
-          if (isDemo) {
+      if (isDemo) {
+        try {
+          const fiches = demoGet('freample_fiches_salaries', []);
+          if (fiches.length > 0) {
+            setEmployes(fiches.map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: f.salaireBase || 2500, typeContrat: f.typeContrat || 'CDI', statut: f.actif ? 'actif' : 'inactif' })));
+          } else {
             setEmployes(DEMO_FICHES_SALARIES.filter(f => !f.isPatron).map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: 2500, typeContrat: 'CDI', statut: 'actif' })));
           }
-        }
-      } catch {}
+        } catch {}
+      }
     }).finally(() => setLoading(false));
   }, []);
 
@@ -254,7 +253,7 @@ const ACTIVITES_DEMO = [
 ];
 
 function TabDashboardRH({ employes, tdb, setTab }) {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const nb = tdb?.equipe?.actifs || employes?.length || 0;
   const masseBrute = tdb?.masseSalariale?.totalBrut || 0;
   const congesEnAttente = tdb?.alertes?.congesEnAttente || 0;
@@ -941,7 +940,7 @@ const FORMATIONS_DEMO = [
 ];
 
 function FormationView() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [formations, setFormations] = useState(isDemo ? FORMATIONS_DEMO : []);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titre:'', employe:'', organisme:'', dateDebut:'', dateFin:'', cout:'', statut:'planifie', obligatoire:false });
@@ -1275,7 +1274,7 @@ const PLANNING_DEMO = [
 ];
 
 function PlanningLocalisationView({ employes: initEmployes }) {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const planningData = isDemo ? PLANNING_DEMO : [];
   const [view, setView] = useState('planning'); // planning | localisation
   const [semaine] = useState(() => {
@@ -1464,7 +1463,7 @@ function CongesView() {
     api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
       // Fallback localStorage — lire les congés soumis par les salariés
       try {
-        const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+        const local = demoGet('freample_conges', []);
         if (local.length > 0) setConges(local);
       } catch {}
     });
@@ -1473,7 +1472,7 @@ function CongesView() {
 
   const refresh = () => {
     api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
-      try { setConges(JSON.parse(localStorage.getItem('freample_conges') || '[]')); } catch {}
+      try { setConges(demoGet('freample_conges', [])); } catch {}
     });
   };
 
@@ -1502,9 +1501,9 @@ function CongesView() {
     await api.put(`/rh/conges/${id}/valider`, { decision: 'approuvé' }).catch(() => {});
     // Mettre à jour localStorage pour synchro salarié
     try {
-      const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+      const local = demoGet('freample_conges', []);
       const updated = local.map(c => c.id === id ? { ...c, statut: 'approuve' } : c);
-      localStorage.setItem('freample_conges', JSON.stringify(updated));
+      demoSet('freample_conges', updated);
       setConges(updated);
     } catch {}
     await refresh();
@@ -1515,9 +1514,9 @@ function CongesView() {
     await api.put(`/rh/conges/${refusModal.id}/valider`, { decision: 'refusé', commentaire: refusCommentaire }).catch(() => {});
     // Mettre à jour localStorage pour synchro salarié
     try {
-      const local = JSON.parse(localStorage.getItem('freample_conges') || '[]');
+      const local = demoGet('freample_conges', []);
       const updated = local.map(c => c.id === refusModal.id ? { ...c, statut: 'rejete', commentaire: refusCommentaire } : c);
-      localStorage.setItem('freample_conges', JSON.stringify(updated));
+      demoSet('freample_conges', updated);
       setConges(updated);
     } catch {}
     setRefusModal(null);
@@ -2215,7 +2214,7 @@ function PaieView({ employes }) {
 
 /* ── Masse salariale ── */
 function MasseSalarialeView({ employes = [] }) {
-  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemoToken = _isDemo();
   const EMPTY_MASSE = Array.from({ length: 12 }, (_, i) => ({ mois: i + 1, totalBrut: 0, totalChargesPatronales: 0, totalFrais: 0, coutEmployeur: 0 }));
   const now = new Date();
   const [annee, setAnnee] = useState(now.getFullYear());

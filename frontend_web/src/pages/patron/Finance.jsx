@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp } from '../../components/ui/Icons';
 // Facturation.jsx est géré via DevisFactures.jsx, pas ici
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
@@ -101,7 +102,7 @@ const FINANCE_TAB_MAP = { facturation:'vue-ensemble', factures:'vue-ensemble', t
 
 export default function Finance() {
   const navigate = useNavigate();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [searchParams] = useSearchParams();
   const onglet = searchParams.get('onglet');
   const [tab, setTab] = useState(FINANCE_TAB_MAP[onglet] || 'vue-ensemble');
@@ -270,8 +271,8 @@ export default function Finance() {
                     {(() => {
                       const COLORS = ['#5B5BD6','#34C759','#FF9500','#AF52DE','#636363','#DC2626','#2563EB','#D97706'];
                       // Lire devis signés + chantiers pour calculer CA par métier
-                      const lsDevisF = (() => { try { return JSON.parse(localStorage.getItem('freample_devis') || '[]'); } catch { return []; } })();
-                      const lsChantiersF = (() => { try { return JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]'); } catch { return []; } })();
+                      const lsDevisF = demoGet('freample_devis', []);
+                      const lsChantiersF = demoGet('freample_chantiers_custom', []);
                       const profilF = (() => { try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; } })();
                       const metiersEntreprise = profilF.metiers || [];
                       // Calculer CA par métier depuis les devis signés
@@ -458,7 +459,7 @@ export default function Finance() {
           {tab === 'paie' && (<>
             {/* Heures terrain from employee pointages */}
             {(() => {
-              const chantierKeys = Object.keys(localStorage).filter(k => k.startsWith('freample_heures_'));
+              const chantierKeys = _isDemo() ? Object.keys(localStorage).filter(k => k.startsWith('freample_heures_')) : [];
               const heuresParChantier = chantierKeys.map(k => {
                 const cid = k.replace('freample_heures_', '');
                 const data = JSON.parse(localStorage.getItem(k) || '{}');
@@ -466,7 +467,7 @@ export default function Finance() {
                 return { chantierId: cid, heures: totalH };
               }).filter(c => c.heures > 0);
               // Also read pointages for total hours
-              const pointages = JSON.parse(localStorage.getItem('freample_pointages') || '[]');
+              const pointages = demoGet('freample_pointages', []);
               const pointagesByDate = {};
               pointages.forEach(p => {
                 if (!pointagesByDate[p.date]) pointagesByDate[p.date] = [];
@@ -537,7 +538,7 @@ function TrésorerieView() {
       .finally(() => setLoading(false));
   }, []);
 
-  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemoToken = _isDemo();
   const d = data || (isDemoToken ? DEMO_TRESORERIE : { soldeActuel: 0, encaissementsAttendus: [], decaissementsPrevis: [], previsionnel3Mois: [] });
   const isDemo = !data;
 
@@ -1028,7 +1029,7 @@ function SalairesView() {
     } catch {
       // Fallback to demo data with selected period label
       const moisLabel = new Date(0, mois - 1).toLocaleString('fr-FR', { month: 'long' });
-      const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+      const isDemoToken = _isDemo();
       setCalcul(isDemoToken ? { ...DEMO_SALARIES, periode: `${moisLabel} ${annee}` } : { employes: [], resume: { totalBrut: 0, totalNet: 0, totalChargesPatronales: 0 }, periode: `${moisLabel} ${annee}` });
       setIsDemo(isDemoToken);
     } finally {
@@ -1044,7 +1045,7 @@ function SalairesView() {
     const totalBrut = calcul?.resume?.totalBrut || 0;
     const totalNets = calcul?.resume?.totalNet || 0;
     const totalChPat = calcul?.resume?.totalChargesPatronales || 0;
-    const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
+    const ecritures = demoGet('freample_ecritures', []);
     const ref = `SAL-${String(annee)}-${String(mois).padStart(2, '0')}`;
     ecritures.push(
       { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '641000', libelle: 'Salaires bruts', debit: totalBrut, credit: 0 },
@@ -1052,7 +1053,7 @@ function SalairesView() {
       { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '512000', libelle: 'Virement salaires nets', debit: 0, credit: totalNets },
       { date: new Date().toISOString().slice(0,10), journal: 'OD', piece: ref, compte: '401000', libelle: 'Organismes sociaux', debit: 0, credit: totalBrut + totalChPat - totalNets },
     );
-    localStorage.setItem('freample_ecritures', JSON.stringify(ecritures));
+    demoSet('freample_ecritures', ecritures);
     setPaid(true);
   }
 
@@ -1454,7 +1455,7 @@ function RetenuesDeGarantie() {
     { id: 5, client: 'M. & Mme Bertrand', chantier: 'Extension véranda', montantFacture: 14_500, dateReception: '2023-12-01' },
   ];
 
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const today = new Date();
   const retenuesSrc = isDemo ? DEMO_RETENUES : [];
   const retenues = retenuesSrc.map(r => {
@@ -1510,7 +1511,7 @@ function RetenuesDeGarantie() {
 
 /* ── Déclaration TVA CA3 ── */
 function DeclarationTVACA3() {
-  const isDemoTVA = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemoTVA = _isDemo();
   const now = new Date();
   const [moisTVA, setMoisTVA] = useState(now.getMonth());
   const [anneeTVA, setAnneeTVA] = useState(now.getFullYear());
@@ -1765,17 +1766,17 @@ function KpiCard({ label, valeur, Icon, color = 'blue', trend, trendLabel, trend
 /* ── Bilan & Compte de résultat simplifié ── */
 function BilanResultatView() {
   // Lire les vraies données de l'écosystème Freample
-  const factures = JSON.parse(localStorage.getItem('freample_factures_patron') || '[]');
-  const devisData = JSON.parse(localStorage.getItem('freample_devis') || '[]');
-  const ecritures = JSON.parse(localStorage.getItem('freample_ecritures') || '[]');
-  const mouvements = JSON.parse(localStorage.getItem('freample_stock_mouvements') || '[]');
+  const factures = demoGet('freample_factures_patron', []);
+  const devisData = demoGet('freample_devis', []);
+  const ecritures = demoGet('freample_ecritures', []);
+  const mouvements = demoGet('freample_stock_mouvements', []);
 
   // PRODUITS — depuis les factures et devis signés
   const facturesPayees = factures.filter(f => f.statut === 'payee' || f.statut === 'sequestre_libere');
   const caEncaisse = facturesPayees.reduce((s, f) => s + (f.montantTTC || 0), 0);
   const devisSignes = devisData.filter(d => d.statut === 'signe');
   const caTotal = devisSignes.reduce((s, d) => s + (d.montantTTC || d.ttc || 0), 0);
-  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemoToken = _isDemo();
   const totalProduits = caTotal || caEncaisse || (isDemoToken ? DEMO_FINANCE.chiffreAffaires.total : 0);
 
   // CHARGES — depuis les écritures comptables auto + mouvements stock

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { isDemo as _isDemo } from '../../utils/storage';
 import DS from '../../design/luxe';
 import {
   getFichesSalaries, setFichesSalaries, FICHE_SALARIE_VIDE,
@@ -17,11 +18,10 @@ const SECTION_TITLE = { fontSize: 15, fontWeight: 800, color: DS.text, margin: 0
 export default function Employes() {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [fiches, setFiches] = useState(() => {
-    const stored = localStorage.getItem('freample_fiches_salaries');
-    if (stored) { try { return JSON.parse(stored); } catch {} }
-    return isDemo ? getFichesSalaries() : [];
+    if (!isDemo) return [];
+    return getFichesSalaries();
   });
   const [vue, setVue] = useState('liste'); // 'liste' | 'matrice' | 'fiche'
   const [selectedId, setSelectedId] = useState(null);

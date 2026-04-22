@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -50,12 +51,11 @@ const DEMO_PARCOURS = [
 ];
 
 const STORAGE_OB = 'freample_onboarding';
-function loadOB(fallback) { try { const d=localStorage.getItem(STORAGE_OB); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function OnboardingModule({ employes = [] }) {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [parcours, setParcours] = useState(() => loadOB(isDemo ? DEMO_PARCOURS : []));
-  useEffect(() => { localStorage.setItem(STORAGE_OB, JSON.stringify(parcours)); }, [parcours]);
+  const isDemo = _isDemo();
+  const [parcours, setParcours] = useState(() => demoGet(STORAGE_OB, isDemo ? DEMO_PARCOURS : []));
+  useEffect(() => { demoSet(STORAGE_OB, parcours); }, [parcours]);
   useEffect(()=>{api.get('/modules/onboarding').then(({data})=>{if(data.onboarding?.length) setParcours(data.onboarding);}).catch(()=>{});},[]);
   const [view, setView] = useState('onboarding');
   const [selected, setSelected] = useState(null);
@@ -158,12 +158,10 @@ export default function OnboardingModule({ employes = [] }) {
 
 // ── Widget Cartes BTP avec dates d'expiration ──
 function CartesBTPWidget({ employes, parcours }) {
-  const [cartes, setCartes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('freample_cartes_btp') || '[]'); } catch { return []; }
-  });
+  const [cartes, setCartes] = useState(() => demoGet('freample_cartes_btp', []));
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ numero: '', dateDemande: '', dateExpiration: '' });
-  useEffect(() => { localStorage.setItem('freample_cartes_btp', JSON.stringify(cartes)); }, [cartes]);
+  useEffect(() => { demoSet('freample_cartes_btp', cartes); }, [cartes]);
 
   const INP_S = { padding: '6px 10px', border: '1px solid #E8E6E1', borderRadius: 6, fontSize: 12, fontFamily: DS.font, outline: 'none' };
   const today = new Date();

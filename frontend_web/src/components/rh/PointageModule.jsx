@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -20,10 +21,10 @@ const DEMO = [
 ];
 
 export default function PointageModule({ employes = [] }) {
-  const STORE_P='freample_pointages'; function loadP(fallback){try{const d=localStorage.getItem(STORE_P);return d?JSON.parse(d):fallback;}catch{return fallback;}}
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [pointages, setPointages] = useState(() => loadP(isDemo ? DEMO : []));
-  useEffect(()=>{localStorage.setItem(STORE_P,JSON.stringify(pointages));},[pointages]);
+  const STORE_P='freample_pointages';
+  const isDemo = _isDemo();
+  const [pointages, setPointages] = useState(() => demoGet(STORE_P, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_P,pointages);},[pointages]);
   useEffect(()=>{api.get('/modules/pointages').then(({data})=>{if(data.pointages?.length) setPointages(data.pointages);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

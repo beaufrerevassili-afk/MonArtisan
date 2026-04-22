@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getTarifs, saveTarifs, resetTarifs } from '../../data/tarifsCom';
 import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 const V = '#8B5CF6';
 const V_BG = '#F5F3FF';
@@ -114,7 +115,7 @@ const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
 
 export default function DashboardCom() {
   const { user } = useAuth();
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState(TAB_MAP[searchParams.get('onglet')] || 'accueil');
   const [projets, setProjets] = useState(isDemo ? PROJETS_INIT : []);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
@@ -19,7 +20,7 @@ export default function SuiviProjets() {
   const [devisForm, setDevisForm] = useState({ montantTTC: '', conditions: '' });
   const bottomRef = useRef(null);
 
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const isDemo = _isDemo();
 
   // Charger mes suivis
   useEffect(() => {

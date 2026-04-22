@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -20,10 +21,10 @@ const statutColors = { planifie:'#D97706', realise:'#16A34A', annule:'#DC2626' }
 const statutLabels = { planifie:'Planifié', realise:'Réalisé', annule:'Annulé' };
 
 export default function EntretiensModule({ employes = [] }) {
-  const STORE_E='freample_entretiens'; function loadE(fallback){try{const d=localStorage.getItem(STORE_E);return d?JSON.parse(d):fallback;}catch{return fallback;}}
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [entretiens, setEntretiens] = useState(() => loadE(isDemo ? DEMO : []));
-  useEffect(()=>{localStorage.setItem(STORE_E,JSON.stringify(entretiens));},[entretiens]);
+  const STORE_E='freample_entretiens';
+  const isDemo = _isDemo();
+  const [entretiens, setEntretiens] = useState(() => demoGet(STORE_E, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_E,entretiens);},[entretiens]);
   useEffect(()=>{api.get('/modules/entretiens').then(({data})=>{if(data.entretiens?.length) setEntretiens(data.entretiens);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

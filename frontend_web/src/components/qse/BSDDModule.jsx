@@ -1,5 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -21,10 +22,10 @@ const statutColors = { emis:'#D97706', en_transit:'#2563EB', traite:'#16A34A', r
 const statutLabels = { emis:'Émis', en_transit:'En transit', traite:'Traité', refuse:'Refusé' };
 
 export default function BSDDModule() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const STORE_B='freample_bsdd'; function loadB(){try{const d=localStorage.getItem(STORE_B);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
-  const [bsdds, setBsdds] = useState(loadB);
-  useEffect(()=>{localStorage.setItem(STORE_B,JSON.stringify(bsdds));},[bsdds]);
+  const isDemo = _isDemo();
+  const STORE_B='freample_bsdd';
+  const [bsdds, setBsdds] = useState(() => demoGet(STORE_B, isDemo ? DEMO : []));
+  useEffect(()=>{demoSet(STORE_B,bsdds);},[bsdds]);
   useEffect(()=>{api.get('/modules/bsdd').then(({data})=>{if(data.bsdd?.length) setBsdds(data.bsdd);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});

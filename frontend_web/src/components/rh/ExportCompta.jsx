@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DS from '../../design/luxe';
 import api from '../../services/api';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
@@ -47,13 +48,12 @@ const ECRITURES_DEMO = [
 ];
 
 const STORAGE = 'freample_ecritures';
-function loadEcritures(fallback) { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function ExportCompta() {
-  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
-  const [ecritures, setEcritures] = useState(() => loadEcritures(isDemo ? ECRITURES_DEMO : []));
+  const isDemo = _isDemo();
+  const [ecritures, setEcritures] = useState(() => demoGet(STORAGE, isDemo ? ECRITURES_DEMO : []));
   const periode = '2026-04';
-  useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(ecritures)); }, [ecritures]);
+  useEffect(() => { demoSet(STORAGE, ecritures); }, [ecritures]);
   // Charger écritures réelles depuis l'API
   useEffect(() => {
     Promise.all([api.get('/finance/factures'), api.get('/finance/devis')]).then(([fac, dev]) => {
