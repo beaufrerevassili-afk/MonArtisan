@@ -99,7 +99,7 @@ const POINTAGES_MOIS = [
 
 const STORAGE_POINTAGES = 'freample_pointages_mois';
 const STORAGE_DEPOT = 'freample_depot';
-function loadPointages() {
+function loadPointages(demoFallback) {
   try {
     // Lire les pointages du module paie
     const paie = JSON.parse(localStorage.getItem(STORAGE_POINTAGES) || 'null');
@@ -120,19 +120,20 @@ function loadPointages() {
     });
     // Fusionner : priorité aux pointages réels
     if (reelsConvertis.length > 0) {
-      const base = paie || POINTAGES_MOIS;
+      const base = paie || demoFallback;
       const existingDates = new Set(reelsConvertis.map(p => p.date));
       return [...base.filter(p => !existingDates.has(p.date)), ...reelsConvertis];
     }
-    return paie || POINTAGES_MOIS;
-  } catch { return POINTAGES_MOIS; }
+    return paie || demoFallback;
+  } catch { return demoFallback; }
 }
 
 export default function SuiviPaieModule() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [depot, setDepot] = useState(localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT);
-  const [chantiers, setChantiers] = useState(CHANTIERS_INIT);
-  const [salaries, setSalaries] = useState(SALARIES);
-  const pointages = loadPointages();
+  const [chantiers, setChantiers] = useState(isDemo ? CHANTIERS_INIT : []);
+  const [salaries, setSalaries] = useState(isDemo ? SALARIES : []);
+  const pointages = loadPointages(isDemo ? POINTAGES_MOIS : []);
   const [selectedSalarie, setSelectedSalarie] = useState(null);
   const [calcEnCours, setCalcEnCours] = useState(false);
   const [distancesCalculees, setDistancesCalculees] = useState(false);

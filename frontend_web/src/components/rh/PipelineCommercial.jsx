@@ -25,10 +25,11 @@ const DEMO = [
 ];
 
 const STORAGE = 'freample_pipeline';
-function load() { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):DEMO; } catch { return DEMO; } }
+function load(fallback) { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function PipelineCommercial() {
-  const [affaires, setAffaires] = useState(load);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [affaires, setAffaires] = useState(() => load(isDemo ? DEMO : []));
   const [selected, setSelected] = useState(null);
   const [showArchives, setShowArchives] = useState(false);
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(affaires)); }, [affaires]);

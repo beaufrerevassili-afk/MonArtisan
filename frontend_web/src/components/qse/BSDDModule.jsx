@@ -21,7 +21,8 @@ const statutColors = { emis:'#D97706', en_transit:'#2563EB', traite:'#16A34A', r
 const statutLabels = { emis:'Émis', en_transit:'En transit', traite:'Traité', refuse:'Refusé' };
 
 export default function BSDDModule() {
-  const STORE_B='freample_bsdd'; function loadB(){try{const d=localStorage.getItem(STORE_B);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_B='freample_bsdd'; function loadB(){try{const d=localStorage.getItem(STORE_B);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [bsdds, setBsdds] = useState(loadB);
   useEffect(()=>{localStorage.setItem(STORE_B,JSON.stringify(bsdds));},[bsdds]);
   useEffect(()=>{api.get('/modules/bsdd').then(({data})=>{if(data.bsdd?.length) setBsdds(data.bsdd);}).catch(()=>{});},[]);

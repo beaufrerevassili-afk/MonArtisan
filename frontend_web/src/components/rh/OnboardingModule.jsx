@@ -50,10 +50,11 @@ const DEMO_PARCOURS = [
 ];
 
 const STORAGE_OB = 'freample_onboarding';
-function loadOB() { try { const d=localStorage.getItem(STORAGE_OB); return d?JSON.parse(d):DEMO_PARCOURS; } catch { return DEMO_PARCOURS; } }
+function loadOB(fallback) { try { const d=localStorage.getItem(STORAGE_OB); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function OnboardingModule({ employes = [] }) {
-  const [parcours, setParcours] = useState(loadOB);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [parcours, setParcours] = useState(() => loadOB(isDemo ? DEMO_PARCOURS : []));
   useEffect(() => { localStorage.setItem(STORAGE_OB, JSON.stringify(parcours)); }, [parcours]);
   useEffect(()=>{api.get('/modules/onboarding').then(({data})=>{if(data.onboarding?.length) setParcours(data.onboarding);}).catch(()=>{});},[]);
   const [view, setView] = useState('onboarding');

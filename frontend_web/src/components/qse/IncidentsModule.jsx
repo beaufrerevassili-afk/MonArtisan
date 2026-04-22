@@ -19,7 +19,8 @@ const DEMO = [
 ];
 
 export default function IncidentsModule() {
-  const STORE_I='freample_incidents'; function loadI(){try{const d=localStorage.getItem(STORE_I);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_I='freample_incidents'; function loadI(){try{const d=localStorage.getItem(STORE_I);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [incidents, setIncidents] = useState(loadI);
   useEffect(()=>{localStorage.setItem(STORE_I,JSON.stringify(incidents));},[incidents]);
   useEffect(()=>{api.get('/modules/incidents').then(({data})=>{if(data.incidents?.length) setIncidents(data.incidents);}).catch(()=>{});},[]);

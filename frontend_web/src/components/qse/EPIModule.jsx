@@ -26,7 +26,8 @@ const DEMO = [
 ];
 
 export default function EPIModule() {
-  const STORE_EPI='freample_epi'; function loadEPI(){try{const d=localStorage.getItem(STORE_EPI);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_EPI='freample_epi'; function loadEPI(){try{const d=localStorage.getItem(STORE_EPI);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [epis, setEpis] = useState(loadEPI);
   useEffect(()=>{localStorage.setItem(STORE_EPI,JSON.stringify(epis));},[epis]);
   useEffect(()=>{api.get('/modules/epi').then(({data})=>{if(data.epi?.length) setEpis(data.epi);}).catch(()=>{});},[]);

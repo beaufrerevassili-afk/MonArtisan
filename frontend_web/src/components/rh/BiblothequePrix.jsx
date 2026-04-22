@@ -37,11 +37,12 @@ const DEMO_ARTICLES = [
   { id:20, ref:'DEM-001', designation:'Démolition cloison plâtre', categorie:'Démolition', unite:'m²', prixHT:18, tva:20, fournisseur:'Interne', notes:'Fourniture + main d\'œuvre' },
 ];
 
-function loadData() { try { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : DEMO_ARTICLES; } catch { return DEMO_ARTICLES; } }
+function loadData(fallback) { try { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : fallback; } catch { return fallback; } }
 function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
 export default function BiblothequePrix() {
-  const [articles, setArticles] = useState(loadData);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [articles, setArticles] = useState(() => loadData(isDemo ? DEMO_ARTICLES : []));
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [modal, setModal] = useState(null);

@@ -27,7 +27,8 @@ const DEMO = [
 const statutColors = { valide:'#16A34A', expire:'#DC2626', en_cours:'#D97706', a_renouveler:'#D97706' };
 
 export default function CertificationsModule() {
-  const STORE_C='freample_certifs'; function loadC(){try{const d=localStorage.getItem(STORE_C);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_C='freample_certifs'; function loadC(){try{const d=localStorage.getItem(STORE_C);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [certifs, setCertifs] = useState(loadC);
   useEffect(()=>{localStorage.setItem(STORE_C,JSON.stringify(certifs));},[certifs]);
   useEffect(()=>{api.get('/modules/certifications').then(({data})=>{if(data.certifications?.length) setCertifs(data.certifications);}).catch(()=>{});},[]);

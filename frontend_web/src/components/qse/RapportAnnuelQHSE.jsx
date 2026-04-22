@@ -14,8 +14,8 @@ const TD = { padding:'8px 12px', fontSize:12, borderBottom:'1px solid #E8E6E1' }
 
 const ANNEE = new Date().getFullYear();
 
-// ══ DONNÉES SIMULÉES RÉALISTES ══
-const D = {
+// ══ DONNÉES SIMULÉES RÉALISTES (demo only) ══
+const D_DEMO = {
   structure: 'Freample Artisans BTP',
   siret: '123 456 789 000 12',
   effectif: 12,
@@ -158,9 +158,21 @@ const D = {
   ],
 };
 
+const D_EMPTY = {
+  structure: '', siret: '', effectif: 0, chantiers: 0, ca: '0',
+  objectifsN1: [], qualite: { nc: [], reclamations: 0, satisfaction: 0, audits: [] },
+  securite: { accidents: [], presquAccidents: [], heuresTravaillees: 0, tf: 0, tg: 0, epiDistribues: 0, visitesMedicales: { total: 0, aJour: 0 } },
+  environnement: { dechets: [], eau: '0', energie: '0', co2: '0', tauxValorisation: 0, bsdd: { emis: 0, traites: 0 } },
+  conformite: [], formations: [],
+  budget: { total: 0, details: [], parSalarie: 0, evolution: '' },
+  actions: [], objectifsN1Next: [],
+};
+
 export default function RapportAnnuelQHSE() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const D = isDemo ? D_DEMO : D_EMPTY;
   const actionsRealisees = D.actions.filter(a=>a.statut==='Réalisé').length;
-  const tauxRealisation = Math.round(actionsRealisees/D.actions.length*100);
+  const tauxRealisation = D.actions.length > 0 ? Math.round(actionsRealisees/D.actions.length*100) : 0;
   const totalTonnage = D.environnement.dechets.reduce((s,d)=>s+d.tonnage,0);
   const tonnageValorise = D.environnement.dechets.filter(d=>d.valorise).reduce((s,d)=>s+d.tonnage,0);
   const objAtteints = D.objectifsN1.filter(o=>o.atteint).length;

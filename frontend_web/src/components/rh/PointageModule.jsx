@@ -20,8 +20,9 @@ const DEMO = [
 ];
 
 export default function PointageModule({ employes = [] }) {
-  const STORE_P='freample_pointages'; function loadP(){try{const d=localStorage.getItem(STORE_P);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
-  const [pointages, setPointages] = useState(loadP);
+  const STORE_P='freample_pointages'; function loadP(fallback){try{const d=localStorage.getItem(STORE_P);return d?JSON.parse(d):fallback;}catch{return fallback;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [pointages, setPointages] = useState(() => loadP(isDemo ? DEMO : []));
   useEffect(()=>{localStorage.setItem(STORE_P,JSON.stringify(pointages));},[pointages]);
   useEffect(()=>{api.get('/modules/pointages').then(({data})=>{if(data.pointages?.length) setPointages(data.pointages);}).catch(()=>{});},[]);
   const [modal, setModal] = useState(null);

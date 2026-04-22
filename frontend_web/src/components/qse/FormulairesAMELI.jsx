@@ -52,6 +52,8 @@ function AutoBlock({s,e}) {
 }
 
 export default function FormulairesAMELI() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const salaries = isDemo ? SALARIES : [];
   const [sel, setSel] = useState(null);
   const [sid, setSid] = useState('');
   const [f, setF] = useState({});
@@ -59,7 +61,7 @@ export default function FormulairesAMELI() {
   const [err, setErr] = useState([]);
   const [showInfo, setShowInfo] = useState(true);
 
-  const s = SALARIES.find(x=>x.id===Number(sid));
+  const s = salaries.find(x=>x.id===Number(sid));
   const e = EMPLOYEUR;
   const form = FORMS.find(x=>x.id===sel);
   const u = (k,v) => setF(p=>({...p,[k]:v}));
@@ -260,7 +262,7 @@ export default function FormulairesAMELI() {
           <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Salarié <span style={REQ}>*</span></div>
           <select value={sid} onChange={e=>{setSid(e.target.value);setPreview('');}} style={{...INP,marginBottom:10}}>
             <option value="">— Choisir —</option>
-            {SALARIES.map(x=><option key={x.id} value={x.id}>{x.civ} {x.prenom} {x.nom} — {x.poste}</option>)}
+            {salaries.map(x=><option key={x.id} value={x.id}>{x.civ} {x.prenom} {x.nom} — {x.poste}</option>)}
           </select>
           {s && <>
             <AutoBlock s={s} e={e}/>

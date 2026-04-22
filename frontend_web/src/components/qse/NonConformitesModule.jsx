@@ -20,7 +20,8 @@ const DEMO = [
 const graviteColors = { mineure:'#D97706', majeure:'#DC2626', critique:'#7C2D12' };
 
 export default function NonConformitesModule() {
-  const STORE_NC='freample_nc'; function loadNC(){try{const d=localStorage.getItem(STORE_NC);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_NC='freample_nc'; function loadNC(){try{const d=localStorage.getItem(STORE_NC);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [ncs, setNcs] = useState(loadNC);
   useEffect(()=>{localStorage.setItem(STORE_NC,JSON.stringify(ncs));},[ncs]);
   useEffect(()=>{api.get('/modules/non_conformites').then(({data})=>{if(data.non_conformites?.length) setNcs(data.non_conformites);}).catch(()=>{});},[]);

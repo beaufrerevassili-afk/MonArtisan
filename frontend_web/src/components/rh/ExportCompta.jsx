@@ -47,10 +47,11 @@ const ECRITURES_DEMO = [
 ];
 
 const STORAGE = 'freample_ecritures';
-function loadEcritures() { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):ECRITURES_DEMO; } catch { return ECRITURES_DEMO; } }
+function loadEcritures(fallback) { try { const d=localStorage.getItem(STORAGE); return d?JSON.parse(d):fallback; } catch { return fallback; } }
 
 export default function ExportCompta() {
-  const [ecritures, setEcritures] = useState(loadEcritures);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [ecritures, setEcritures] = useState(() => loadEcritures(isDemo ? ECRITURES_DEMO : []));
   const periode = '2026-04';
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(ecritures)); }, [ecritures]);
   // Charger écritures réelles depuis l'API

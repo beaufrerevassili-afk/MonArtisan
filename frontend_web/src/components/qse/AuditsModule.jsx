@@ -23,7 +23,8 @@ const DEMO = [
 ];
 
 export default function AuditsModule() {
-  const STORE_A='freample_audits'; function loadA(){try{const d=localStorage.getItem(STORE_A);return d?JSON.parse(d):DEMO;}catch{return DEMO;}}
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const STORE_A='freample_audits'; function loadA(){try{const d=localStorage.getItem(STORE_A);return d?JSON.parse(d):(isDemo ? DEMO : []);}catch{return isDemo ? DEMO : [];}}
   const [audits, setAudits] = useState(loadA);
   useEffect(()=>{localStorage.setItem(STORE_A,JSON.stringify(audits));},[audits]);
   useEffect(()=>{api.get('/modules/audits').then(({data})=>{if(data.audits?.length) setAudits(data.audits);}).catch(()=>{});},[]);
