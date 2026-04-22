@@ -892,10 +892,10 @@ export default function Landing() {
 
         /* ═══ MOBILE ═══ */
         @media (max-width: 480px) {
-          .landing-nav { padding: 0 12px !important; height: 52px !important; gap: 8px !important; }
+          .landing-nav { padding: 0 14px !important; height: 52px !important; gap: 8px !important; }
           .landing-nav-link { display: none !important; }
-          .landing-nav-actions { gap: 6px !important; }
-          .landing-nav-cta { font-size: 12px !important; padding: 6px 12px !important; border-radius: 8px !important; }
+          .landing-nav-actions { gap: 8px !important; }
+          .landing-nav-cta { font-size: 13px !important; padding: 10px 18px !important; border-radius: 8px !important; background: #A68B4B !important; font-weight: 700 !important; letter-spacing: 0.02em !important; }
           .landing-hero { padding: 24px 14px 20px !important; }
           .landing-hero h1 { font-size: 1.25rem !important; }
           .landing-search-bar { padding: 6px !important; }
