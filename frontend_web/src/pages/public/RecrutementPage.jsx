@@ -483,7 +483,7 @@ export default function RecrutementPage() {
         </div>
       )}
 
-      {postulating && selected && <ModalCandidature offre={selected} onClose={() => setPostulating(false)} />}
+      {postulating && selected && <ModalCandidature offre={selected} onClose={() => { setPostulating(false); setSelected(null); }} />}
       <style>{`input::placeholder{color:#757575;} textarea::placeholder{color:#757575;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#E8E6E1;border-radius:2px;}`}</style>
     </div>
   );
