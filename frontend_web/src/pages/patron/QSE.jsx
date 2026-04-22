@@ -163,11 +163,11 @@ export default function QSE() {
   const [risques, setRisques] = useState(isDemo ? RISQUES_INIT : []);
   const [filterUT, setFilterUT] = useState('Tous les postes');
   const [employes, setEmployes] = useState([]);
-  const [plans, setPlans] = useState([
+  const [plans, setPlans] = useState(isDemo ? [
     { id:1, chantier:'Rénovation Dupont — Marseille 6e', date:'2025-03-01', entreprises:['Electricité Martin SARL','Plomberie Durand'], statut:'actif', risques:['Électrique','Chute hauteur','Co-activité'] },
-    { id:2, chantier:'Extension Villa Rousseau — Caluire', date:'2025-02-15', entreprises:['Maçonnerie Bisson','Toiture Perrin'], statut:'actif', risques:['Chute hauteur','Manutention','Bruit'] },
-    { id:3, chantier:'Réfection toiture Immeuble Bellecour', date:'2025-01-10', entreprises:['Toiture Express'], statut:'clôturé', risques:['Chute hauteur','Poussières amiante'] },
-  ]);
+    { id:2, chantier:'Extension Villa Rousseau — La Ciotat', date:'2025-02-15', entreprises:['Maçonnerie Bisson','Toiture Perrin'], statut:'actif', risques:['Chute hauteur','Manutention','Bruit'] },
+    { id:3, chantier:'Réfection toiture Immeuble Castellane', date:'2025-01-10', entreprises:['Toiture Express'], statut:'clôturé', risques:['Chute hauteur','Poussières amiante'] },
+  ] : []);
   const [dueDate] = useState(new Date().toLocaleDateString('fr-FR'));
   const token = localStorage.getItem('token') || null;
   const authHeaders = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -187,22 +187,23 @@ export default function QSE() {
       setHabilitations(h.habilitations || []);
       setEmployes(e.employes || []);
     }).catch(() => {
-      // Fallback données demo quand backend non disponible
-      setHabilitations([
-        { id:1, employe:'Pierre Martin', type:'CACES R489', dateObtention:'2024-03-15', dateExpiration:'2029-03-15', organisme:'AFTRAL', statut:'valide' },
-        { id:2, employe:'Sophie Duval', type:'Habilitation électrique B1', dateObtention:'2024-02-10', dateExpiration:'2027-02-10', organisme:'APAVE', statut:'valide' },
-        { id:3, employe:'Claire Bernard', type:'Habilitation électrique B2', dateObtention:'2024-06-15', dateExpiration:'2027-06-15', organisme:'APAVE', statut:'valide' },
-        { id:4, employe:'Lucas Garcia', type:'Travail en hauteur', dateObtention:'2024-09-01', dateExpiration:'2027-09-01', organisme:'APAVE', statut:'valide' },
-        { id:5, employe:'Pierre Martin', type:'Travail en hauteur', dateObtention:'2024-06-01', dateExpiration:'2027-06-01', organisme:'APAVE', statut:'valide' },
-      ]);
-      setEmployes([
-        { id:1, prenom:'Pierre', nom:'Martin', poste:'Maçon', email:'pierre.martin@lambertbtp.fr' },
-        { id:2, prenom:'Sophie', nom:'Duval', poste:'Plombière', email:'sophie.duval@lambertbtp.fr' },
-        { id:3, prenom:'Lucas', nom:'Garcia', poste:'Carreleur', email:'lucas.garcia@lambertbtp.fr' },
-        { id:4, prenom:'Luc', nom:'Moreau', poste:'Peintre', email:'luc.moreau@lambertbtp.fr' },
-        { id:5, prenom:'Claire', nom:'Bernard', poste:'Électricienne', email:'claire.bernard@lambertbtp.fr' },
-      ]);
-      setTdb({ score: 72, incidents_ouverts: 2, habilitations_expirees: 1, epi_a_remplacer: 3, derniere_maj: new Date().toISOString() });
+      if (isDemo) {
+        setHabilitations([
+          { id:1, employe:'Pierre Martin', type:'CACES R489', dateObtention:'2024-03-15', dateExpiration:'2029-03-15', organisme:'AFTRAL', statut:'valide' },
+          { id:2, employe:'Sophie Duval', type:'Habilitation électrique B1', dateObtention:'2024-02-10', dateExpiration:'2027-02-10', organisme:'APAVE', statut:'valide' },
+          { id:3, employe:'Claire Bernard', type:'Habilitation électrique B2', dateObtention:'2024-06-15', dateExpiration:'2027-06-15', organisme:'APAVE', statut:'valide' },
+          { id:4, employe:'Lucas Garcia', type:'Travail en hauteur', dateObtention:'2024-09-01', dateExpiration:'2027-09-01', organisme:'APAVE', statut:'valide' },
+          { id:5, employe:'Pierre Martin', type:'Travail en hauteur', dateObtention:'2024-06-01', dateExpiration:'2027-06-01', organisme:'APAVE', statut:'valide' },
+        ]);
+        setEmployes([
+          { id:1, prenom:'Pierre', nom:'Martin', poste:'Maçon', email:'pierre.martin@lambertbtp.fr' },
+          { id:2, prenom:'Sophie', nom:'Duval', poste:'Plombière', email:'sophie.duval@lambertbtp.fr' },
+          { id:3, prenom:'Lucas', nom:'Garcia', poste:'Carreleur', email:'lucas.garcia@lambertbtp.fr' },
+          { id:4, prenom:'Luc', nom:'Moreau', poste:'Peintre', email:'luc.moreau@lambertbtp.fr' },
+          { id:5, prenom:'Claire', nom:'Bernard', poste:'Électricienne', email:'claire.bernard@lambertbtp.fr' },
+        ]);
+        setTdb({ score: 72, incidents_ouverts: 2, habilitations_expirees: 1, epi_a_remplacer: 3, derniere_maj: new Date().toISOString() });
+      }
     }).finally(()=>setLoading(false));
   }, []);
 

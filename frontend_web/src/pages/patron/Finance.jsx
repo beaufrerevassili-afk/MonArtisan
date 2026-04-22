@@ -1510,18 +1510,19 @@ function RetenuesDeGarantie() {
 
 /* ── Déclaration TVA CA3 ── */
 function DeclarationTVACA3() {
+  const isDemoTVA = localStorage.getItem('token')?.endsWith('.dev');
   const now = new Date();
   const [moisTVA, setMoisTVA] = useState(now.getMonth());
   const [anneeTVA, setAnneeTVA] = useState(now.getFullYear());
 
-  const [l08Base, setL08Base] = useState(54264);
-  const [l09Base, setL09Base] = useState(25704);
-  const [l9bBase, setL9bBase] = useState(11424);
+  const [l08Base, setL08Base] = useState(isDemoTVA ? 54264 : 0);
+  const [l09Base, setL09Base] = useState(isDemoTVA ? 25704 : 0);
+  const [l9bBase, setL9bBase] = useState(isDemoTVA ? 11424 : 0);
 
-  const [l19, setL19] = useState(8200);
-  const [l20, setL20] = useState(3400);
+  const [l19, setL19] = useState(isDemoTVA ? 8200 : 0);
+  const [l20, setL20] = useState(isDemoTVA ? 3400 : 0);
 
-  const [sousTraitanceHT, setSousTraitanceHT] = useState(6500);
+  const [sousTraitanceHT, setSousTraitanceHT] = useState(isDemoTVA ? 6500 : 0);
 
   const tva08 = Math.round(l08Base * 0.20 * 100) / 100;
   const tva09 = Math.round(l09Base * 0.10 * 100) / 100;
