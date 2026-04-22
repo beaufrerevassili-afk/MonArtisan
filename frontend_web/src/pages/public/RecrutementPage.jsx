@@ -275,7 +275,8 @@ export default function RecrutementPage() {
   const [contrat, setContrat] = useState('Tous');
   const urlSecteur = searchParams.get('secteur');
   const [secteur, setSecteur] = useState(urlSecteur && ['btp'].includes(urlSecteur) ? urlSecteur : 'tous');
-  const [offres, setOffres] = useState(DEMO_OFFRES);
+  const [offres, setOffres] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [postulating, setPostulating] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -284,7 +285,7 @@ export default function RecrutementPage() {
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
-    axios.get(`${API_URL}/recrutement/annonces?limit=50`).then(r=>{ if(r.data?.annonces?.length) setOffres(r.data.annonces); }).catch(()=>{});
+    axios.get(`${API_URL}/recrutement/annonces?limit=50`).then(r=>{ setOffres(r.data?.annonces || []); }).catch(()=>{}).finally(()=>setLoading(false));
   }, []);
 
   const filtered = offres.filter(o => {
