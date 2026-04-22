@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 import L from '../../design/luxe';
+import RecrutementBanner from '../../components/public/RecrutementBanner';
 
 const DEV_EMAIL = 'freamplecom@gmail.com';
 
