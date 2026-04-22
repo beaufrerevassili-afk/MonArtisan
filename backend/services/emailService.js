@@ -122,3 +122,28 @@ exports.sendNouvelAvis = (to, nomArtisan, note, nomClient) => send(to,
      <a href="${FRONTEND}/patron/dashboard" style="display:inline-block;padding:14px 32px;background:#2C2520;color:#F5EFE0;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">Voir l'avis</a>
    </div>`
 );
+
+exports.sendWelcomeEmploye = (to, prenom, nomEntreprise) => send(to,
+  `Vous avez rejoint ${escapeHtml(nomEntreprise)} sur Freample`,
+  `<h2 style="color:#1A1A1A;font-size:20px;margin:0 0 16px;">Bienvenue dans l'équipe, ${escapeHtml(prenom)} ! 🎉</h2>
+   <p style="color:#333;font-size:14px;line-height:1.6;"><strong>${escapeHtml(nomEntreprise)}</strong> vous a intégré à son équipe sur Freample.</p>
+   <p style="color:#333;font-size:14px;line-height:1.6;">Connectez-vous avec votre compte existant pour accéder à votre espace salarié : planning, bulletins de paie, congés, documents.</p>
+   <div style="text-align:center;margin:28px 0 12px;">
+     <a href="${FRONTEND}/login" style="display:inline-block;padding:14px 32px;background:#2C2520;color:#F5EFE0;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">Accéder à mon espace</a>
+   </div>`
+);
+
+exports.sendIdentifiantsEmploye = (to, prenom, nom, tempPassword) => send(to,
+  `Vos identifiants Freample — Bienvenue !`,
+  `<h2 style="color:#1A1A1A;font-size:20px;margin:0 0 16px;">Votre compte est prêt, ${escapeHtml(prenom)} ! 🔑</h2>
+   <p style="color:#333;font-size:14px;line-height:1.6;">Un compte a été créé pour vous sur Freample. Voici vos identifiants :</p>
+   <div style="background:#F4F4F8;border-radius:12px;padding:16px 18px;margin:20px 0;">
+     <p style="margin:0 0 8px;font-size:14px;"><strong>Email :</strong> ${escapeHtml(to)}</p>
+     <p style="margin:0;font-size:14px;"><strong>Mot de passe temporaire :</strong> <code style="background:#E8E6E1;padding:2px 8px;border-radius:4px;font-size:16px;font-weight:700;">${escapeHtml(tempPassword)}</code></p>
+   </div>
+   <p style="color:#333;font-size:14px;line-height:1.6;">Connectez-vous pour accéder à votre espace salarié.</p>
+   <p style="color:#DC2626;font-weight:600;font-size:13px;">⚠️ Pensez à changer votre mot de passe dès la première connexion.</p>
+   <div style="text-align:center;margin:28px 0 12px;">
+     <a href="${FRONTEND}/login" style="display:inline-block;padding:14px 32px;background:#2C2520;color:#F5EFE0;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">Me connecter</a>
+   </div>`
+);

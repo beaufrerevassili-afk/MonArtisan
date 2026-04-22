@@ -484,16 +484,22 @@ router.post('/patron/candidatures/:id/creer-employe', authenticateToken, async (
     if (!rows[0]) return res.status(404).json({ erreur: 'Candidature introuvable ou non retenue' });
     const c = rows[0];
 
-    // Créer le compte utilisateur
-    const bcrypt = require('bcrypt');
-    const tempPassword = require('crypto').randomBytes(6).toString('hex');
-    const hash = await bcrypt.hash(tempPassword, 12);
-
+    // Vérifier si un compte existe déjà
+    const existing = await db.query('SELECT id, role FROM users WHERE email = $1', [c.email]);
     let userId;
-    const existing = await db.query('SELECT id FROM users WHERE email = $1', [c.email]);
+    let compteExistant = false;
+    let tempPassword = null;
+
     if (existing.rows.length > 0) {
+      // Cas 1 : compte existant → on le rattache
       userId = existing.rows[0].id;
+      compteExistant = true;
+      await db.query('UPDATE users SET role = $1 WHERE id = $2 AND role != $3', ['employe', userId, 'patron']);
     } else {
+      // Cas 2 : pas de compte → créer avec mot de passe temporaire
+      const bcrypt = require('bcrypt');
+      tempPassword = require('crypto').randomBytes(6).toString('hex');
+      const hash = await bcrypt.hash(tempPassword, 12);
       const userResult = await db.query(
         `INSERT INTO users (nom, email, motdepasse, role, verified, telephone)
          VALUES ($1, $2, $3, 'employe', true, $4) RETURNING id`,
@@ -516,41 +522,20 @@ router.post('/patron/candidatures/:id/creer-employe', authenticateToken, async (
     // Lier la candidature à l'employé
     await db.query('UPDATE candidatures_recrutement SET employe_id = $1 WHERE id = $2', [empResult.rows[0].id, c.id]);
 
-    // Envoyer email avec identifiants
-    const mailer = getMailer();
-    if (mailer) {
-      await mailer.sendMail({
-        from: process.env.SMTP_FROM || `"Freample" <noreply@freample.fr>`,
-        to: c.email,
-        subject: `🔑 Vos identifiants Freample — Bienvenue !`,
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E5E5EA;">
-            <div style="background:linear-gradient(135deg,#5B5BD6,#7C3AED);padding:32px 28px;text-align:center;">
-              <div style="font-size:52px;margin-bottom:12px;">🔑</div>
-              <h1 style="color:#fff;font-size:20px;margin:0;font-weight:800;">Votre compte Freample est prêt</h1>
-            </div>
-            <div style="padding:28px;">
-              <p>Bonjour <strong>${c.prenom} ${c.nom}</strong>,</p>
-              <p>Voici vos identifiants de connexion :</p>
-              <div style="background:#F4F4F8;border-radius:12px;padding:16px 18px;margin:20px 0;">
-                <p style="margin:0 0 8px;font-size:14px;"><strong>Email :</strong> ${c.email}</p>
-                <p style="margin:0;font-size:14px;"><strong>Mot de passe temporaire :</strong> <code style="background:#E8E6E1;padding:2px 8px;border-radius:4px;font-size:16px;font-weight:700;">${tempPassword}</code></p>
-              </div>
-              <p style="line-height:1.7;color:#3A3A3C;">Connectez-vous sur Freample pour déposer vos documents d'embauche et accéder à votre espace salarié.</p>
-              <p style="color:#DC2626;font-weight:600;font-size:13px;">⚠️ Pensez à changer votre mot de passe dès la première connexion.</p>
-              <p style="color:#8E8E93;font-size:12px;margin-top:28px;border-top:1px solid #F2F2F7;padding-top:16px;">
-                Ce message a été envoyé automatiquement par Freample.
-              </p>
-            </div>
-          </div>
-        `,
-      }).catch(e => console.error('Email identifiants:', e.message));
+    // Envoyer email via Resend
+    if (compteExistant) {
+      // Cas 1 : notifier le salarié qu'il a été intégré
+      await emailService.sendWelcomeEmploye(c.email, c.prenom, req.user.nom || 'votre employeur');
+    } else {
+      // Cas 2 : envoyer les identifiants
+      await emailService.sendIdentifiantsEmploye(c.email, c.prenom, c.nom, tempPassword);
     }
 
     res.status(201).json({
-      message: 'Compte employé créé et identifiants envoyés',
+      message: compteExistant ? 'Salarié rattaché à votre entreprise' : 'Compte créé et identifiants envoyés',
       employe: empResult.rows[0],
-      identifiants: { email: c.email, motdepasse: tempPassword },
+      compteExistant,
+      identifiants: compteExistant ? null : { email: c.email, motdepasse: tempPassword },
     });
   } catch (err) {
     console.error('POST creer-employe:', err.message);
