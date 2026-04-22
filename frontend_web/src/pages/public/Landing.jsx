@@ -235,7 +235,7 @@ function ContactModal({ artisan, onClose, onRegister, onLogin, isLoggedIn }) {
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(8,8,15,0.6)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
       onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 440, boxShadow: '0 40px 100px rgba(0,0,0,0.25)', position: 'relative' }}
+      <div className="landing-modal-content landing-contact-modal" style={{ background: '#fff', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 440, boxShadow: '0 40px 100px rgba(0,0,0,0.25)', position: 'relative' }}
         onClick={e => e.stopPropagation()}>
 
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, background: '#F4F4F8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9898B8', fontSize: 14 }}>×</button>
@@ -466,28 +466,28 @@ export default function Landing() {
     <div style={{ minHeight: '100vh', background: DS.bg, fontFamily: DS.font }}>
 
       {/* ── Navbar cohérente homepage ── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 64, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${DS.border}` }}>
+      <nav className="landing-nav" style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 64, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${DS.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 900, color: DS.ink, fontFamily: DS.font, letterSpacing: '-0.04em' }}>
             Freample<span style={{ color: '#A68B4B' }}>.</span>
           </button>
-          <button onClick={() => navigate('/pro')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Professionnel</button>
+          <button className="landing-nav-link" onClick={() => navigate('/pro')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Professionnel</button>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="landing-nav-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {user ? <>
-            <button onClick={() => { const d = { client:'/client/dashboard', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard' }; navigate(d[user.role] || '/'); }}
+            <button className="landing-nav-link" onClick={() => { const d = { client:'/client/dashboard', patron:'/patron/dashboard', employe:'/employe/dashboard', artisan:'/artisan/dashboard' }; navigate(d[user.role] || '/'); }}
               style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 600, color: '#A68B4B', cursor: 'pointer', fontFamily: DS.font }}>Mon espace</button>
             <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#A68B4B', color: '#fff', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onClick={() => navigate('/login')}>{(user.nom || 'U').charAt(0).toUpperCase()}</div>
           </> : <>
-            <button onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Se connecter</button>
-            <button onClick={() => navigate('/register')} style={{ padding: '8px 18px', background: DS.ink, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: DS.font }}>S'inscrire</button>
+            <button className="landing-nav-link" onClick={() => navigate('/login')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: DS.muted, cursor: 'pointer', fontFamily: DS.font }}>Se connecter</button>
+            <button className="landing-nav-cta" onClick={() => navigate('/register')} style={{ padding: '8px 18px', background: DS.ink, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: DS.font }}>S'inscrire</button>
           </>}
         </div>
       </nav>
 
       {/* ── Hero — fond sombre, barre de recherche, même esthétique homepage ── */}
-      <section style={{ background: '#2C2520', padding: 'clamp(32px,5vh,56px) clamp(16px,4vw,48px) clamp(24px,4vh,40px)', position: 'relative', overflow: 'hidden' }}>
+      <section className="landing-hero" style={{ background: '#2C2520', padding: 'clamp(32px,5vh,56px) clamp(16px,4vw,48px) clamp(24px,4vh,40px)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.1 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(44,37,32,0.5) 0%, rgba(44,37,32,0.95) 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto' }}>
@@ -501,9 +501,9 @@ export default function Landing() {
           </div>
 
           {/* Barre de recherche blanche */}
-          <div style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', maxWidth: 800 }}>
+          <div className="landing-search-bar" style={{ background: '#fff', borderRadius: 14, padding: 6, display: 'flex', gap: 0, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', maxWidth: 800 }}>
             {/* Ville */}
-            <div style={{ flex: '1 1 220px', position: 'relative', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+            <div className="landing-search-field" style={{ flex: '1 1 220px', position: 'relative', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
               <IconMapPin size={16} color={DS.muted} style={{ flexShrink: 0 }} />
               <input type="text" value={villeInput}
                 onChange={e => { setVilleInput(e.target.value); if (!e.target.value) setVille(''); }}
@@ -521,16 +521,16 @@ export default function Landing() {
                 </div>
               )}
             </div>
-            <div style={{ width: 1, background: '#E8E6E1', margin: '10px 0' }} />
+            <div className="landing-search-divider" style={{ width: 1, background: '#E8E6E1', margin: '10px 0' }} />
             {/* Recherche libre */}
-            <div style={{ flex: '2 1 300px', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+            <div className="landing-search-field" style={{ flex: '2 1 300px', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
               <IconSearch size={16} color={DS.muted} style={{ flexShrink: 0 }} />
               <input value={query} onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') search(); }}
                 placeholder="Décrivez votre besoin…"
                 style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: DS.ink, background: 'none', fontFamily: DS.font, fontWeight: 500, padding: '14px 10px' }} />
             </div>
-            <button onClick={search}
+            <button className="landing-search-btn" onClick={search}
               style={{ padding: '12px 24px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: DS.font, flexShrink: 0, transition: 'background .2s' }}
               onMouseEnter={e => e.currentTarget.style.background = '#A68B4B'} onMouseLeave={e => e.currentTarget.style.background = '#2C2520'}>
               Rechercher
@@ -540,12 +540,12 @@ export default function Landing() {
       </section>
 
       {/* ── Filtres ── */}
-      <section style={{ borderBottom: `1px solid ${DS.border}`, padding: '0 clamp(16px,4vw,48px)' }}>
+      <section className="landing-filters-section" style={{ borderBottom: `1px solid ${DS.border}`, padding: '0 clamp(16px,4vw,48px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
           {/* Filtres + confiance */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, padding: '10px 0 18px' }}>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+          <div className="landing-filters-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, padding: '10px 0 18px' }}>
+            <div className="landing-filter-chips" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
               <FilterPill label={dispoLabel} value={disponibilite} open={dispoOpen} setOpen={setDispoOpen} others={[setMetierOpen, setNoteOpen]}>
                 {DISPONIBILITES.map(d => <DropItem key={d.value} active={disponibilite === d.value} label={d.label} onClick={() => { setDispo(d.value); setDispoOpen(false); }} />)}
               </FilterPill>
@@ -559,7 +559,7 @@ export default function Landing() {
                 </button>
               )}
             </div>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <div className="landing-trust-badges" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {[
                 { icon: '🛡️', label: 'Vérifiés' },
                 { icon: '⭐', label: 'Avis certifiés' },
@@ -575,10 +575,10 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════ RESULTS ══════════════════ */}
-      <div ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px, 4vw, 40px) clamp(20px, 5vw, 60px) 80px' }}>
+      <div className="landing-results" ref={resultsRef} style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(24px, 4vw, 40px) clamp(20px, 5vw, 60px) 80px' }}>
 
         {/* Section header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div className="landing-results-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0E0E1A', letterSpacing: '-0.03em' }}>
               {loading ? 'Recherche en cours…' : artisans.length > 0 ? `${artisans.length} artisan${artisans.length > 1 ? 's' : ''} trouvé${artisans.length > 1 ? 's' : ''}` : 'Artisans'}
@@ -642,7 +642,7 @@ export default function Landing() {
 
         {/* ══ Trust section ══ */}
         {!loading && artisans.length > 0 && (
-          <div className="reveal" style={{ marginTop: 72, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+          <div className="reveal landing-trust-grid" style={{ marginTop: 72, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
             {[
               { icon: '🛡️', gradient: 'linear-gradient(135deg, #5B5BD6, #7C3AED)', title: 'Artisans vérifiés', desc: 'Identité, Kbis et qualifications contrôlés' },
               { icon: '⚡',  gradient: 'linear-gradient(135deg, #F59E0B, #EF4444)', title: 'Réponse rapide',   desc: 'Artisans réactifs, disponibles près de chez vous' },
@@ -671,8 +671,8 @@ export default function Landing() {
       {offresModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001, padding: '20px' }}
           onClick={e => { if (e.target === e.currentTarget) setOffresModal(false); }}>
-          <div style={{ background: '#F4F4F8', borderRadius: 24, width: '100%', maxWidth: 800, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)' }}>
-            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid #E5E5EA', background: '#fff', borderRadius: '24px 24px 0 0', position: 'sticky', top: 0, zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="landing-modal-content" style={{ background: '#F4F4F8', borderRadius: 24, width: '100%', maxWidth: 800, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)' }}>
+            <div className="landing-modal-header" style={{ padding: '24px 28px 20px', borderBottom: '1px solid #E5E5EA', background: '#fff', borderRadius: '24px 24px 0 0', position: 'sticky', top: 0, zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#0E0E1A', letterSpacing: '-0.03em' }}>
                   👷 Offres d'emploi BTP
@@ -698,7 +698,7 @@ export default function Landing() {
               {annonces.map(a => {
                 const contratColor = { CDI:'#5B5BD6', CDD:'#0891B2', 'Intérim':'#D97706', Alternance:'#059669', Stage:'#DB2777', Freelance:'#7C3AED' }[a.typeContrat] || '#5B5BD6';
                 return (
-                  <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: '1px solid rgba(91,91,214,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, transition: 'all 0.15s' }}
+                  <div key={a.id} className="landing-job-card" style={{ background: '#fff', borderRadius: 16, padding: '20px 22px', border: '1px solid rgba(91,91,214,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, transition: 'all 0.15s' }}
                     onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(14,14,26,0.10)'; e.currentTarget.style.borderColor = 'rgba(91,91,214,0.2)'; }}
                     onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderColor = 'rgba(91,91,214,0.08)'; }}>
                     <div style={{ flex: 1 }}>
@@ -731,9 +731,9 @@ export default function Landing() {
       {annonceModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}
           onClick={e => { if (e.target === e.currentTarget) setAnnonceModal(null); }}>
-          <div style={{ background: '#fff', borderRadius: 24, width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)' }}>
+          <div className="landing-modal-content" style={{ background: '#fff', borderRadius: 24, width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.3)' }}>
             {/* Header */}
-            <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid #F2F2F7' }}>
+            <div className="landing-modal-header" style={{ padding: '24px 28px 20px', borderBottom: '1px solid #F2F2F7' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, paddingRight: 16 }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -752,7 +752,7 @@ export default function Landing() {
               </div>
             </div>
 
-            <div style={{ padding: '20px 28px 28px' }}>
+            <div className="landing-modal-body" style={{ padding: '20px 28px 28px' }}>
               {/* Description */}
               <div style={{ marginBottom: 20 }}>
                 <p style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0E0E1A', marginBottom: 8 }}>Description du poste</p>
@@ -786,7 +786,7 @@ export default function Landing() {
                   </div>
                 ) : (
                   <form onSubmit={postuler} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div className="landing-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       {[['prenom','Prénom *','Votre prénom'],['nom','Nom *','Votre nom']].map(([k,l,ph]) => (
                         <div key={k}>
                           <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>{l}</label>
@@ -795,7 +795,7 @@ export default function Landing() {
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div className="landing-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       {[['email','Email *','votre@email.fr'],['telephone','Téléphone','06 12 34 56 78']].map(([k,l,ph]) => (
                         <div key={k}>
                           <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6E6E73', marginBottom: 5 }}>{l}</label>
@@ -867,6 +867,59 @@ export default function Landing() {
         @keyframes fadeUp     { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: rgba(255,255,255,0.35) !important; }
         * { box-sizing: border-box; }
+
+        /* ═══ TABLET ═══ */
+        @media (max-width: 768px) {
+          .landing-nav { padding: 0 16px !important; height: 56px !important; }
+          .landing-nav-link { font-size: 12px !important; padding: 6px 10px !important; }
+          .landing-nav-cta { font-size: 12px !important; padding: 6px 12px !important; }
+          .landing-hero { padding: 28px 16px 24px !important; }
+          .landing-search-bar { flex-direction: column !important; gap: 0 !important; padding: 8px !important; border-radius: 12px !important; }
+          .landing-search-field { flex: unset !important; width: 100% !important; padding: 0 12px !important; }
+          .landing-search-divider { width: 100% !important; height: 1px !important; margin: 4px 0 !important; }
+          .landing-search-btn { width: 100% !important; padding: 14px !important; border-radius: 8px !important; margin-top: 4px !important; }
+          .landing-results { padding: 24px 16px 60px !important; }
+          .artisan-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; gap: 16px !important; }
+          .landing-trust-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important; gap: 12px !important; margin-top: 48px !important; }
+          .landing-modal-content { border-radius: 16px !important; max-width: 100% !important; }
+          .landing-modal-header { padding: 18px 20px 16px !important; }
+          .landing-modal-body { padding: 16px 20px 24px !important; }
+          .landing-contact-modal { padding: 24px 20px !important; border-radius: 16px !important; }
+          .landing-job-card { flex-direction: column !important; gap: 12px !important; padding: 16px !important; }
+          .landing-job-card button { width: 100% !important; text-align: center !important; }
+          .landing-trust-badges { display: none !important; }
+        }
+
+        /* ═══ MOBILE ═══ */
+        @media (max-width: 480px) {
+          .landing-nav { padding: 0 12px !important; height: 52px !important; gap: 8px !important; }
+          .landing-nav-link { display: none !important; }
+          .landing-nav-actions { gap: 6px !important; }
+          .landing-nav-cta { font-size: 12px !important; padding: 6px 12px !important; border-radius: 8px !important; }
+          .landing-hero { padding: 24px 14px 20px !important; }
+          .landing-hero h1 { font-size: 1.25rem !important; }
+          .landing-search-bar { padding: 6px !important; }
+          .landing-search-field { padding: 0 10px !important; }
+          .landing-search-field input { font-size: 13px !important; padding: 12px 8px !important; }
+          .landing-search-btn { font-size: 13px !important; padding: 12px !important; }
+          .landing-filters-section { padding: 0 12px !important; }
+          .landing-filters-row { gap: 8px !important; padding: 8px 0 14px !important; }
+          .landing-filter-chips { gap: 6px !important; }
+          .landing-filter-chips button { font-size: 0.75rem !important; padding: 6px 10px !important; }
+          .landing-results { padding: 20px 12px 48px !important; }
+          .landing-results-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; margin-bottom: 20px !important; }
+          .landing-results-header h2 { font-size: 1.25rem !important; }
+          .artisan-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+          .artisan-card { border-radius: 14px !important; }
+          .landing-trust-grid { grid-template-columns: 1fr !important; gap: 10px !important; margin-top: 36px !important; }
+          .landing-modal-content { border-radius: 14px !important; margin: 8px !important; }
+          .landing-modal-header { padding: 16px 16px 14px !important; }
+          .landing-modal-header h2 { font-size: 1.05rem !important; }
+          .landing-modal-body { padding: 14px 16px 20px !important; }
+          .landing-contact-modal { padding: 20px 16px !important; border-radius: 14px !important; margin: 8px !important; }
+          .landing-form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+          .landing-job-card { padding: 14px !important; border-radius: 12px !important; }
+        }
       `}</style>
     </div>
   );

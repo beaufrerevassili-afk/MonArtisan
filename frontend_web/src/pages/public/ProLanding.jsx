@@ -15,14 +15,14 @@ export default function ProLanding() {
     <div style={{ minHeight: '100vh', background: L.white, fontFamily: L.font, color: L.text }}>
 
       {/* ══ NAVBAR ══ */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 64, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${L.border}` }}>
+      <nav className="pro-nav" style={{ position: 'sticky', top: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 clamp(20px,4vw,48px)', height: 64, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${L.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 900, color: L.text, fontFamily: L.font, letterSpacing: '-0.04em' }}>
             Freample<span style={{ color: L.gold }}>.</span> <span style={{ fontSize: 12, fontWeight: 400, color: L.textSec }}>Pro</span>
           </button>
-          <button onClick={() => navigate('/')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Accueil</button>
+          <button className="pro-nav-link" onClick={() => navigate('/')} style={{ padding: '8px 16px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font }}>Accueil</button>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="pro-nav-btns" style={{ display: 'flex', gap: 8 }}>
           {isPro ? (
             <button onClick={() => navigate('/patron/dashboard')} style={{ padding: '8px 20px', background: L.noir, border: 'none', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer', fontFamily: L.font }}>Mon espace →</button>
           ) : (
@@ -38,7 +38,7 @@ export default function ProLanding() {
       </nav>
 
       {/* ══ HERO ══ */}
-      <header style={{ background: L.noir, padding: 'clamp(64px,12vh,120px) 32px clamp(48px,8vh,80px)', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
+      <header className="pro-section pro-hero" style={{ background: L.noir, padding: 'clamp(64px,12vh,120px) 32px clamp(48px,8vh,80px)', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(166,139,75,0.08) 0%, transparent 60%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto' }}>
           <div style={{ width: 40, height: 2, background: L.gold, margin: '0 auto 24px' }} />
@@ -48,7 +48,7 @@ export default function ProLanding() {
           <p style={{ fontSize: 'clamp(15px,1.6vw,17px)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: '0 auto 32px', maxWidth: 480 }}>
             Des clients publient leurs projets sur Freample. Vous choisissez ceux qui vous intéressent, envoyez un devis et gérez tout depuis un seul espace.
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="pro-hero-btns" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '14px 36px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, transition: 'background .2s' }}
               onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
               Devenir artisan Freample — Gratuit
@@ -61,10 +61,10 @@ export default function ProLanding() {
       </header>
 
       {/* ══ COMMENT ÇA MARCHE — 3 étapes ══ */}
-      <section ref={r1} style={{ padding: 'clamp(56px,9vh,88px) 32px', background: L.cream, borderBottom: `1px solid ${L.border}` }}>
+      <section ref={r1} className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px', background: L.cream, borderBottom: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 40px', color: '#1A1A1A' }}>Comment ça marche</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+          <div className="pro-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
             {[
               { step: '1', icon: '📋', title: 'Les clients publient', desc: 'Un particulier décrit son projet (plomberie, peinture...), fixe son budget et sa ville. Le projet apparaît dans votre zone.', color: '#2563EB' },
               { step: '2', icon: '📤', title: 'Vous proposez', desc: 'Acceptez le projet au prix client, envoyez un devis personnalisé, proposez un RDV ou contactez directement. Vous choisissez.', color: L.gold },
@@ -85,12 +85,12 @@ export default function ProLanding() {
       </section>
 
       {/* ══ 2 VOLETS : Projets + Gestion ══ */}
-      <section ref={r2} style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
+      <section ref={r2} className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', textAlign: 'center', color: '#1A1A1A' }}>Deux outils, un seul espace</h2>
           <p style={{ fontSize: 15, color: L.textSec, textAlign: 'center', margin: '0 auto 40px', maxWidth: 520 }}>Trouvez des chantiers ET gérez votre entreprise depuis le même compte.</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div className="pro-grid pro-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             {/* Projets clients */}
             <div style={{ background: L.noir, borderRadius: 16, padding: 'clamp(28px,4vw,36px)', color: '#fff' }}>
               <div style={{ fontSize: 28, marginBottom: 12 }}>📋</div>
@@ -123,8 +123,8 @@ export default function ProLanding() {
       </section>
 
       {/* ══ CHIFFRES ══ */}
-      <section style={{ background: L.cream, padding: 'clamp(36px,5vh,56px) 32px', borderTop: `1px solid ${L.border}`, borderBottom: `1px solid ${L.border}` }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 'clamp(32px,6vw,80px)', flexWrap: 'wrap', textAlign: 'center' }}>
+      <section className="pro-section" style={{ background: L.cream, padding: 'clamp(36px,5vh,56px) 32px', borderTop: `1px solid ${L.border}`, borderBottom: `1px solid ${L.border}` }}>
+        <div className="pro-stats" style={{ maxWidth: 800, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 'clamp(32px,6vw,80px)', flexWrap: 'wrap', textAlign: 'center' }}>
           {[{ val: '0 €', label: 'Abonnement' }, { val: '100%', label: 'Pour vous' }, { val: '0 €', label: 'Frais artisan' }, { val: '∞', label: 'Projets illimités' }].map(s => (
             <div key={s.val}>
               <div style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 500, fontFamily: L.serif, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
@@ -135,7 +135,7 @@ export default function ProLanding() {
       </section>
 
       {/* ══ TARIFS DÉTAILLÉ ══ */}
-      <section style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
+      <section className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
         <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', color: '#1A1A1A' }}>Gratuit pour vous.</h2>
           <p style={{ fontSize: 15, color: L.textSec, marginBottom: 32 }}>Pas d'abonnement. La commission de 1% est payée par le client, pas par l'artisan. Vous recevez 100% du montant des travaux.</p>
@@ -163,7 +163,7 @@ export default function ProLanding() {
       </section>
 
       {/* ══ FAQ ══ */}
-      <section ref={r3} id="faq" style={{ background: L.bg, padding: 'clamp(56px,9vh,88px) 32px', borderTop: `1px solid ${L.border}` }}>
+      <section ref={r3} id="faq" className="pro-section" style={{ background: L.bg, padding: 'clamp(56px,9vh,88px) 32px', borderTop: `1px solid ${L.border}` }}>
         <div style={{ maxWidth: 650, margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 32px', textAlign: 'center', color: '#1A1A1A' }}>Questions fréquentes</h2>
           {[
@@ -183,13 +183,13 @@ export default function ProLanding() {
       </section>
 
       {/* ══ CTA FINAL ══ */}
-      <section style={{ background: L.noir, padding: 'clamp(64px,10vh,100px) 32px', textAlign: 'center' }}>
+      <section className="pro-section pro-cta" style={{ background: L.noir, padding: 'clamp(64px,10vh,100px) 32px', textAlign: 'center' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(28px,5vw,44px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.08, margin: '0 0 14px' }}>
             Prêt à recevoir<br />des projets ?
           </h2>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: '0 0 32px' }}>Inscription gratuite, aucun abonnement, commencez dès maintenant.</p>
-          <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '16px 48px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'background .25s' }}
+          <button className="pro-cta-btn" onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ padding: '16px 48px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font, letterSpacing: '0.06em', textTransform: 'uppercase', transition: 'background .25s' }}
             onMouseEnter={e => e.currentTarget.style.background = L.goldDark} onMouseLeave={e => e.currentTarget.style.background = L.gold}>
             Devenir artisan Freample
           </button>
@@ -197,11 +197,66 @@ export default function ProLanding() {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ padding: '24px 32px', borderTop: `1px solid ${L.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <footer className="pro-footer" style={{ padding: '24px 32px', borderTop: `1px solid ${L.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: L.textLight, fontFamily: L.font }}
           onMouseEnter={e => e.currentTarget.style.color = L.gold} onMouseLeave={e => e.currentTarget.style.color = L.textLight}>← Retour à l'accueil</button>
         <span style={{ fontSize: 11, color: L.textLight }}>© 2026 Freample</span>
       </footer>
+      <style>{`
+        @media (max-width: 640px) {
+          .pro-nav {
+            padding: 0 12px !important;
+            gap: 4px !important;
+          }
+          .pro-nav-link {
+            display: none !important;
+          }
+          .pro-nav-btns {
+            gap: 4px !important;
+          }
+          .pro-nav-btns button {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+          }
+          .pro-hero {
+            padding: 48px 20px 40px !important;
+          }
+          .pro-hero-btns {
+            flex-direction: column !important;
+            width: 100% !important;
+          }
+          .pro-hero-btns button {
+            width: 100% !important;
+          }
+          .pro-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .pro-grid-2col {
+            grid-template-columns: 1fr !important;
+          }
+          .pro-section {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+          }
+          .pro-stats {
+            flex-direction: column !important;
+            gap: 20px !important;
+          }
+          .pro-cta {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+          }
+          .pro-cta-btn {
+            width: 100% !important;
+            padding: 16px 24px !important;
+          }
+          .pro-footer {
+            padding: 20px 16px !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
