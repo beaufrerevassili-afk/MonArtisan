@@ -95,7 +95,7 @@ export default function ProjetsClients() {
 
   // Trouver le projet correspondant à une offre
   function getProjetForOffre(offre) {
-    return [...projets, ...DEMO_PROJETS].find(p => p.id === offre.projetId);
+    return projets.find(p => p.id === offre.projetId);
   }
 
   // Retirer une offre

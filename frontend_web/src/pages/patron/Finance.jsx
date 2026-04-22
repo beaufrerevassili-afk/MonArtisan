@@ -1454,8 +1454,10 @@ function RetenuesDeGarantie() {
     { id: 5, client: 'M. & Mme Bertrand', chantier: 'Extension véranda', montantFacture: 14_500, dateReception: '2023-12-01' },
   ];
 
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const today = new Date();
-  const retenues = DEMO_RETENUES.map(r => {
+  const retenuesSrc = isDemo ? DEMO_RETENUES : [];
+  const retenues = retenuesSrc.map(r => {
     const dateLib = new Date(r.dateReception);
     dateLib.setFullYear(dateLib.getFullYear() + 1);
     const liberee = today >= dateLib;
@@ -1779,7 +1781,7 @@ function BilanResultatView() {
   const achatsCompta = ecritures.filter(e => e.compte === '601000' && e.debit > 0).reduce((s, e) => s + e.debit, 0);
   const achatsStock = mouvements.filter(m => m.type === 'sortie' || m.type === 'Sortie').reduce((s, m) => s + ((m.quantite || 0) * (m.prixUnitaire || 0)), 0);
   const achatsFournisseurs = mouvements.filter(m => m.type === 'achat' || m.type === 'Achat').reduce((s, m) => s + (m.montantHT || m.montant || 0), 0);
-  const achatsMatieresEtFournitures = achatsCompta || (achatsStock + achatsFournisseurs) || 18_600;
+  const achatsMatieresEtFournitures = achatsCompta || (achatsStock + achatsFournisseurs) || (isDemoToken ? 18_600 : 0);
 
   const sousTraitanceCompta = ecritures.filter(e => e.libelle?.toLowerCase().includes('sous-trait')).reduce((s, e) => s + e.debit, 0);
   const sousTraitance = sousTraitanceCompta || 0;
@@ -1796,10 +1798,10 @@ function BilanResultatView() {
   // BILAN — depuis les vraies données
   const creancesClients = factures.filter(f => !['payee', 'sequestre_libere'].includes(f.statut)).reduce((s, f) => s + (f.montantTTC || 0), 0) || (isDemoToken ? DEMO_FINANCE.chiffreAffaires.montantEnAttente : 0);
   const tresorerie = caEncaisse - totalCharges * 0.7; // estimation simplifiée
-  const immobilisations = 45_000; // à renseigner par le patron (futur)
+  const immobilisations = isDemoToken ? 45_000 : 0; // à renseigner par le patron (futur)
   const totalActif = immobilisations + creancesClients + Math.max(0, tresorerie);
 
-  const capitauxPropres = 30_000; // à renseigner par le patron (futur)
+  const capitauxPropres = isDemoToken ? 30_000 : 0; // à renseigner par le patron (futur)
   const resultatExercice = resultatNet;
   const dettesFournisseurs = ecritures.filter(e => e.compte === '401000' && e.credit > 0).reduce((s, e) => s + e.credit, 0) || 0;
   const totalPassif = capitauxPropres + resultatExercice + dettesFournisseurs;

@@ -113,13 +113,14 @@ export default function DashboardEmploye() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [tab, setTab] = useState('matin');
-  const [chantiers, setChantiers] = useState(DEMO_CHANTIERS);
-  const [bulletins, setBulletins] = useState(DEMO_BULLETINS);
-  const [conges, setConges] = useState(DEMO_CONGES);
-  const [frais, setFrais] = useState(DEMO_FRAIS);
-  const [profil, setProfil] = useState(DEMO_PROFIL);
-  const [patron, setPatron] = useState(DEMO_PATRON);
+  const [chantiers, setChantiers] = useState(isDemo ? DEMO_CHANTIERS : []);
+  const [bulletins, setBulletins] = useState(isDemo ? DEMO_BULLETINS : []);
+  const [conges, setConges] = useState(isDemo ? DEMO_CONGES : []);
+  const [frais, setFrais] = useState(isDemo ? DEMO_FRAIS : []);
+  const [profil, setProfil] = useState(isDemo ? DEMO_PROFIL : {});
+  const [patron, setPatron] = useState(isDemo ? DEMO_PATRON : {});
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const [mesDocs, setMesDocs] = useState([]);
@@ -1026,7 +1027,7 @@ export default function DashboardEmploye() {
       {/* ═══ MON PLANNING ═══ */}
       {tab === 'planning' && (() => {
         const realPlanning = buildPlanningFromChantiers(chantiers, profil.prenom + ' ' + profil.nom);
-        const planning = realPlanning.length > 0 ? realPlanning : DEMO_PLANNING_FALLBACK;
+        const planning = realPlanning.length > 0 ? realPlanning : (isDemo ? DEMO_PLANNING_FALLBACK : []);
         const isReal = realPlanning.length > 0;
         return <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>

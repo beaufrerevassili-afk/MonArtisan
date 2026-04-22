@@ -102,9 +102,9 @@ export default function BanqueDocuments() {
   const stats = {
     total: allDocs.length,
     devis: devis.length,
-    bulletins: BULLETINS_STATIC.length,
-    contrats: CONTRATS_STATIC.length,
-    qse: QSE_STATIC.length,
+    bulletins: isDemo ? BULLETINS_STATIC.length : 0,
+    contrats: isDemo ? CONTRATS_STATIC.length : 0,
+    qse: isDemo ? QSE_STATIC.length : 0,
   };
 
   return (

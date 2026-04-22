@@ -2241,7 +2241,7 @@ function MasseSalarialeView({ employes = [] }) {
   ];
   const costData = employes.length > 0
     ? employes.map(e => ({ nom: `${e.prenom} ${e.nom}`, poste: e.poste||'', brut: Number(e.salaireBase||0), cout: Number(e.salaireBase||0)*1.42 })).filter(e=>e.brut>0)
-    : EMPLOYES_COUT_DEMO;
+    : (isDemoToken ? EMPLOYES_COUT_DEMO : []);
   const maxCout = Math.max(...costData.map(e => e.cout), 1);
 
   return (

@@ -1877,7 +1877,7 @@ export default function DashboardCom() {
               <label style={labelStyle}>Responsable (équipe)</label>
               <select value={newProjetForm.responsable} onChange={e => setNewProjetForm(p => ({...p, monteur:e.target.value}))} style={inputStyle}>
                 <option value="">Non assigné</option>
-                {EQUIPE_INIT.map(e => <option key={e.id} value={e.nom}>{e.nom} — {e.poste}</option>)}
+                {equipe.map(e => <option key={e.id} value={e.nom}>{e.nom} — {e.poste}</option>)}
               </select>
             </div>
 
