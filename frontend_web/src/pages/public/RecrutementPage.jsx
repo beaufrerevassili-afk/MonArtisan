@@ -37,8 +37,9 @@ function ModalCandidature({ offre, onClose }) {
   const fileRef = useRef();
 
   const next = () => {
-    if (!form.nom || !form.prenom || !form.email) { setErr('Nom, prénom et email requis.'); return; }
+    if (!form.nom || !form.prenom || !form.email || !form.telephone) { setErr('Nom, prénom, email et téléphone requis.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setErr('Email invalide.'); return; }
+    if (form.telephone.replace(/\s/g, '').length < 10) { setErr('Numéro de téléphone invalide.'); return; }
     setErr(''); setStep(2);
   };
 
@@ -88,7 +89,7 @@ function ModalCandidature({ offre, onClose }) {
                   </div>
                 ))}
               </div>
-              {[{k:'email',l:'Email *',p:'marie@email.com',t:'email'},{k:'telephone',l:'Téléphone',p:'06 12 34 56 78',t:'tel'}].map(f => (
+              {[{k:'email',l:'Email *',p:'marie@email.com',t:'email'},{k:'telephone',l:'Téléphone *',p:'06 12 34 56 78',t:'tel'}].map(f => (
                 <div key={f.k}>
                   <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>{f.l}</label>
                   <input type={f.t} value={form[f.k]} onChange={e=>setForm(x=>({...x,[f.k]:e.target.value}))} placeholder={f.p} style={inputStyle}
@@ -126,14 +127,21 @@ function ModalCandidature({ offre, onClose }) {
                 <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" onChange={e=>setCvFile(e.target.files[0]||null)} style={{ display:'none' }} />
               </div>
               <div>
-                <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>Lettre de motivation <span style={{ color:DS.subtle, fontWeight:400 }}>(optionnel)</span></label>
-                <textarea value={form.lettre} onChange={e=>setForm(x=>({...x,lettre:e.target.value}))} placeholder={`Dites-nous pourquoi rejoindre ${offre.nomEntreprise || offre.entreprise}...`} rows={4}
+                <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>Expérience et compétences *</label>
+                <textarea value={form.cvTexte} onChange={e=>setForm(x=>({...x,cvTexte:e.target.value}))} placeholder="Décrivez vos expériences, vos compétences, vos diplômes et certifications..." rows={4}
                   style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
                   onFocus={e=>e.target.style.borderColor=DS.accent} onBlur={e=>e.target.style.borderColor=DS.border} />
               </div>
+              <div>
+                <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>Lettre de motivation *</label>
+                <textarea value={form.lettre} onChange={e=>setForm(x=>({...x,lettre:e.target.value}))} placeholder={`Dites-nous pourquoi rejoindre ${offre.nomEntreprise || offre.entreprise}...`} rows={3}
+                  style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
+                  onFocus={e=>e.target.style.borderColor=DS.accent} onBlur={e=>e.target.style.borderColor=DS.border} />
+              </div>
+              {err && <div style={{ padding:'10px 14px', background:DS.redBg, border:`1px solid #FECACA`, borderRadius:DS.r.sm, fontSize:'0.8rem', color:DS.red }}>{err}</div>}
               <div style={{ display:'flex', gap:10 }}>
                 <button onClick={()=>setStep(1)} style={{ flex:1, padding:'13px', background:DS.bgSoft, border:`1px solid ${DS.border}`, borderRadius:DS.r.md, fontWeight:500, fontSize:'0.9rem', color:DS.muted, cursor:'pointer' }}>Retour</button>
-                <button onClick={envoyer} disabled={loading} style={{ flex:2, padding:'13px', background:loading?DS.border:DS.ink, border:'none', borderRadius:DS.r.md, fontWeight:600, fontSize:'0.9375rem', color:loading?DS.muted:'#fff', cursor:loading?'default':'pointer', transition:'opacity .15s' }}
+                <button onClick={()=>{ if(!form.cvTexte?.trim()) { setErr('Décrivez votre expérience.'); return; } if(!form.lettre?.trim()) { setErr('La lettre de motivation est requise.'); return; } setErr(''); envoyer(); }} disabled={loading} style={{ flex:2, padding:'13px', background:loading?DS.border:DS.ink, border:'none', borderRadius:DS.r.md, fontWeight:600, fontSize:'0.9375rem', color:loading?DS.muted:'#fff', cursor:loading?'default':'pointer', transition:'opacity .15s' }}
                   onMouseEnter={e=>{if(!loading)e.currentTarget.style.opacity='0.82';}} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
                   {loading ? 'Envoi…' : 'Envoyer ma candidature'}
                 </button>
