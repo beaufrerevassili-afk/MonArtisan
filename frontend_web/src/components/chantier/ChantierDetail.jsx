@@ -20,8 +20,6 @@ function getBTPZone(km) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
-function lsGet(key, fallback) { return demoGet(key, fallback); }
-function lsSet(key, val) { demoSet(key, val); }
 function today() { return new Date().toISOString().slice(0, 10); }
 function fmt(n) { return Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
@@ -59,7 +57,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   const [tab, setTab] = useState('journal');
 
   // ── Journal state ──────────────────────────────────────────────
-  const [journal, setJournal] = useState(() => lsGet(`freample_journal_${cid}`, []));
+  const [journal, setJournal] = useState(() => demoGet(`freample_journal_${cid}`, []));
   const [jDate, setJDate] = useState(today());
   const [jMeteo, setJMeteo] = useState('soleil');
   const [jOuvriers, setJOuvriers] = useState('');
@@ -70,14 +68,14 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   const [jVisiteurs, setJVisiteurs] = useState('');
 
   // ── Equipe & Planning state ────────────────────────────────────
-  const [heures, setHeures] = useState(() => lsGet(`freample_heures_${cid}`, {}));
-  const [distanceKm, setDistanceKm] = useState(() => lsGet(`freample_distance_${cid}`, ''));
-  const [prixLitre, setPrixLitre] = useState(() => lsGet(`freample_prix_litre_${cid}`, '1.85'));
-  const [tauxHoraire, setTauxHoraire] = useState(() => lsGet(`freample_taux_horaire_${cid}`, '45'));
+  const [heures, setHeures] = useState(() => demoGet(`freample_heures_${cid}`, {}));
+  const [distanceKm, setDistanceKm] = useState(() => demoGet(`freample_distance_${cid}`, ''));
+  const [prixLitre, setPrixLitre] = useState(() => demoGet(`freample_prix_litre_${cid}`, '1.85'));
+  const [tauxHoraire, setTauxHoraire] = useState(() => demoGet(`freample_taux_horaire_${cid}`, '45'));
 
   // ── Matériaux state ────────────────────────────────────────────
-  const [matStock, setMatStock] = useState(() => lsGet(`freample_matieres_stock_${cid}`, []));
-  const [matAchat, setMatAchat] = useState(() => lsGet(`freample_matieres_achat_${cid}`, []));
+  const [matStock, setMatStock] = useState(() => demoGet(`freample_matieres_stock_${cid}`, []));
+  const [matAchat, setMatAchat] = useState(() => demoGet(`freample_matieres_achat_${cid}`, []));
   const [msArticle, setMsArticle] = useState('');
   const [msQte, setMsQte] = useState('');
   const [msPrix, setMsPrix] = useState('');
@@ -87,14 +85,14 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   const [maTva, setMaTva] = useState('20');
 
   // ── Sous-traitance state ───────────────────────────────────────
-  const soustraitance = lsGet(`freample_soustraitance_${cid}`, []);
+  const soustraitance = demoGet(`freample_soustraitance_${cid}`, []);
 
   // ── Photos state ───────────────────────────────────────────────
-  const [photos, setPhotos] = useState(() => lsGet(`freample_photos_${cid}`, []));
+  const [photos, setPhotos] = useState(() => demoGet(`freample_photos_${cid}`, []));
   const [photoDesc, setPhotoDesc] = useState('');
 
   // ── Avancement ─────────────────────────────────────────────────
-  const [avancement, setAvancement] = useState(() => lsGet(`freample_avancement_${cid}`, 0));
+  const [avancement, setAvancement] = useState(() => demoGet(`freample_avancement_${cid}`, 0));
 
   // ── LINK 2: Habilitations requises par type de chantier ────────
   const HABILITATIONS_REQUISES = {
@@ -182,7 +180,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   const coutIndemniteTotal = indemniteJourEquipe * nbJoursChantier;
 
   // ── Frais RH (notes de frais from RH module) ──────────────────
-  const fraisRH = useMemo(() => lsGet('freample_frais_chantier', []).filter(f => f.chantierId === cid), [cid]);
+  const fraisRH = useMemo(() => demoGet('freample_frais_chantier', []).filter(f => f.chantierId === cid), [cid]);
   const totalFraisRH = useMemo(() => fraisRH.reduce((s, f) => s + (parseFloat(f.montant) || 0), 0), [fraisRH]);
 
   const totalDepenses = coutMO + totalMatStock + totalMatAchat + totalSousTraitance + coutCarburantTotal + coutIndemniteTotal + totalAutresFrais + totalFraisRH;
@@ -194,21 +192,21 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   // ── Sync indemnités to paie ─────────────────────────────────
   React.useEffect(() => {
     if (coutIndemniteTotal > 0 && equipe.length > 0) {
-      const indemnites = lsGet('freample_indemnites_chantier', []);
+      const indemnites = demoGet('freample_indemnites_chantier', []);
       const existing = indemnites.findIndex(i => i.chantierId === cid);
       const entry = { chantierId: cid, chantierNom: chantier?.titre || '', nbJours: nbJoursChantier, zone: btpZone.zone, taux: btpZone.rate, equipe, total: coutIndemniteTotal };
       if (existing >= 0) indemnites[existing] = entry;
       else indemnites.push(entry);
-      lsSet('freample_indemnites_chantier', indemnites);
+      demoSet('freample_indemnites_chantier', indemnites);
     }
   }, [coutIndemniteTotal, nbJoursChantier]);
 
   // ── Persist helpers ────────────────────────────────────────────
-  const persistJournal = useCallback((v) => { setJournal(v); lsSet(`freample_journal_${cid}`, v); }, [cid]);
-  const persistHeures = useCallback((v) => { setHeures(v); lsSet(`freample_heures_${cid}`, v); }, [cid]);
-  const persistMatStock = useCallback((v) => { setMatStock(v); lsSet(`freample_matieres_stock_${cid}`, v); }, [cid]);
-  const persistMatAchat = useCallback((v) => { setMatAchat(v); lsSet(`freample_matieres_achat_${cid}`, v); }, [cid]);
-  const persistPhotos = useCallback((v) => { setPhotos(v); lsSet(`freample_photos_${cid}`, v); }, [cid]);
+  const persistJournal = useCallback((v) => { setJournal(v); demoSet(`freample_journal_${cid}`, v); }, [cid]);
+  const persistHeures = useCallback((v) => { setHeures(v); demoSet(`freample_heures_${cid}`, v); }, [cid]);
+  const persistMatStock = useCallback((v) => { setMatStock(v); demoSet(`freample_matieres_stock_${cid}`, v); }, [cid]);
+  const persistMatAchat = useCallback((v) => { setMatAchat(v); demoSet(`freample_matieres_achat_${cid}`, v); }, [cid]);
+  const persistPhotos = useCallback((v) => { setPhotos(v); demoSet(`freample_photos_${cid}`, v); }, [cid]);
 
   // ── Journal handlers ───────────────────────────────────────────
   const addJournalEntry = () => {
@@ -258,11 +256,11 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
     const item = { id: Date.now(), article: msArticle.trim(), quantite: msQte, prixUnitaire: msPrix, date: today() };
     persistMatStock([item, ...matStock]);
     // Decrement global stock
-    const globalStock = lsGet('freample_stock_articles', []);
+    const globalStock = demoGet('freample_stock_articles', []);
     const idx = globalStock.findIndex(a => a.designation?.toLowerCase().includes(msArticle.trim().toLowerCase()));
     if (idx >= 0) {
       globalStock[idx].quantite = Math.max(0, (globalStock[idx].quantite || 0) - (parseFloat(msQte) || 0));
-      lsSet('freample_stock_articles', globalStock);
+      demoSet('freample_stock_articles', globalStock);
     }
     // Écriture comptable auto — sortie stock
     const ecrituresStk = demoGet('freample_ecritures', []);
@@ -307,10 +305,10 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   };
 
   // ── Distance / prix persist ────────────────────────────────────
-  const updateDistance = (v) => { setDistanceKm(v); lsSet(`freample_distance_${cid}`, v); };
-  const updatePrixLitre = (v) => { setPrixLitre(v); lsSet(`freample_prix_litre_${cid}`, v); };
-  const updateTauxHoraire = (v) => { setTauxHoraire(v); lsSet(`freample_taux_horaire_${cid}`, v); };
-  const updateAvancement = (v) => { setAvancement(v); lsSet(`freample_avancement_${cid}`, v); onUpdate?.({ ...chantier, avancement: v }); };
+  const updateDistance = (v) => { setDistanceKm(v); demoSet(`freample_distance_${cid}`, v); };
+  const updatePrixLitre = (v) => { setPrixLitre(v); demoSet(`freample_prix_litre_${cid}`, v); };
+  const updateTauxHoraire = (v) => { setTauxHoraire(v); demoSet(`freample_taux_horaire_${cid}`, v); };
+  const updateAvancement = (v) => { setAvancement(v); demoSet(`freample_avancement_${cid}`, v); onUpdate?.({ ...chantier, avancement: v }); };
 
   // ═════════════════════════════════════════════════════════════════
   // Render helpers
@@ -327,9 +325,9 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   // Tab: Journal
   // ═════════════════════════════════════════════════════════════════
   // Lire signalements, rapports et todos des salariés
-  const signalements = useMemo(() => lsGet(`freample_signalements_${cid}`, []), [cid]);
-  const rapportsSalaries = useMemo(() => lsGet(`freample_rapports_${cid}`, []), [cid]);
-  const todoChantier = useMemo(() => lsGet(`freample_todo_${cid}`, null), [cid]);
+  const signalements = useMemo(() => demoGet(`freample_signalements_${cid}`, []), [cid]);
+  const rapportsSalaries = useMemo(() => demoGet(`freample_rapports_${cid}`, []), [cid]);
+  const todoChantier = useMemo(() => demoGet(`freample_todo_${cid}`, null), [cid]);
 
   const renderJournal = () => (
     <div>
@@ -709,7 +707,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
           </thead>
           <tbody>
             {QSE_DOCS.map(doc => {
-              const status = lsGet(`freample_qse_${doc.id}_${cid}`, null);
+              const status = demoGet(`freample_qse_${doc.id}_${cid}`, null);
               const isOk = status === true || status === 'ok' || status === 'valide';
               return (
                 <tr key={doc.id} style={{ borderBottom: `1px solid ${L.border}` }}>
@@ -824,8 +822,8 @@ function SousTraitanceForm({ chantier, showToast }) {
 
   const publier = () => {
     if (!form.metier || !form.budget) return;
-    const all = lsGet('freample_soustraitance', []);
-    const patronProfil = lsGet('freample_profil_patron', {});
+    const all = demoGet('freample_soustraitance', []);
+    const patronProfil = demoGet('freample_profil_patron', {});
     all.push({
       id: Date.now(), chantierId: chantier?.id, chantierTitre: chantier?.titre || chantier?.metier || 'Chantier',
       patronNom: patronProfil.nom || 'Patron', patronId: patronProfil.id,
@@ -833,7 +831,7 @@ function SousTraitanceForm({ chantier, showToast }) {
       ville: chantier?.ville || chantier?.adresse || '', dateDebut: form.dateDebut, dateFin: form.dateFin,
       statut: 'ouverte', reponses: [], date: today(),
     });
-    lsSet('freample_soustraitance', all);
+    demoSet('freample_soustraitance', all);
     setSent(true);
     if (showToast) showToast('Demande de sous-traitance publiee');
   };

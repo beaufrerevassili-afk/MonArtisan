@@ -343,21 +343,20 @@ export default function ClientsRFM() {
 }
 
 /* ── Client detail panel ── */
-function lsGet(k, fb) { return demoGet(k, fb); }
 
 function ClientDetail({ client: c, onClose }) {
   const seg = SEGMENTS[c.segment];
   const rfmTotal = c.r + c.f + c.m;
   const [actionDone, setActionDone] = useState(false);
-  const [commentaires, setCommentaires] = useState(() => lsGet('freample_client_commentaires', {}));
+  const [commentaires, setCommentaires] = useState(() => demoGet('freample_client_commentaires', {}));
   const [newComment, setNewComment] = useState('');
   const [showAllHisto, setShowAllHisto] = useState(false);
 
   // ── Données réelles depuis localStorage ──
-  const allDevis = lsGet('freample_devis', []);
-  const allChantiers = lsGet('freample_chantiers_custom', []);
-  const allFactures = lsGet('freample_factures', []);
-  const allPvs = lsGet('freample_pv_receptions', []);
+  const allDevis = demoGet('freample_devis', []);
+  const allChantiers = demoGet('freample_chantiers_custom', []);
+  const allFactures = demoGet('freample_factures', []);
+  const allPvs = demoGet('freample_pv_receptions', []);
 
   // Matcher par nom client (fuzzy)
   const nomLower = (c.nom || '').toLowerCase();

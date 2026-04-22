@@ -19,8 +19,6 @@ const BTN_O = { ...BTN, background: 'transparent', color: '#1C1C1E', border: '1p
 const INP = { width: '100%', padding: '10px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' };
 const LBL = { fontSize: 11, fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' };
 
-function lsGet(k, fb) { return demoGet(k, fb); }
-function lsSet(k, v) { demoSet(k, v); }
 function fmt(n) { return Number(n || 0).toLocaleString('fr-FR'); }
 function fmtE(n) { return `${fmt(n)} €`; }
 
@@ -71,12 +69,12 @@ export default function DevisFactures() {
   const [search, setSearch] = useState('');
   const [devis, setDevis] = useState(() => {
     if (!isDemo) return [];
-    const saved = lsGet('freample_devis', []);
+    const saved = demoGet('freample_devis', []);
     return saved.length > 0 ? saved : DEMO_DEVIS;
   });
   const [factures, setFactures] = useState(() => {
     if (!isDemo) return [];
-    const saved = lsGet('freample_factures_patron', []);
+    const saved = demoGet('freample_factures_patron', []);
     return saved.length > 0 ? saved : DEMO_FACTURES;
   });
   const [lienDirect, setLienDirect] = useState(null); // modal lien direct
@@ -87,8 +85,8 @@ export default function DevisFactures() {
   const [lienGenere, setLienGenere] = useState(null);
 
   // Persist
-  useEffect(() => { lsSet('freample_devis', devis); }, [devis]);
-  useEffect(() => { lsSet('freample_factures_patron', factures); }, [factures]);
+  useEffect(() => { demoSet('freample_devis', devis); }, [devis]);
+  useEffect(() => { demoSet('freample_factures_patron', factures); }, [factures]);
 
   // KPIs
   const devisEnAttente = devis.filter(d => d.statut === 'envoye').length;
@@ -118,13 +116,13 @@ export default function DevisFactures() {
     // Générer écriture comptable
     const d = devis.find(x => x.id === id);
     if (d) {
-      const ecritures = lsGet('freample_ecritures', []);
+      const ecritures = demoGet('freample_ecritures', []);
       ecritures.push(
         { date: new Date().toISOString().slice(0, 10), journal: 'VE', piece: d.numero, compte: '411000', libelle: `Client ${d.client}`, debit: d.montantTTC || 0, credit: 0 },
         { date: new Date().toISOString().slice(0, 10), journal: 'VE', piece: d.numero, compte: '706000', libelle: `Prestation ${d.objet}`, debit: 0, credit: d.montantHT || 0 },
         { date: new Date().toISOString().slice(0, 10), journal: 'VE', piece: d.numero, compte: '445710', libelle: 'TVA collectée', debit: 0, credit: d.tva || 0 },
       );
-      lsSet('freample_ecritures', ecritures);
+      demoSet('freample_ecritures', ecritures);
     }
   }
 
@@ -203,7 +201,7 @@ export default function DevisFactures() {
             user={{ entrepriseType: 'patron' }}
             initialData={editingDevis}
             onSoumettre={(devisData) => {
-              const all = lsGet('freample_devis', []);
+              const all = demoGet('freample_devis', []);
               const action = devisData._action || 'brouillon';
               const editingId = devisData._editingId;
               let finalDevis;
@@ -270,7 +268,7 @@ export default function DevisFactures() {
                 all.push(finalDevis);
               }
 
-              lsSet('freample_devis', all);
+              demoSet('freample_devis', all);
               setDevis(all);
               setShowNewDevis(false); setEditingDevis(null);
               if (action === 'envoyer') { setDevisAEnvoyer(finalDevis); addToast('Devis créé — envoyez-le au client', 'success'); }
@@ -289,7 +287,7 @@ export default function DevisFactures() {
           <div style={{ fontSize: 14, fontWeight: 800, color: '#16A34A', marginBottom: 4 }}>Devis {devisAEnvoyer.numero} créé</div>
           <div style={{ fontSize: 12, color: '#6E6E73', marginBottom: 10 }}>Envoyez-le maintenant à votre client par email.</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <EnvoyerDevisButton devis={devisAEnvoyer} label="Envoyer maintenant" onEnvoye={() => setDevis(lsGet('freample_devis', []))} />
+            <EnvoyerDevisButton devis={devisAEnvoyer} label="Envoyer maintenant" onEnvoye={() => setDevis(demoGet('freample_devis', []))} />
             <button onClick={() => setDevisAEnvoyer(null)} style={{ ...BTN_O, fontSize: 12 }}>Plus tard</button>
           </div>
         </div>
@@ -385,13 +383,13 @@ export default function DevisFactures() {
                   {d.statut === 'brouillon' && (
                     <button onClick={() => {
                       if (!window.confirm('Supprimer ce brouillon ?')) return;
-                      const all = lsGet('freample_devis', []);
-                      lsSet('freample_devis', all.filter(x => x.id !== d.id));
-                      setDevis(lsGet('freample_devis', []));
+                      const all = demoGet('freample_devis', []);
+                      demoSet('freample_devis', all.filter(x => x.id !== d.id));
+                      setDevis(demoGet('freample_devis', []));
                     }} style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Supprimer</button>
                   )}
                   {(d.statut === 'brouillon' || d.statut === 'envoye' || d.statut === 'modif_demandee') && (
-                    <EnvoyerDevisButton devis={d} size="sm" onEnvoye={() => { setDevis(lsGet('freample_devis', [])); }} />
+                    <EnvoyerDevisButton devis={d} size="sm" onEnvoye={() => { setDevis(demoGet('freample_devis', [])); }} />
                   )}
                   {d.statut === 'envoye' && <button onClick={() => signerDevis(d.id)} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 12px' }}>Marquer signé</button>}
                   {(d.statut === 'signe' || d.statut === 'signé') && !factures.find(f => f.devisId === d.id) && (

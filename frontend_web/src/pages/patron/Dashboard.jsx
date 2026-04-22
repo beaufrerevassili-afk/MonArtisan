@@ -75,8 +75,8 @@ export default function DashboardPatron() {
 
   // ── Projets marketplace filtrés par disponibilité ──
   const projetsRecommandes = useMemo(() => {
-    const allProjets = lsGet('freample_projets', []);
-    const metiersPatron = (lsGet('freample_profil_patron', {}).metiers || []).map(m => m.toLowerCase());
+    const allProjets = demoGet('freample_projets', []);
+    const metiersPatron = (demoGet('freample_profil_patron', {}).metiers || []).map(m => m.toLowerCase());
     const premierTrou = occupation.find(w => w.pct < 60);
     const toutBookes = !premierTrou;
     return allProjets
@@ -474,7 +474,7 @@ export default function DashboardPatron() {
       {/* ══ RDV DU JOUR (depuis l'agenda) ══ */}
       {(() => {
         const today = new Date().toISOString().slice(0, 10);
-        const agendaEvents = lsGet('freample_agenda_events', []);
+        const agendaEvents = demoGet('freample_agenda_events', []);
         const rdvAujourdhui = agendaEvents.filter(e => e.date === today || (e.start && e.start.startsWith(today)));
         if (rdvAujourdhui.length === 0) return null;
         return (
@@ -500,10 +500,10 @@ export default function DashboardPatron() {
 
       {/* ══ MODAL ZOOM CHANTIER ══ */}
       {showChantier && (() => {
-        const allChantiers = lsGet('freample_chantiers_custom', []);
+        const allChantiers = demoGet('freample_chantiers_custom', []);
         const ch = allChantiers.find(c => (c.titre || '').toLowerCase().includes(showChantier.toLowerCase()) || showChantier.toLowerCase().includes((c.titre || '').toLowerCase().split('—')[0]?.trim()));
         const chantier = ch || { titre: showChantier, statut: 'en_cours', avancement: 50, client: '—', adresse: '—' };
-        const devisLie = lsGet('freample_devis', []).find(d => d.projetId === chantier.projetId || (d.objet || '').toLowerCase().includes(showChantier.toLowerCase()));
+        const devisLie = demoGet('freample_devis', []).find(d => d.projetId === chantier.projetId || (d.objet || '').toLowerCase().includes(showChantier.toLowerCase()));
         const equipe = chantier.equipe || [];
         const statusColors = { en_cours: '#D97706', planifie: '#2563EB', terminee: '#16A34A', en_attente: '#6E6E73', reception: '#8B5CF6' };
         const statusLabels = { en_cours: 'En cours', planifie: 'Planifié', terminee: 'Terminé', en_attente: 'En attente', reception: 'Réception' };

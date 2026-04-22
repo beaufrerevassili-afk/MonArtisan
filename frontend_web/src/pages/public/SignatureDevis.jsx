@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { IconCheck, IconX } from '../../components/ui/Icons';
 import { secureToken, secureTempPassword, sha256, expiresInHours } from '../../utils/security';
@@ -9,8 +10,6 @@ const L = {
   red: '#DC2626', redBg: '#FEF2F2', blue: '#2563EB', blueBg: '#EFF6FF', orange: '#D97706',
 };
 
-function lsGet(k, fb) { try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fb)); } catch { return fb; } }
-function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('fr-FR') : '—'; }
 function fmtE(n) { return Number(n || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }); }
 function calcLine(l) { const ht = (Number(l.quantite) || 0) * (Number(l.prixUnitaire) || 0) * (1 - (Number(l.remise) || 0) / 100); return { ht, tvaAmt: ht * (Number(l.tva) || 0) / 100 }; }
@@ -40,7 +39,7 @@ export default function SignatureDevis() {
   const [magicLink, setMagicLink] = useState('');
 
   useEffect(() => {
-    const all = lsGet('freample_devis', []);
+    const all = demoGet('freample_devis', []);
     const d = all.find(x => String(x.id) === String(id));
     if (!d) { setError('Devis introuvable ou lien invalide'); setLoading(false); return; }
     setDevis(d);
@@ -64,7 +63,7 @@ export default function SignatureDevis() {
     // Exécution asynchrone (avec hashing du mot de passe via Web Crypto)
     await new Promise(resolve => setTimeout(resolve, 1500));
     {
-      const all = lsGet('freample_devis', []);
+      const all = demoGet('freample_devis', []);
       const idx = all.findIndex(x => String(x.id) === String(id));
       if (idx < 0) { setSubmitting(false); return; }
       const d = all[idx];
@@ -78,10 +77,10 @@ export default function SignatureDevis() {
         clientEmail: email, clientTel: tel, acomptePaye: true, acompteMontant: montantAcompte,
         modePaiement: paymentMode,
       };
-      lsSet('freample_devis', all);
+      demoSet('freample_devis', all);
 
       // 2. Création facture d'acompte directement en séquestre (payée)
-      const factures = lsGet('freample_factures', []);
+      const factures = demoGet('freample_factures', []);
       const numFact = `FAC-${new Date().getFullYear()}-${String(factures.length + 1).padStart(3, '0')}`;
       factures.push({
         id: Date.now(), numero: numFact, devisId: d.id, projetId: d.projetId,
@@ -93,10 +92,10 @@ export default function SignatureDevis() {
         aeNom: d.aeNom, emetteur: d.emetteur,
         commission: Math.max(1, Math.round(montantAcompte * 0.01 * 100) / 100),
       });
-      lsSet('freample_factures', factures);
+      demoSet('freample_factures', factures);
 
       // 3. Création chantier (directement en cours puisque payé)
-      const chantiers = lsGet('freample_chantiers_custom', []);
+      const chantiers = demoGet('freample_chantiers_custom', []);
       const chantierId = Date.now() + 1;
       chantiers.push({
         id: chantierId,
@@ -114,14 +113,14 @@ export default function SignatureDevis() {
         creeParDevis: true, dateCreation: now,
         avancement: 0,
       });
-      lsSet('freample_chantiers_custom', chantiers);
+      demoSet('freample_chantiers_custom', chantiers);
 
       // 4. Création compte auto client (si pas déjà existant)
       const DEMO_EMAILS = ['freamplecom@gmail.com','demo-client@freample.fr','demo-entreprise@freample.fr','demo-sci@freample.fr','demo-patron@freample.fr','demo-ae@freample.fr','demo-employe@freample.fr','demo-artisan@freample.fr'];
       let magicToken = '';
       let createdAccount = false;
       if (!DEMO_EMAILS.includes(email)) {
-        const autoComptes = lsGet('freample_clients_auto', []);
+        const autoComptes = demoGet('freample_clients_auto', []);
         let compte = autoComptes.find(c => c.email === email);
         const tokenExpire = expiresInHours(24); // Magic link valable 24h (au lieu de "30 jours" non appliqué)
         if (!compte) {
@@ -142,11 +141,11 @@ export default function SignatureDevis() {
             cree: now, devisOrigine: d.id, chantierId,
           };
           autoComptes.push(compte);
-          lsSet('freample_clients_auto', autoComptes);
+          demoSet('freample_clients_auto', autoComptes);
           createdAccount = true;
 
           // 5. Email simulé avec lien magique
-          const emails = lsGet('freample_emails_envoyes', []);
+          const emails = demoGet('freample_emails_envoyes', []);
           const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
           const lien = `${baseUrl}/setup-compte/${magicToken}`;
           emails.push({
@@ -156,7 +155,7 @@ export default function SignatureDevis() {
             devisId: d.id,
             magicLink: lien,
           });
-          lsSet('freample_emails_envoyes', emails);
+          demoSet('freample_emails_envoyes', emails);
           setMagicLink(lien);
         } else {
           // Compte existe déjà : régénération du magic token avec expiration fraîche
@@ -165,20 +164,20 @@ export default function SignatureDevis() {
           compte.magicTokenExpire = tokenExpire;
           compte.magicTokenUsed = false;
           const idx2 = autoComptes.findIndex(c => c.email === email);
-          if (idx2 >= 0) { autoComptes[idx2] = compte; lsSet('freample_clients_auto', autoComptes); }
+          if (idx2 >= 0) { autoComptes[idx2] = compte; demoSet('freample_clients_auto', autoComptes); }
           const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
           setMagicLink(`${baseUrl}/setup-compte/${magicToken}`);
         }
       }
 
       // 6. Notifications patron
-      const notifs = lsGet('freample_notifs_patron', []);
+      const notifs = demoGet('freample_notifs_patron', []);
       notifs.push({
         id: Date.now() + 2, date: now, type: 'devis_signe_paye',
         titre: 'Devis signé et payé !', message: `${d.client} a signé le devis ${d.numero} et réglé l'acompte (${fmtE(montantAcompte)}). Vous pouvez démarrer les travaux.`,
         lien: `/patron/missions`, lu: false,
       });
-      lsSet('freample_notifs_patron', notifs);
+      demoSet('freample_notifs_patron', notifs);
 
       setDevis(all[idx]);
       setSubmitting(false);
@@ -188,27 +187,27 @@ export default function SignatureDevis() {
 
   function demanderModif() {
     if (!modifMsg.trim()) return;
-    const all = lsGet('freample_devis', []);
+    const all = demoGet('freample_devis', []);
     const idx = all.findIndex(x => String(x.id) === String(id));
     if (idx < 0) return;
     all[idx] = { ...all[idx], statut: 'modif_demandee', modifMessage: modifMsg, modifDate: new Date().toISOString() };
-    lsSet('freample_devis', all);
-    const notifs = lsGet('freample_notifs_patron', []);
+    demoSet('freample_devis', all);
+    const notifs = demoGet('freample_notifs_patron', []);
     notifs.push({ id: Date.now(), date: new Date().toISOString(), type: 'devis_modif', titre: 'Modification demandée', message: `${all[idx].client} demande une modification : "${modifMsg.slice(0, 80)}..."`, lien: `/patron/devis-factures`, lu: false });
-    lsSet('freample_notifs_patron', notifs);
+    demoSet('freample_notifs_patron', notifs);
     setDevis(all[idx]);
     setAction('modif_sent');
   }
 
   function refuserDevis() {
-    const all = lsGet('freample_devis', []);
+    const all = demoGet('freample_devis', []);
     const idx = all.findIndex(x => String(x.id) === String(id));
     if (idx < 0) return;
     all[idx] = { ...all[idx], statut: 'refuse', refuseMessage: refuseMsg, refuseDate: new Date().toISOString() };
-    lsSet('freample_devis', all);
-    const notifs = lsGet('freample_notifs_patron', []);
+    demoSet('freample_devis', all);
+    const notifs = demoGet('freample_notifs_patron', []);
     notifs.push({ id: Date.now(), date: new Date().toISOString(), type: 'devis_refuse', titre: 'Devis refusé', message: `${all[idx].client} a refusé le devis ${all[idx].numero}${refuseMsg ? ` : "${refuseMsg}"` : ''}`, lien: `/patron/devis-factures`, lu: false });
-    lsSet('freample_notifs_patron', notifs);
+    demoSet('freample_notifs_patron', notifs);
     setDevis(all[idx]);
     setAction('refuse_sent');
   }

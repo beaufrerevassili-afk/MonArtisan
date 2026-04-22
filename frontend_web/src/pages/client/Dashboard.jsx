@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import DS from '../../design/luxe';
@@ -13,7 +14,6 @@ const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadiu
 const BTN = { padding: '10px 20px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font };
 const INP = { width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, fontFamily: DS.font, outline: 'none', boxSizing: 'border-box' };
 
-function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
 
 function useIsMobile(bp = 640) {
   const [m, setM] = useState(() => window.innerWidth <= bp);
@@ -33,7 +33,7 @@ export default function DashboardClient() {
   const [projetDetail, setProjetDetail] = useState(null);
   const [reviewNote, setReviewNote] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
-  const [reviewSent, setReviewSent] = useState(() => lsGet('freample_reviews', {}));
+  const [reviewSent, setReviewSent] = useState(() => demoGet('freample_reviews', {}));
   const [clientMessage, setClientMessage] = useState('');
   const [showPaiements, setShowPaiements] = useState(false);
   const [showProfil, setShowProfil] = useState(false);
@@ -46,7 +46,7 @@ export default function DashboardClient() {
 
   const chargerProjets = async () => {
     if (isDemo) {
-      const local = lsGet('freample_projets', []);
+      const local = demoGet('freample_projets', []);
       setProjets(local.length > 0 ? local : []);
     } else {
       try {
@@ -97,8 +97,8 @@ export default function DashboardClient() {
 
   // Données dérivées
   const [allOffresBackend, setAllOffresBackend] = useState([]);
-  const allOffres = isDemo ? lsGet('freample_offres', []) : allOffresBackend;
-  const allDevis = lsGet('freample_devis', []);
+  const allOffres = isDemo ? demoGet('freample_offres', []) : allOffresBackend;
+  const allDevis = demoGet('freample_devis', []);
   const offresActives = allOffres.filter(o => o.statut !== 'retiree');
   const projetsPublies = projets.filter(p => p.statut === 'publie');
   const projetsEnCours = projets.filter(p => p.statut === 'en_cours' || p.statut === 'reception');
@@ -179,7 +179,7 @@ export default function DashboardClient() {
     } catch {}
 
     // 5. Notif patron
-    const notifs = lsGet('freample_notifs_patron', []);
+    const notifs = demoGet('freample_notifs_patron', []);
     notifs.push({
       id: Date.now(), date: new Date().toISOString(), type: 'offre_acceptee',
       titre: 'Un client vous a choisi !',
@@ -303,9 +303,9 @@ export default function DashboardClient() {
           const offres = offresActives.filter(o => o.projetId === p.id && (!o.statut || o.statut === 'proposee'));
           const offresAll = offresActives.filter(o => o.projetId === p.id);
           const devis = allDevis.filter(d => d.projetId === p.id && d.statut !== 'retire_marketplace');
-          const chantier = lsGet('freample_chantiers_custom', []).find(c => c.projetId === p.id);
-          const rapports = lsGet(`freample_rapports_${p.id}`, []).slice(-5).reverse();
-          const chatMessages = lsGet(`freample_messages_${p.id}`, []);
+          const chantier = demoGet('freample_chantiers_custom', []).find(c => c.projetId === p.id);
+          const rapports = demoGet(`freample_rapports_${p.id}`, []).slice(-5).reverse();
+          const chatMessages = demoGet(`freample_messages_${p.id}`, []);
 
           return <div>
             <button onClick={() => setProjetDetail(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour à l'accueil</button>
@@ -379,7 +379,7 @@ export default function DashboardClient() {
 
             {/* Suivi chantier */}
             {(p.statut === 'en_cours' || p.statut === 'termine') && (() => {
-              const profilPatron = lsGet('freample_profil_patron', {});
+              const profilPatron = demoGet('freample_profil_patron', {});
               const patronTel = profilPatron.telephone || profilPatron.tel || '';
               const patronNom = profilPatron.nom || p.artisan || 'Artisan';
               const avancement = chantier?.avancement || (p.statut === 'termine' ? 100 : 25);
@@ -387,9 +387,9 @@ export default function DashboardClient() {
               const dateFin = chantier?.dateFin;
               const equipe = chantier?.equipe || [];
               const today = new Date().toISOString().slice(0, 10);
-              const todayPointages = lsGet('freample_pointages', []).filter(pt => pt.date === today && (pt.chantierId === p.id || pt.chantierId === chantier?.id));
+              const todayPointages = demoGet('freample_pointages', []).filter(pt => pt.date === today && (pt.chantierId === p.id || pt.chantierId === chantier?.id));
               const ouvriersPresents = todayPointages.filter(pt => pt.type === 'arrivee');
-              const photos = chantier ? lsGet(`freample_photos_${chantier.id}`, []) : [];
+              const photos = chantier ? demoGet(`freample_photos_${chantier.id}`, []) : [];
               const devisAccepte = allDevis.find(d => d.projetId === p.id && (d.statut === 'envoye' || d.statut === 'accepte' || d.statut === 'signe'));
 
               return (
@@ -565,15 +565,15 @@ export default function DashboardClient() {
 
             {/* PV de réception */}
             {(p.statut === 'reception' || p.statut === 'termine') && (() => {
-              const pvs = lsGet('freample_pv_receptions', []);
+              const pvs = demoGet('freample_pv_receptions', []);
               const pv = pvs.find(v => v.projetId === p.id || v.chantierId === chantier?.id);
               if (!pv && p.statut !== 'termine') return null;
-              const profilPatron = lsGet('freample_profil_patron', {});
+              const profilPatron = demoGet('freample_profil_patron', {});
               const devisLie = allDevis.find(d => d.projetId === p.id);
 
               const handleSigner = (pvData) => {
                 // 1. Sauver le PV signé
-                const allPvs = lsGet('freample_pv_receptions', []);
+                const allPvs = demoGet('freample_pv_receptions', []);
                 const updPvs = allPvs.map(v => v.id === pvData.id ? { ...pvData, statut: 'signe' } : v);
                 localStorage.setItem('freample_pv_receptions', JSON.stringify(updPvs));
 
@@ -597,7 +597,7 @@ export default function DashboardClient() {
                 } catch {}
 
                 // 5. Notif patron
-                const notifs = lsGet('freample_notifs_patron', []);
+                const notifs = demoGet('freample_notifs_patron', []);
                 notifs.push({
                   id: Date.now(), date: new Date().toISOString(), type: 'pv_signe',
                   titre: pvData.sansReserve ? 'PV signé sans réserve — paiement libéré' : 'PV signé avec réserves — paiement partiel',
@@ -612,7 +612,7 @@ export default function DashboardClient() {
 
               const handleRefuser = (motif) => {
                 // Notif patron
-                const notifs = lsGet('freample_notifs_patron', []);
+                const notifs = demoGet('freample_notifs_patron', []);
                 notifs.push({
                   id: Date.now(), date: new Date().toISOString(), type: 'pv_refuse',
                   titre: 'PV de réception refusé',
