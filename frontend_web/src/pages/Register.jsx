@@ -413,6 +413,13 @@ export default function Register() {
   const [role, setRole]     = useState(urlRole);
   const [secteur, setSecteur] = useState(urlSecteur);
   const [step, setStep]   = useState(urlRole ? 1 : 0); // step 0 = choix type de compte
+
+  // Sync state when URL params change (e.g. clicking "Créer un compte pro")
+  useEffect(() => {
+    const r = searchParams.get('role') || '';
+    const s = searchParams.get('secteur') || 'btp';
+    if (r && r !== role) { setRole(r); setSecteur(s); setStep(1); setEntrepriseType(r === 'patron' ? 'classique' : ''); }
+  }, [searchParams]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
@@ -824,6 +831,14 @@ export default function Register() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Bouton retour au choix de compte */}
+        {step === 1 && !urlRole && (
+          <button onClick={() => { setStep(0); setRole(''); setClientType(''); setEntrepriseType(''); navigate('/register'); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, marginBottom: 8, padding: 0 }}>
+            ← Retour au choix du compte
+          </button>
         )}
 
         {/* Step indicator artisan */}
