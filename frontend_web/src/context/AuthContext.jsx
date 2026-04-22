@@ -86,6 +86,11 @@ export function AuthProvider({ children }) {
       }
     } catch {}
     const { data } = await api.post('/login', { email, motdepasse });
+    // Compte réel — nettoyer toutes les données démo du localStorage
+    const keysToKeep = new Set(['token', 'freample_clients_auto', 'freample_account_type', 'freample_profil_patron', 'freample_ae_profil', 'freample_notif_prefs', 'freample_alertes_dismissed']);
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('freample_') && !keysToKeep.has(k)) localStorage.removeItem(k);
+    });
     localStorage.setItem('token', data.token);
     setToken(data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;

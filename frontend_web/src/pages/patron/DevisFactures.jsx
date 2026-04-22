@@ -69,12 +69,14 @@ export default function DevisFactures() {
   const [filtre, setFiltre] = useState('tous');
   const [search, setSearch] = useState('');
   const [devis, setDevis] = useState(() => {
+    if (!isDemo) return [];
     const saved = lsGet('freample_devis', []);
-    return saved.length > 0 ? saved : (isDemo ? DEMO_DEVIS : []);
+    return saved.length > 0 ? saved : DEMO_DEVIS;
   });
   const [factures, setFactures] = useState(() => {
+    if (!isDemo) return [];
     const saved = lsGet('freample_factures_patron', []);
-    return saved.length > 0 ? saved : (isDemo ? DEMO_FACTURES : []);
+    return saved.length > 0 ? saved : DEMO_FACTURES;
   });
   const [lienDirect, setLienDirect] = useState(null); // modal lien direct
   const [showNewDevis, setShowNewDevis] = useState(false);

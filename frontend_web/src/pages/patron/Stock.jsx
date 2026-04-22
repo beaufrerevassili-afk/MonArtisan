@@ -27,21 +27,20 @@ export default function Stock() {
   const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   // Charger immédiatement depuis localStorage ou ARTICLES_INIT (zéro flash blanc)
   const [articles, setArticles] = useState(() => {
-    try { const s = localStorage.getItem('freample_stock_articles'); return s ? JSON.parse(s) : (isDemo ? ARTICLES_INIT : []); } catch { return isDemo ? ARTICLES_INIT : []; }
+    if (!isDemo) return [];
+    try { const s = localStorage.getItem('freample_stock_articles'); return s ? JSON.parse(s) : ARTICLES_INIT; } catch { return ARTICLES_INIT; }
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (isDemo) return;
     api.get('/patron/stock')
-      .then(({ data }) => { const articles = data.articles || []; setArticles(articles); if(articles.length) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); })
-      .catch(() => {
-        const saved = localStorage.getItem('freample_stock_articles');
-        setArticles(saved ? JSON.parse(saved) : (isDemo ? ARTICLES_INIT : []));
-      })
+      .then(({ data }) => { setArticles(data.articles || []); })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { if(articles.length > 0) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); }, [articles]);
+  useEffect(() => { if(isDemo && articles.length > 0) localStorage.setItem('freample_stock_articles', JSON.stringify(articles)); }, [articles]);
 
   const [modal, setModal] = useState(null); // null | 'add' | article-object
   const [form, setForm] = useState(ARTICLE_VIDE);
