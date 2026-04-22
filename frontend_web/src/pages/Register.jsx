@@ -424,10 +424,8 @@ export default function Register() {
 
   // ── Vérification email ──
   const [emailVerified, setEmailVerified] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [sendingCode, setSendingCode] = useState(false);
-  const [codeError, setCodeError] = useState('');
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailError, setEmailError] = useState('');
   // Données profil artisan
   const [profil, setProfil] = useState({ metier: '', siret: '', adresse: '', ville: '', experience: '', description: '' });
   // Documents uploadés { id: File }
@@ -585,7 +583,6 @@ export default function Register() {
         email:      compte.email,
         motdepasse: compte.motdepasse,
         ville:      compte.ville,
-        emailCode:  verificationCode,
         role,
         secteur,
         clientType: 'particulier',
@@ -859,60 +856,25 @@ export default function Register() {
 
                   <div>
                     <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
-                    <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => { setCompte({ ...compte, email: e.target.value }); setEmailVerified(false); setCodeSent(false); setVerificationCode(''); }} autoComplete="email" />
+                    <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email}
+                      onChange={e => { setCompte({ ...compte, email: e.target.value }); setEmailVerified(false); setEmailError(''); }}
+                      onBlur={async () => {
+                        const em = compte.email.trim();
+                        if (!em || !em.includes('@') || !em.includes('.')) return;
+                        setEmailChecking(true);
+                        setEmailError('');
+                        try {
+                          const { data } = await api.post('/verify-email', { email: em });
+                          if (data.valid) { setEmailVerified(true); }
+                          else { setEmailError(data.reason || 'Email invalide'); setEmailVerified(false); }
+                        } catch { setEmailError('Erreur de vérification'); }
+                        finally { setEmailChecking(false); }
+                      }}
+                      autoComplete="email" />
+                    {emailChecking && <div style={{ fontSize: 11, color: '#A68B4B', marginTop: 4 }}>Vérification en cours...</div>}
+                    {emailError && <div style={{ fontSize: 12, color: '#DC2626', marginTop: 4 }}>{emailError}</div>}
+                    {emailVerified && <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: 4 }}>✓ Email vérifié</div>}
                   </div>
-
-                  {compte.email && !emailVerified && (
-                    <div style={{ marginTop: -8 }}>
-                      {!codeSent ? (
-                        <button type="button" onClick={async () => {
-                          setSendingCode(true);
-                          setCodeError('');
-                          try {
-                            await api.post('/send-verification-code', { email: compte.email });
-                            setCodeSent(true);
-                          } catch (err) {
-                            setCodeError(err.response?.data?.erreur || 'Erreur lors de l\'envoi');
-                          } finally { setSendingCode(false); }
-                        }}
-                          disabled={sendingCode || !compte.email.includes('@')}
-                          style={{ fontSize: 12, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', padding: '4px 0' }}>
-                          {sendingCode ? 'Envoi en cours...' : 'Vérifier cet email \u2192'}
-                        </button>
-                      ) : (
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                          <input
-                            type="text"
-                            maxLength={6}
-                            placeholder="Code \u00e0 6 chiffres"
-                            value={verificationCode}
-                            onChange={e => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                            style={{ width: 140, padding: '8px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', letterSpacing: '0.2em', textAlign: 'center' }}
-                          />
-                          <button type="button" onClick={async () => {
-                            if (verificationCode.length === 6) {
-                              setEmailVerified(true);
-                              setCodeError('');
-                            }
-                          }}
-                            disabled={verificationCode.length !== 6}
-                            style={{ padding: '8px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                            V\u00e9rifier
-                          </button>
-                          <button type="button" onClick={() => { setCodeSent(false); setVerificationCode(''); setCodeError(''); }}
-                            style={{ fontSize: 11, color: '#636363', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                            Renvoyer
-                          </button>
-                        </div>
-                      )}
-                      {codeError && <div style={{ fontSize: 12, color: '#DC2626', marginTop: 4 }}>{codeError}</div>}
-                    </div>
-                  )}
-                  {emailVerified && (
-                    <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: -8, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      ✓ Email v\u00e9rifi\u00e9
-                    </div>
-                  )}
 
                   <div>
                     <label htmlFor="reg-ville" className="reg-label">Ville</label>

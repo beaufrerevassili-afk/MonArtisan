@@ -67,38 +67,47 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Déconnecté' });
 });
 
-// Email verification codes (in-memory, 10min expiry)
-const verificationCodes = new Map();
+// ── Email validation (MX + disposable check) ──────────────
+const dns = require('dns').promises;
 
-// POST /send-verification-code
-router.post('/send-verification-code', authLimiter, async (req, res) => {
+const DISPOSABLE_DOMAINS = new Set([
+  'yopmail.com','guerrillamail.com','guerrillamail.net','tempmail.com','throwaway.email',
+  'mailinator.com','10minutemail.com','trashmail.com','fakeinbox.com','sharklasers.com',
+  'guerrillamailblock.com','grr.la','dispostable.com','mailnesia.com','maildrop.cc',
+  'temp-mail.org','tempail.com','tempr.email','discard.email','discardmail.com',
+  'mailcatch.com','meltmail.com','nada.email','spamgourmet.com','mytemp.email',
+  'jetable.org','trash-mail.com','mohmal.com','getnada.com','emailondeck.com',
+  'crazymailing.com','tempinbox.com','binkmail.com','spamdecoy.net','inboxalias.com',
+]);
+
+async function validateEmail(email) {
+  if (!email || !email.includes('@')) return { valid: false, reason: 'Format email invalide' };
+
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return { valid: false, reason: 'Format email invalide' };
+
+  // Block disposable emails
+  if (DISPOSABLE_DOMAINS.has(domain)) return { valid: false, reason: 'Les adresses email temporaires ne sont pas acceptées' };
+
+  // Check MX records (does the domain have a real mail server?)
+  try {
+    const mx = await dns.resolveMx(domain);
+    if (!mx || mx.length === 0) return { valid: false, reason: 'Ce domaine email n\'existe pas' };
+  } catch {
+    return { valid: false, reason: 'Ce domaine email n\'existe pas' };
+  }
+
+  return { valid: true };
+}
+
+// POST /verify-email — check if email domain is real
+router.post('/verify-email', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ erreur: 'Email requis' });
-
-    // Check rate limit per email
-    const existing = verificationCodes.get(email);
-    if (existing && existing.attempts >= 3 && Date.now() - existing.createdAt < 600000) {
-      return res.status(429).json({ erreur: 'Trop de tentatives. Réessayez dans quelques minutes.' });
-    }
-
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    verificationCodes.set(email, {
-      code,
-      createdAt: Date.now(),
-      attempts: (existing?.attempts || 0) + 1
-    });
-
-    // Clean up after 10 minutes
-    setTimeout(() => verificationCodes.delete(email), 600000);
-
-    // Send email
-    await emailService.sendVerificationCode(email, code);
-
-    res.json({ message: 'Code envoyé' });
-  } catch (err) {
-    console.error('Erreur /send-verification-code :', err.message);
-    res.status(500).json({ erreur: 'Erreur lors de l\'envoi du code' });
+    const result = await validateEmail(email);
+    res.json(result);
+  } catch {
+    res.status(500).json({ valid: false, reason: 'Erreur de vérification' });
   }
 });
 
@@ -109,16 +118,11 @@ router.post('/register', authLimiter, async (req, res) => {
     if (!nom || !email || !motdepasse) return res.status(400).json({ erreur: 'nom, email, motdepasse requis' });
     if (motdepasse.length < 8) return res.status(400).json({ erreur: 'Le mot de passe doit contenir au moins 8 caractères' });
 
-    // Verify email code
-    const { emailCode } = req.body;
-    if (!emailCode) return res.status(400).json({ erreur: 'Code de vérification requis' });
-    const stored = verificationCodes.get(email);
-    if (!stored || stored.code !== emailCode || Date.now() - stored.createdAt > 600000) {
-      return res.status(400).json({ erreur: 'Code de vérification invalide ou expiré' });
+    // Verify email domain (MX + disposable check)
+    const emailCheck = await validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ erreur: emailCheck.reason });
     }
-    // Code valid, clean up
-    verificationCodes.delete(email);
-
     const { rows: existing } = await db.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.length > 0) return res.status(400).json({ erreur: 'Cet email est déjà utilisé' });
 
