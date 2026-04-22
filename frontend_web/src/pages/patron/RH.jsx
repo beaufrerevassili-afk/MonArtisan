@@ -487,7 +487,13 @@ function RecrutementView() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid #E5E5EA', paddingBottom: 0 }}>
         {[['annonces','Mes annonces'],['pipeline','Pipeline candidatures']].map(([v, l]) => (
-          <button key={v} onClick={() => setView(v)} style={{ padding: '9px 18px', background: 'none', border: 'none', borderBottom: view === v ? '2px solid #5B5BD6' : '2px solid transparent', cursor: 'pointer', fontWeight: view === v ? 700 : 500, color: view === v ? '#5B5BD6' : '#6E6E73', fontSize: 14, marginBottom: -1 }}>
+          <button key={v} onClick={() => {
+            setView(v);
+            if (v === 'pipeline' && !selectedAnnonce && annonces.length > 0) {
+              setSelectedAnnonce(annonces[0]);
+              fetchCandidatures(annonces[0].id);
+            }
+          }} style={{ padding: '9px 18px', background: 'none', border: 'none', borderBottom: view === v ? '2px solid #5B5BD6' : '2px solid transparent', cursor: 'pointer', fontWeight: view === v ? 700 : 500, color: view === v ? '#5B5BD6' : '#6E6E73', fontSize: 14, marginBottom: -1 }}>
             {l}
           </button>
         ))}
