@@ -81,17 +81,9 @@ export default function Stock() {
   async function handleSubmit(e) {
     e.preventDefault();
     const payload = { ...form, quantite: Number(form.quantite), seuilAlerte: Number(form.seuilAlerte), valeurUnitaire: Number(form.valeurUnitaire) };
-    try {
-      if (modal === 'add') {
-        const { data } = await api.post('/patron/stock', payload);
-        setArticles(prev => [...prev, data.article]);
-      } else {
-        const { data } = await api.put(`/patron/stock/${modal.id}`, payload);
-        setArticles(prev => prev.map(a => a.id === modal.id ? data.article : a));
-      }
-      setModal(null);
-    } catch (err) {
 
+    if (isDemo) {
+      // Demo: local state only (persisted via useEffect → demoSet)
       if (modal === 'add') {
         const newArticle = { ...payload, id: Date.now() };
         setArticles(prev => [...prev, newArticle]);
@@ -99,18 +91,54 @@ export default function Stock() {
         setArticles(prev => prev.map(a => a.id === modal.id ? { ...payload, id: modal.id } : a));
       }
       setModal(null);
+      return;
+    }
+
+    // Real account: call API
+    try {
+      if (modal === 'add') {
+        const { data } = await api.post('/patron/stock', {
+          nom: payload.designation,
+          categorie: payload.categorie,
+          quantite: payload.quantite,
+          unite: payload.unite,
+          seuil: payload.seuilAlerte,
+          fournisseur: payload.fournisseur,
+          prix: payload.valeurUnitaire,
+        });
+        setArticles(prev => [...prev, data.article]);
+      } else {
+        const { data } = await api.put(`/patron/stock/${modal.id}`, {
+          nom: payload.designation,
+          categorie: payload.categorie,
+          quantite: payload.quantite,
+          unite: payload.unite,
+          seuil: payload.seuilAlerte,
+          fournisseur: payload.fournisseur,
+          prix: payload.valeurUnitaire,
+        });
+        setArticles(prev => prev.map(a => a.id === modal.id ? data.article : a));
+      }
+      setModal(null);
+    } catch (err) {
+      console.error('Stock save error:', err);
     }
   }
 
   async function handleDelete(id) {
+    if (isDemo) {
+      setArticles(prev => prev.filter(a => a.id !== id));
+      setModal(null);
+      return;
+    }
+
+    // Real account: call API
     try {
       await api.delete(`/patron/stock/${id}`);
       setArticles(prev => prev.filter(a => a.id !== id));
       setModal(null);
     } catch (err) {
-
-      setArticles(prev => prev.filter(a => a.id !== id));
-      setModal(null);
+      console.error('Stock delete error:', err);
     }
   }
 

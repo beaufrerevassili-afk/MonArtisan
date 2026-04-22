@@ -1450,6 +1450,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
 
 /* ── Congés ── */
 function CongesView() {
+  const isDemo = _isDemo();
   const [conges, setConges] = useState([]);
   const [employes, setEmployes] = useState([]);
   const [form, setForm] = useState({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye', motif: '' });
@@ -1460,20 +1461,25 @@ function CongesView() {
   const [refusCommentaire, setRefusCommentaire] = useState('');
 
   useEffect(() => {
-    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
-      // Fallback localStorage — lire les congés soumis par les salariés
+    if (isDemo) {
+      // Demo: localStorage only
       try {
         const local = demoGet('freample_conges', []);
         if (local.length > 0) setConges(local);
       } catch {}
-    });
+    } else {
+      // Real account: API
+      api.get('/rh/conges').then(r => setConges(r.data.conges || [])).catch(() => {});
+    }
     api.get('/rh/employes').then(r => setEmployes(r.data.employes || [])).catch(() => {});
   }, []);
 
   const refresh = () => {
-    api.get('/rh/conges').then(r => setConges(r.data.conges)).catch(() => {
+    if (isDemo) {
       try { setConges(demoGet('freample_conges', [])); } catch {}
-    });
+    } else {
+      api.get('/rh/conges').then(r => setConges(r.data.conges || [])).catch(() => {});
+    }
   };
 
   function nomEmploye(id) {
@@ -1491,34 +1497,41 @@ function CongesView() {
 
   async function soumettre(e) {
     e.preventDefault();
-    await api.post('/rh/conges', form).catch(() => {});
+    if (isDemo) {
+      // Demo: save to localStorage
+      const newConge = { id: Date.now(), ...form, statut: 'en_attente', nbJours: Math.max(1, Math.ceil((new Date(form.dateFin) - new Date(form.dateDebut)) / 86400000) + 1) };
+      const local = demoGet('freample_conges', []);
+      demoSet('freample_conges', [newConge, ...local]);
+    } else {
+      await api.post('/rh/conges', form).catch(() => {});
+    }
     await refresh();
     setForm({ employeId: '', dateDebut: '', dateFin: '', type: 'conge_paye', motif: '' });
     setSolde(null);
   }
 
   async function approuver(id) {
-    await api.put(`/rh/conges/${id}/valider`, { decision: 'approuvé' }).catch(() => {});
-    // Mettre à jour localStorage pour synchro salarié
-    try {
+    if (isDemo) {
+      // Demo: update localStorage
       const local = demoGet('freample_conges', []);
-      const updated = local.map(c => c.id === id ? { ...c, statut: 'approuve' } : c);
+      const updated = local.map(c => c.id === id ? { ...c, statut: 'approuvé' } : c);
       demoSet('freample_conges', updated);
-      setConges(updated);
-    } catch {}
+    } else {
+      await api.put(`/rh/conges/${id}/valider`, { decision: 'approuvé' }).catch(() => {});
+    }
     await refresh();
   }
 
   async function confirmerRefus() {
     if (!refusModal) return;
-    await api.put(`/rh/conges/${refusModal.id}/valider`, { decision: 'refusé', commentaire: refusCommentaire }).catch(() => {});
-    // Mettre à jour localStorage pour synchro salarié
-    try {
+    if (isDemo) {
+      // Demo: update localStorage
       const local = demoGet('freample_conges', []);
-      const updated = local.map(c => c.id === refusModal.id ? { ...c, statut: 'rejete', commentaire: refusCommentaire } : c);
+      const updated = local.map(c => c.id === refusModal.id ? { ...c, statut: 'refusé', commentaire: refusCommentaire } : c);
       demoSet('freample_conges', updated);
-      setConges(updated);
-    } catch {}
+    } else {
+      await api.put(`/rh/conges/${refusModal.id}/valider`, { decision: 'refusé', commentaire: refusCommentaire }).catch(() => {});
+    }
     setRefusModal(null);
     setRefusCommentaire('');
     await refresh();
@@ -1693,9 +1706,51 @@ function CongesView() {
 
 /* ── Notes de frais ── */
 function NotesFraisView() {
+  const isDemo = _isDemo();
   const [notes, setNotes] = useState([]);
-  useEffect(() => { api.get('/rh/notes-frais').then(r => setNotes(r.data.notesFrais)).catch(() => {}); }, []);
-  const refresh = () => api.get('/rh/notes-frais').then(r => setNotes(r.data.notesFrais)).catch(() => {});
+  const [employes, setEmployes] = useState([]);
+
+  useEffect(() => {
+    if (isDemo) {
+      try { setNotes(demoGet('freample_notes_frais', [])); } catch {}
+    } else {
+      api.get('/rh/notes-frais').then(r => setNotes(r.data.notesFrais || [])).catch(() => {});
+    }
+    api.get('/rh/employes').then(r => setEmployes(r.data.employes || [])).catch(() => {});
+  }, []);
+
+  const refresh = () => {
+    if (isDemo) {
+      try { setNotes(demoGet('freample_notes_frais', [])); } catch {}
+    } else {
+      api.get('/rh/notes-frais').then(r => setNotes(r.data.notesFrais || [])).catch(() => {});
+    }
+  };
+
+  function nomEmploye(id) {
+    const emp = employes.find(e => String(e.id) === String(id));
+    return emp ? `${emp.prenom} ${emp.nom}` : `Employé #${id}`;
+  }
+
+  async function approuverNote(id) {
+    if (isDemo) {
+      const local = demoGet('freample_notes_frais', []);
+      demoSet('freample_notes_frais', local.map(n => n.id === id ? { ...n, statut: 'approuvée' } : n));
+    } else {
+      await api.put(`/rh/notes-frais/${id}/valider`, { decision: 'approuvée' }).catch(() => {});
+    }
+    refresh();
+  }
+
+  async function refuserNote(id) {
+    if (isDemo) {
+      const local = demoGet('freample_notes_frais', []);
+      demoSet('freample_notes_frais', local.map(n => n.id === id ? { ...n, statut: 'refusée' } : n));
+    } else {
+      await api.put(`/rh/notes-frais/${id}/valider`, { decision: 'refusée' }).catch(() => {});
+    }
+    refresh();
+  }
 
   return (
     <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
@@ -1712,17 +1767,17 @@ function NotesFraisView() {
             <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: '#636363' }}>Aucune note de frais</td></tr>
           ) : notes.map(n => (
             <tr key={n.id} style={{ borderBottom: '1px solid #F2F2F7' }}>
-              <td style={{ padding: '12px 16px' }}>Employé #{n.employeId}</td>
+              <td style={{ padding: '12px 16px', fontWeight: 600 }}>{nomEmploye(n.employeId)}</td>
               <td style={{ padding: '12px 16px', fontWeight: 600 }}>{n.montant?.toLocaleString('fr-FR')} €</td>
               <td style={{ padding: '12px 16px', color: '#6E6E73', textTransform: 'capitalize' }}>{n.categorie}</td>
               <td style={{ padding: '12px 16px' }}><StatutBadge statut={n.statut} /></td>
               <td style={{ padding: '12px 16px' }}>
                 {n.statut === 'en_attente' && (
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => api.put(`/rh/notes-frais/${n.id}/valider`, { decision: 'approuvée' }).then(refresh)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#D1F2E0', color: '#1A7F43', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                    <button onClick={() => approuverNote(n.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#D1F2E0', color: '#1A7F43', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       <IconCheck size={11} /> Approuver
                     </button>
-                    <button onClick={() => api.put(`/rh/notes-frais/${n.id}/valider`, { decision: 'refusée' }).then(refresh)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                    <button onClick={() => refuserNote(n.id)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                       <IconX size={11} /> Refuser
                     </button>
                   </div>

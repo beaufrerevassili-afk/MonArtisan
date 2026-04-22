@@ -273,24 +273,41 @@ export default function Agenda() {
       lieu: form.lieu || undefined,
       note: form.note || undefined,
     };
-    try {
-      const { data } = await api.post('/patron/agenda', payload);
-      setEvents(prev => [...prev, data.event || { id: 'ev-' + Date.now(), ...payload }]);
-    } catch {
-      // Fallback : ajouter localement si l'API échoue
-      setEvents(prev => [...prev, { id: 'ev-' + Date.now(), ...payload }]);
+    if (isDemo) {
+      const newEvent = { id: 'ev-' + Date.now(), ...payload };
+      setEvents(prev => {
+        const updated = [...prev, newEvent];
+        demoSet('freample_agenda_events', updated);
+        return updated;
+      });
+    } else {
+      try {
+        const { data } = await api.post('/patron/agenda', payload);
+        setEvents(prev => [...prev, data.event || { id: 'ev-' + Date.now(), ...payload }]);
+      } catch {
+        // Fallback : ajouter localement si l'API échoue
+        setEvents(prev => [...prev, { id: 'ev-' + Date.now(), ...payload }]);
+      }
     }
     setAddingDate(null);
     setAddSubmitted(false);
     setForm(FORM_VIDE);
   }
   async function handleDelete(id) {
-    try {
-      await api.delete(`/patron/agenda/${id}`);
-    } catch {
-      // Fail silently — suppression locale quand même
+    if (isDemo) {
+      setEvents(prev => {
+        const updated = prev.filter(e => e.id !== id);
+        demoSet('freample_agenda_events', updated);
+        return updated;
+      });
+    } else {
+      try {
+        await api.delete(`/patron/agenda/${id}`);
+      } catch {
+        // Fail silently — suppression locale quand même
+      }
+      setEvents(prev => prev.filter(e => e.id !== id));
     }
-    setEvents(prev => prev.filter(e => e.id !== id));
     setSelectedEvent(null);
   }
 
