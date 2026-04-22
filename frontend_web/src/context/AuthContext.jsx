@@ -32,7 +32,6 @@ export function AuthProvider({ children }) {
   // Comptes démo — fonctionnent sans backend
   const DEMO_ACCOUNTS = {
     'demo-client@freample.fr': { id:900, nom:'Marie Dupont', role:'client', secteur:null },
-    'demo-entreprise@freample.fr': { id:904, nom:'SAS Dupont & Fils', role:'client', secteur:null, clientType:'entreprise' },
     'demo-patron@freample.fr': { id:901, nom:'Marc Lambert BTP', role:'patron', secteur:'btp' },
     'demo-ae@freample.fr': { id:906, nom:'Thomas Petit Plomberie', role:'patron', secteur:'btp', entrepriseType:'ae' },
     'demo-employe@freample.fr': { id:902, nom:'Lucas Garcia', role:'employe', secteur:'btp', patronId:901 },

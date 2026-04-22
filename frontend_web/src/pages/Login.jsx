@@ -6,10 +6,8 @@ import L from '../design/luxe';
 // ── Comptes démo (alignés avec AuthContext) ──
 const DEMO_COMPTES = [
   { role:'Client particulier', desc:'Publiez un projet, recevez des offres', email:'demo-client@freample.fr', motdepasse:'demo', color:'#5B5BD6' },
-  { role:'Client entreprise', desc:'Gestion projets pro (SAS, SARL…)', email:'demo-entreprise@freample.fr', motdepasse:'demo', color:'#2563EB' },
   { role:'Chef d\'entreprise BTP', desc:'ERP complet : devis, RH, finance, QSE', email:'demo-patron@freample.fr', motdepasse:'demo', color:'#0A0A0A' },
   { role:'Auto-entrepreneur', desc:'Tableau de bord simplifié, CA, URSSAF', email:'demo-ae@freample.fr', motdepasse:'demo', color:'#A68B4B' },
-  { role:'Gestion SCI', desc:'Comptabilité SCI, biens, déclarations fiscales', email:'demo-sci@freample.fr', motdepasse:'demo', color:'#16A34A' },
   { role:'Salarié BTP', desc:'Planning, fiches de paie, congés, notes de frais', email:'demo-employe@freample.fr', motdepasse:'demo', color:'#D97706' },
 ];
 const SECTOR_CONFIG = {
