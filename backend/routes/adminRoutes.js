@@ -225,10 +225,11 @@ router.post('/detach-employe', authenticateToken, authorizeRole(...ADMIN_ROLES),
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ erreur: 'userId requis' });
     await db.query('UPDATE employes SET patron_id = NULL WHERE user_id = $1', [userId]);
-    await db.query('UPDATE users SET patron_id = NULL WHERE id = $1', [userId]);
+    // Also try users table (may not have patron_id column)
+    try { await db.query('UPDATE users SET patron_id = NULL WHERE id = $1', [userId]); } catch {}
     res.json({ message: 'Employé détaché' });
   } catch (err) {
-    res.status(500).json({ erreur: 'Erreur serveur' });
+    res.status(500).json({ erreur: err.message });
   }
 });
 
