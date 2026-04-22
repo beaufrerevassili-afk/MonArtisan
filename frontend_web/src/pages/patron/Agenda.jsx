@@ -134,6 +134,7 @@ function DemoBanner() {
 /* ── Main ──────────────────────────────────────────────── */
 export default function Agenda() {
   const { token, user } = useAuth();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [view, setView] = useState('month'); // 'month' | 'week'
   const [cursor, setCursor] = useState(new Date(TODAY));
   const [events, setEvents] = useState([]);
@@ -172,7 +173,7 @@ export default function Agenda() {
     // Charger les events : d'abord API, sinon localStorage, sinon démo
     api.get('/patron/agenda')
       .then(({ data }) => {
-        const evts = data.events?.length ? data.events : DEMO_EVENTS;
+        const evts = data.events?.length ? data.events : (isDemo ? DEMO_EVENTS : []);
         setEvents(evts);
         // Sauver en localStorage pour le Dashboard et les autres pages
         try { localStorage.setItem('freample_agenda_events', JSON.stringify(evts)); } catch {}
@@ -181,9 +182,9 @@ export default function Agenda() {
         // Fallback localStorage, puis démo
         try {
           const stored = JSON.parse(localStorage.getItem('freample_agenda_events') || '[]');
-          setEvents(stored.length ? stored : DEMO_EVENTS);
-          if (!stored.length) localStorage.setItem('freample_agenda_events', JSON.stringify(DEMO_EVENTS));
-        } catch { setEvents(DEMO_EVENTS); }
+          setEvents(stored.length ? stored : (isDemo ? DEMO_EVENTS : []));
+          if (!stored.length && isDemo) localStorage.setItem('freample_agenda_events', JSON.stringify(DEMO_EVENTS));
+        } catch { setEvents(isDemo ? DEMO_EVENTS : []); }
       });
 
     // Then merge chantiers/missions as readonly events

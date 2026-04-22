@@ -118,6 +118,7 @@ function DemoBanner() {
 
 /* ── Main component ── */
 export default function ClientsRFM() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [mainTab, setMainTab] = useState('clients');
   const [filtreSegment, setFiltreSegment] = useState('tous');
   const [search, setSearch] = useState('');
@@ -126,7 +127,7 @@ export default function ClientsRFM() {
 
   // Règles des hooks : useMemo DOIT être appelé avant les return conditionnels
   const clients = useMemo(() => {
-    let list = CLIENTS_DEMO;
+    let list = isDemo ? CLIENTS_DEMO : [];
     if (filtreSegment !== 'tous') list = list.filter(c => c.segment === filtreSegment);
     if (search) list = list.filter(c => c.nom.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase()));
     return list.sort((a, b) => {
@@ -149,16 +150,17 @@ export default function ClientsRFM() {
     </div>
   );
 
-  const selected = CLIENTS_DEMO.find(c => c.id === selectedId);
+  const allClients = isDemo ? CLIENTS_DEMO : [];
+  const selected = allClients.find(c => c.id === selectedId);
 
   /* KPIs par segment */
   const kpis = Object.entries(SEGMENTS).map(([key, seg]) => ({
     key, ...seg,
-    count: CLIENTS_DEMO.filter(c => c.segment === key).length,
-    ca: CLIENTS_DEMO.filter(c => c.segment === key).reduce((s, c) => s + c.totalCA, 0),
+    count: allClients.filter(c => c.segment === key).length,
+    ca: allClients.filter(c => c.segment === key).reduce((s, c) => s + c.totalCA, 0),
   })).filter(k => k.count > 0);
 
-  const totalCA = CLIENTS_DEMO.reduce((s, c) => s + c.totalCA, 0);
+  const totalCA = allClients.reduce((s, c) => s + c.totalCA, 0);
 
   function exportCSV() {
     const rows = [['Nom', 'Email', 'Téléphone', 'R', 'F', 'M', 'Score', 'CA total', 'Nb commandes', 'Dernier achat', 'Segment']];
@@ -201,7 +203,7 @@ export default function ClientsRFM() {
       {/* KPI cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
         <div onClick={() => setFiltreSegment('tous')} style={{ background: filtreSegment === 'tous' ? '#1C1C1E' : '#fff', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: 'pointer', border: '2px solid transparent', transition: 'all 0.15s' }}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: filtreSegment === 'tous' ? '#fff' : '#1C1C1E' }}>{CLIENTS_DEMO.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: filtreSegment === 'tous' ? '#fff' : '#1C1C1E' }}>{allClients.length}</div>
           <div style={{ fontSize: 12, color: filtreSegment === 'tous' ? 'rgba(255,255,255,0.7)' : '#6E6E73', marginTop: 3 }}>Tous les clients</div>
           <div style={{ fontSize: 12, fontWeight: 700, color: filtreSegment === 'tous' ? '#34C759' : '#1A7F43', marginTop: 4 }}>{formatCur(totalCA)}</div>
         </div>

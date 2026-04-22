@@ -101,6 +101,7 @@ const FINANCE_TAB_MAP = { facturation:'vue-ensemble', factures:'vue-ensemble', t
 
 export default function Finance() {
   const navigate = useNavigate();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [searchParams] = useSearchParams();
   const onglet = searchParams.get('onglet');
   const [tab, setTab] = useState(FINANCE_TAB_MAP[onglet] || 'vue-ensemble');
@@ -180,8 +181,8 @@ export default function Finance() {
           {/* ── Vue d'ensemble : tableau de bord + pipeline + trésorerie ── */}
           {tab === 'vue-ensemble' && (<>
             {(() => {
-              const d = data || DEMO_FINANCE;
-              const isDemo = !data;
+              const d = data || (isDemo ? DEMO_FINANCE : { chiffreAffaires: { total: 0, montantEnAttente: 0, facturesEmises: 0, totalPrecedent: 0 }, topClients: [], devisStats: { enCours: 0, acceptes: 0, refuses: 0 }, devis: { acceptes: 0, tauxConversion: 0, tauxPrecedent: 0 }, marge: 0, margePrecedente: 0, mensuel: [], repartition: [] });
+              const noApiData = !data;
               const caTrend = d.chiffreAffaires?.totalPrecedent > 0
                 ? ((d.chiffreAffaires.total - d.chiffreAffaires.totalPrecedent) / d.chiffreAffaires.totalPrecedent * 100).toFixed(1)
                 : null;
@@ -536,7 +537,8 @@ function TrésorerieView() {
       .finally(() => setLoading(false));
   }, []);
 
-  const d = data || DEMO_TRESORERIE;
+  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const d = data || (isDemoToken ? DEMO_TRESORERIE : { soldeActuel: 0, encaissementsAttendus: [], decaissementsPrevis: [], previsionnel3Mois: [] });
   const isDemo = !data;
 
   const totalEncaissements = d.encaissementsAttendus.reduce((s, e) => s + e.montant, 0);
@@ -1026,8 +1028,9 @@ function SalairesView() {
     } catch {
       // Fallback to demo data with selected period label
       const moisLabel = new Date(0, mois - 1).toLocaleString('fr-FR', { month: 'long' });
-      setCalcul({ ...DEMO_SALARIES, periode: `${moisLabel} ${annee}` });
-      setIsDemo(true);
+      const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+      setCalcul(isDemoToken ? { ...DEMO_SALARIES, periode: `${moisLabel} ${annee}` } : { employes: [], resume: { totalBrut: 0, totalNet: 0, totalChargesPatronales: 0 }, periode: `${moisLabel} ${annee}` });
+      setIsDemo(isDemoToken);
     } finally {
       setLoading(false);
     }
@@ -1769,7 +1772,8 @@ function BilanResultatView() {
   const caEncaisse = facturesPayees.reduce((s, f) => s + (f.montantTTC || 0), 0);
   const devisSignes = devisData.filter(d => d.statut === 'signe');
   const caTotal = devisSignes.reduce((s, d) => s + (d.montantTTC || d.ttc || 0), 0);
-  const totalProduits = caTotal || caEncaisse || DEMO_FINANCE.chiffreAffaires.total;
+  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const totalProduits = caTotal || caEncaisse || (isDemoToken ? DEMO_FINANCE.chiffreAffaires.total : 0);
 
   // CHARGES — depuis les écritures comptables auto + mouvements stock
   const achatsCompta = ecritures.filter(e => e.compte === '601000' && e.debit > 0).reduce((s, e) => s + e.debit, 0);
@@ -1781,16 +1785,16 @@ function BilanResultatView() {
   const sousTraitance = sousTraitanceCompta || 0;
 
   const chargesPersonnelCompta = ecritures.filter(e => e.compte === '641000').reduce((s, e) => s + e.debit, 0);
-  const chargesPersonnel = chargesPersonnelCompta || DEMO_SALARIES.resume.totalBrut * 12;
+  const chargesPersonnel = chargesPersonnelCompta || (isDemoToken ? DEMO_SALARIES.resume.totalBrut * 12 : 0);
 
   const chargesSocialesCompta = ecritures.filter(e => e.compte === '645000').reduce((s, e) => s + e.debit, 0);
-  const chargesSocialesPatronales = chargesSocialesCompta || DEMO_SALARIES.resume.totalChargesPatronales * 12;
+  const chargesSocialesPatronales = chargesSocialesCompta || (isDemoToken ? DEMO_SALARIES.resume.totalChargesPatronales * 12 : 0);
 
   const totalCharges = achatsMatieresEtFournitures + sousTraitance + chargesPersonnel + chargesSocialesPatronales;
   const resultatNet = totalProduits - totalCharges;
 
   // BILAN — depuis les vraies données
-  const creancesClients = factures.filter(f => !['payee', 'sequestre_libere'].includes(f.statut)).reduce((s, f) => s + (f.montantTTC || 0), 0) || DEMO_FINANCE.chiffreAffaires.montantEnAttente;
+  const creancesClients = factures.filter(f => !['payee', 'sequestre_libere'].includes(f.statut)).reduce((s, f) => s + (f.montantTTC || 0), 0) || (isDemoToken ? DEMO_FINANCE.chiffreAffaires.montantEnAttente : 0);
   const tresorerie = caEncaisse - totalCharges * 0.7; // estimation simplifiée
   const immobilisations = 45_000; // à renseigner par le patron (futur)
   const totalActif = immobilisations + creancesClients + Math.max(0, tresorerie);

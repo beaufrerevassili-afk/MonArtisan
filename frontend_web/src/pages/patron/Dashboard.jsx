@@ -26,6 +26,7 @@ function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON
 export default function DashboardPatron() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone() && getOnboardingType(user) === 'patron');
   const [showAlertes, setShowAlertes] = useState(false);
   const [alerteCount, setAlerteCount] = useState(countAlertes);
@@ -35,15 +36,15 @@ export default function DashboardPatron() {
   const prenom = user?.nom?.split(' ')[0] || 'Patron';
 
   // ── Données écosystème depuis localStorage ──
-  const lsDevis = lsGet('freample_devis', []);
-  const lsFactures = lsGet('freample_factures', []);
-  const lsChantiers = lsGet('freample_chantiers_custom', []);
+  const lsDevis = isDemo ? lsGet('freample_devis', []) : lsGet('freample_devis', []);
+  const lsFactures = isDemo ? lsGet('freample_factures', []) : lsGet('freample_factures', []);
+  const lsChantiers = isDemo ? lsGet('freample_chantiers_custom', []) : lsGet('freample_chantiers_custom', []);
 
   const moisCourant = new Date().toISOString().slice(0, 7);
   const facturesPayees = lsFactures.filter(f => f.statut === 'payee' || f.statut === 'sequestre_libere');
-  const caMensuel = facturesPayees.filter(f => (f.date || '').startsWith(moisCourant)).reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || 5200;
-  const caAnnuel = facturesPayees.reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || 48500;
-  const margeNette = caAnnuel > 0 ? Math.round((caAnnuel * 0.18) / caAnnuel * 100) : 18;
+  const caMensuel = facturesPayees.filter(f => (f.date || '').startsWith(moisCourant)).reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || (isDemo ? 5200 : 0);
+  const caAnnuel = facturesPayees.reduce((s, f) => s + (Number(f.montantTTC) || 0), 0) || (isDemo ? 48500 : 0);
+  const margeNette = caAnnuel > 0 ? Math.round((caAnnuel * 0.18) / caAnnuel * 100) : (isDemo ? 18 : 0);
   const devisAFinaliser = lsDevis.filter(d => d.aFinaliserRole === 'patron' && d.statut === 'brouillon').length;
   const devisEnvoyes = lsDevis.filter(d => d.statut === 'envoye').length;
   const sequestreEnCours = lsFactures.filter(f => f.statut === 'sequestre' || f.statut === 'sequestre_acompte').reduce((s, f) => s + (Number(f.montantTTC) || 0), 0);

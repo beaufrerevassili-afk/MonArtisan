@@ -116,6 +116,7 @@ const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', b
 /* ════════════════════════════════════════ */
 export default function ChantiersEtMissions() {
   const { token } = useAuth();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [tab, setTab] = useState('Chantiers');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,9 +139,9 @@ export default function ChantiersEtMissions() {
       const missions = (dm.missions || []).map(m => ({ ...m, titre: m.titre || m.nom }));
       const chantiers = (dc.chantiers || []).map(c => ({ ...c, titre: c.nom || c.titre, statut: c.statut === 'planifie' ? 'planifie' : c.statut === 'termine' ? 'terminee' : c.statut }));
       const all = [...missions, ...chantiers];
-      setItems(all.length > 0 ? all : DEMO_ITEMS);
+      setItems(all.length > 0 ? all : (isDemo ? DEMO_ITEMS : []));
     } catch {
-      setItems(DEMO_ITEMS);
+      setItems(isDemo ? DEMO_ITEMS : []);
     }
     setLoading(false);
   }
@@ -160,7 +161,7 @@ export default function ChantiersEtMissions() {
     const termines = items.filter(i => ['terminee', 'termine'].includes(i.statut));
     const alertesBudget = items.filter(i => i.budgetReel && i.budgetPrevu && i.budgetReel > i.budgetPrevu * 1.1);
     const alertesRetard = items.filter(i => ['en_cours', 'assignee'].includes(i.statut) && i.dateFin && new Date(i.dateFin) < new Date());
-    const alertesVehicules = DEMO_VEHICULES.filter(v => ctExpired(v.controleTechnique?.prochaineDate) || ctSoon(v.controleTechnique?.prochaineDate) || vidangeAlert(v.vidange, v.kilometrage));
+    const alertesVehicules = (isDemo ? DEMO_VEHICULES : []).filter(v => ctExpired(v.controleTechnique?.prochaineDate) || ctSoon(v.controleTechnique?.prochaineDate) || vidangeAlert(v.vidange, v.kilometrage));
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -324,7 +325,7 @@ export default function ChantiersEtMissions() {
     function getEquipe(item) {
       if (!item.equipe || item.equipe.length === 0) return [];
       return item.equipe.map(nom => {
-        const emp = DEMO_EMPLOYES.find(e => `${e.prenom} ${e.nom}`.toLowerCase().includes(nom.toLowerCase()) || nom.toLowerCase().includes(e.nom.toLowerCase()));
+        const emp = (isDemo ? DEMO_EMPLOYES : []).find(e => `${e.prenom} ${e.nom}`.toLowerCase().includes(nom.toLowerCase()) || nom.toLowerCase().includes(e.nom.toLowerCase()));
         return emp ? { id: emp.id, nom: `${emp.prenom} ${emp.nom[0]}.`, metier: emp.metier, disponible: emp.disponible } : { id: nom, nom: nom.split(' ').map((n,i) => i === 0 ? n : n[0]+'.').join(' '), metier: '', disponible: true };
       });
     }
@@ -579,7 +580,7 @@ export default function ChantiersEtMissions() {
     useEffect(() => {
       if (!itemId) return;
       fetch(`${API_URL}/patron/chantiers/${itemId}/depenses`, { headers })
-        .then(r => r.json()).then(d => setDepenses(d.depenses || DEMO_DEPENSES)).catch(() => setDepenses(DEMO_DEPENSES));
+        .then(r => r.json()).then(d => setDepenses(d.depenses || (isDemo ? DEMO_DEPENSES : []))).catch(() => setDepenses(isDemo ? DEMO_DEPENSES : []));
       const it = items.find(x => String(x.id) === String(itemId));
       if (it?.caDevis) setCaDevis(String(it.caDevis));
     }, [itemId]);
@@ -910,7 +911,7 @@ export default function ChantiersEtMissions() {
           <div style={{ gridColumn: '1/-1' }}>
             <label style={lbl}>Équipe assignée</label>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {DEMO_EMPLOYES.map(e => {
+              {(isDemo ? DEMO_EMPLOYES : []).map(e => {
                 const selected = (form.equipe || []).includes(`${e.prenom} ${e.nom}`);
                 return <button key={e.id} type="button" onClick={() => {
                   const nom = `${e.prenom} ${e.nom}`;
@@ -942,7 +943,7 @@ export default function ChantiersEtMissions() {
   /* ── Main render ── */
   const tabContent = {
     'Chantiers': <><VueSemaine /><TabListe /></>,
-    'Planning': <GanttPlanning items={items} employes={DEMO_EMPLOYES} onOpenDetail={(id) => { setSelectedItem(id); setDetailChantier(id); }} />,
+    'Planning': <GanttPlanning items={items} employes={isDemo ? DEMO_EMPLOYES : []} onOpenDetail={(id) => { setSelectedItem(id); setDetailChantier(id); }} />,
     'Flotte': <FlotteView />,
     'Ajouter': <TabAjouter />,
   };
@@ -973,9 +974,9 @@ export default function ChantiersEtMissions() {
       {detailChantier ? (
         <ChantierDetail
           chantier={items.find(x => x.id === detailChantier)}
-          employes={DEMO_EMPLOYES}
-          vehicules={DEMO_VEHICULES}
-          depenses={DEMO_DEPENSES.filter(d => !d.chantierId || d.chantierId === detailChantier)}
+          employes={isDemo ? DEMO_EMPLOYES : []}
+          vehicules={isDemo ? DEMO_VEHICULES : []}
+          depenses={(isDemo ? DEMO_DEPENSES : []).filter(d => !d.chantierId || d.chantierId === detailChantier)}
           onBack={() => setDetailChantier(null)}
           onUpdate={(updated) => setItems(prev => prev.map(x => x.id === updated.id ? updated : x))}
           showToast={(msg) => {}}
@@ -1103,9 +1104,10 @@ function ItemCard({ item, onClick, isSelected, onOpenDetail }) {
 
 /* ════════ DetailPanel ════════ */
 function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setDevisMode, devisEnvoye, onDevisSoumis, onUpdate, headers }) {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [panelTab, setPanelTab] = useState('infos');
   const [equipeIds, setEquipeIds] = useState(
-    DEMO_EMPLOYES.filter(e => (item.equipe || []).some(n => n.toLowerCase().includes(e.nom.toLowerCase()))).map(e => e.id)
+    (isDemo ? DEMO_EMPLOYES : []).filter(e => (item.equipe || []).some(n => n.toLowerCase().includes(e.nom.toLowerCase()))).map(e => e.id)
   );
   const [filtreMetier, setFiltreMetier] = useState('');
   const [vehiculeId, setVehiculeId] = useState(item.vehicule?.id || '');
@@ -1120,22 +1122,23 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
   const [msgInput, setMsgInput] = useState('');
 
   const isEnAttente = item.statut === 'en_attente';
-  const metiers = [...new Set(DEMO_EMPLOYES.map(e => e.metier))];
+  const _employes = isDemo ? DEMO_EMPLOYES : [];
+  const metiers = [...new Set(_employes.map(e => e.metier))];
   const employes = filtreMetier
-    ? [...DEMO_EMPLOYES.filter(e => e.metier === filtreMetier), ...DEMO_EMPLOYES.filter(e => e.metier !== filtreMetier)]
-    : DEMO_EMPLOYES;
+    ? [..._employes.filter(e => e.metier === filtreMetier), ..._employes.filter(e => e.metier !== filtreMetier)]
+    : _employes;
 
   function toggleEmploye(id) {
     setEquipeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   }
 
   function getEquipeNoms() {
-    return DEMO_EMPLOYES.filter(e => equipeIds.includes(e.id)).map(e => `${e.prenom} ${e.nom}`);
+    return _employes.filter(e => equipeIds.includes(e.id)).map(e => `${e.prenom} ${e.nom}`);
   }
 
   async function handleSave() {
     setSaving(true);
-    const vehicule = DEMO_VEHICULES.find(v => String(v.id) === String(vehiculeId)) || null;
+    const vehicule = (isDemo ? DEMO_VEHICULES : []).find(v => String(v.id) === String(vehiculeId)) || null;
     const payload = { equipe: getEquipeNoms(), vehicule, notes, avancement };
     try { await fetch(`${API_URL}/patron/missions/${item.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) }); } catch {}
     await onUpdate();
@@ -1353,7 +1356,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
               <label style={lbl}>Assigner un véhicule</label>
               <select value={vehiculeId} onChange={e => setVehiculeId(e.target.value)} style={{ ...inp, fontSize: 13 }}>
                 <option value="">— Aucun —</option>
-                {DEMO_VEHICULES.filter(v => v.statut !== 'maintenance').map(v => (
+                {(isDemo ? DEMO_VEHICULES : []).filter(v => v.statut !== 'maintenance').map(v => (
                   <option key={v.id} value={v.id} disabled={v.statut === 'en_mission' && String(v.id) !== String(vehiculeId)}>
                     {v.immatriculation} — {v.modele} {v.statut === 'en_mission' && String(v.id) !== String(vehiculeId) ? '(en mission)' : ''}
                   </option>
@@ -1361,7 +1364,7 @@ function DetailPanel({ item, onClose, onCancelRequest, onAccept, devisMode, setD
               </select>
             </div>
             {vehiculeId && (() => {
-              const v = DEMO_VEHICULES.find(x => String(x.id) === String(vehiculeId));
+              const v = (isDemo ? DEMO_VEHICULES : []).find(x => String(x.id) === String(vehiculeId));
               if (!v) return null;
               return (
                 <div style={{ background: '#F8F9FA', borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1550,9 +1553,10 @@ function calculerCoutKm(consoReelle, dernierPrixLitre, assuranceAnnuelle, kmMoye
 const FORM_VEHICULE_VIDE = { immatriculation: '', modele: '', type: 'Fourgon', capacite: '', kilometrage: '', vidangeKm: '', vidangeIntervalleKm: 10000, ctDate: '', assuranceExp: '', statut: 'disponible' };
 
 function FlotteView() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [vehicules, setVehicules] = useState(() => {
-    try { const s = localStorage.getItem('flotte_vehicules'); return s ? JSON.parse(s) : DEMO_VEHICULES; }
-    catch { return DEMO_VEHICULES; }
+    try { const s = localStorage.getItem('flotte_vehicules'); return s ? JSON.parse(s) : (isDemo ? DEMO_VEHICULES : []); }
+    catch { return isDemo ? DEMO_VEHICULES : []; }
   });
 
   useEffect(() => {

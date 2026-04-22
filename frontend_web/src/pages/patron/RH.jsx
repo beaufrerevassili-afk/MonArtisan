@@ -134,6 +134,7 @@ const TABS_LABELS = ['Tableau de bord', 'Employés', 'Planning', 'Congés', 'Rec
 const RH_ONGLET_MAP = { pointage:'Pointage', planning:'Planning', conges:'Congés', frais:'Notes de frais', entretiens:'Entretiens', onboarding:'Onboarding', formation:'Formation', recrutement:'Recrutement' };
 
 export default function RH() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const urlOnglet = new URLSearchParams(window.location.search).get('onglet');
   const [tab, setTab] = useState(RH_ONGLET_MAP[urlOnglet] || 'Tableau de bord');
   const [employes, setEmployes] = useState([]);
@@ -161,8 +162,10 @@ export default function RH() {
         if (fiches.length > 0) {
           setEmployes(fiches.map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: f.salaireBase || 2500, typeContrat: f.typeContrat || 'CDI', statut: f.actif ? 'actif' : 'inactif' })));
         } else {
-          // Fallback démo depuis profilEntreprise
-          setEmployes(DEMO_FICHES_SALARIES.filter(f => !f.isPatron).map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: 2500, typeContrat: 'CDI', statut: 'actif' })));
+          // Fallback démo depuis profilEntreprise (seulement pour comptes démo)
+          if (isDemo) {
+            setEmployes(DEMO_FICHES_SALARIES.filter(f => !f.isPatron).map(f => ({ id: f.id, prenom: f.prenom, nom: f.nom, poste: f.poste, email: f.email || '', telephone: f.telephone || '', dateEntree: f.dateEntree || '', salaireBase: 2500, typeContrat: 'CDI', statut: 'actif' })));
+          }
         }
       } catch {}
     }).finally(() => setLoading(false));
@@ -2202,6 +2205,8 @@ function PaieView({ employes }) {
 
 /* ── Masse salariale ── */
 function MasseSalarialeView({ employes = [] }) {
+  const isDemoToken = localStorage.getItem('token')?.endsWith('.dev');
+  const EMPTY_MASSE = Array.from({ length: 12 }, (_, i) => ({ mois: i + 1, totalBrut: 0, totalChargesPatronales: 0, totalFrais: 0, coutEmployeur: 0 }));
   const now = new Date();
   const [annee, setAnnee] = useState(now.getFullYear());
   const [data, setData] = useState(null);
@@ -2210,12 +2215,12 @@ function MasseSalarialeView({ employes = [] }) {
   React.useEffect(() => {
     setLoading(true);
     api.get(`/rh/masse-salariale?annee=${annee}`)
-      .then(r => setData(r.data.mois || DEMO_MASSE))
-      .catch(() => setData(DEMO_MASSE))
+      .then(r => setData(r.data.mois || (isDemoToken ? DEMO_MASSE : EMPTY_MASSE)))
+      .catch(() => setData(isDemoToken ? DEMO_MASSE : EMPTY_MASSE))
       .finally(() => setLoading(false));
   }, [annee]);
 
-  const moisData = data || DEMO_MASSE;
+  const moisData = data || (isDemoToken ? DEMO_MASSE : EMPTY_MASSE);
   const maxVal = Math.max(...moisData.map(m => m.coutEmployeur || 0), 1);
   const totalBrut = moisData.reduce((s, m) => s + (m.totalBrut || 0), 0);
   const totalPat = moisData.reduce((s, m) => s + (m.totalChargesPatronales || 0), 0);

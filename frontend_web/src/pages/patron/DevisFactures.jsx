@@ -58,6 +58,7 @@ export default function DevisFactures() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useToast();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
   const [tab, setTab] = useState(urlTab || 'devis');
@@ -69,11 +70,11 @@ export default function DevisFactures() {
   const [search, setSearch] = useState('');
   const [devis, setDevis] = useState(() => {
     const saved = lsGet('freample_devis', []);
-    return saved.length > 0 ? saved : DEMO_DEVIS;
+    return saved.length > 0 ? saved : (isDemo ? DEMO_DEVIS : []);
   });
   const [factures, setFactures] = useState(() => {
     const saved = lsGet('freample_factures_patron', []);
-    return saved.length > 0 ? saved : DEMO_FACTURES;
+    return saved.length > 0 ? saved : (isDemo ? DEMO_FACTURES : []);
   });
   const [lienDirect, setLienDirect] = useState(null); // modal lien direct
   const [showNewDevis, setShowNewDevis] = useState(false);

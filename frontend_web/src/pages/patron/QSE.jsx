@@ -159,7 +159,8 @@ export default function QSE() {
   const [tdb, setTdb] = useState(null);
   const [habilitations, setHabilitations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [risques, setRisques] = useState(RISQUES_INIT);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [risques, setRisques] = useState(isDemo ? RISQUES_INIT : []);
   const [filterUT, setFilterUT] = useState('Tous les postes');
   const [employes, setEmployes] = useState([]);
   const [plans, setPlans] = useState([

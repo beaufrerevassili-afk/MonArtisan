@@ -17,7 +17,12 @@ const SECTION_TITLE = { fontSize: 15, fontWeight: 800, color: DS.text, margin: 0
 export default function Employes() {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const [fiches, setFiches] = useState(getFichesSalaries);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [fiches, setFiches] = useState(() => {
+    const stored = localStorage.getItem('freample_fiches_salaries');
+    if (stored) { try { return JSON.parse(stored); } catch {} }
+    return isDemo ? getFichesSalaries() : [];
+  });
   const [vue, setVue] = useState('liste'); // 'liste' | 'matrice' | 'fiche'
   const [selectedId, setSelectedId] = useState(null);
   const [showAdd, setShowAdd] = useState(false);

@@ -114,13 +114,14 @@ const HEURES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
 
 export default function DashboardCom() {
   const { user } = useAuth();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState(TAB_MAP[searchParams.get('onglet')] || 'accueil');
-  const [projets, setProjets] = useState(PROJETS_INIT);
-  const [devis, setDevis] = useState(DEVIS_INIT);
-  const [factures] = useState(FACTURES_INIT);
-  const [clients] = useState(CLIENTS_INIT);
-  const [equipe] = useState(EQUIPE_INIT);
+  const [projets, setProjets] = useState(isDemo ? PROJETS_INIT : []);
+  const [devis, setDevis] = useState(isDemo ? DEVIS_INIT : []);
+  const [factures] = useState(isDemo ? FACTURES_INIT : []);
+  const [clients] = useState(isDemo ? CLIENTS_INIT : []);
+  const [equipe] = useState(isDemo ? EQUIPE_INIT : []);
   const [tarifs, setTarifs] = useState(getTarifs);
   const [editingTarif, setEditingTarif] = useState(null); // {catIdx, itemIdx}
   const [editPrix, setEditPrix] = useState('');
@@ -500,7 +501,7 @@ export default function DashboardCom() {
 
   const getMessagesForProjet = (projetId) => {
     const custom = projetMessages[projetId] || [];
-    return [...DEMO_MESSAGES, ...custom];
+    return isDemo ? [...DEMO_MESSAGES, ...custom] : custom;
   };
 
   const inputStyle = { width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #E9E5F5', fontSize:14, fontFamily:'inherit', outline:'none', boxSizing:'border-box' };
@@ -1711,7 +1712,7 @@ export default function DashboardCom() {
                   {!modalProjet.responsable && (
                     <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:4 }}>
                       <span style={{ fontSize:13, color:'#636363' }}>Assigner à :</span>
-                      {EQUIPE_INIT.map(e => (
+                      {equipe.map(e => (
                         <button key={e.id} onClick={() => assignerResponsable(modalProjet.id, e.nom)}
                           style={{ padding:'6px 12px', borderRadius:8, border:`1px solid ${V}20`, background:V_SOFT, color:V, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
                           {e.nom}
@@ -1774,7 +1775,7 @@ export default function DashboardCom() {
               <label style={labelStyle}>Client *</label>
               <select value={devisForm.client} onChange={e => setDevisForm(p => ({...p, client:e.target.value}))} style={inputStyle}>
                 <option value="">-- Sélectionner un client --</option>
-                {CLIENTS_INIT.map(c => <option key={c.id} value={c.nom}>{c.nom}</option>)}
+                {clients.map(c => <option key={c.id} value={c.nom}>{c.nom}</option>)}
               </select>
             </div>
 
@@ -1839,7 +1840,7 @@ export default function DashboardCom() {
               <label style={labelStyle}>Client *</label>
               <select value={newProjetForm.client} onChange={e => setNewProjetForm(p => ({...p, client:e.target.value}))} style={inputStyle}>
                 <option value="">-- Sélectionner un client --</option>
-                {CLIENTS_INIT.map(c => <option key={c.id} value={c.nom}>{c.nom}</option>)}
+                {clients.map(c => <option key={c.id} value={c.nom}>{c.nom}</option>)}
               </select>
             </div>
 

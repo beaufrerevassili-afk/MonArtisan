@@ -105,6 +105,7 @@ function ReponseModal({ avis, onClose, onSave }) {
 
 export default function Reputation() {
   const { token } = useAuth();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [avis, setAvis]     = useState([]);
   const [apiOk, setApiOk]   = useState(false);
   const [filtre, setFiltre] = useState('tous');
@@ -113,7 +114,7 @@ export default function Reputation() {
   useEffect(() => {
     api.get('/patron/avis')
       .then(({ data }) => { setAvis(data.avis || []); setApiOk(true); })
-      .catch(() => setAvis(AVIS_DEMO));
+      .catch(() => setAvis(isDemo ? AVIS_DEMO : []));
   }, []);
 
   async function handleSaveReponse(id, texte) {
