@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import { genererPDF_DAT, genererPDF_FAT, genererPDF_DMP, genererPDF_ITI, genererPDF_ATT } from '../../utils/pdfCerfa';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -13,11 +13,11 @@ const SUBSEC = { fontSize:12, fontWeight:700, color:'#555', margin:'12px 0 6px' 
 const G = (cols='1fr 1fr') => ({ display:'grid', gridTemplateColumns:cols, gap:8, marginBottom:8 });
 const CHK = { display:'flex', alignItems:'center', gap:6, fontSize:12, cursor:'pointer', padding:'3px 0' };
 
-const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'12345678900012', adresse:'24 rue de la Liberté', cp:'06000', ville:'Marseille', codeNAF:'4399C', codeRisque:'452BB', tel:'0493XXXXXX', cpam:'CPAM des Alpes-Maritimes, 48 av du Roi Robert, 13001 Marseille', representant:'Vassili Beaufrere', fonction:'Gérant' };
+const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'12345678900012', adresse:'24 rue de la Liberté', cp:'13001', ville:'Marseille', codeNAF:'4399C', codeRisque:'452BB', tel:'0491XXXXXX', cpam:'CPAM des Bouches-du-Rhône, 56 chemin Joseph Aiguier, 13009 Marseille', representant:'Vassili Beaufrere', fonction:'Gérant' };
 
 const SALARIES = [
   { id:1, civ:'M.', nom:'Martin', prenom:'Pierre', nomUsage:'', numSecu:'196031345678901', dn:'03/08/1996', lieuN:'Marseille', sexe:'M', nat:'Française', poste:'Maçon', qualif:'Ouvrier qualifié', emb:'15/03/2022', contrat:'CDI', adr:'12 rue Paradis', cp:'13001', ville:'Marseille', tel:'0612345678', email:'pierre.martin@lambertbtp.fr', dateFin:'' },
-  { id:2, civ:'Mme', nom:'Duval', prenom:'Sophie', nomUsage:'', numSecu:'290030678901234', dn:'08/03/1990', lieuN:'Lyon', sexe:'F', nat:'Française', poste:'Plombière', qualif:'Ouvrier qualifié', emb:'10/01/2023', contrat:'CDI', adr:'8 av de la Libération', cp:'13001', ville:'Marseille', tel:'0623456789', email:'sophie.duval@lambertbtp.fr', dateFin:'' },
+  { id:2, civ:'Mme', nom:'Duval', prenom:'Sophie', nomUsage:'', numSecu:'290030678901234', dn:'08/03/1990', lieuN:'Marseille', sexe:'F', nat:'Française', poste:'Plombière', qualif:'Ouvrier qualifié', emb:'10/01/2023', contrat:'CDI', adr:'8 av de la Libération', cp:'13001', ville:'Marseille', tel:'0623456789', email:'sophie.duval@lambertbtp.fr', dateFin:'' },
   { id:3, civ:'M.', nom:'Garcia', prenom:'Lucas', nomUsage:'', numSecu:'198071345678902', dn:'21/07/1998', lieuN:'Marseille', sexe:'M', nat:'Française', poste:'Carreleur', qualif:'Ouvrier qualifié', emb:'01/09/2023', contrat:'CDI', adr:'3 bd Longchamp', cp:'13001', ville:'Marseille', tel:'0634567890', email:'lucas.garcia@lambertbtp.fr', dateFin:'' },
   { id:4, civ:'M.', nom:'Moreau', prenom:'Luc', nomUsage:'', numSecu:'200011345678903', dn:'15/01/2000', lieuN:'Aix-en-Provence', sexe:'M', nat:'Française', poste:'Peintre', qualif:'Ouvrier qualifié', emb:'01/02/2024', contrat:'CDI', adr:'7 rue de Rome', cp:'13006', ville:'Marseille', tel:'0645678901', email:'luc.moreau@lambertbtp.fr', dateFin:'' },
   { id:5, civ:'Mme', nom:'Bernard', prenom:'Claire', nomUsage:'', numSecu:'297061345678904', dn:'12/06/1997', lieuN:'Toulon', sexe:'F', nat:'Française', poste:'Électricienne', qualif:'Ouvrier qualifié', emb:'15/06/2024', contrat:'CDI', adr:'15 rue Sainte', cp:'13001', ville:'Marseille', tel:'0656789012', email:'claire.bernard@lambertbtp.fr', dateFin:'' },

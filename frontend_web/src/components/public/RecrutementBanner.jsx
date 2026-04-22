@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 
 export default function RecrutementBanner({ secteur = null }) {
   const navigate = useNavigate();

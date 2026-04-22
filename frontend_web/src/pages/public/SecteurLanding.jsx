@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import PublicNavbar from '../../components/public/PublicNavbar';
 import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { API_URL } from '../../services/api';
@@ -9,7 +9,6 @@ import { API_URL } from '../../services/api';
 // ─── Config par secteur ────────────────────────────────────────────────────────
 const SECTEUR_CONFIG = {
   restaurant: { label:'Restaurants',            emoji:'🍽️', placeholder:'Cuisine, ambiance, adresse…', filtres:['Tous','Sur place','À emporter','Livraison','Traiteur'] },
-  coiffure:   { label:'Coiffure & Beauté',      emoji:'✂️', placeholder:'Coupe, couleur, balayage…',   filtres:['Tous','Salon','Barbier','Institut','Domicile'] },
 };
 
 // ─── Données démo ──────────────────────────────────────────────────────────────

@@ -205,9 +205,9 @@ function TabDashboard({ initials, user, totalFrais, fraisEnAttente, congesEnAtte
 
 /* ── Mes missions ── */
 const MISSIONS_DEMO_ARTISAN = [
-  { id: 1, titre: 'Rénovation façade — Immeuble Leblanc', description: 'Ravalement complet façade sud, 280m², enduit projeté + peinture finition', client: 'M. Leblanc', telephone: '06 12 34 56 78', adresse: '24 rue Victor Hugo', codePostal: '75015', ville: 'Paris', statut: 'en_cours', dateDebut: new Date().toISOString().split('T')[0], dateFin: '2025-04-30', budget: 9500, avancement: 45, equipe: ['Carlos Garcia (vous)', 'Pierre Martin', 'Jacques D.'] },
+  { id: 1, titre: 'Rénovation façade — Immeuble Leblanc', description: 'Ravalement complet façade sud, 280m², enduit projeté + peinture finition', client: 'M. Leblanc', telephone: '06 12 34 56 78', adresse: '24 rue Victor Hugo', codePostal: '13001', ville: 'Marseille', statut: 'en_cours', dateDebut: new Date().toISOString().split('T')[0], dateFin: '2025-04-30', budget: 9500, avancement: 45, equipe: ['Carlos Garcia (vous)', 'Pierre Martin', 'Jacques D.'] },
   { id: 2, titre: 'Pose carrelage — Appartement T3', description: 'Pose carrelage 60×60 salon + cuisine, 42m²', client: 'Mme Dupont', telephone: '06 98 76 54 32', adresse: '8 av. des Fleurs', codePostal: '92100', ville: 'Boulogne', statut: 'planifie', dateDebut: '2025-04-01', dateFin: '2025-04-10', budget: 3200, avancement: 0, equipe: ['Carlos Garcia (vous)'] },
-  { id: 3, titre: 'Installation électrique neuve', description: 'Mise aux normes complète, tableaux, prises, éclairage', client: 'SCI Horizon', telephone: '01 45 67 89 00', adresse: '5 rue Pasteur', codePostal: '94000', ville: 'Créteil', statut: 'termine', dateDebut: '2025-02-10', dateFin: '2025-02-28', budget: 4800, avancement: 100, equipe: ['Carlos Garcia (vous)', 'Marc B.'] },
+  { id: 3, titre: 'Installation électrique neuve', description: 'Mise aux normes complète, tableaux, prises, éclairage', client: 'Copropriété Les Oliviers', telephone: '04 91 22 33 44', adresse: '5 rue Pasteur', codePostal: '13006', ville: 'Marseille', statut: 'termine', dateDebut: '2025-02-10', dateFin: '2025-02-28', budget: 4800, avancement: 100, equipe: ['Carlos Garcia (vous)', 'Marc B.'] },
 ];
 
 const ETAPES_CHANTIER = [
@@ -472,7 +472,7 @@ function TabNotesFrais({ notes, setNotes, headers }) {
       setShowForm(false);
       setFichier(null); setPreview(null); setScanResult(null);
       setForm({ montant: '', categorie: 'repas', date: new Date().toISOString().split('T')[0], description: '' });
-    } catch (err) { console.error(err); }
+    } catch (err) { }
     setSaving(false);
   }
 
@@ -905,12 +905,12 @@ function TabPlanning({ headers }) {
 
   // Demo planning
   const PLANNING = [
-    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#5B5BD6' },
-    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 75015', type: 'chantier', color: '#5B5BD6' },
+    { date: days[0].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 13001 Marseille', type: 'chantier', color: '#5B5BD6' },
+    { date: days[1].toISOString().split('T')[0], heure: '08:00 – 12:00', mission: 'Rénovation façade — Immeuble Leblanc', adresse: '24 rue Victor Hugo, 13001 Marseille', type: 'chantier', color: '#5B5BD6' },
     { date: days[1].toISOString().split('T')[0], heure: '14:00 – 17:00', mission: 'Réunion hebdomadaire', adresse: 'Agence Bernard Martin BTP', type: 'reunion', color: '#FF9500' },
-    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#5B5BD6' },
+    { date: days[2].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 13008 Marseille', type: 'chantier', color: '#5B5BD6' },
     { date: days[3].toISOString().split('T')[0], heure: '09:00 – 12:00', mission: 'Visite médicale du travail', adresse: 'Service de santé au travail', type: 'admin', color: '#AF52DE' },
-    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 92100', type: 'chantier', color: '#5B5BD6' },
+    { date: days[4].toISOString().split('T')[0], heure: '08:00 – 17:00', mission: 'Pose carrelage — Appartement Dupont', adresse: '8 av. des Fleurs, 13008 Marseille', type: 'chantier', color: '#5B5BD6' },
   ];
 
   const todayStr = today.toISOString().split('T')[0];
@@ -1028,7 +1028,7 @@ function TabConges({ conges, setConges, headers }) {
       const d = await r.json();
       setConges(prev => [d.conge, ...prev]);
       setForm({ dateDebut: '', dateFin: '', type: 'conge_paye', motif: '' });
-    } catch (err) { console.error(err); }
+    } catch (err) { }
     setSaving(false);
   }
 
@@ -1160,7 +1160,7 @@ function TabProfil({ user }) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      console.error('Erreur sauvegarde profil:', err);
+
     }
   }
 
@@ -1245,11 +1245,11 @@ function TabProfil({ user }) {
           </div>
           <div>
             <label style={lbl}>Code postal</label>
-            <input value={profil.codePostal} onChange={e => setProfil(p => ({ ...p, codePostal: e.target.value }))} placeholder="75001" style={inp} />
+            <input value={profil.codePostal} onChange={e => setProfil(p => ({ ...p, codePostal: e.target.value }))} placeholder="13001" style={inp} />
           </div>
           <div>
             <label style={lbl}>Ville</label>
-            <input value={profil.ville} onChange={e => setProfil(p => ({ ...p, ville: e.target.value }))} placeholder="Paris" style={inp} />
+            <input value={profil.ville} onChange={e => setProfil(p => ({ ...p, ville: e.target.value }))} placeholder="Marseille" style={inp} />
           </div>
         </div>
       </div>

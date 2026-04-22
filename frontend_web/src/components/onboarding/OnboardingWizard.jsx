@@ -3,7 +3,6 @@
 //  SCI | Chef d'entreprise BTP | Auto-entrepreneur
 // ============================================================
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import L from '../../design/luxe';
 import { CORPS_METIER_BTP } from '../../utils/profilEntreprise';
 
@@ -22,7 +21,6 @@ export function markOnboardingDone() {
 // ── Détecte le type d'onboarding selon le user ──
 export function getOnboardingType(user) {
   if (!user) return null;
-  if (user.secteur === 'immo' || user.entrepriseType === 'sci') return 'sci';
   if (user.entrepriseType === 'ae') return 'ae';
   if (user.role === 'patron' && user.secteur === 'btp') return 'patron';
   return null; // pas d'onboarding pour client, salarié, admin
@@ -36,59 +34,15 @@ export default function OnboardingWizard({ type, onComplete }) {
   const [form, setForm] = useState({});
   const u = (updates) => setForm(f => ({ ...f, ...updates }));
 
-  const totalSteps = type === 'sci' ? 4 : 3;
+  const totalSteps = 3;
   const progress = Math.round((step / totalSteps) * 100);
 
   function finish() {
     // Sauvegarder les données dans le localStorage approprié
-    if (type === 'sci') saveSCI();
     if (type === 'patron') savePatron();
     if (type === 'ae') saveAE();
     markOnboardingDone();
     onComplete?.();
-  }
-
-  function saveSCI() {
-    const existing = (() => { try { return JSON.parse(localStorage.getItem('freample_immo_data')); } catch { return null; } })();
-    const sciId = Date.now();
-    const bienId = sciId + 1;
-    const locId = sciId + 2;
-    const data = {
-      ...(existing || {}),
-      scis: [...(existing?.scis || []), {
-        id: sciId, nom: form.sciNom || 'Ma SCI', type: form.sciType || 'IR',
-        parts: 100, tva: false, cloture: '12-31', siret: form.sciSiret || '',
-      }],
-      biens: form.bienAdresse ? [...(existing?.biens || []), {
-        id: bienId, sciId, nom: form.bienNom || 'Mon bien', type: form.bienType || 'Appartement',
-        adresse: form.bienAdresse || '', ville: form.bienVille || '', codePostal: form.bienCP || '', arrondissement: Number(form.bienArr) || null,
-        surface: Number(form.bienSurface) || 0, pieces: Number(form.bienPieces) || 0,
-        prixAchat: Number(form.bienPrix) || 0, fraisNotaire: 0, travaux: 0,
-        dateAcquisition: '', valeur: Number(form.bienPrix) || 0, loyer: Number(form.bienLoyer) || 0,
-        autresRevenus: 0, charges: 0, chargesNonRecup: 0, vacanceLocative: 0,
-        locataireId: form.locNom ? locId : null, dpe: form.bienDPE || 'D',
-        assurance: { pno: 0, gli: 0 }, taxeFonciere: 0,
-      }] : (existing?.biens || []),
-      locataires: form.locNom ? [...(existing?.locataires || []), {
-        id: locId, nom: form.locNom || '', prenom: form.locPrenom || '',
-        email: form.locEmail || '', tel: '',
-        debut: form.locDebut || new Date().toISOString().slice(0, 10),
-        fin: new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        depot: Number(form.locDepot) || 0,
-      }] : (existing?.locataires || []),
-      paiements: existing?.paiements || [],
-      depenses: existing?.depenses || [],
-      credits: existing?.credits || [],
-      associes: existing?.associes || [],
-      banque: existing?.banque || [],
-      travaux: existing?.travaux || [],
-      candidatures: [],
-      courriers: [],
-      compteCourant: [],
-      objectifs: existing?.objectifs || { patrimoine: 500000, biens: 5, cashflow: 2000, rendement: 7, horizon: '2030-12-31' },
-      nextId: (existing?.nextId || 20) + 10,
-    };
-    localStorage.setItem('freample_immo_data', JSON.stringify(data));
   }
 
   function savePatron() {
@@ -154,125 +108,6 @@ export default function OnboardingWizard({ type, onComplete }) {
             <button onClick={() => { markOnboardingDone(); onComplete?.(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: L.textLight, fontFamily: L.font, textDecoration: 'underline' }}>Je configure plus tard</button>
           </div>
         </div>
-
-        {/* ═══ SCI ═══ */}
-        {type === 'sci' && step === 1 && (
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 300, fontFamily: L.serif, fontStyle: 'italic', color: L.text, margin: '0 0 6px' }}>Bienvenue sur <span style={{ fontWeight: 700, fontStyle: 'normal' }}>Freample</span></h1>
-            <p style={{ fontSize: 14, color: L.textLight, margin: '0 0 28px' }}>Configurons votre espace de gestion SCI en quelques minutes.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div><label style={LBL}>Nom de votre SCI</label><input value={form.sciNom || ''} onChange={e => u({ sciNom: e.target.value })} placeholder="SCI Riviera" style={INP} /></div>
-              <div>
-                <label style={LBL}>Régime fiscal</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[{ v: 'IR', label: 'IR — Impôt sur le revenu', desc: 'Les revenus remontent sur votre déclaration personnelle' }, { v: 'IS', label: 'IS — Impôt sur les sociétés', desc: 'La SCI paie l\'impôt, amortissement possible' }].map(r => (
-                    <button key={r.v} onClick={() => u({ sciType: r.v })}
-                      style={{ flex: 1, padding: '14px 12px', border: `1px solid ${(form.sciType || 'IR') === r.v ? L.gold : L.border}`, background: (form.sciType || 'IR') === r.v ? L.cream : 'transparent', cursor: 'pointer', fontFamily: L.font, textAlign: 'left' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: (form.sciType || 'IR') === r.v ? L.gold : L.text }}>{r.v}</div>
-                      <div style={{ fontSize: 11, color: L.textLight, marginTop: 2 }}>{r.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div><label style={LBL}>SIRET (optionnel)</label><input value={form.sciSiret || ''} onChange={e => u({ sciSiret: e.target.value })} placeholder="123 456 789 00012" style={INP} /></div>
-            </div>
-            <button onClick={() => { if (form.sciNom) setStep(2); }} disabled={!form.sciNom}
-              style={{ width: '100%', marginTop: 24, padding: '14px', background: form.sciNom ? L.noir : L.border, color: form.sciNom ? '#fff' : L.textLight, border: 'none', fontSize: 14, fontWeight: 600, cursor: form.sciNom ? 'pointer' : 'default', fontFamily: L.font, transition: 'background .2s' }}>
-              Continuer
-            </button>
-          </div>
-        )}
-
-        {type === 'sci' && step === 2 && (
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 300, fontFamily: L.serif, fontStyle: 'italic', color: L.text, margin: '0 0 6px' }}>Votre premier <span style={{ fontWeight: 700, fontStyle: 'normal' }}>bien</span></h1>
-            <p style={{ fontSize: 14, color: L.textLight, margin: '0 0 28px' }}>Ajoutez un bien pour voir votre dashboard se remplir.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={LBL}>Nom du bien</label><input value={form.bienNom || ''} onChange={e => u({ bienNom: e.target.value })} placeholder="Appt Liberté" style={INP} /></div>
-                <div><label style={LBL}>Type</label>
-                  <select value={form.bienType || 'Appartement'} onChange={e => u({ bienType: e.target.value })} style={INP}>
-                    {['Appartement', 'Studio', 'Maison', 'Local commercial', 'Parking'].map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div><label style={LBL}>Adresse</label><input value={form.bienAdresse || ''} onChange={e => u({ bienAdresse: e.target.value })} placeholder="24 rue de la Liberté" style={INP} /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 80px', gap: 10 }}>
-                <div><label style={LBL}>Code postal</label><input value={form.bienCP || ''} onChange={e => u({ bienCP: e.target.value })} placeholder="06000" maxLength={5} style={INP} /></div>
-                <div><label style={LBL}>Ville</label><input value={form.bienVille || ''} onChange={e => u({ bienVille: e.target.value })} placeholder="Nice" style={INP} /></div>
-                <div><label style={LBL}>Arr.</label><input type="number" value={form.bienArr || ''} onChange={e => u({ bienArr: e.target.value })} placeholder="—" min={1} max={20} style={INP} /></div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 80px', gap: 10 }}>
-                <div><label style={LBL}>Surface (m²)</label><input type="number" value={form.bienSurface || ''} onChange={e => u({ bienSurface: e.target.value })} style={INP} /></div>
-                <div><label style={LBL}>Prix d'achat (€)</label><input type="number" value={form.bienPrix || ''} onChange={e => u({ bienPrix: e.target.value })} style={INP} /></div>
-                <div><label style={LBL}>Loyer (€/mois)</label><input type="number" value={form.bienLoyer || ''} onChange={e => u({ bienLoyer: e.target.value })} style={INP} /></div>
-                <div><label style={LBL}>DPE</label>
-                  <select value={form.bienDPE || 'D'} onChange={e => u({ bienDPE: e.target.value })} style={INP}>
-                    {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(d => <option key={d}>{d}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-              <button onClick={() => setStep(1)} style={{ flex: 0, padding: '14px 20px', background: 'transparent', border: `1px solid ${L.border}`, fontSize: 14, cursor: 'pointer', fontFamily: L.font, color: L.textLight }}>Retour</button>
-              <button onClick={() => setStep(3)} style={{ flex: 1, padding: '14px', background: L.noir, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font }}>
-                {form.bienAdresse ? 'Continuer' : 'Passer cette étape'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {type === 'sci' && step === 3 && (
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 300, fontFamily: L.serif, fontStyle: 'italic', color: L.text, margin: '0 0 6px' }}>Votre <span style={{ fontWeight: 700, fontStyle: 'normal' }}>locataire</span></h1>
-            <p style={{ fontSize: 14, color: L.textLight, margin: '0 0 28px' }}>Si votre bien est loué, ajoutez votre locataire. Sinon, passez cette étape.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={LBL}>Prénom</label><input value={form.locPrenom || ''} onChange={e => u({ locPrenom: e.target.value })} placeholder="Jean" style={INP} /></div>
-                <div><label style={LBL}>Nom</label><input value={form.locNom || ''} onChange={e => u({ locNom: e.target.value })} placeholder="Martin" style={INP} /></div>
-              </div>
-              <div><label style={LBL}>Email</label><input type="email" value={form.locEmail || ''} onChange={e => u({ locEmail: e.target.value })} placeholder="jean.martin@email.com" style={INP} /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={LBL}>Date de début du bail</label><input type="date" value={form.locDebut || ''} onChange={e => u({ locDebut: e.target.value })} style={INP} /></div>
-                <div><label style={LBL}>Dépôt de garantie (€)</label><input type="number" value={form.locDepot || ''} onChange={e => u({ locDepot: e.target.value })} style={INP} /></div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-              <button onClick={() => setStep(2)} style={{ flex: 0, padding: '14px 20px', background: 'transparent', border: `1px solid ${L.border}`, fontSize: 14, cursor: 'pointer', fontFamily: L.font, color: L.textLight }}>Retour</button>
-              <button onClick={() => setStep(4)} style={{ flex: 1, padding: '14px', background: L.noir, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font }}>
-                {form.locNom ? 'Continuer' : 'Mon bien est vacant'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {type === 'sci' && step === 4 && (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 40, fontWeight: 200, color: L.gold, fontFamily: L.serif, marginBottom: 8 }}>C'est prêt.</div>
-            <p style={{ fontSize: 14, color: L.textLight, margin: '0 0 24px' }}>Votre espace SCI est configuré{form.bienAdresse ? ` avec ${form.bienNom || 'votre bien'}` : ''}.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left', marginBottom: 28 }}>
-              {[
-                form.sciNom && `SCI "${form.sciNom}" créée (${form.sciType || 'IR'})`,
-                form.bienAdresse && `Bien ajouté : ${form.bienNom || form.bienAdresse}${form.bienLoyer ? ` — ${form.bienLoyer}€/mois` : ''}`,
-                form.locNom && `Locataire : ${form.locPrenom} ${form.locNom}`,
-                !form.locNom && form.bienAdresse && 'Bien vacant — vous pourrez ajouter un locataire plus tard',
-              ].filter(Boolean).map((line, i) => (
-                <div key={i} style={{ padding: '10px 14px', background: L.cream, fontSize: 13, color: L.text }}>
-                  {line}
-                </div>
-              ))}
-            </div>
-            <p style={{ fontSize: 12, color: L.textLight, marginBottom: 20 }}>Suggestions pour démarrer :</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
-              {['Encaisser un loyer', 'Estimer la valeur de votre bien', 'Simuler un investissement'].map(s => (
-                <div key={s} style={{ padding: '10px 14px', border: `1px solid ${L.border}`, fontSize: 13, color: L.textSec, textAlign: 'left' }}>{s}</div>
-              ))}
-            </div>
-            <button onClick={finish} style={{ width: '100%', padding: '14px', background: L.gold, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: L.font }}>
-              Accéder à mon espace
-            </button>
-          </div>
-        )}
 
         {/* ═══ PATRON BTP ═══ */}
         {type === 'patron' && step === 1 && (

@@ -89,7 +89,7 @@ export default function ChantierDetail({ chantier, employes, vehicules, depenses
   const [maTva, setMaTva] = useState('20');
 
   // ── Sous-traitance state ───────────────────────────────────────
-  const [soustraitance, setSoustraitance] = useState(() => lsGet(`freample_soustraitance_${cid}`, []));
+  const soustraitance = lsGet(`freample_soustraitance_${cid}`, []);
 
   // ── Photos state ───────────────────────────────────────────────
   const [photos, setPhotos] = useState(() => lsGet(`freample_photos_${cid}`, []));

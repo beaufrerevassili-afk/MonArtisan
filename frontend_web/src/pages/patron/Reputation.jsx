@@ -121,7 +121,7 @@ export default function Reputation() {
       await api.post(`/patron/avis/${id}/repondre`, { reponse: texte });
       setAvis(prev => prev.map(a => a.id === id ? { ...a, reponse: texte } : a));
     } catch (err) {
-      console.error('Erreur réponse avis:', err);
+
     }
   }
 

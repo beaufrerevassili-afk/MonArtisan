@@ -8,9 +8,6 @@ import {
 import PointageModule from '../../components/rh/PointageModule';
 import EntretiensModule from '../../components/rh/EntretiensModule';
 import OnboardingModule from '../../components/rh/OnboardingModule';
-import ContratsBTPModule from '../../components/rh/ContratsBTPModule';
-import SimulateurTrajetModule from '../../components/rh/SimulateurTrajetModule';
-import SuiviPaieModule from '../../components/rh/SuiviPaieModule';
 
 /* ── French payroll cotisations config ── */
 const COTISATIONS_SALARIALES = [
@@ -1168,7 +1165,7 @@ function EmployesView({ employes: initEmployes }) {
                 <div><label style={lbl}>Prénom *</label><input {...f('prenom')} required placeholder="Jean" style={inp}/></div>
                 <div><label style={lbl}>Nom *</label><input {...f('nom')} required placeholder="Dupont" style={inp}/></div>
                 <div><label style={lbl}>Date de naissance</label><input type="date" {...f('dateNaissance')} style={inp}/></div>
-                <div><label style={lbl}>Lieu de naissance</label><input {...f('lieuNaissance')} placeholder="Paris (75)" style={inp}/></div>
+                <div><label style={lbl}>Lieu de naissance</label><input {...f('lieuNaissance')} placeholder="Marseille (13)" style={inp}/></div>
                 <div><label style={lbl}>Nationalité</label><input {...f('nationalite')} placeholder="Française" style={inp}/></div>
                 <div><label style={lbl}>N° Sécurité Sociale</label><input {...f('numeroSecuriteSociale')} placeholder="1 85 06 75 123 456 78" style={inp}/></div>
 
@@ -1176,8 +1173,8 @@ function EmployesView({ employes: initEmployes }) {
                 <div><label style={lbl}>Email</label><input type="email" {...f('email')} placeholder="jean.dupont@email.com" style={inp}/></div>
                 <div><label style={lbl}>Téléphone</label><input {...f('telephone')} placeholder="06 12 34 56 78" style={inp}/></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Adresse</label><input {...f('adresse')} placeholder="12 rue des Artisans" style={inp}/></div>
-                <div><label style={lbl}>Code postal</label><input {...f('codePostal')} placeholder="75001" style={inp}/></div>
-                <div><label style={lbl}>Ville</label><input {...f('ville')} placeholder="Paris" style={inp}/></div>
+                <div><label style={lbl}>Code postal</label><input {...f('codePostal')} placeholder="13001" style={inp}/></div>
+                <div><label style={lbl}>Ville</label><input {...f('ville')} placeholder="Marseille" style={inp}/></div>
 
                 <Section title="Contrat" />
                 <div><label style={lbl}>Poste *</label><input {...f('poste')} required placeholder="Maçon, Électricien…" style={inp}/></div>
@@ -1256,11 +1253,11 @@ const HEURES = ['07h', '08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '
 const COLORS = ['#5B5BD6', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA', '#FF6B6B'];
 
 const PLANNING_DEMO = [
-  { employeId: 1, nom: 'Pierre Martin', poste: 'Maçon', chantier: 'Rénovation façade — Leblanc', adresse: '24 rue Victor Hugo, Paris 15e', lat: 48.840, lng: 2.290, couleur: '#5B5BD6',
+  { employeId: 1, nom: 'Pierre Martin', poste: 'Maçon', chantier: 'Rénovation façade — Leblanc', adresse: '24 rue Victor Hugo, Marseille 1er', lat: 43.296, lng: 5.370, couleur: '#5B5BD6',
     semaine: { Lun: { debut: 7, fin: 17, label: 'Chantier Leblanc' }, Mar: { debut: 7, fin: 17, label: 'Chantier Leblanc' }, Mer: { debut: 7, fin: 12, label: 'Chantier Leblanc' }, Jeu: null, Ven: { debut: 8, fin: 16, label: 'Chantier Leblanc' }, Sam: null } },
-  { employeId: 2, nom: 'Jacques Durand', poste: 'Électricien', chantier: 'Installation électrique — SCI Horizon', adresse: '5 rue Pasteur, Créteil', lat: 48.790, lng: 2.455, couleur: '#34C759',
-    semaine: { Lun: null, Mar: { debut: 8, fin: 18, label: 'SCI Horizon' }, Mer: { debut: 8, fin: 18, label: 'SCI Horizon' }, Jeu: { debut: 8, fin: 18, label: 'SCI Horizon' }, Ven: { debut: 8, fin: 14, label: 'SCI Horizon' }, Sam: null } },
-  { employeId: 3, nom: 'Sophie Petit', poste: 'Plombier', chantier: 'Plomberie — Chauffe-eau Voltaire', adresse: '15 bd Voltaire, Paris 11e', lat: 48.856, lng: 2.378, couleur: '#FF9500',
+  { employeId: 2, nom: 'Jacques Durand', poste: 'Électricien', chantier: 'Installation électrique — Copropriété Les Oliviers', adresse: '5 rue Pasteur, Marseille 6e', lat: 43.292, lng: 5.384, couleur: '#34C759',
+    semaine: { Lun: null, Mar: { debut: 8, fin: 18, label: 'Copro Les Oliviers' }, Mer: { debut: 8, fin: 18, label: 'Copro Les Oliviers' }, Jeu: { debut: 8, fin: 18, label: 'Copro Les Oliviers' }, Ven: { debut: 8, fin: 14, label: 'Copro Les Oliviers' }, Sam: null } },
+  { employeId: 3, nom: 'Sophie Petit', poste: 'Plombier', chantier: 'Plomberie — Chauffe-eau Voltaire', adresse: '15 bd Voltaire, Marseille 5e', lat: 43.290, lng: 5.399, couleur: '#FF9500',
     semaine: { Lun: { debut: 9, fin: 17, label: 'Voltaire' }, Mar: { debut: 9, fin: 17, label: 'Voltaire' }, Mer: null, Jeu: { debut: 9, fin: 17, label: 'Voltaire' }, Ven: { debut: 9, fin: 13, label: 'Congé après-midi' }, Sam: null } },
   { employeId: 4, nom: 'Marc Bernard', poste: 'Chef de chantier', chantier: 'Pose carrelage — Dupont', adresse: '8 av. des Fleurs, Boulogne', lat: 48.835, lng: 2.240, couleur: '#AF52DE',
     semaine: { Lun: { debut: 7, fin: 18, label: 'Dupont Boulogne' }, Mar: { debut: 7, fin: 18, label: 'Dupont Boulogne' }, Mer: { debut: 7, fin: 18, label: 'Dupont Boulogne' }, Jeu: { debut: 7, fin: 18, label: 'Dupont Boulogne' }, Ven: { debut: 7, fin: 12, label: 'Dupont Boulogne' }, Sam: null } },
@@ -1956,7 +1953,7 @@ function PaieView({ employes }) {
               <div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
                 <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.7, marginTop: 4 }}>
-                  12 rue des Artisans, 69002 Lyon<br />
+                  12 rue des Artisans, 13002 Marseille<br />
                   SIRET : 123 456 789 00012 · NAF : 4329A<br />
                   Convention collective : BTP (IDCC 1597/1596)
                 </div>

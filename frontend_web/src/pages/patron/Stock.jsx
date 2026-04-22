@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IconBox, IconPlus, IconX, IconAlert, IconCheck } from '../../components/ui/Icons';
+import { IconBox, IconPlus, IconAlert, IconCheck } from '../../components/ui/Icons';
 import api from '../../services/api';
 
 const CATS = ['Matériaux', 'Outillage', 'EPI / Sécurité', 'Fournitures', 'Produits chimiques', 'Équipement'];
@@ -91,7 +91,7 @@ export default function Stock() {
       }
       setModal(null);
     } catch (err) {
-      console.error('Erreur stock:', err);
+
       if (modal === 'add') {
         const newArticle = { ...payload, id: Date.now() };
         setArticles(prev => [...prev, newArticle]);
@@ -108,7 +108,7 @@ export default function Stock() {
       setArticles(prev => prev.filter(a => a.id !== id));
       setModal(null);
     } catch (err) {
-      console.error('Erreur suppression stock:', err);
+
       setArticles(prev => prev.filter(a => a.id !== id));
       setModal(null);
     }

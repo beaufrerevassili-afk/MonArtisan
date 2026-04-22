@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import api from '../../services/api';
 import { calculerIndemniteTrajet, PANIER_REPAS_BTP } from '../../utils/calculPaie';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
@@ -20,11 +20,11 @@ const CHANTIERS_INIT = [
   { id:1, nom:'Rénovation Dupont', adresse:'12 rue de France, Marseille', distanceDepot:null },
   { id:2, nom:'Bureau Médecin', adresse:'8 avenue Jean Médecin, Marseille', distanceDepot:null },
   { id:3, nom:'Peinture Pastorelli', adresse:'24 rue Pastorelli, Marseille', distanceDepot:null },
-  { id:4, nom:'Villa Rousseau', adresse:'15 chemin des Collines, Cagnes-sur-Mer', distanceDepot:null },
+  { id:4, nom:'Villa Rousseau', adresse:'15 chemin des Collines, La Ciotat', distanceDepot:null },
   { id:5, nom:'Résidence Garibaldi', adresse:'10 place Garibaldi, Marseille', distanceDepot:null },
-  { id:6, nom:'Entrepôt Carros', adresse:'Zone industrielle, Carros', distanceDepot:null },
-  { id:7, nom:'Maison Antibes', adresse:'8 rue de la République, Antibes', distanceDepot:null },
-  { id:8, nom:'Chantier Grasse', adresse:'12 boulevard du Jeu de Ballon, Grasse', distanceDepot:null },
+  { id:6, nom:'Entrepôt Vitrolles', adresse:'Zone industrielle, Vitrolles', distanceDepot:null },
+  { id:7, nom:'Maison Cassis', adresse:'8 rue de la République, Cassis', distanceDepot:null },
+  { id:8, nom:'Chantier Aubagne', adresse:'12 boulevard du Jeu de Ballon, Aubagne', distanceDepot:null },
 ];
 
 // ══ Salariés ══
@@ -132,7 +132,7 @@ export default function SuiviPaieModule() {
   const [depot, setDepot] = useState(localStorage.getItem(STORAGE_DEPOT)||DEPOT_DEFAULT);
   const [chantiers, setChantiers] = useState(CHANTIERS_INIT);
   const [salaries, setSalaries] = useState(SALARIES);
-  const [pointages, setPointages] = useState(loadPointages);
+  const pointages = loadPointages();
   const [selectedSalarie, setSelectedSalarie] = useState(null);
   const [calcEnCours, setCalcEnCours] = useState(false);
   const [distancesCalculees, setDistancesCalculees] = useState(false);

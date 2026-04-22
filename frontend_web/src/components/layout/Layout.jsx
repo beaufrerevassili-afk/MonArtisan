@@ -141,21 +141,10 @@ const PATRON_GROUPS = [
 
 // Flat menus for non-BTP patron sectors
 const PATRON_SECTOR_MENUS = {
-  coiffure: [
-    { label: 'Tableau de bord',   path: '/patron/dashboard',                Icon: IconHome       },
-    { label: 'Rendez-vous',       path: '/patron/dashboard?onglet=rdv',     Icon: IconCalendar   },
-    { label: 'Services & Tarifs', path: '/patron/dashboard?onglet=services',Icon: IconDocument   },
-    { label: 'Clients',           path: '/patron/dashboard?onglet=clients', Icon: IconTeam       },
-    { label: 'Équipe',            path: '/patron/dashboard?onglet=equipe',  Icon: IconTeam       },
-    { label: 'Paiements',         path: '/patron/dashboard?onglet=paiements',Icon: IconFinance   },
-    { label: 'Rapports',          path: '/patron/dashboard?onglet=rapports',Icon: IconStar       },
-    { label: 'Mon profil',        path: '/patron/profil',                   Icon: IconUser       },
-  ],
   com: 'dynamic', // handled dynamically based on vue toggle
 };
 
 const PATRON_SECTOR_HEADERS = {
-  coiffure:   { label: '✂️ Coiffure',         color: '#E535AB', bg: '#FFF0F8' },
   com:        { label: '🎬 Freample Com',    color: '#8B5CF6', bg: '#F5F3FF' },
 };
 
@@ -168,7 +157,6 @@ const DEMO_NOTIFS = [
 
 const ROLE_LABELS_BY_SECTOR = {
   btp:        { patron:'Chef d\'entreprise BTP', artisan:'Artisan BTP' },
-  coiffure:   { patron:'Gérant Salon', artisan:'Coiffeur·se' },
   com:        { patron:'Freample Com', artisan:'Monteur' },
 };
 function getRoleLabel(user) {

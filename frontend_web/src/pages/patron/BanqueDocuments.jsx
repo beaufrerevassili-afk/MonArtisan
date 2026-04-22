@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { IconDocument, IconDownload, IconSearch, IconFilter, IconUser, IconShield, IconTeam } from '../../components/ui/Icons';
+import { IconDocument, IconSearch, IconUser, IconShield, IconTeam } from '../../components/ui/Icons';
 import { API_URL } from '../../services/api';
 const BASE_URL = window.location.origin;
 

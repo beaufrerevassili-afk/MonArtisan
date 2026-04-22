@@ -163,7 +163,7 @@ export default function QSE() {
   const [filterUT, setFilterUT] = useState('Tous les postes');
   const [employes, setEmployes] = useState([]);
   const [plans, setPlans] = useState([
-    { id:1, chantier:'Rénovation Dupont — Lyon 6', date:'2025-03-01', entreprises:['Electricité Martin SARL','Plomberie Durand'], statut:'actif', risques:['Électrique','Chute hauteur','Co-activité'] },
+    { id:1, chantier:'Rénovation Dupont — Marseille 6e', date:'2025-03-01', entreprises:['Electricité Martin SARL','Plomberie Durand'], statut:'actif', risques:['Électrique','Chute hauteur','Co-activité'] },
     { id:2, chantier:'Extension Villa Rousseau — Caluire', date:'2025-02-15', entreprises:['Maçonnerie Bisson','Toiture Perrin'], statut:'actif', risques:['Chute hauteur','Manutention','Bruit'] },
     { id:3, chantier:'Réfection toiture Immeuble Bellecour', date:'2025-01-10', entreprises:['Toiture Express'], statut:'clôturé', risques:['Chute hauteur','Poussières amiante'] },
   ]);
@@ -464,7 +464,7 @@ export default function QSE() {
         setShowForm(false);
         setFichier(null); setScanResult(null);
         setForm({ employeId:'', nom:'', type:'électrique', niveau:'', organisme:'', dateObtention:new Date().toISOString().split('T')[0], dateExpiration:'', documentNom:'' });
-      } catch(err){ console.error(err); }
+      } catch(err){ }
       setSaving(false);
     }
 
@@ -629,8 +629,8 @@ export default function QSE() {
     /* ── REGISTRE AT STATE ── */
     const today = new Date().toISOString().split('T')[0];
     const [accidents, setAccidents] = useState([
-      { id:1, date:'2025-01-14', nom:'Martin P.', nature:'Coupure main gauche (ciseau)', gravite:'Leger', lieuxAT:'Chantier Dupont — Lyon 6', circonstances:'Manipulation ciseau bois sans gants', arrêt:false, joursArret:0, reprise:'2025-01-14', cerfaEnvoye:true },
-      { id:2, date:'2025-02-22', nom:'Durand J.', nature:'Entorse cheville droite (chute échafaudage)', gravite:'Moyen', lieuxAT:'Chantier SCI Horizon — Créteil', circonstances:'Faux pas sur planche d\'échafaudage mouillée', arrêt:true, joursArret:7, reprise:'2025-03-01', cerfaEnvoye:true },
+      { id:1, date:'2025-01-14', nom:'Martin P.', nature:'Coupure main gauche (ciseau)', gravite:'Leger', lieuxAT:'Chantier Dupont — Marseille 6e', circonstances:'Manipulation ciseau bois sans gants', arrêt:false, joursArret:0, reprise:'2025-01-14', cerfaEnvoye:true },
+      { id:2, date:'2025-02-22', nom:'Durand J.', nature:'Entorse cheville droite (chute échafaudage)', gravite:'Moyen', lieuxAT:'Chantier Copropriété Les Oliviers — Marseille 6e', circonstances:'Faux pas sur planche d\'échafaudage mouillée', arrêt:true, joursArret:7, reprise:'2025-03-01', cerfaEnvoye:true },
       { id:3, date:'2025-03-05', nom:'Bernard M.', nature:'Projection poussières ciment dans œil droit', gravite:'Leger', lieuxAT:'Atelier', circonstances:'Découpe parpaings sans lunettes de protection', arrêt:false, joursArret:0, reprise:'2025-03-05', cerfaEnvoye:false },
     ]);
     const [showAtForm, setShowAtForm] = useState(false);
@@ -1163,8 +1163,8 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
         { key:'responsable', label:'Responsable de la sécurité', ph:'Nom, Prénom' },
       ],
       'ppsps': [
-        { key:'chantier', label:'Nom / adresse du chantier', ph:'Rénovation façade — 12 rue Hugo, Paris' },
-        { key:'maitreouvrage', label:'Maître d\'ouvrage', ph:'SCI Horizon' },
+        { key:'chantier', label:'Nom / adresse du chantier', ph:'Rénovation façade — 12 rue Hugo, Marseille' },
+        { key:'maitreouvrage', label:'Maître d\'ouvrage', ph:'Copropriété Les Oliviers' },
         { key:'debut', label:'Date début travaux', ph:'2025-04-01', type:'date' },
         { key:'fin', label:'Date fin prévue', ph:'2025-06-30', type:'date' },
         { key:'effectif', label:'Effectif maximal simultané', ph:'8' },
@@ -1488,7 +1488,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       setChantiers(lsChantiers || [
         { id:'ch1', nom:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
         { id:'ch3', nom:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', equipe:['Luc Moreau','Pierre Martin'] },
-        { id:'ch2', nom:'Mise aux normes électriques — SCI Horizon', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', equipe:['Claire Bernard'] },
+        { id:'ch2', nom:'Mise aux normes électriques — Copropriété Les Oliviers', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', equipe:['Claire Bernard'] },
       ]);
     });
   }, []);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, Navigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import L from '../design/luxe';
 
@@ -33,8 +33,8 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
 
   const getDestination = (role, userData) => {
-    // SCI → gestion immo
-    if (userData?.entrepriseType === 'sci' || userData?.secteur === 'immo') return '/immo/gestion';
+    // Redirection par type d'entreprise
+
     if (userData?.entrepriseType === 'ae') return '/ae/dashboard';
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
     return REDIRECTIONS[role] || '/';

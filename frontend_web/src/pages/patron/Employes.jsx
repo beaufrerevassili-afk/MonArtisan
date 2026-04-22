@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import {
   getFichesSalaries, setFichesSalaries, FICHE_SALARIE_VIDE,
   CORPS_METIER_BTP, HABILITATIONS_REQUISES, verifierHabilitation, getProfilEntreprise

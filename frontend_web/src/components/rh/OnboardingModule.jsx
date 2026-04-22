@@ -1,6 +1,6 @@
 import api from '../../services/api';
 import React, { useState, useEffect } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
 const BTN = { padding:'8px 18px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:DS.font };

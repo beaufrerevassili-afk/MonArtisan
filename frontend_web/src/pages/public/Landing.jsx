@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import DS from '../../design/ds';
-import PublicNavbar from '../../components/public/PublicNavbar';
-import RecrutementBanner from '../../components/public/RecrutementBanner';
+import DS from '../../design/luxe';
 import HideForClient from '../../components/public/HideForClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { IconSearch, IconMapPin, IconStar, IconShield, IconCheck, IconChevronDown, IconX, IconUser } from '../../components/ui/Icons';
+import { IconSearch, IconMapPin, IconShield, IconChevronDown, IconX } from '../../components/ui/Icons';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 import { API_URL } from '../../services/api';
 
@@ -382,15 +380,15 @@ export default function Landing() {
   }, [villeInput]);
 
   const DEMO_ARTISANS = [
-    { id:1, nom:'Lucas Garcia', metier:'Plomberie', ville:'Marseille (13)', note:4.8, nbAvis:47, description:'Plombier certifié, spécialiste dépannage et rénovation salle de bain. Intervention rapide sur Nice et alentours.', verified:true, disponibilite:'aujourd_hui', prixHeure:45, certifications:['RGE','Qualibat'] },
+    { id:1, nom:'Lucas Garcia', metier:'Plomberie', ville:'Marseille (13)', note:4.8, nbAvis:47, description:'Plombier certifié, spécialiste dépannage et rénovation salle de bain. Intervention rapide sur Marseille et alentours.', verified:true, disponibilite:'aujourd_hui', prixHeure:45, certifications:['RGE','Qualibat'] },
     { id:2, nom:'Marc Lambert', metier:'Électricité', ville:'Marseille (13)', note:4.9, nbAvis:62, description:'Électricien qualifié NF C 15-100. Mise aux normes, tableaux, domotique. Devis gratuit.', verified:true, disponibilite:'aujourd_hui', prixHeure:50, certifications:['Qualifelec','Consuel'] },
-    { id:3, nom:'Sophie Duval', metier:'Peinture', ville:'Antibes (06)', note:4.7, nbAvis:31, description:'Peintre décoratrice. Intérieur, extérieur, ravalement. Finitions soignées, conseils couleurs offerts.', verified:true, disponibilite:'cette_semaine', prixHeure:38, certifications:['Qualibat'] },
-    { id:4, nom:'Henri Moreau', metier:'Maçonnerie', ville:'Cannes (06)', note:4.6, nbAvis:28, description:'Maçon traditionnel. Murs, terrasses, clôtures, rénovation pierre. 15 ans d\'expérience sur la Côte d\'Azur.', verified:true, disponibilite:'cette_semaine', prixHeure:42, certifications:['Qualibat'] },
+    { id:3, nom:'Sophie Duval', metier:'Peinture', ville:'Marseille 8e (13)', note:4.7, nbAvis:31, description:'Peintre décoratrice. Intérieur, extérieur, ravalement. Finitions soignées, conseils couleurs offerts.', verified:true, disponibilite:'cette_semaine', prixHeure:38, certifications:['Qualibat'] },
+    { id:4, nom:'Henri Moreau', metier:'Maçonnerie', ville:'Aix-en-Provence (13)', note:4.6, nbAvis:28, description:'Maçon traditionnel. Murs, terrasses, clôtures, rénovation pierre. 15 ans d\'expérience en PACA.', verified:true, disponibilite:'cette_semaine', prixHeure:42, certifications:['Qualibat'] },
     { id:5, nom:'Thomas Petit', metier:'Menuiserie', ville:'Marseille (13)', note:4.9, nbAvis:53, description:'Menuisier ébéniste. Cuisines sur mesure, placards, escaliers. Bois massif et matériaux nobles.', verified:true, disponibilite:'aujourd_hui', prixHeure:55, certifications:['Compagnon'] },
-    { id:6, nom:'Jean-Pierre Roux', metier:'Carrelage', ville:'Menton (06)', note:4.5, nbAvis:19, description:'Carreleur expérimenté. Salles de bain, terrasses, grands formats. Pose impeccable garantie.', verified:true, disponibilite:'ce_mois', prixHeure:40, certifications:[] },
+    { id:6, nom:'Jean-Pierre Roux', metier:'Carrelage', ville:'Aubagne (13)', note:4.5, nbAvis:19, description:'Carreleur expérimenté. Salles de bain, terrasses, grands formats. Pose impeccable garantie.', verified:true, disponibilite:'ce_mois', prixHeure:40, certifications:[] },
     { id:7, nom:'Karim Benali', metier:'Chauffage', ville:'Marseille (13)', note:4.8, nbAvis:35, description:'Chauffagiste RGE. Installation pompes à chaleur, chaudières, plancher chauffant. Éligible aides MaPrimeRénov\'.', verified:true, disponibilite:'cette_semaine', prixHeure:48, certifications:['RGE','QualiPAC'] },
     { id:8, nom:'Pierre Martin', metier:'Serrurerie', ville:'Marseille (13)', note:4.4, nbAvis:22, description:'Serrurier agréé assurances. Ouverture de porte, blindage, installation digicode. Intervention 7j/7.', verified:true, disponibilite:'aujourd_hui', prixHeure:60, certifications:['A2P'] },
-    { id:9, nom:'Claire Fontaine', metier:'Isolation', ville:'Antibes (06)', note:4.7, nbAvis:41, description:'Spécialiste isolation thermique et phonique. Combles, murs, ITE. Certifiée RGE, éligible aides.', verified:true, disponibilite:'cette_semaine', prixHeure:44, certifications:['RGE','Qualibat'] },
+    { id:9, nom:'Claire Fontaine', metier:'Isolation', ville:'La Ciotat (13)', note:4.7, nbAvis:41, description:'Spécialiste isolation thermique et phonique. Combles, murs, ITE. Certifiée RGE, éligible aides.', verified:true, disponibilite:'cette_semaine', prixHeure:44, certifications:['RGE','Qualibat'] },
   ];
 
   const search = useCallback(async () => {

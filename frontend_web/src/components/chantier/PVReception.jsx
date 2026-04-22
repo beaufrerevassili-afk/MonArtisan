@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 
 /**
  * PV de Réception de Travaux
@@ -20,7 +20,7 @@ const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadiu
 const INP = { width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
 
 export default function PVReception({ chantier, devis, profilEntreprise, clientNom, onSigner, onRefuser, readOnly, role, pvExistant }) {
-  const [mode, setMode] = useState(pvExistant ? 'consultation' : 'edition'); // edition | reserves | signature | consultation
+  const mode = pvExistant ? 'consultation' : 'edition'; // edition | reserves | signature | consultation
   const [reserves, setReserves] = useState(pvExistant?.reserves || []);
   const [newReserve, setNewReserve] = useState('');
   const [sansReserve, setSansReserve] = useState(pvExistant ? pvExistant.reserves?.length === 0 : true);

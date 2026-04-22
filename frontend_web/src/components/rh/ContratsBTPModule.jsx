@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import { jsPDF } from 'jspdf';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -8,7 +8,7 @@ const BTN_O = { ...BTN, background:'transparent', color:'#0A0A0A', border:'1px s
 const INP = { width:'100%', padding:'9px 11px', border:'1px solid #E8E6E1', borderRadius:8, fontSize:12, fontFamily:DS.font, outline:'none', boxSizing:'border-box' };
 const LBL = { fontSize:10, fontWeight:600, color:'#555', display:'block', marginBottom:3 };
 
-const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'123 456 789 000 12', adresse:'45 boulevard de la Libération, 13001 Marseille', rcs:'Nice B 123 456 789', assuranceDecennale:'AXA n° POL-2026-DEC-001', rcPro:'SMABTP n° RC-2026-PRO-002', representant:'Vassili Beaufrere', fonction:'Gérant' };
+const EMPLOYEUR = { nom:'Freample Artisans BTP', siret:'123 456 789 000 12', adresse:'45 boulevard de la Libération, 13001 Marseille', rcs:'Marseille B 123 456 789', assuranceDecennale:'AXA n° POL-2026-DEC-001', rcPro:'SMABTP n° RC-2026-PRO-002', representant:'Vassili Beaufrere', fonction:'Gérant' };
 
 // ══ CLAUSES ÉDITABLES PAR CONTRAT ══
 const CONTRATS = [
@@ -126,7 +126,7 @@ export default function ContratsBTPModule() {
     if (y > 260) { doc.addPage(); y = 15; }
     y += 8;
     doc.setFontSize(9);
-    doc.text(`Fait en deux exemplaires. À Nice, le ${new Date().toLocaleDateString('fr-FR')}`, 15, y);
+    doc.text(`Fait en deux exemplaires. À Marseille, le ${new Date().toLocaleDateString('fr-FR')}`, 15, y);
 
     const pages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pages; i++) { doc.setPage(i); doc.setFontSize(7); doc.setTextColor(100, 100, 100); doc.text(`Page ${i}/${pages} — ${contrat.titre} — Freample Artisans`, 105, 290, { align: 'center' }); }

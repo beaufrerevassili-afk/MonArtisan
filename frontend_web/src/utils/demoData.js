@@ -33,7 +33,7 @@ export const DEMO_NOMS_SALARIES = DEMO_SALARIES.map(s => `${s.prenom} ${s.nom}`)
 export const DEMO_CLIENTS = [
   { id: 'c1', nom: 'Mme Dupont', prenom: 'Marie', email: 'marie.dupont@mail.fr', telephone: '06 67 89 01 23', adresse: '12 rue de la Liberté, 13001 Marseille', type: 'particulier' },
   { id: 'c2', nom: 'M. Leblanc', prenom: 'François', email: 'leblanc@mail.fr', telephone: '06 78 90 12 34', adresse: '8 bd Longchamp, 13001 Marseille', type: 'particulier' },
-  { id: 'c3', nom: 'SCI Horizon', prenom: '', email: 'contact@sci-horizon.fr', telephone: '04 91 22 33 44', adresse: '5 rue Pasteur, 13006 Marseille', type: 'sci' },
+  { id: 'c3', nom: 'Copropriété Les Oliviers', prenom: '', email: 'contact@oliviers-copro.fr', telephone: '04 91 22 33 44', adresse: '5 rue Pasteur, 13006 Marseille', type: 'copropriete' },
   { id: 'c4', nom: 'Syndic Voltaire', prenom: '', email: 'voltaire@syndic.fr', telephone: '04 91 33 44 55', adresse: '15 bd Voltaire, 13005 Marseille', type: 'copropriete' },
   { id: 'c5', nom: 'M. Rousseau', prenom: 'Thomas', email: 'rousseau@mail.fr', telephone: '06 89 01 23 45', adresse: '24 rue Paradis, 13006 Marseille', type: 'particulier' },
 ];
@@ -49,8 +49,8 @@ export const DEMO_CHANTIERS = [
     source: 'marketplace',
   },
   {
-    id: 'ch2', titre: 'Mise aux normes électriques — SCI Horizon', description: 'Tableau électrique + câblage complet appartement T4.',
-    client: 'SCI Horizon', adresse: '5 rue Pasteur, 13006 Marseille',
+    id: 'ch2', titre: 'Mise aux normes électriques — Copropriété Les Oliviers', description: 'Tableau électrique + câblage complet appartement T4.',
+    client: 'Copropriété Les Oliviers', adresse: '5 rue Pasteur, 13006 Marseille',
     statut: 'planifie', avancement: 0, budgetPrevu: 4800, caDevis: 5200,
     dateDebut: '2026-04-28', dateFin: '2026-05-10',
     equipe: ['Claire Bernard', 'Marc Lambert'],

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import { calculerRemunerationJournaliere, BAREME_TRAJET, PANIER_REPAS_BTP } from '../../utils/calculPaie';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };

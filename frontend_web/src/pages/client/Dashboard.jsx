@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import NotificationBell from '../../components/ui/NotificationBell';
-import { CORPS_METIER_BTP } from '../../utils/profilEntreprise';
 import ProjetNegociation from '../../components/marketplace/ProjetNegociation';
 import ProfilClient from '../../components/client/ProfilClient';
 import PVReception from '../../components/chantier/PVReception';

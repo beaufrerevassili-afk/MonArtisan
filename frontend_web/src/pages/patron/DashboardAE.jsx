@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import NotificationBell from '../../components/ui/NotificationBell';
 import {
   IconHome, IconMissions, IconDocument, IconChart, IconBank, IconBox, IconMapPin,

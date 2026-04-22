@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DS from '../../design/ds';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
-import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp, IconClock, IconUser } from '../../components/ui/Icons';
+import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp } from '../../components/ui/Icons';
 // Facturation.jsx est géré via DevisFactures.jsx, pas ici
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
 import ExportCompta from '../../components/rh/ExportCompta';
@@ -55,11 +55,11 @@ const DEMO_FINANCE = {
     { label: 'Autres',      pct: 8,  color: '#636363', ca: 11_424 },
   ],
   topClients: [
-    { nom: 'SCI Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Paris 11e' },
-    { nom: 'Résidence du Parc',    ca: 19_800, factures: 4,  taux: 100, ville: 'Vincennes'  },
-    { nom: 'M. & Mme Bertrand',    ca: 14_500, factures: 3,  taux: 67,  ville: 'Montreuil'  },
-    { nom: 'SARL Dupont Immo',     ca: 12_900, factures: 5,  taux: 80,  ville: 'Bagnolet'   },
-    { nom: 'Copropriété Voltaire', ca: 9_200,  factures: 2,  taux: 100, ville: 'Paris 12e'  },
+    { nom: 'SCI Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Marseille 6e' },
+    { nom: 'Résidence du Parc',    ca: 19_800, factures: 4,  taux: 100, ville: 'Aix-en-Provence'  },
+    { nom: 'M. & Mme Bertrand',    ca: 14_500, factures: 3,  taux: 67,  ville: 'Aubagne'  },
+    { nom: 'SARL Dupont Immo',     ca: 12_900, factures: 5,  taux: 80,  ville: 'La Ciotat'   },
+    { nom: 'Copropriété Voltaire', ca: 9_200,  factures: 2,  taux: 100, ville: 'Marseille 12e'  },
   ],
 };
 
@@ -858,7 +858,7 @@ function FacturesView({ factures, setFac }) {
           <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#636363', lineHeight: 1.6 }}>
             <div style={{ fontWeight: 700, fontSize: 11, color: '#6E6E73', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Mentions légales</div>
             {MENTIONS_LEGALES.map((m, i) => <div key={i} style={{ marginBottom: 3 }}>• {m}</div>)}
-            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Paris B 123 456 789 · Siège social : 12 rue des Artisans, 13005 Marseille · N° TVA intracommunautaire : FR12 123456789</div>
+            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Marseille B 123 456 789 · Siège social : 12 rue des Artisans, 13005 Marseille · N° TVA intracommunautaire : FR12 123456789</div>
           </div>
         </div>
       </div>
@@ -880,7 +880,7 @@ function FacturesView({ factures, setFac }) {
             <div><label className="label">Nom / Raison sociale *</label><input className="input" required value={form.clientNom} onChange={e => setForm(p => ({ ...p, clientNom: e.target.value }))} placeholder="Nom du client" /></div>
             <div><label className="label">SIRET client</label><input className="input" value={form.clientSiret} onChange={e => setForm(p => ({ ...p, clientSiret: e.target.value }))} placeholder="123 456 789 00012" /></div>
             <div><label className="label">Adresse</label><input className="input" value={form.clientAdresse} onChange={e => setForm(p => ({ ...p, clientAdresse: e.target.value }))} placeholder="12 rue du Client" /></div>
-            <div><label className="label">Code postal / Ville</label><input className="input" value={form.clientVille} onChange={e => setForm(p => ({ ...p, clientVille: e.target.value }))} placeholder="75001 Paris" /></div>
+            <div><label className="label">Code postal / Ville</label><input className="input" value={form.clientVille} onChange={e => setForm(p => ({ ...p, clientVille: e.target.value }))} placeholder="13001 Marseille" /></div>
             <div><label className="label">Date d'émission</label><input type="date" className="input" value={form.dateEmission} onChange={e => setForm(p => ({ ...p, dateEmission: e.target.value }))} /></div>
             <div><label className="label">Date d'échéance</label><input type="date" className="input" value={form.dateEcheance} onChange={e => setForm(p => ({ ...p, dateEcheance: e.target.value }))} /></div>
           </div>

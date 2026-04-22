@@ -29,7 +29,6 @@ export default function NotificationBell({ dark = false, style = {} }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
-  const [loading, setLoading] = useState(false);
   const ref = useRef(null);
   const unreadCount = notifs.filter(n => !n.lu).length;
 

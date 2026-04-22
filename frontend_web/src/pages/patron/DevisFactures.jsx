@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { secureToken } from '../../utils/security';
-import { IconDocument, IconCreditCard, IconTrendUp, IconPlus, IconSend, IconCheck, IconX, IconSearch } from '../../components/ui/Icons';
+import { IconDocument, IconCreditCard, IconTrendUp, IconPlus, IconCheck, IconSearch } from '../../components/ui/Icons';
 import DevisFormulaire from '../../components/DevisFormulaire';
 import EnvoyerDevisButton from '../../components/devis/EnvoyerDevisButton';
 
@@ -44,14 +44,14 @@ const STATUT_FACTURE = {
 const DEMO_DEVIS = [
   { id: 1, numero: 'DEV-2026-001', client: 'M. Leblanc', objet: 'Rénovation façade — Immeuble Leblanc', montantHT: 18500, tva: 1850, montantTTC: 20350, statut: 'signe', source: 'marketplace', chantierId: 1, date: '2026-03-15', versions: [] },
   { id: 2, numero: 'DEV-2026-002', client: 'Mme Dupont', objet: 'Pose carrelage — Appartement T3', montantHT: 3200, tva: 320, montantTTC: 3520, statut: 'envoye', source: 'marketplace', chantierId: 2, date: '2026-04-01', versions: [] },
-  { id: 3, numero: 'DEV-2026-003', client: 'SCI Horizon', objet: 'Installation électrique neuve', montantHT: 4800, tva: 480, montantTTC: 5280, statut: 'signe', source: 'manuel', chantierId: 3, date: '2026-03-10', versions: [] },
+  { id: 3, numero: 'DEV-2026-003', client: 'Copropriété Les Oliviers', objet: 'Installation électrique neuve', montantHT: 4800, tva: 480, montantTTC: 5280, statut: 'signe', source: 'manuel', chantierId: 3, date: '2026-03-10', versions: [] },
   { id: 4, numero: 'DEV-2026-004', client: 'Syndic Voltaire', objet: 'Remplacement chauffe-eau collectif', montantHT: 2200, tva: 220, montantTTC: 2420, statut: 'brouillon', source: 'manuel', chantierId: null, date: '2026-04-10', versions: [] },
   { id: 5, numero: 'DEV-2026-005', client: 'M. Rousseau', objet: 'Peinture intérieure T4', montantHT: 5600, tva: 560, montantTTC: 6160, statut: 'refuse', source: 'direct', chantierId: null, date: '2026-03-20', versions: [] },
 ];
 
 const DEMO_FACTURES = [
   { id: 1, numero: 'FAC-2026-001', devisId: 1, client: 'M. Leblanc', objet: 'Rénovation façade', montantTTC: 20350, source: 'marketplace', statut: 'sequestre_attente', acompte: 6105, solde: 14245, avancement: 65, date: '2026-03-20', chantierId: 1 },
-  { id: 2, numero: 'FAC-2026-002', devisId: 3, client: 'SCI Horizon', objet: 'Installation électrique', montantTTC: 5280, source: 'manuel', statut: 'en_retard', date: '2026-03-15', chantierId: 3, dateLimite: '2026-04-15' },
+  { id: 2, numero: 'FAC-2026-002', devisId: 3, client: 'Copropriété Les Oliviers', objet: 'Installation électrique', montantTTC: 5280, source: 'manuel', statut: 'en_retard', date: '2026-03-15', chantierId: 3, dateLimite: '2026-04-15' },
 ];
 
 export default function DevisFactures() {

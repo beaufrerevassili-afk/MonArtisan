@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import { useAuth } from '../../context/AuthContext';
 
 const DEV_EMAIL = 'freamplecom@gmail.com';
@@ -181,7 +181,7 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
               </button>
               <button onClick={() => {
                   const sector = location.pathname.split('/')[1];
-                  const valid = ['coiffure','btp','com'];
+                  const valid = ['btp','com'];
                   navigate(valid.includes(sector) ? `/login?from=${sector}` : '/login');
                 }}
                 style={{ padding: '7px 16px', background: 'none', border: `1px solid ${DS.border}`, borderRadius: DS.r.full, fontSize: 13, fontWeight: 500, color: DS.muted, cursor: 'pointer', transition: 'all .15s', fontFamily: DS.font }}
@@ -191,7 +191,7 @@ export default function PublicNavbar({ subNav = null, transparent = false, onMen
               </button>
               <button onClick={() => {
                   const sector = location.pathname.split('/')[1];
-                  const valid = ['coiffure','btp','com'];
+                  const valid = ['btp','com'];
                   navigate(valid.includes(sector) ? `/register?secteur=${sector}` : '/register');
                 }}
                 style={{ padding: '7px 20px', background: DS.ink, border: 'none', borderRadius: DS.r.full, fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'opacity .15s', fontFamily: DS.font }}

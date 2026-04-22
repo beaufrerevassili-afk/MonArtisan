@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import DS from '../design/ds';
+import DS from '../design/luxe';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -13,18 +13,8 @@ const METIERS = [
 ];
 
 const METIERS_PAR_SECTEUR = {
-  btp:        METIERS,
-  coiffure:   ['Coiffeur·se', 'Barbier', 'Coloriste', 'Manucure / Prothésiste ongulaire', 'Esthéticien·ne', 'Maquilleur·se', 'Responsable salon', 'Autre'],
+  btp: METIERS,
 };
-
-const DOCUMENTS_COIFFURE = [
-  { id: 'piece_identite',   label: "Pièce d'identité",       detail: 'CNI recto-verso ou passeport en cours de validité',       accept: 'image/*,.pdf', required: true,  icon: '🪪' },
-  { id: 'kbis',             label: 'Extrait Kbis',            detail: "Moins de 3 mois — preuve d'immatriculation de l'entreprise", accept: '.pdf,image/*', required: true,  icon: '🏢' },
-  { id: 'rc_pro',           label: 'Attestation RC Pro',      detail: 'Responsabilité Civile Professionnelle en cours de validité', accept: '.pdf,image/*', required: true,  icon: '🛡️' },
-  { id: 'rib',              label: 'RIB',                     detail: 'Pour recevoir vos paiements en toute sécurité',             accept: '.pdf,image/*', required: true,  icon: '🏦' },
-  { id: 'diplome_coiffure', label: 'Diplôme / CAP Coiffure',  detail: 'CAP, BP ou titre professionnel de coiffure',               accept: '.pdf,image/*', required: true,  icon: '🎓' },
-  { id: 'attestation_urssaf', label: 'Attestation de vigilance URSSAF', detail: 'À télécharger sur urssaf.fr — moins de 6 mois',   accept: '.pdf,image/*', required: false, icon: '📋' },
-];
 
 const DOCUMENTS_REQUIS = [
   {
@@ -228,8 +218,6 @@ function FileUploadZone({ doc, file, onChange }) {
 
 const SECTEURS_LIST = [
   { id: 'btp',       emoji: '🏗️', label: 'BTP & Artisans' },
-  { id: 'immo',      emoji: '🏠', label: 'Immobilier & SCI' },
-  { id: 'autre',     emoji: '💼', label: 'Autre activité' },
 ];
 
 const ECO_PAR_SECTEUR = {
@@ -244,42 +232,6 @@ const ECO_PAR_SECTEUR = {
       { icon: '💰', label: 'Finance', desc: 'Trésorerie, URSSAF, export comptable Sage/EBP, bibliothèque de prix.', color: '#DC2626' },
     ],
     phrase: 'Remplace Sage, PayFit et Qualnet en un seul outil.',
-  },
-  coiffure: {
-    center: { icon: '💇', label: 'Salon' },
-    modules: [
-      { icon: '📅', label: 'Agenda & RDV', desc: 'Prise de rendez-vous en ligne, rappels automatiques, planning équipe.', color: '#8B5CF6' },
-      { icon: '👥', label: 'Gestion du personnel', desc: 'Planning, congés, paie, contrats — adapté aux salons et indépendants.', color: '#2563EB' },
-      { icon: '💰', label: 'Caisse & Facturation', desc: 'Encaissements, historique client, export comptable automatique.', color: '#16A34A' },
-      { icon: '📦', label: 'Stock produits', desc: 'Suivi des produits, alertes de réapprovisionnement, fournisseurs.', color: '#D97706' },
-      { icon: '⭐', label: 'Avis & Fidélité', desc: 'Collectez les avis, programme de fidélité, communication client.', color: '#059669' },
-      { icon: '🎬', label: 'Communication', desc: 'Vidéos pour réseaux sociaux, branding, présence en ligne.', color: '#DC2626' },
-    ],
-    phrase: 'Gérez votre salon de A à Z sans multiplier les logiciels.',
-  },
-  immo: {
-    center: { icon: '🏠', label: 'Immobilier' },
-    modules: [
-      { icon: '🏢', label: 'Gestion locative', desc: 'Baux, quittances, appels de loyer, états des lieux automatisés.', color: '#8B5CF6' },
-      { icon: '💰', label: 'Comptabilité SCI', desc: 'Revenus, charges, amortissements, déclarations fiscales.', color: '#2563EB' },
-      { icon: '🔧', label: 'Travaux & Entretien', desc: 'Suivi des interventions, devis artisans, historique par bien.', color: '#16A34A' },
-      { icon: '📄', label: 'Documents juridiques', desc: 'Baux, avenants, PV d\'AG, courriers type — générés en un clic.', color: '#D97706' },
-      { icon: '📊', label: 'Rentabilité', desc: 'Rendement par bien, cash-flow, projection, reporting.', color: '#059669' },
-      { icon: '👥', label: 'Locataires', desc: 'Fiches locataires, historique paiements, relances automatiques.', color: '#DC2626' },
-    ],
-    phrase: 'Pilotez vos biens et vos SCI depuis un seul tableau de bord.',
-  },
-  droit: {
-    center: { icon: '⚖️', label: 'Cabinet' },
-    modules: [
-      { icon: '📁', label: 'Gestion des dossiers', desc: 'Suivi des affaires, échéances, pièces jointes, historique complet.', color: '#8B5CF6' },
-      { icon: '💰', label: 'Facturation & Temps', desc: 'Saisie du temps passé, honoraires, facturation automatique.', color: '#2563EB' },
-      { icon: '📄', label: 'Documents juridiques', desc: 'Modèles de contrats, actes, courriers — personnalisables.', color: '#16A34A' },
-      { icon: '👥', label: 'Clients & CRM', desc: 'Fiches clients, historique, suivi commercial, relances.', color: '#D97706' },
-      { icon: '📅', label: 'Agenda & Audiences', desc: 'Planning, rappels d\'audiences, rendez-vous clients.', color: '#059669' },
-      { icon: '🛡️', label: 'Conformité', desc: 'RGPD, registre des traitements, archivage sécurisé.', color: '#DC2626' },
-    ],
-    phrase: 'L\'outil de gestion pensé pour les professionnels du droit.',
   },
   autre: {
     center: { icon: '💼', label: 'Activité' },
@@ -467,13 +419,15 @@ export default function Register() {
   const [clientType, setClientType] = useState('');
   const [entrepriseType, setEntrepriseType] = useState('');
 
-  // Auto-avancer step 0 → 1 quand type entreprise/SCI sélectionné
-  useEffect(() => {
-    if (step === 0 && (entrepriseType === 'sci' || clientType === 'entreprise')) setStep(1);
-  }, [step, entrepriseType, clientType]);
-
   // Données compte
-  const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '', confirmMotdepasse: '' });
+  const [compte, setCompte] = useState({ nom: '', email: '', telephone: '', motdepasse: '', confirmMotdepasse: '', ville: '' });
+
+  // ── Vérification email ──
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [codeError, setCodeError] = useState('');
   // Données profil artisan
   const [profil, setProfil] = useState({ metier: '', siret: '', adresse: '', ville: '', experience: '', description: '' });
   // Documents uploadés { id: File }
@@ -630,10 +584,11 @@ export default function Register() {
         nom:        compte.nom,
         email:      compte.email,
         motdepasse: compte.motdepasse,
+        ville:      compte.ville,
+        emailCode:  verificationCode,
         role,
         secteur,
-        clientType,
-        entrepriseType,
+        clientType: 'particulier',
         ...((role === 'artisan' || isPatron) && {
           telephone:    compte.telephone,
           metier:       profil.metier,
@@ -650,10 +605,10 @@ export default function Register() {
       const { data } = await api.post('/register', payload);
 
       // Sauvegarder le type de compte pour le dashboard
-      localStorage.setItem('freample_account_type', JSON.stringify({ clientType, entrepriseType, secteur }));
+      localStorage.setItem('freample_account_type', JSON.stringify({ clientType: 'particulier', secteur }));
 
       // Sauvegarder le profil entreprise centralisé (pour patron et AE)
-      if (role === 'patron' && entrepriseType !== 'sci') {
+      if (role === 'patron') {
         const profilKey = entrepriseType === 'ae' ? 'freample_ae_profil' : 'freample_profil_patron';
         const profilEntreprise = {
           nom: compte.nom || '',
@@ -680,9 +635,6 @@ export default function Register() {
 
       if (role === 'artisan') {
         setStep(5); // Page de confirmation, compte en attente de vérification
-      } else if (role === 'patron' && entrepriseType === 'sci') {
-        await login(compte.email, compte.motdepasse);
-        navigate('/immo/gestion'); // Dashboard Gestion SCI
       } else if (role === 'patron') {
         await login(compte.email, compte.motdepasse);
         navigate('/patron/dashboard');
@@ -702,12 +654,11 @@ export default function Register() {
   // ─── Rendu principal ─────────────────────────────────────────────────────────
 
   const isArtisan  = role === 'artisan';
-  const isPatron   = role === 'patron' && entrepriseType !== 'sci';
-  const isSCI      = entrepriseType === 'sci';
-  const isPro      = isArtisan || isPatron; // SCI n'est PAS pro (pas de documents)
+  const isPatron   = role === 'patron';
+  const isPro      = isArtisan || isPatron;
   const currentDocs = DOCUMENTS_REQUIS;
   const currentMetiers = METIERS_PAR_SECTEUR[secteur] || METIERS;
-  const showSideEco = (isPatron || isSCI) && step === 1;
+  const showSideEco = isPatron && step === 1;
   const maxWidth   = showSideEco ? 960 : (isPro && step === 3) ? 600 : 440;
 
   // Page de succès artisan
@@ -810,17 +761,11 @@ export default function Register() {
           </button>
           <div style={{ fontSize:11, fontWeight:600, color:'#A68B4B', textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:10 }}>Inscription</div>
           <h1 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,34px)', fontWeight:300, fontStyle:'italic', letterSpacing:'-0.02em', color:'#1A1A1A', marginBottom:6, lineHeight:1.1 }}>
-            {entrepriseType==='sci' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>SCI</span></>
-              : role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></>
-              : clientType==='entreprise' ? <>Créer un compte <span style={{fontWeight:700,fontStyle:'normal'}}>entreprise</span></>
-              : clientType==='multiproprio' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>propriétaire</span></>
+            {role==='patron' ? <>Créer mon espace <span style={{fontWeight:700,fontStyle:'normal'}}>pro</span></>
               : <>Créer votre <span style={{fontWeight:700,fontStyle:'normal'}}>compte</span></>}
           </h1>
           <p style={{ color: '#4A4A4A', fontSize: '0.9375rem' }}>
-            {clientType==='multiproprio' ? 'Gérez vos biens et trouvez des artisans.'
-              : clientType==='entreprise' ? 'Payez vos travaux depuis votre société.'
-              : entrepriseType==='sci' ? 'Gérez vos SCI, biens et locataires.'
-              : role==='patron' ? 'Recevez des projets clients et gérez votre activité.'
+            {role==='patron' ? 'Recevez des projets clients et gérez votre activité.'
               : 'Un seul compte pour tous les services.'}
           </p>
         </div>
@@ -830,27 +775,22 @@ export default function Register() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Vous êtes...</div>
 
-            {/* Choix principal : Particulier / Entreprise / SCI */}
+            {/* Choix principal : Client ou Pro */}
             {!clientType && !entrepriseType ? (
               <>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {[
-                    { id: 'particulier', icon: '👤', label: 'Particulier', desc: 'Trouvez un artisan, publiez votre projet' },
-                    { id: 'entreprise', icon: '🏢', label: 'Entreprise', desc: 'Trouvez un artisan pour votre entreprise' },
-                  ].map(c => (
-                    <button key={c.id} onClick={() => {
-                      if (c.id === 'particulier') { setRole('client'); setClientType('particulier'); setStep(1); }
-                      else if (c.id === 'entreprise') { setRole('client'); setClientType('entreprise'); }
-                      else { setRole('patron'); setEntrepriseType('sci'); setSecteur('immo'); }
-                    }}
-                      style={{ flex: '1 1 140px', padding: '20px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
-                      <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700 }}>{c.label}</div>
-                      <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>{c.desc}</div>
-                    </button>
-                  ))}
+                  <button onClick={() => { setRole('client'); setClientType('particulier'); setStep(1); }}
+                    style={{ flex: '1 1 140px', padding: '20px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>Client particulier</div>
+                    <div style={{ fontSize: 12, color: '#636363', marginTop: 4 }}>Trouvez un artisan, publiez votre projet</div>
+                  </button>
+                </div>
+
+                <div style={{ marginTop: 12, padding: '10px 14px', background: '#FFF7ED', border: '1px solid #F59E0B30', borderRadius: 8, fontSize: 11, color: '#92400E', lineHeight: 1.5 }}>
+                  <strong>Information :</strong> Les comptes clients Freample sont réservés aux particuliers (B2C). Freample est une plateforme de mise en relation et ne fournit pas de service de facturation inter-entreprises (B2B). La facturation entre le professionnel et son client relève de leur seule responsabilité.
                 </div>
 
                 {/* Lien vers inscription pro / artisan */}
@@ -866,34 +806,12 @@ export default function Register() {
                   </button>
                 </div>
               </>
-            ) : role === 'client' && !clientType ? (
-              /* Particulier : simple ou multipropriétaire */
-              <>
-                <button onClick={() => { setRole(''); setClientType(''); setEntrepriseType(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, textAlign: 'left', marginBottom: 4 }}>← Retour</button>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Êtes-vous multipropriétaire ?</div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => { setClientType('particulier'); setStep(1); }}
-                    style={{ flex: 1, padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
-                    <div style={{ fontSize: 24, marginBottom: 6 }}>🏠</div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>Non</div>
-                    <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>Compte client classique</div>
-                  </button>
-                  <button onClick={() => { setClientType('multiproprio'); setStep(1); }}
-                    style={{ flex: 1, padding: '18px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', borderRadius: 10, transition: 'all .15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; }}>
-                    <div style={{ fontSize: 24, marginBottom: 6 }}>🏘️</div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>Oui</div>
-                    <div style={{ fontSize: 11, color: '#636363', marginTop: 4 }}>Avec gestion de biens intégrée</div>
-                  </button>
-                </div>
-              </>
             ) : null}
           </div>
         )}
 
         {/* Sélecteur secteur pour patron classique (step 1, non SCI) */}
-        {step === 1 && isPatron && entrepriseType === 'classique' && !searchParams.get('secteur') && (
+        {step === 1 && isPatron && !searchParams.get('secteur') && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4A4A4A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -924,15 +842,7 @@ export default function Register() {
                     </p>
                   </div>
                 )}
-                {isSCI && (
-                  <div style={{ background: '#EFF6FF', border: '1px solid rgba(37,99,235,0.15)', borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
-                    <span style={{ flexShrink: 0, fontSize: '1rem' }}>🏠</span>
-                    <p style={{ fontSize: '0.8125rem', color: '#2563EB', lineHeight: 1.5 }}>
-                      <strong>Espace SCI gratuit</strong> — Gestion de biens, locataires, comptabilité SCI et déclarations fiscales. Accessible immédiatement après inscription.
-                    </p>
-                  </div>
-                )}
-                {isPatron && entrepriseType === 'classique' && (
+                {isPatron && (
                   <div style={{ background: '#FFFBEB', border: '1px solid rgba(217,119,6,0.15)', borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
                     <span style={{ flexShrink: 0, fontSize: '1rem' }}>🏢</span>
                     <p style={{ fontSize: '0.8125rem', color: '#92400E', lineHeight: 1.5 }}>
@@ -949,7 +859,64 @@ export default function Register() {
 
                   <div>
                     <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
-                    <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => setCompte({ ...compte, email: e.target.value })} autoComplete="email" />
+                    <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email} onChange={e => { setCompte({ ...compte, email: e.target.value }); setEmailVerified(false); setCodeSent(false); setVerificationCode(''); }} autoComplete="email" />
+                  </div>
+
+                  {compte.email && !emailVerified && (
+                    <div style={{ marginTop: -8 }}>
+                      {!codeSent ? (
+                        <button type="button" onClick={async () => {
+                          setSendingCode(true);
+                          setCodeError('');
+                          try {
+                            await api.post('/send-verification-code', { email: compte.email });
+                            setCodeSent(true);
+                          } catch (err) {
+                            setCodeError(err.response?.data?.erreur || 'Erreur lors de l\'envoi');
+                          } finally { setSendingCode(false); }
+                        }}
+                          disabled={sendingCode || !compte.email.includes('@')}
+                          style={{ fontSize: 12, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', padding: '4px 0' }}>
+                          {sendingCode ? 'Envoi en cours...' : 'Vérifier cet email \u2192'}
+                        </button>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="Code \u00e0 6 chiffres"
+                            value={verificationCode}
+                            onChange={e => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                            style={{ width: 140, padding: '8px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', letterSpacing: '0.2em', textAlign: 'center' }}
+                          />
+                          <button type="button" onClick={async () => {
+                            if (verificationCode.length === 6) {
+                              setEmailVerified(true);
+                              setCodeError('');
+                            }
+                          }}
+                            disabled={verificationCode.length !== 6}
+                            style={{ padding: '8px 16px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            V\u00e9rifier
+                          </button>
+                          <button type="button" onClick={() => { setCodeSent(false); setVerificationCode(''); setCodeError(''); }}
+                            style={{ fontSize: 11, color: '#636363', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            Renvoyer
+                          </button>
+                        </div>
+                      )}
+                      {codeError && <div style={{ fontSize: 12, color: '#DC2626', marginTop: 4 }}>{codeError}</div>}
+                    </div>
+                  )}
+                  {emailVerified && (
+                    <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: -8, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      ✓ Email v\u00e9rifi\u00e9
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="reg-ville" className="reg-label">Ville</label>
+                    <input id="reg-ville" className="reg-input" type="text" placeholder="Marseille" value={compte.ville || ''} onChange={e => setCompte({ ...compte, ville: e.target.value })} autoComplete="address-level2" />
                   </div>
 
                   {isPro && (
@@ -1013,7 +980,7 @@ export default function Register() {
 
                   {error && <ErrorBox message={error} />}
 
-                  <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} />
+                  <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} disabled={!emailVerified} />
                 </div>
               </div>
             </div>
@@ -1031,7 +998,7 @@ export default function Register() {
         {step === 2 && isPro && (
           <div className="reg-card">
             <h2 style={{ fontSize: '1rem', fontWeight: 700, color: DS.ink, marginBottom: 20 }}>
-              {secteur === 'coiffure' ? 'Votre salon' : 'Votre profil professionnel'}
+              Votre profil professionnel
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -1159,7 +1126,7 @@ export default function Register() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label className="reg-label">Ville d'exercice <span style={{ color: '#F87171' }}>*</span></label>
-                  <input className="reg-input" placeholder="Paris, Lyon..." value={profil.ville} onChange={e => setProfil({ ...profil, ville: e.target.value })} />
+                  <input className="reg-input" placeholder="Marseille, Aix-en-Provence..." value={profil.ville} onChange={e => setProfil({ ...profil, ville: e.target.value })} />
                 </div>
                 <div>
                   <label className="reg-label">Années d'expérience</label>
@@ -1180,7 +1147,7 @@ export default function Register() {
                 <textarea
                   className="reg-input"
                   rows={3}
-                  placeholder={secteur === 'coiffure' ? "Décrivez votre salon : spécialités, ambiance, équipe, points forts..." : "Décrivez vos spécialités, votre zone d'intervention, vos points forts..."}
+                  placeholder="Décrivez vos spécialités, votre zone d'intervention, vos points forts..."
                   value={profil.description}
                   onChange={e => setProfil({ ...profil, description: e.target.value })}
                   style={{ resize: 'vertical' }}
@@ -1314,12 +1281,12 @@ function ErrorBox({ message }) {
   );
 }
 
-function ActionButton({ label, onClick, loading }) {
+function ActionButton({ label, onClick, loading, disabled }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={loading}
+      disabled={loading || disabled}
       className="reg-btn-primary"
       style={{ marginTop: 4 }}
     >

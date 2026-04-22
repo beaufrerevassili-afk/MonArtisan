@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { API_URL } from '../../services/api';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import NotificationBell from '../../components/ui/NotificationBell';
-import { IconHome, IconBuilding, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield } from '../../components/ui/Icons';
+import { IconHome, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield } from '../../components/ui/Icons';
 
 const MENU_ITEMS = [
   { id: 'matin', label: 'Mon matin', Icon: IconHome },
@@ -31,7 +31,7 @@ const DOCUMENTS_REQUIS = [
 
 const DEMO_CHANTIERS = (() => { try { const c = JSON.parse(localStorage.getItem('freample_chantiers_custom')); if (c?.length) return c; } catch {} return [
   { id:'ch1', titre:'Rénovation cuisine — Mme Dupont', adresse:'12 rue de la Liberté, 13001 Marseille', statut:'en_cours', dateDebut:'2026-04-01', dateFin:'2026-04-25', chef:'Marc Lambert', equipe:['Pierre Martin','Sophie Duval','Lucas Garcia'] },
-  { id:'ch2', titre:'Mise aux normes électriques — SCI Horizon', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', dateDebut:'2026-04-28', dateFin:'2026-05-10', chef:'Marc Lambert', equipe:['Claire Bernard'] },
+  { id:'ch2', titre:'Mise aux normes électriques — Copropriété Les Oliviers', adresse:'5 rue Pasteur, 13006 Marseille', statut:'planifie', dateDebut:'2026-04-28', dateFin:'2026-05-10', chef:'Marc Lambert', equipe:['Claire Bernard'] },
   { id:'ch3', titre:'Peinture parties communes — Syndic Voltaire', adresse:'15 bd Voltaire, 13005 Marseille', statut:'en_cours', dateDebut:'2026-04-07', dateFin:'2026-04-18', chef:'Marc Lambert', equipe:['Luc Moreau','Pierre Martin'] },
 ]; })();
 

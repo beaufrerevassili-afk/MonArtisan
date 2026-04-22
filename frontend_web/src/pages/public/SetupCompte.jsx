@@ -178,11 +178,11 @@ export default function SetupCompte() {
               <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 10, marginBottom: 12 }}>
                 <div>
                   <label style={LBL}>Code postal *</label>
-                  <input value={profil.codePostal} onChange={e => setProfil(p => ({ ...p, codePostal: e.target.value }))} placeholder="75001" style={INP} />
+                  <input value={profil.codePostal} onChange={e => setProfil(p => ({ ...p, codePostal: e.target.value }))} placeholder="13001" style={INP} />
                 </div>
                 <div>
                   <label style={LBL}>Ville *</label>
-                  <input value={profil.ville} onChange={e => setProfil(p => ({ ...p, ville: e.target.value }))} placeholder="Paris" style={INP} />
+                  <input value={profil.ville} onChange={e => setProfil(p => ({ ...p, ville: e.target.value }))} placeholder="Marseille" style={INP} />
                 </div>
               </div>
 

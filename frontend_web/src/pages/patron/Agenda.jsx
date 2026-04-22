@@ -69,7 +69,7 @@ const DEMO_EVENTS = [
   { id: 'e7',  type: 'ct',       date: rel(7),   title: 'CT à renouveler — Renault Trafic AB-123-CD', vehicule: 'Renault Trafic AB-123-CD' },
   { id: 'e8',  type: 'rdv',      date: rel(8),   title: 'RDV M. Leblanc — extension garage', heure: '10:00', salarie: 'Pierre M.' },
   { id: 'e9',  type: 'echeance', date: rel(30),  title: 'TVA mensuelle — déclaration' },
-  { id: 'e10', type: 'rdv',      date: rel(0),   title: 'Visite chantier SCI Horizon', heure: '16:00', salarie: 'Claire B.' },
+  { id: 'e10', type: 'rdv',      date: rel(0),   title: 'Visite chantier Copropriété Les Oliviers', heure: '16:00', salarie: 'Claire B.' },
   { id: 'e11', type: 'chantier', date: rel(-5),  title: 'Chantier Rousseau — SDB terminé', heureFin: rel(-2) },
 ];
 

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PublicNavbar from '../../components/public/PublicNavbar';
-import RecrutementBanner from '../../components/public/RecrutementBanner';
 import { useAuth } from '../../context/AuthContext';
 import { useFadeUp, useScaleIn } from '../../utils/scrollAnimations';
 import L from '../../design/luxe';
@@ -288,7 +286,7 @@ export default function SecteurSelect() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 12, color: 'rgba(245,239,224,0.5)', marginBottom: 4 }}>Ville *</div>
-                    <input value={projet.ville} onChange={e => setProjet(p => ({ ...p, ville: e.target.value }))} placeholder="Nice, Paris, Lyon..."
+                    <input value={projet.ville} onChange={e => setProjet(p => ({ ...p, ville: e.target.value }))} placeholder="Marseille, Aix, Aubagne..."
                       style={{ width: '100%', padding: '12px 14px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 14, background: 'rgba(255,255,255,0.06)', color: '#F5EFE0', outline: 'none', boxSizing: 'border-box', fontFamily: L.font }} />
                   </div>
                   <div>

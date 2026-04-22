@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import DevisFormulaire from '../../components/DevisFormulaire';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };

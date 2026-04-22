@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import api from '../../services/api';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
@@ -41,7 +41,7 @@ const ECRITURES_DEMO = [
   { date:'30/04/2026', journal:'OD', piece:'SAL-04', compte:'645000', libelle:'Charges sociales avril', debit:4815, credit:0 },
   { date:'30/04/2026', journal:'OD', piece:'SAL-04', compte:'512000', libelle:'Virement salaires nets', debit:0, credit:8346 },
   { date:'30/04/2026', journal:'OD', piece:'SAL-04', compte:'401000', libelle:'Organismes sociaux', debit:0, credit:7169 },
-  { date:'30/04/2026', journal:'VE', piece:'FAC-2026-002', compte:'411000', libelle:'SCI Horizon — Installation élec.', debit:6960, credit:0 },
+  { date:'30/04/2026', journal:'VE', piece:'FAC-2026-002', compte:'411000', libelle:'Copropriété Les Oliviers — Installation élec.', debit:6960, credit:0 },
   { date:'30/04/2026', journal:'VE', piece:'FAC-2026-002', compte:'706000', libelle:'Prestation installation électrique', debit:0, credit:5800 },
   { date:'30/04/2026', journal:'VE', piece:'FAC-2026-002', compte:'445710', libelle:'TVA collectée 20%', debit:0, credit:1160 },
 ];
@@ -51,7 +51,7 @@ function loadEcritures() { try { const d=localStorage.getItem(STORAGE); return d
 
 export default function ExportCompta() {
   const [ecritures, setEcritures] = useState(loadEcritures);
-  const [periode, setPeriode] = useState('2026-04');
+  const periode = '2026-04';
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(ecritures)); }, [ecritures]);
   // Charger écritures réelles depuis l'API
   useEffect(() => {

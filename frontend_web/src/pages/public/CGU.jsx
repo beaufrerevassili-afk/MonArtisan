@@ -41,7 +41,7 @@ export default function CGU() {
           <ul>
             <li><strong>Freample</strong> ou <strong>la Plateforme</strong> : la plateforme numérique accessible à l'adresse freample.com, éditée par Freample SAS.</li>
             <li><strong>Utilisateur</strong> : toute personne physique ou morale inscrite sur la Plateforme, quel que soit son rôle.</li>
-            <li><strong>Client</strong> : Utilisateur (particulier ou entreprise) qui publie un projet de travaux et recherche un Professionnel.</li>
+            <li><strong>Client</strong> : Utilisateur particulier (personne physique agissant à titre personnel) qui publie un projet de travaux et recherche un Professionnel. Les comptes clients sont exclusivement réservés aux particuliers.</li>
             <li><strong>Professionnel</strong> : Utilisateur exerçant une activité BTP (patron d'entreprise, auto-entrepreneur, artisan) inscrit pour répondre à des projets ou gérer son activité via la Plateforme.</li>
             <li><strong>Projet</strong> : demande de travaux publiée par un Client sur le Marketplace.</li>
             <li><strong>Devis</strong> : proposition commerciale chiffrée émise par un Professionnel à destination d'un Client via la Plateforme.</li>
@@ -132,7 +132,7 @@ export default function CGU() {
         </S>
 
         <S title="Article 12 — Droit applicable et juridiction">
-          <p>Les présentes CGU sont régies par le droit français. En cas de litige, les parties s'efforceront de trouver une solution amiable. À défaut, les tribunaux compétents de Nice seront seuls compétents.</p>
+          <p>Les présentes CGU sont régies par le droit français. En cas de litige, les parties s'efforceront de trouver une solution amiable. À défaut, les tribunaux compétents de Marseille seront seuls compétents.</p>
           <p>Conformément aux articles L.611-1 et suivants du Code de la consommation, le Client consommateur peut recourir gratuitement au service de médiation de la consommation. Le médiateur compétent sera communiqué sur simple demande à <strong>contact@freample.com</strong>.</p>
         </S>
       </div>
@@ -173,6 +173,13 @@ export default function CGU() {
           <p><strong>4.2.</strong> Les factures de situation et de solde sont générées à la demande du Professionnel, validées par le Client via la Plateforme.</p>
           <p><strong>4.3.</strong> Les factures sont conformes aux mentions obligatoires (art. 441-3 du Code de commerce) et incluent : identité de l'émetteur, SIRET, TVA applicable, détail des prestations, conditions de paiement.</p>
           <p><strong>4.4.</strong> Pour les auto-entrepreneurs en franchise de TVA, la mention "TVA non applicable, art. 293B du CGI" est automatiquement ajoutée.</p>
+        </S>
+
+        <S title="Article 4 bis — Limitation aux transactions B2C et exclusion de la facturation B2B">
+          <p><strong>4 bis.1.</strong> Les comptes clients Freample sont exclusivement réservés aux particuliers agissant à titre personnel (transactions B2C). Freample ne propose pas de comptes clients destinés aux personnes morales ou aux professionnels agissant dans le cadre de leur activité (transactions B2B).</p>
+          <p><strong>4 bis.2.</strong> Freample est une plateforme de mise en relation entre particuliers et professionnels du BTP. Freample ne fournit aucun service de facturation inter-entreprises et n'est pas une plateforme de dématérialisation partenaire (PDP) au sens de l'article 289 bis du Code général des impôts.</p>
+          <p><strong>4 bis.3.</strong> La relation contractuelle et la facturation entre le Professionnel et son Client relèvent de leur seule responsabilité. Le Professionnel est tenu de respecter l'ensemble des obligations fiscales et comptables qui lui incombent, y compris les obligations relatives à la facturation électronique entre assujettis à la TVA.</p>
+          <p><strong>4 bis.4.</strong> Dans l'hypothèse où un professionnel créerait un compte client en qualité de particulier, Freample ne saurait être tenu responsable des conséquences fiscales, comptables ou juridiques qui en découleraient. L'Utilisateur s'engage à fournir des informations exactes quant à sa qualité lors de l'inscription.</p>
         </S>
 
         <S title="Article 5 — Garanties légales BTP">

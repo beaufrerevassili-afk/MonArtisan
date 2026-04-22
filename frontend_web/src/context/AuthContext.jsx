@@ -120,7 +120,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token');
     localStorage.removeItem('freample_projet_brouillon');
     localStorage.removeItem('freample_clients_auto');
-    localStorage.removeItem('freample_compte_auto');
+
     localStorage.removeItem('freample_trajet_today');
     setToken(null);
     delete api.defaults.headers.common['Authorization'];

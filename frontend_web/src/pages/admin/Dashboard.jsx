@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import {
   IconHome, IconUser, IconTeam, IconChart, IconSettings, IconCheck, IconX, IconAlert,
   IconShield, IconFinance, IconSearch, IconFilter, IconTrendUp, IconArrowUp, IconArrowDown,
@@ -55,7 +55,7 @@ const DEMO_USERS = [
   { id:901, nom:'Marie Dupont', email:'demo-client@freample.fr', role:'client', secteur:'btp', inscrit:'2025-11-02', actif:true, ca:0, projets:3 },
   { id:902, nom:'Lucas Garcia', email:'demo-employe@freample.fr', role:'employe', secteur:'btp', inscrit:'2026-01-10', actif:true },
   { id:903, nom:'Ahmed Ben Ali', email:'demo-artisan@freample.fr', role:'artisan', secteur:'btp', inscrit:'2025-10-20', actif:true, ca:28500, projets:8 },
-  { id:904, nom:'SCI Les Oliviers', email:'demo-sci@freample.fr', role:'patron', secteur:'immo', inscrit:'2026-02-01', actif:true },
+  { id:904, nom:'Copropriété Les Oliviers', email:'demo-copro@freample.fr', role:'client', secteur:'btp', inscrit:'2026-02-01', actif:true },
   { id:905, nom:'Thomas Martin', email:'demo-ae@freample.fr', role:'patron', secteur:'btp', inscrit:'2026-03-01', actif:true, ca:8200, projets:4 },
   { id:910, nom:'Jean Moreau', email:'jean.moreau@test.fr', role:'patron', secteur:'btp', inscrit:'2026-01-15', actif:true, ca:31200, projets:7 },
   { id:911, nom:'Sophie Leroy', email:'sophie.leroy@test.fr', role:'client', secteur:'btp', inscrit:'2026-02-20', actif:true, ca:0, projets:2 },
@@ -1116,7 +1116,7 @@ function Parametres() {
       <div style={CARD}>
         <p style={SECTION_TITLE}>Secteurs actifs</p>
         <div style={{ marginTop:16, display:'flex', gap:10, flexWrap:'wrap' }}>
-          {['btp','coiffure','com','immo','droit'].map(s => {
+          {['btp','com'].map(s => {
             const actif = params.secteursActifs?.includes(s);
             return (
               <button key={s} onClick={() => {

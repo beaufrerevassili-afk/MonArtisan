@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { API_URL } from '../../services/api';
 
 const PRINT_STYLE = `
@@ -259,7 +259,7 @@ function ContratView({ id }) {
       </div>
 
       <ClauseSection title="ENTRE LES SOUSSIGNÉS">
-        <p><strong>L'employeur :</strong> La société Bernard Martin BTP, SARL au capital de 50 000 €, immatriculée au RCS de Lyon sous le numéro 123 456 789, dont le siège social est situé 45 bd de la Libération, 13006 Marseille, représentée par M. Bernard Martin en qualité de Gérant.</p>
+        <p><strong>L'employeur :</strong> La société Bernard Martin BTP, SARL au capital de 50 000 €, immatriculée au RCS de Marseille sous le numéro 123 456 789, dont le siège social est situé 45 bd de la Libération, 13006 Marseille, représentée par M. Bernard Martin en qualité de Gérant.</p>
         <p style={{ marginTop: 10 }}><strong>Le salarié :</strong> M./Mme {employe.prenom} {employe.nom}, demeurant {employe.adresse}, ci-après dénommé(e) « le Salarié ».</p>
       </ClauseSection>
 
@@ -313,7 +313,7 @@ function ContratView({ id }) {
         </div>
       </div>
       <div style={{ marginTop: 24, fontSize: 12, color: '#636363', textAlign: 'center' }}>
-        Fait à Lyon en deux exemplaires originaux, le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        Fait à Marseille en deux exemplaires originaux, le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
       </div>
     </DocWrapper>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DS from '../../design/ds';
+import DS from '../../design/luxe';
 import api from '../../services/api';
 
 const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:16 };
@@ -15,13 +15,13 @@ const ETAPES = [
 
 const DEMO = [
   { id:1, client:'Mme Dupont', titre:'Rénovation cuisine', montant:8500, etape:'devis_accepte', date:'2026-04-01', relance:null },
-  { id:2, client:'SCI Horizon', titre:'Installation électrique', montant:5800, etape:'facture', date:'2026-03-25', relance:'2026-04-10' },
+  { id:2, client:'Copropriété Les Oliviers', titre:'Installation électrique', montant:5800, etape:'facture', date:'2026-03-25', relance:'2026-04-10' },
   { id:3, client:'M. Martin', titre:'Isolation toiture', montant:7200, etape:'devis_envoye', date:'2026-04-03', relance:'2026-04-10' },
   { id:4, client:'Syndic Voltaire', titre:'Plomberie chauffe-eau', montant:2200, etape:'prospect', date:'2026-04-05', relance:null },
   { id:5, client:'M. Petit', titre:'Peinture appartement T3', montant:3800, etape:'paye', date:'2026-03-15', relance:null },
   { id:6, client:'Mme Leroy', titre:'Salle de bain complète', montant:12400, etape:'devis_envoye', date:'2026-04-02', relance:'2026-04-09' },
   { id:7, client:'M. Chen', titre:'Terrasse extérieure', montant:6500, etape:'prospect', date:'2026-04-06', relance:null },
-  { id:8, client:'SCI Les Pins', titre:'Ravalement façade', montant:18000, etape:'devis_accepte', date:'2026-03-28', relance:null },
+  { id:8, client:'Résidence du Parc', titre:'Ravalement façade', montant:18000, etape:'devis_accepte', date:'2026-03-28', relance:null },
 ];
 
 const STORAGE = 'freample_pipeline';
