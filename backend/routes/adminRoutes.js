@@ -219,4 +219,17 @@ router.put('/config', authenticateToken, authorizeRole(...ADMIN_ROLES), async (r
   }
 });
 
+// POST /admin/detach-employe — Détacher un employé de son patron
+router.post('/detach-employe', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ erreur: 'userId requis' });
+    await db.query('UPDATE employes SET patron_id = NULL WHERE user_id = $1', [userId]);
+    await db.query('UPDATE users SET patron_id = NULL WHERE id = $1', [userId]);
+    res.json({ message: 'Employé détaché' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
