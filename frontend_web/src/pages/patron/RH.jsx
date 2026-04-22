@@ -254,6 +254,7 @@ const ACTIVITES_DEMO = [
 ];
 
 function TabDashboardRH({ employes, tdb, setTab }) {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const nb = tdb?.equipe?.actifs || employes?.length || 0;
   const masseBrute = tdb?.masseSalariale?.totalBrut || 0;
   const congesEnAttente = tdb?.alertes?.congesEnAttente || 0;
@@ -261,11 +262,11 @@ function TabDashboardRH({ employes, tdb, setTab }) {
 
   const kpis = [
     { label: 'Effectif actif', val: nb, suffix: '', color: '#5B5BD6', sub: `${tdb?.equipe?.contratsCDI||0} CDI · ${tdb?.equipe?.contratsCDD||0} CDD`, tab: 'Employés' },
-    { label: 'Masse salariale/mois', val: masseBrute ? (masseBrute/12).toFixed(0) : 28500, suffix: ' €', color: '#FF9500', sub: 'Brut charges incluses', tab: 'Masse salariale' },
-    { label: 'Congés en attente', val: congesEnAttente || 2, suffix: '', color: congesEnAttente>0?'#FF3B30':'#34C759', sub: 'demandes à valider', tab: 'Congés' },
-    { label: 'Frais à rembourser', val: fraisEnAttente || 3, suffix: '', color: fraisEnAttente>0?'#FF9500':'#34C759', sub: 'notes en attente', tab: 'Notes de frais' },
+    { label: 'Masse salariale/mois', val: masseBrute ? (masseBrute/12).toFixed(0) : (isDemo ? 28500 : 0), suffix: ' €', color: '#FF9500', sub: 'Brut charges incluses', tab: 'Masse salariale' },
+    { label: 'Congés en attente', val: congesEnAttente || (isDemo ? 2 : 0), suffix: '', color: congesEnAttente>0?'#FF3B30':'#34C759', sub: 'demandes à valider', tab: 'Congés' },
+    { label: 'Frais à rembourser', val: fraisEnAttente || (isDemo ? 3 : 0), suffix: '', color: fraisEnAttente>0?'#FF9500':'#34C759', sub: 'notes en attente', tab: 'Notes de frais' },
     { label: 'Bulletins à générer', val: nb, suffix: '', color: '#5B5BD6', sub: `Mars ${new Date().getFullYear()}`, tab: 'Paie' },
-    { label: 'Candidats pipeline', val: 5, suffix: '', color: '#AF52DE', sub: '2 en entretien', tab: 'Recrutement' },
+    { label: 'Candidats pipeline', val: isDemo ? 5 : 0, suffix: '', color: '#AF52DE', sub: isDemo ? '2 en entretien' : '', tab: 'Recrutement' },
   ];
 
   return (
@@ -311,7 +312,7 @@ function TabDashboardRH({ employes, tdb, setTab }) {
         <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700 }}>Activité récente</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {ACTIVITES_DEMO.map((a, i) => (
+            {(isDemo ? ACTIVITES_DEMO : []).map((a, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, marginTop: 5, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
@@ -934,7 +935,8 @@ const FORMATIONS_DEMO = [
 ];
 
 function FormationView() {
-  const [formations, setFormations] = useState(FORMATIONS_DEMO);
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const [formations, setFormations] = useState(isDemo ? FORMATIONS_DEMO : []);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titre:'', employe:'', organisme:'', dateDebut:'', dateFin:'', cout:'', statut:'planifie', obligatoire:false });
 
@@ -1267,6 +1269,8 @@ const PLANNING_DEMO = [
 ];
 
 function PlanningLocalisationView({ employes: initEmployes }) {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  const planningData = isDemo ? PLANNING_DEMO : [];
   const [view, setView] = useState('planning'); // planning | localisation
   const [semaine] = useState(() => {
     const now = new Date();
@@ -1298,7 +1302,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
 
           {/* Legend */}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            {PLANNING_DEMO.map(e => (
+            {planningData.map(e => (
               <div key={e.employeId} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#6E6E73' }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: e.couleur, flexShrink: 0 }} />
                 {e.nom}
@@ -1317,8 +1321,8 @@ function PlanningLocalisationView({ employes: initEmployes }) {
             </div>
 
             {/* Rows */}
-            {PLANNING_DEMO.map((emp, ri) => (
-              <div key={emp.employeId} style={{ display: 'grid', gridTemplateColumns: '160px repeat(6, 1fr)', borderBottom: ri < PLANNING_DEMO.length - 1 ? '1px solid #F2F2F7' : 'none' }}>
+            {planningData.map((emp, ri) => (
+              <div key={emp.employeId} style={{ display: 'grid', gridTemplateColumns: '160px repeat(6, 1fr)', borderBottom: ri < planningData.length - 1 ? '1px solid #F2F2F7' : 'none' }}>
                 {/* Employee name */}
                 <div style={{ padding: '14px 16px', borderRight: '1px solid #F2F2F7' }}>
                   <div style={{ fontWeight: 700, fontSize: 13, color: '#1C1C1E' }}>{emp.nom}</div>
@@ -1346,7 +1350,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
 
           {/* Hours summary per employee */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-            {PLANNING_DEMO.map(emp => {
+            {planningData.map(emp => {
               const total = Object.values(emp.semaine).reduce((s, d) => s + (d ? d.fin - d.debut : 0), 0);
               const jours = Object.values(emp.semaine).filter(Boolean).length;
               return (
@@ -1379,7 +1383,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
               <div style={{ fontSize: 12, color: '#6E6E73', marginTop: 4 }}>Intégration Google Maps / Mapbox à configurer</div>
             </div>
             {/* Simulated pins */}
-            {PLANNING_DEMO.map((emp, i) => (
+            {planningData.map((emp, i) => (
               <div key={emp.employeId} style={{
                 position: 'absolute',
                 left: `${20 + i * 20}%`,
@@ -1397,7 +1401,7 @@ function PlanningLocalisationView({ employes: initEmployes }) {
 
           {/* Employee location cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
-            {PLANNING_DEMO.map(emp => {
+            {planningData.map(emp => {
               const auj = new Date().getDay(); // 0=dim, 1=lun ... 6=sam
               const jourIdx = auj === 0 ? null : auj - 1;
               const jourLabel = jourIdx !== null ? JOURS[jourIdx] : null;

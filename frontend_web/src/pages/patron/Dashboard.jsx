@@ -12,12 +12,13 @@ const STOCK_ALERTS = [
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-// Nombre d'alertes inter-modules (démo = 7 alertes par défaut)
+// Nombre d'alertes inter-modules (démo = 7, réel = 0)
 function countAlertes() {
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
+  if (!isDemo) return 0;
   try {
     const dismissed = new Set(JSON.parse(localStorage.getItem('freample_alertes_dismissed') || '[]'));
-    const total = 7; // alertes démo
-    return Math.max(total - dismissed.size, 0);
+    return Math.max(7 - dismissed.size, 0);
   } catch { return 7; }
 }
 
@@ -168,7 +169,7 @@ export default function DashboardPatron() {
               </button>
             </div>
             <AlertesInterModules />
-            {STOCK_ALERTS.length > 0 && (
+            {isDemo && STOCK_ALERTS.length > 0 && (
               <div onClick={() => { setShowAlertes(false); navigate('/patron/stock'); }}
                 style={{ marginTop: 12, background: '#FFFBEB', border: '1px solid #D97706', borderLeft: '4px solid #D97706', borderRadius: 10, padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#D97706' }}>Stock bas :</span>
@@ -222,7 +223,7 @@ export default function DashboardPatron() {
 
         {/* Légende */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-          {PLANNING_DEMO.map(e => (
+          {(isDemo ? PLANNING_DEMO : []).map(e => (
             <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6E6E73' }}>
               <div style={{ width: 8, height: 8, borderRadius: 3, background: e.couleur, flexShrink: 0 }} />
               {e.nom}
@@ -253,8 +254,8 @@ export default function DashboardPatron() {
           </div>
 
           {/* Lignes employés */}
-          {PLANNING_DEMO.map((emp, ri) => (
-            <div key={emp.id} style={{ display: 'grid', gridTemplateColumns: '120px repeat(6, 1fr)', borderBottom: ri < PLANNING_DEMO.length - 1 ? '1px solid #F2F2F7' : 'none' }}>
+          {(isDemo ? PLANNING_DEMO : []).map((emp, ri) => (
+            <div key={emp.id} style={{ display: 'grid', gridTemplateColumns: '120px repeat(6, 1fr)', borderBottom: ri < (isDemo ? PLANNING_DEMO : []).length - 1 ? '1px solid #F2F2F7' : 'none' }}>
               <div style={{ padding: '10px 12px', borderRight: '1px solid #F2F2F7', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ fontWeight: 700, fontSize: 12, color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.nom}</div>
                 <div style={{ fontSize: 10, color: '#6E6E73', marginTop: 1 }}>{emp.poste}</div>
@@ -291,7 +292,7 @@ export default function DashboardPatron() {
 
         {/* ── VUE MOBILE : Liste par employé ── */}
         <div className="planning-list-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {PLANNING_DEMO.map(emp => {
+          {(isDemo ? PLANNING_DEMO : []).map(emp => {
             const joursActifs = JOURS.filter(j => emp.semaine[j]);
             const totalH = Object.values(emp.semaine).reduce((s, d) => s + (d ? d.fin - d.debut : 0), 0);
             return (
@@ -380,7 +381,7 @@ export default function DashboardPatron() {
         {/* Résumé heures */}
         {!slotDetail && (
           <div className="planning-grid-desktop" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-            {PLANNING_DEMO.map(emp => {
+            {(isDemo ? PLANNING_DEMO : []).map(emp => {
               const total = Object.values(emp.semaine).reduce((s, d) => s + (d ? d.fin - d.debut : 0), 0);
               const jours = Object.values(emp.semaine).filter(Boolean).length;
               return (

@@ -16,9 +16,10 @@ export default function AlertesInterModules({ employes = [], habilitations = [],
   const alertes = [];
   const now = new Date();
 
-  // Si aucune donnée n'est passée, générer des alertes démo réalistes
+  // Si aucune donnée n'est passée, générer des alertes démo réalistes (uniquement comptes démo)
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const noData = employes.length===0 && habilitations.length===0 && devis.length===0 && incidents.length===0 && epis.length===0;
-  if (noData) {
+  if (noData && isDemo) {
     alertes.push({ type:'danger', module:'QSE → Planning', icon:'🚫', message:'Habilitation CACES R489 expirée — Marc Lambert ne peut pas conduire le chariot sur chantier', action:'Renouveler', link:'/patron/qse?onglet=habilitations' });
     alertes.push({ type:'warning', module:'QSE → Chantier', icon:'🦺', message:'EPI expiré : Chaussures de sécurité de Sophie Duval — date d\'expiration dépassée', action:'Remplacer l\'EPI', link:'/patron/qse?onglet=epi' });
     alertes.push({ type:'info', module:'Devis → Facturation', icon:'💰', message:'Devis DEV-2026-008 signé par Mme Dupont — facture non encore créée', action:'Créer la facture', link:'/patron/finance?onglet=facturation' });
