@@ -59,7 +59,7 @@ function ModalCandidature({ offre, onClose }) {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <div style={{ fontSize:'1rem', fontWeight:700, color:DS.ink, letterSpacing:'-0.025em' }}>Postuler</div>
-              <div style={{ fontSize:'0.825rem', color:DS.muted, marginTop:3 }}>{offre.poste} · {offre.entreprise}</div>
+              <div style={{ fontSize:'0.825rem', color:DS.muted, marginTop:3 }}>{offre.poste} · {offre.nomEntreprise || offre.entreprise}</div>
             </div>
             <button onClick={onClose} style={{ width:32, height:32, borderRadius:'50%', background:DS.bgSoft, border:'none', cursor:'pointer', color:DS.muted, fontSize:'1.1rem', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
           </div>
@@ -127,7 +127,7 @@ function ModalCandidature({ offre, onClose }) {
               </div>
               <div>
                 <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>Lettre de motivation <span style={{ color:DS.subtle, fontWeight:400 }}>(optionnel)</span></label>
-                <textarea value={form.lettre} onChange={e=>setForm(x=>({...x,lettre:e.target.value}))} placeholder={`Dites-nous pourquoi rejoindre ${offre.entreprise}...`} rows={4}
+                <textarea value={form.lettre} onChange={e=>setForm(x=>({...x,lettre:e.target.value}))} placeholder={`Dites-nous pourquoi rejoindre ${offre.nomEntreprise || offre.entreprise}...`} rows={4}
                   style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
                   onFocus={e=>e.target.style.borderColor=DS.accent} onBlur={e=>e.target.style.borderColor=DS.border} />
               </div>
@@ -146,9 +146,12 @@ function ModalCandidature({ offre, onClose }) {
               <div style={{ width:64, height:64, borderRadius:'50%', background:DS.greenBg, border:`1px solid ${DS.green}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={DS.green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <div style={{ fontSize:'1.125rem', fontWeight:700, color:DS.ink, marginBottom:8, letterSpacing:'-0.025em' }}>Candidature envoyée !</div>
-              <div style={{ fontSize:'0.875rem', color:DS.muted, lineHeight:1.65, marginBottom:24 }}>
-                Votre candidature pour <strong style={{ color:DS.ink }}>{offre.poste}</strong> chez <strong style={{ color:DS.ink }}>{offre.entreprise}</strong> a bien été transmise.<br/>
+              <div style={{ fontSize:'1.125rem', fontWeight:700, color:DS.ink, marginBottom:8, letterSpacing:'-0.025em' }}>Votre candidature a bien été envoyée !</div>
+              <div style={{ fontSize:'0.875rem', color:DS.muted, lineHeight:1.65, marginBottom:12 }}>
+                Votre candidature pour <strong style={{ color:DS.ink }}>{offre.poste}</strong> chez <strong style={{ color:DS.ink }}>{offre.nomEntreprise || offre.entreprise}</strong> a bien été transmise.
+              </div>
+              <div style={{ fontSize:'0.85rem', color:DS.muted, lineHeight:1.65, marginBottom:24 }}>
+                L'entreprise <strong style={{ color:DS.ink }}>{offre.nomEntreprise || offre.entreprise}</strong> recevra votre dossier et reviendra vers vous.<br/>
                 Réponse attendue à <span style={{ color:DS.accent, fontWeight:600 }}>{form.email}</span>
               </div>
               <button onClick={onClose} style={{ padding:'12px 28px', background:DS.ink, border:'none', borderRadius:DS.r.md, fontSize:'0.875rem', fontWeight:600, color:'#fff', cursor:'pointer' }}>Fermer</button>
@@ -163,9 +166,9 @@ function ModalCandidature({ offre, onClose }) {
 // ─── Carte offre ───────────────────────────────────────────────────────────────
 
 function OffreCard({ offre, selected, onClick }) {
-  const daysAgo = Math.floor((Date.now() - new Date(offre.created_at||Date.now()).getTime()) / 86400000);
+  const daysAgo = Math.floor((Date.now() - new Date(offre.creeLe||offre.created_at||Date.now()).getTime()) / 86400000);
   const sc = SECTEUR_COLOR[offre.secteur] || { bg:DS.bgSoft, border:DS.border, text:DS.muted };
-  const initials = (offre.entreprise||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const initials = ((offre.nomEntreprise||offre.entreprise)||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
   return (
     <div onClick={onClick}
@@ -291,7 +294,7 @@ export default function RecrutementPage() {
   const filtered = offres.filter(o => {
     const mq = !quoi || o.poste?.toLowerCase().includes(quoi.toLowerCase()) || o.description?.toLowerCase().includes(quoi.toLowerCase());
     const mo = !ou || o.localisation?.toLowerCase().includes(ou.toLowerCase());
-    const mc = contrat==='Tous' || o.type_contrat===contrat;
+    const mc = contrat==='Tous' || (o.typeContrat || o.type_contrat)===contrat;
     const ms = secteur==='tous' || o.secteur===secteur;
     return mq && mo && mc && ms;
   });
@@ -377,8 +380,12 @@ export default function RecrutementPage() {
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:16, maxWidth:1100, margin:'0 auto' }}>
             {filtered.map(o => {
-              const initials = (o.entreprise||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-              const daysAgo = Math.floor((Date.now() - new Date(o.created_at||Date.now()).getTime()) / 86400000);
+              const entreprise = o.nomEntreprise || o.entreprise;
+              const typeContrat = o.typeContrat || o.type_contrat;
+              const salaire = (o.salaireMin && o.salaireMax) ? `${o.salaireMin}–${o.salaireMax}€/mois` : o.salaire;
+              const creeLe = o.creeLe || o.created_at;
+              const initials = (entreprise||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+              const daysAgo = Math.floor((Date.now() - new Date(creeLe||Date.now()).getTime()) / 86400000);
               return (
                 <div key={o.id} onClick={()=>setSelected(o)}
                   style={{ background:'#fff', border:'1px solid #E8E6E1', padding:'24px', cursor:'pointer', transition:'all .25s', position:'relative' }}
@@ -389,12 +396,12 @@ export default function RecrutementPage() {
                     <div style={{ width:44, height:44, background:'#F5F2EC', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:'#7A6232', flexShrink:0 }}>{initials}</div>
                     <div>
                       <div style={{ fontSize:16, fontWeight:700, color:'#1A1A1A', letterSpacing:'-0.02em', marginBottom:3 }}>{o.poste}</div>
-                      <div style={{ fontSize:13, color:'#4A4A4A' }}>{o.entreprise} · 📍 {o.localisation}</div>
+                      <div style={{ fontSize:13, color:'#4A4A4A' }}>{entreprise} · 📍 {o.localisation}</div>
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:14 }}>
-                    {o.type_contrat && <span style={{ fontSize:11, fontWeight:600, color:'#1A1A1A', background:'#F5F2EC', padding:'4px 10px' }}>{o.type_contrat}</span>}
-                    {o.salaire && <span style={{ fontSize:11, color:'#4A4A4A', background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'4px 10px' }}>{o.salaire}</span>}
+                    {typeContrat && <span style={{ fontSize:11, fontWeight:600, color:'#1A1A1A', background:'#F5F2EC', padding:'4px 10px' }}>{typeContrat}</span>}
+                    {salaire && <span style={{ fontSize:11, color:'#4A4A4A', background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'4px 10px' }}>{salaire}</span>}
                   </div>
                   <div style={{ fontSize:13, color:'#4A4A4A', lineHeight:1.55, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{o.description}</div>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:16, paddingTop:14, borderTop:'1px solid #F0EDE8' }}>
@@ -423,9 +430,9 @@ export default function RecrutementPage() {
               <h2 style={{ fontFamily:"'Cormorant Garamond','Georgia',serif", fontSize:'clamp(24px,3.5vw,32px)', fontWeight:500, fontStyle:'italic', color:'#1A1A1A', letterSpacing:'-0.02em', margin:'0 0 6px', lineHeight:1.1 }}>
                 {selected.poste}
               </h2>
-              <div style={{ fontSize:14, color:'#4A4A4A', marginBottom:20 }}>{selected.entreprise} · 📍 {selected.localisation}</div>
+              <div style={{ fontSize:14, color:'#4A4A4A', marginBottom:20 }}>{selected.nomEntreprise || selected.entreprise} · 📍 {selected.localisation}</div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:24 }}>
-                {[selected.type_contrat, selected.salaire].filter(Boolean).map(v => (
+                {[selected.typeContrat || selected.type_contrat, (selected.salaireMin && selected.salaireMax) ? `${selected.salaireMin}–${selected.salaireMax}€/mois` : selected.salaire].filter(Boolean).map(v => (
                   <span key={v} style={{ fontSize:12, fontWeight:600, color:'#1A1A1A', background:'#F5F2EC', padding:'6px 14px' }}>{v}</span>
                 ))}
                 {selected.urgent && <span style={{ fontSize:12, fontWeight:700, color:'#DC2626', background:'#FEF2F2', padding:'6px 14px' }}>Urgent</span>}
@@ -457,7 +464,7 @@ export default function RecrutementPage() {
               {/* Infos pratiques */}
               <div style={{ background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'20px 24px', marginBottom:28 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:14 }}>Informations</div>
-                {[{l:'Entreprise',v:selected.entreprise},{l:'Localisation',v:selected.localisation},{l:'Type de contrat',v:selected.type_contrat},{l:'Rémunération',v:selected.salaire||'Non précisé'}].map(({l,v})=>v&&(
+                {[{l:'Entreprise',v:selected.nomEntreprise||selected.entreprise},{l:'Localisation',v:selected.localisation},{l:'Type de contrat',v:selected.typeContrat||selected.type_contrat},{l:'Rémunération',v:(selected.salaireMin&&selected.salaireMax)?`${selected.salaireMin}–${selected.salaireMax}€/mois`:selected.salaire||'Non précisé'}].map(({l,v})=>v&&(
                   <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #F0EDE8', fontSize:14 }}>
                     <span style={{ color:'#757575' }}>{l}</span>
                     <span style={{ color:'#1A1A1A', fontWeight:600 }}>{v}</span>
