@@ -100,14 +100,50 @@ async function validateEmail(email) {
   return { valid: true };
 }
 
-// POST /verify-email — check if email domain is real
+// POST /verify-email — check MX + send verification code
+const verificationCodes = new Map();
+
 router.post('/verify-email', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
+    // Step 1: MX + disposable check
     const result = await validateEmail(email);
-    res.json(result);
+    if (!result.valid) return res.json(result);
+
+    // Step 2: Rate limit per email (max 3 codes per 10min)
+    const existing = verificationCodes.get(email);
+    if (existing && existing.attempts >= 3 && Date.now() - existing.createdAt < 600000) {
+      return res.json({ valid: true, codeSent: false, reason: 'Trop de tentatives. Réessayez dans quelques minutes.' });
+    }
+
+    // Step 3: Generate and send code
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    verificationCodes.set(email, {
+      code,
+      createdAt: Date.now(),
+      attempts: (existing?.attempts || 0) + 1
+    });
+    setTimeout(() => verificationCodes.delete(email), 600000);
+
+    await emailService.sendVerificationCode(email, code);
+    res.json({ valid: true, codeSent: true });
   } catch {
     res.status(500).json({ valid: false, reason: 'Erreur de vérification' });
+  }
+});
+
+// POST /verify-code — check the 6-digit code
+router.post('/verify-code', authLimiter, async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ valid: false });
+    const stored = verificationCodes.get(email);
+    if (!stored || stored.code !== code || Date.now() - stored.createdAt > 600000) {
+      return res.json({ valid: false, reason: 'Code invalide ou expiré' });
+    }
+    res.json({ valid: true });
+  } catch {
+    res.status(500).json({ valid: false });
   }
 });
 
@@ -123,6 +159,14 @@ router.post('/register', authLimiter, async (req, res) => {
     if (!emailCheck.valid) {
       return res.status(400).json({ erreur: emailCheck.reason });
     }
+    // Verify email code
+    const { emailCode } = req.body;
+    if (!emailCode) return res.status(400).json({ erreur: 'Code de vérification requis' });
+    const storedCode = verificationCodes.get(email);
+    if (!storedCode || storedCode.code !== emailCode || Date.now() - storedCode.createdAt > 600000) {
+      return res.status(400).json({ erreur: 'Code de vérification invalide ou expiré' });
+    }
+    verificationCodes.delete(email);
     const { rows: existing } = await db.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.length > 0) return res.status(400).json({ erreur: 'Cet email est déjà utilisé' });
 

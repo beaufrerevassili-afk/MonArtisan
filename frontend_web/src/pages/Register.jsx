@@ -426,6 +426,9 @@ export default function Register() {
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [codeChecking, setCodeChecking] = useState(false);
   // Données profil artisan
   const [profil, setProfil] = useState({ metier: '', siret: '', adresse: '', ville: '', experience: '', description: '' });
   // Documents uploadés { id: File }
@@ -583,6 +586,7 @@ export default function Register() {
         email:      compte.email,
         motdepasse: compte.motdepasse,
         ville:      compte.ville,
+        emailCode:  verificationCode,
         role,
         secteur,
         clientType: 'particulier',
@@ -857,22 +861,56 @@ export default function Register() {
                   <div>
                     <label htmlFor="reg-email" className="reg-label">Adresse e-mail</label>
                     <input id="reg-email" className="reg-input" type="email" placeholder="votre@email.com" value={compte.email}
-                      onChange={e => { setCompte({ ...compte, email: e.target.value }); setEmailVerified(false); setEmailError(''); }}
+                      onChange={e => { setCompte({ ...compte, email: e.target.value }); setEmailVerified(false); setEmailError(''); setCodeSent(false); setVerificationCode(''); }}
                       onBlur={async () => {
                         const em = compte.email.trim();
                         if (!em || !em.includes('@') || !em.includes('.')) return;
+                        if (codeSent || emailVerified) return;
                         setEmailChecking(true);
                         setEmailError('');
                         try {
                           const { data } = await api.post('/verify-email', { email: em });
-                          if (data.valid) { setEmailVerified(true); }
-                          else { setEmailError(data.reason || 'Email invalide'); setEmailVerified(false); }
+                          if (data.valid && data.codeSent) { setCodeSent(true); }
+                          else if (!data.valid) { setEmailError(data.reason || 'Email invalide'); }
+                          else if (data.reason) { setEmailError(data.reason); }
                         } catch { setEmailError('Erreur de vérification'); }
                         finally { setEmailChecking(false); }
                       }}
                       autoComplete="email" />
-                    {emailChecking && <div style={{ fontSize: 11, color: '#A68B4B', marginTop: 4 }}>Vérification en cours...</div>}
+                    {emailChecking && <div style={{ fontSize: 11, color: '#A68B4B', marginTop: 4 }}>Vérification et envoi du code...</div>}
                     {emailError && <div style={{ fontSize: 12, color: '#DC2626', marginTop: 4 }}>{emailError}</div>}
+                    {codeSent && !emailVerified && (
+                      <div style={{ marginTop: 6, padding: '10px 12px', background: '#F8F7F4', borderRadius: 8, border: '1px solid #E8E6E1' }}>
+                        <div style={{ fontSize: 11, color: '#636363', marginBottom: 6 }}>Un code a été envoyé à <strong>{compte.email}</strong></div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <input
+                            type="text" maxLength={6} placeholder="Code à 6 chiffres" value={verificationCode}
+                            onChange={e => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                            style={{ width: 130, padding: '8px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 15, fontFamily: 'inherit', letterSpacing: '0.2em', textAlign: 'center' }}
+                          />
+                          <button type="button" disabled={verificationCode.length !== 6 || codeChecking} onClick={async () => {
+                            setCodeChecking(true); setEmailError('');
+                            try {
+                              const { data } = await api.post('/verify-code', { email: compte.email.trim(), code: verificationCode });
+                              if (data.valid) { setEmailVerified(true); }
+                              else { setEmailError(data.reason || 'Code invalide'); }
+                            } catch { setEmailError('Erreur de vérification'); }
+                            finally { setCodeChecking(false); }
+                          }}
+                            style={{ padding: '8px 16px', background: verificationCode.length === 6 ? '#2C2520' : '#ccc', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: verificationCode.length === 6 ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+                            {codeChecking ? '...' : 'Valider'}
+                          </button>
+                          <button type="button" onClick={async () => {
+                            setEmailChecking(true); setEmailError(''); setVerificationCode('');
+                            try { await api.post('/verify-email', { email: compte.email.trim() }); }
+                            catch {} finally { setEmailChecking(false); }
+                          }}
+                            style={{ fontSize: 11, color: '#A68B4B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+                            Renvoyer
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {emailVerified && <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 600, marginTop: 4 }}>✓ Email vérifié</div>}
                   </div>
 
