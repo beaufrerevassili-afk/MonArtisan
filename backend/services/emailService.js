@@ -103,6 +103,16 @@ exports.sendPaiementLibere = (to, nom, montant, titreProjet) => send(to,
    </div>`
 );
 
+exports.sendVerificationCode = (to, code) => send(to,
+  'Votre code de vérification Freample',
+  `<h2 style="color:#1A1A1A;font-size:20px;margin:0 0 16px;">Code de vérification</h2>
+   <p style="color:#333;font-size:14px;line-height:1.6;">Voici votre code de vérification :</p>
+   <div style="text-align:center;margin:24px 0;">
+     <span style="display:inline-block;padding:16px 32px;background:#FAFAF8;border:2px solid #A68B4B;border-radius:10px;font-size:32px;font-weight:900;letter-spacing:0.3em;color:#1A1A1A;">${escapeHtml(code)}</span>
+   </div>
+   <p style="color:#888;font-size:12px;line-height:1.5;">Ce code est valable 10 minutes. Si vous n'avez pas demandé ce code, ignorez cet email.</p>`
+);
+
 exports.sendNouvelAvis = (to, nomArtisan, note, nomClient) => send(to,
   `Nouvel avis reçu — ${note}★`,
   `<h2 style="color:#1A1A1A;font-size:20px;margin:0 0 16px;">Nouvel avis, ${escapeHtml(nomArtisan)} !</h2>
