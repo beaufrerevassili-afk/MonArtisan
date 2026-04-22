@@ -53,6 +53,7 @@ function docUrl(type, id) {
 
 export default function BanqueDocuments() {
   const { token } = useAuth();
+  const isDemo = localStorage.getItem('token')?.endsWith('.dev');
   const [devis, setDevis] = useState([]);
   const [loadingDevis, setLoadingDevis] = useState(true);
   const [search, setSearch] = useState('');
@@ -77,9 +78,9 @@ export default function BanqueDocuments() {
 
   const allDocs = [
     ...devis,
-    ...BULLETINS_STATIC,
-    ...CONTRATS_STATIC,
-    ...QSE_STATIC,
+    ...(isDemo ? BULLETINS_STATIC : []),
+    ...(isDemo ? CONTRATS_STATIC : []),
+    ...(isDemo ? QSE_STATIC : []),
   ];
 
   const filtered = allDocs.filter(d => {
