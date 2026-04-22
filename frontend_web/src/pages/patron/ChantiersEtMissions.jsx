@@ -7,7 +7,7 @@ import {
   IconBuilding, IconCalendar, IconAlert, IconCheck, IconPlus, IconX,
   IconRefresh, IconDocument, IconUser, IconTrendUp,
 } from '../../components/ui/Icons';
-import { API_URL } from '../../services/api';
+import api, { API_URL } from '../../services/api';
 import { calculerDistanceEntreAdresses } from '../../utils/geocodage';
 import { verifierHabilitation } from '../../utils/profilEntreprise';
 import { calculerIndemniteTrajet } from '../../utils/calculPaie';
@@ -130,19 +130,29 @@ export default function ChantiersEtMissions() {
 
   async function fetchItems() {
     setLoading(true);
+    if (isDemo) {
+      // Demo accounts: try localStorage first, then fall back to DEMO_ITEMS
+      const saved = demoGet('chantiers');
+      setItems(saved && saved.length > 0 ? saved : DEMO_ITEMS);
+      setLoading(false);
+      return;
+    }
+    // Real accounts: call backend API
     try {
-      const [rm, rc] = await Promise.all([
-        fetch(`${API_URL}/patron/missions`, { headers }),
-        fetch(`${API_URL}/patron/chantiers`, { headers }),
+      const [resMissions, resChantiers] = await Promise.all([
+        api.get('/patron/missions').catch(() => ({ data: { missions: [] } })),
+        api.get('/patron/chantiers').catch(() => ({ data: { chantiers: [] } })),
       ]);
-      const dm = await rm.json();
-      const dc = await rc.json();
-      const missions = (dm.missions || []).map(m => ({ ...m, titre: m.titre || m.nom }));
-      const chantiers = (dc.chantiers || []).map(c => ({ ...c, titre: c.nom || c.titre, statut: c.statut === 'planifie' ? 'planifie' : c.statut === 'termine' ? 'terminee' : c.statut }));
+      const missions = (resMissions.data.missions || []).map(m => ({ ...m, titre: m.titre || m.nom }));
+      const chantiers = (resChantiers.data.chantiers || []).map(c => ({
+        ...c,
+        titre: c.nom || c.titre,
+        statut: c.statut === 'termine' ? 'terminee' : c.statut,
+      }));
       const all = [...missions, ...chantiers];
-      setItems(all.length > 0 ? all : (isDemo ? DEMO_ITEMS : []));
+      setItems(all.length > 0 ? all : []);
     } catch {
-      setItems(isDemo ? DEMO_ITEMS : []);
+      setItems([]);
     }
     setLoading(false);
   }
@@ -150,7 +160,9 @@ export default function ChantiersEtMissions() {
   useEffect(() => { fetchItems(); }, []);
 
   async function changerStatut(id, statut) {
-    try { await fetch(`${API_URL}/patron/missions/${id}/statut`, { method: 'PUT', headers, body: JSON.stringify({ statut }) }); } catch {}
+    if (!isDemo) {
+      try { await api.put(`/patron/chantiers/${id}/avancement`, { statut }); } catch {}
+    }
     setItems(prev => prev.map(m => m.id === id ? { ...m, statut } : m));
     setSelectedItem(prev => prev?.id === id ? { ...prev, statut } : prev);
   }
@@ -852,7 +864,23 @@ export default function ChantiersEtMissions() {
       setSaving(true);
       const payload = { ...form, distanceDepot: distanceInfo?.km || null, source: 'manual' };
       try {
-        await fetch(`${API_URL}/patron/missions`, { method: 'POST', headers, body: JSON.stringify(payload) });
+        if (isDemo) {
+          // Demo: save to localStorage
+          const newItem = { ...payload, id: 'ch_' + Date.now(), avancement: 0, equipe: form.equipe || [] };
+          const current = demoGet('chantiers') || DEMO_ITEMS;
+          demoSet('chantiers', [newItem, ...current]);
+        } else {
+          // Real account: POST to backend (backend expects `nom` not `titre`)
+          await api.post('/patron/chantiers', {
+            nom: payload.titre,
+            client: payload.client,
+            adresse: payload.adresse,
+            budgetPrevu: payload.budgetPrevu,
+            dateDebut: payload.dateDebut,
+            dateFin: payload.dateFin,
+            description: payload.description,
+          });
+        }
       } catch {}
       await fetchItems();
       setSaving(false);

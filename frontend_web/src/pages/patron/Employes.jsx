@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { isDemo as _isDemo } from '../../utils/storage';
+import api from '../../services/api';
 import DS from '../../design/luxe';
 import {
   getFichesSalaries, setFichesSalaries, FICHE_SALARIE_VIDE,
@@ -29,6 +30,20 @@ export default function Employes() {
   const [addForm, setAddForm] = useState({ prenom: '', nom: '', poste: '', email: '', telephone: '' });
 
   useEffect(() => { setFichesSalaries(fiches); }, [fiches]);
+
+  useEffect(() => {
+    if (isDemo) return;
+    api.get('/rh/employes').then(({ data }) => {
+      if (data.employes?.length) {
+        setFiches(data.employes.map(e => ({
+          id: e.id, prenom: e.prenom || e.nom?.split(' ')[0] || '', nom: e.nom?.split(' ').slice(1).join(' ') || e.nom || '',
+          poste: e.poste || '', email: e.email || '', telephone: e.telephone || '',
+          dateEntree: e.dateEntree || e.date_entree || '', salaireBase: e.salaireBase || e.salaire_base || 0,
+          typeContrat: e.typeContrat || e.type_contrat || 'CDI', statut: e.statut || 'actif', actif: e.statut !== 'parti'
+        })));
+      }
+    }).catch(() => {});
+  }, []);
 
   const profil = getProfilEntreprise(user);
   const metiersEntreprise = profil.metiers || [];

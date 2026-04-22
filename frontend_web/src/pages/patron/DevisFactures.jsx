@@ -12,6 +12,7 @@ import { IconDocument, IconCreditCard, IconTrendUp, IconPlus, IconCheck, IconSea
 import DevisFormulaire from '../../components/DevisFormulaire';
 import EnvoyerDevisButton from '../../components/devis/EnvoyerDevisButton';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
+import api from '../../services/api';
 
 const CARD = { background: '#fff', border: '1px solid #E5E5EA', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
 const BTN = { padding: '8px 18px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
@@ -84,9 +85,34 @@ export default function DevisFactures() {
   const [lienForm, setLienForm] = useState({ clientNom: '', clientEmail: '', objet: '', montantHT: '' });
   const [lienGenere, setLienGenere] = useState(null);
 
-  // Persist
+  // Persist (demo only — demoSet is a no-op for real accounts)
   useEffect(() => { demoSet('freample_devis', devis); }, [devis]);
   useEffect(() => { demoSet('freample_factures_patron', factures); }, [factures]);
+
+  // Load devis from API for real accounts
+  const loadDevisFromApi = () => {
+    if (_isDemo()) return;
+    api.get('/patron/devis-pro').then(({ data }) => {
+      if (data.devis) setDevis(data.devis.map(d => ({
+        id: d.id, numero: d.numero, objet: d.objet || d.titre || '',
+        client: d.client?.nom || d.clientNom || '', clientEmail: d.client?.email || d.clientEmail || '',
+        clientTel: d.client?.telephone || d.clientTel || '', clientAdresse: d.client?.adresse || d.clientAdresse || '',
+        adresseChantier: d.adresseChantier || '',
+        montantHT: d.montantHT || d.montant_ht || 0,
+        tva: d.tva || d.montant_tva || 0,
+        montantTTC: d.montantTTC || d.montant_ttc || 0,
+        statut: d.statut || 'brouillon',
+        source: d.source || 'manuel',
+        date: d.creeLe || d.created_at || new Date().toISOString(),
+        lignes: d.lignes, lots: d.lots, options: d.options,
+        echeancier: d.echeancier, conditions: d.conditions, notes: d.notes,
+        emetteur: d.emetteur, tvaDetails: d.tvaDetails,
+        version: d.version || 1, versions: d.versions || [],
+        chantierId: d.chantierId || d.chantier_id || null,
+      })));
+    }).catch(() => {});
+  };
+  useEffect(() => { loadDevisFromApi(); }, []);
 
   // KPIs
   const devisEnAttente = devis.filter(d => d.statut === 'envoye').length;
@@ -112,6 +138,13 @@ export default function DevisFactures() {
 
   // Actions
   function signerDevis(id) {
+    if (!isDemo) {
+      api.post(`/patron/devis-pro/${id}/signer`).then(() => {
+        loadDevisFromApi();
+        addToast('Devis marqué comme signé', 'success');
+      }).catch(() => {});
+      return;
+    }
     setDevis(prev => prev.map(d => d.id === id ? { ...d, statut: 'signe', versions: [...(d.versions || []), { statut: 'envoye', date: d.date }] } : d));
     // Générer écriture comptable
     const d = devis.find(x => x.id === id);
@@ -201,9 +234,46 @@ export default function DevisFactures() {
             user={{ entrepriseType: 'patron' }}
             initialData={editingDevis}
             onSoumettre={(devisData) => {
-              const all = demoGet('freample_devis', []);
               const action = devisData._action || 'brouillon';
               const editingId = devisData._editingId;
+
+              // --- Real account: send to API ---
+              if (!isDemo) {
+                const payload = {
+                  objet: devisData.objet,
+                  clientNom: devisData.client?.nom || '',
+                  clientEmail: devisData.client?.email || '',
+                  clientTel: devisData.client?.telephone || '',
+                  clientAdresse: devisData.client?.adresse || '',
+                  adresseChantier: devisData.client?.adresseChantier || '',
+                  lignes: devisData.lignes, lots: devisData.lots,
+                  options: devisData.options, echeancier: devisData.echeancier,
+                  conditions: devisData.conditions, notes: devisData.notes,
+                  emetteur: devisData.emetteur,
+                  montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
+                  tvaDetails: devisData.tvaDetails, parType: devisData.parType,
+                  validiteJours: devisData.validiteJours, dateDebut: devisData.dateDebut, dureeEstimee: devisData.dureeEstimee,
+                  remiseGlobale: devisData.remiseGlobale,
+                  statut: action === 'envoyer' ? 'envoye' : 'brouillon',
+                };
+                const promise = editingId
+                  ? api.put(`/patron/devis-pro/${editingId}`, payload)
+                  : api.post('/patron/devis-pro', payload);
+                promise.then(({ data }) => {
+                  loadDevisFromApi();
+                  setShowNewDevis(false); setEditingDevis(null);
+                  if (action === 'envoyer') {
+                    const created = data.devis || data;
+                    setDevisAEnvoyer({ ...payload, id: created.id, numero: created.numero, date: created.creeLe || new Date().toISOString() });
+                    addToast('Devis créé — envoyez-le au client', 'success');
+                  } else if (action === 'pdf') { addToast('Devis sauvegardé — impression en cours', 'info'); setTimeout(() => window.print(), 300); }
+                  else addToast('Devis sauvegardé en brouillon', 'success');
+                }).catch(() => { addToast('Erreur lors de la sauvegarde du devis', 'error'); });
+                return;
+              }
+
+              // --- Demo account: localStorage ---
+              const all = demoGet('freample_devis', []);
               let finalDevis;
 
               if (editingId) {
@@ -383,9 +453,19 @@ export default function DevisFactures() {
                   {d.statut === 'brouillon' && (
                     <button onClick={() => {
                       if (!window.confirm('Supprimer ce brouillon ?')) return;
-                      const all = demoGet('freample_devis', []);
-                      demoSet('freample_devis', all.filter(x => x.id !== d.id));
-                      setDevis(demoGet('freample_devis', []));
+                      if (!isDemo) {
+                        api.delete(`/patron/devis-pro/${d.id}`).then(() => {
+                          loadDevisFromApi();
+                          addToast('Brouillon supprimé', 'success');
+                        }).catch(() => {
+                          // Fallback: remove locally even if API fails
+                          setDevis(prev => prev.filter(x => x.id !== d.id));
+                        });
+                      } else {
+                        const all = demoGet('freample_devis', []);
+                        demoSet('freample_devis', all.filter(x => x.id !== d.id));
+                        setDevis(demoGet('freample_devis', []));
+                      }
                     }} style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Supprimer</button>
                   )}
                   {(d.statut === 'brouillon' || d.statut === 'envoye' || d.statut === 'modif_demandee') && (
