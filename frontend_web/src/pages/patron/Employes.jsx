@@ -72,9 +72,14 @@ export default function Employes() {
   }
 
   // ── Supprimer (offboarding) ──
-  function retirerSalarie(id) {
+  async function retirerSalarie(id) {
     if (!window.confirm('Retirer ce salarié de l\'équipe ? Sa fiche sera archivée.')) return;
-    setFiches(prev => prev.map(f => f.id === id ? { ...f, actif: false } : f));
+    if (!isDemo) {
+      try {
+        await api.put(`/rh/employes/${id}/depart`);
+      } catch {}
+    }
+    setFiches(prev => prev.filter(f => f.id !== id));
     setSelectedId(null);
     addToast('Salarié retiré de l\'équipe', 'warning');
   }
