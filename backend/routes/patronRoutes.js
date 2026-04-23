@@ -7,6 +7,53 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 
+// Auto-create missing tables
+async function ensureTables() {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS stock_articles (
+      id SERIAL PRIMARY KEY,
+      ref VARCHAR(50),
+      designation VARCHAR(255),
+      categorie VARCHAR(100),
+      quantite NUMERIC DEFAULT 0,
+      seuil_alerte NUMERIC DEFAULT 0,
+      unite VARCHAR(20) DEFAULT 'u',
+      valeur_unitaire NUMERIC DEFAULT 0,
+      fournisseur VARCHAR(255),
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS agenda_events (
+      id SERIAL PRIMARY KEY,
+      type VARCHAR(50),
+      title VARCHAR(255),
+      date DATE,
+      heure VARCHAR(10),
+      heure_fin VARCHAR(10),
+      salarie VARCHAR(255),
+      lieu VARCHAR(500),
+      vehicule VARCHAR(255),
+      note TEXT,
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS avis (
+      id SERIAL PRIMARY KEY,
+      patron_id INTEGER,
+      client_nom VARCHAR(255),
+      note INTEGER,
+      commentaire TEXT,
+      reponse TEXT,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+}
+ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message));
+
 // ============================================================
 //  INFORMATIONS SOCIÉTÉ (statiques)
 // ============================================================
