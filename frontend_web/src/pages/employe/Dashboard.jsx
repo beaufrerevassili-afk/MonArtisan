@@ -564,6 +564,7 @@ export default function DashboardEmploye() {
               <button onClick={() => setRapportOpen(rapportOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: rapportOpen === c.id ? '#0A0A0A' : 'transparent', color: rapportOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Rapport du jour</button>
               <button onClick={() => setTodoOpen(todoOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: todoOpen === c.id ? '#0A0A0A' : 'transparent', color: todoOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>À faire demain</button>
               <button onClick={() => setFraisChantierOpen(fraisChantierOpen === c.id ? null : c.id)} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: fraisChantierOpen === c.id ? '#0A0A0A' : 'transparent', color: fraisChantierOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Note de frais</button>
+              <button onClick={() => { setSelectedChantier(c); setShowAvis(true); }} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: '#A68B4B', color: '#fff', borderColor: '#A68B4B', textAlign: 'center', gridColumn: '1 / -1' }}>📋 Faire signer un avis de passage</button>
             </div>
 
             {/* Confirmation message */}
