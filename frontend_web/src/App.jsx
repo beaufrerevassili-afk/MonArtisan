@@ -160,23 +160,20 @@ function usePageTracker() {
   }, [location.pathname]);
 }
 
-function SuspendedGuard() {
+function useSuspendedRedirect() {
   const { user } = useAuth();
   const location = useLocation();
   const allowedPaths = ['/compte-suspendu', '/login', '/support', '/cgu', '/logout'];
-  if (user?.suspendu && !allowedPaths.some(p => location.pathname.startsWith(p))) {
-    return <Navigate to="/compte-suspendu" replace />;
-  }
-  return null;
+  return user?.suspendu && !allowedPaths.some(p => location.pathname.startsWith(p));
 }
 
 function AppRoutes() {
   const { user } = useAuth();
   usePageTracker();
+  const isSuspendedRedirect = useSuspendedRedirect();
+  if (isSuspendedRedirect) return <Navigate to="/compte-suspendu" replace />;
 
   return (
-    <>
-    <SuspendedGuard />
     <Suspense fallback={<LazySpinner />}>
     <Routes>
       {/* ── Routes publiques ── */}
@@ -324,7 +321,6 @@ function AppRoutes() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>
-    </>
   );
 }
 
