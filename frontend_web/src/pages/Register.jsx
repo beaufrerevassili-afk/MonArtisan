@@ -98,14 +98,14 @@ function EyeIcon({ open }) {
 
 function StepIndicator({ steps, current }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 28 }}>
+    <div className="reg-step-indicator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 28 }}>
       {steps.map((s, i) => {
         const done   = s.num < current;
         const active = s.num === current;
         return (
           <React.Fragment key={s.num}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <div style={{
+              <div className="reg-step-circle" style={{
                 width: 32, height: 32, borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.8125rem', fontWeight: 700, transition: 'all 0.25s',
@@ -119,12 +119,12 @@ function StepIndicator({ steps, current }) {
                   : s.num
                 }
               </div>
-              <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: active ? DS.accent : done ? DS.green : DS.subtle, whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
+              <span className="reg-step-label" style={{ fontSize: '0.6875rem', fontWeight: 600, color: active ? DS.accent : done ? DS.green : DS.subtle, whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
                 {s.label}
               </span>
             </div>
             {i < steps.length - 1 && (
-              <div style={{ flex: 1, height: 1.5, background: done ? DS.green : DS.border, margin: '0 8px', marginBottom: 22, minWidth: 20, maxWidth: 48, transition: 'background 0.3s', borderRadius: 2 }} />
+              <div className="reg-step-line" style={{ flex: 1, height: 1.5, background: done ? DS.green : DS.border, margin: '0 8px', marginBottom: 22, minWidth: 20, maxWidth: 48, transition: 'background 0.3s', borderRadius: 2 }} />
             )}
           </React.Fragment>
         );
@@ -714,7 +714,7 @@ export default function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAF8', padding: '32px 16px 56px', fontFamily: DS.font, color:'#1A1A1A' }}>
+    <div className="reg-page" style={{ minHeight: '100vh', background: '#FAFAF8', padding: '32px 16px 56px', fontFamily: DS.font, color:'#1A1A1A' }}>
       <style>{`
         .reg-input {
           width: 100%; box-sizing: border-box;
@@ -759,11 +759,35 @@ export default function Register() {
         .reg-spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15); border-top-color: #fff; border-radius: 50%; animation: regSpin 0.7s linear infinite; }
         @keyframes regSpin { to { transform: rotate(360deg); } }
         @keyframes regFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 640px) {
+          .reg-page { padding: 16px 10px 40px !important; }
+          .reg-container { max-width: 100% !important; }
+          .reg-card { padding: 16px !important; }
+          .reg-header { margin-bottom: 20px !important; }
+          .reg-header h1 { font-size: 22px !important; }
+          .reg-header p { font-size: 13px !important; }
+          .reg-two-col { flex-direction: column !important; }
+          .reg-two-col > .reg-col-form { flex: 1 1 auto !important; min-width: 0 !important; }
+          .reg-two-col > .reg-col-eco { flex: 1 1 auto !important; min-width: 0 !important; position: static !important; }
+          .reg-step-indicator { gap: 0 !important; margin-bottom: 18px !important; }
+          .reg-step-circle { width: 26px !important; height: 26px !important; font-size: 0.7rem !important; }
+          .reg-step-label { font-size: 0.6rem !important; }
+          .reg-step-line { min-width: 12px !important; max-width: 28px !important; margin: 0 4px !important; }
+          .reg-b2c-disclaimer { font-size: 10px !important; padding: 8px 10px !important; }
+          .reg-pro-banner { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; padding: 12px 14px !important; }
+          .reg-pro-banner button { width: 100% !important; text-align: center !important; }
+          .reg-grid-2col { grid-template-columns: 1fr !important; }
+          .reg-btn-primary { padding: 14px 16px !important; font-size: 0.8125rem !important; }
+          .reg-btn-secondary { padding: 14px 12px !important; font-size: 0.8125rem !important; }
+          .reg-choice-btn { padding: 16px 12px !important; }
+          .reg-input { font-size: 16px !important; }
+          .reg-select { font-size: 16px !important; }
+        }
       `}</style>
-      <div style={{ width: '100%', maxWidth: maxWidth, margin: '0 auto', animation: 'regFadeUp 0.5s ease both' }}>
+      <div className="reg-container" style={{ width: '100%', maxWidth: maxWidth, margin: '0 auto', animation: 'regFadeUp 0.5s ease both' }}>
 
         {/* Logo + titre */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div className="reg-header" style={{ textAlign: 'center', marginBottom: 32 }}>
           <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, fontWeight:900, color:'#1A1A1A', letterSpacing:'-0.05em', marginBottom:16, fontFamily:DS.font }}>
             Freample<span style={{color:'#A68B4B'}}>.</span>
           </button>
@@ -787,7 +811,7 @@ export default function Register() {
             {!clientType && !entrepriseType ? (
               <>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <button onClick={() => { setRole('client'); setClientType('particulier'); setStep(1); }}
+                  <button className="reg-choice-btn" onClick={() => { setRole('client'); setClientType('particulier'); setStep(1); }}
                     style={{ flex: '1 1 140px', padding: '20px 16px', border: '1px solid #E8E6E1', background: '#fff', cursor: 'pointer', fontFamily: DS.font, textAlign: 'center', transition: 'all .15s', borderRadius: 10 }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#A68B4B'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.transform = 'none'; }}>
@@ -797,12 +821,12 @@ export default function Register() {
                   </button>
                 </div>
 
-                <div style={{ marginTop: 12, padding: '10px 14px', background: '#FFF7ED', border: '1px solid #F59E0B30', borderRadius: 8, fontSize: 11, color: '#92400E', lineHeight: 1.5 }}>
+                <div className="reg-b2c-disclaimer" style={{ marginTop: 12, padding: '10px 14px', background: '#FFF7ED', border: '1px solid #F59E0B30', borderRadius: 8, fontSize: 11, color: '#92400E', lineHeight: 1.5 }}>
                   <strong>Information :</strong> Les comptes clients Freample sont réservés aux particuliers (B2C). Freample est une plateforme de mise en relation et ne fournit pas de service de facturation inter-entreprises (B2B). La facturation entre le professionnel et son client relève de leur seule responsabilité.
                 </div>
 
                 {/* Lien vers inscription pro / artisan */}
-                <div style={{ marginTop: 16, padding: '14px 18px', background: '#F8F7F4', borderRadius: 10, border: '1px solid #E8E6E1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="reg-pro-banner" style={{ marginTop: 16, padding: '14px 18px', background: '#F8F7F4', borderRadius: 10, border: '1px solid #E8E6E1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700 }}>Vous êtes artisan ou chef d'entreprise ?</div>
                     <div style={{ fontSize: 12, color: '#636363' }}>Recevez des projets clients et gérez votre activité.</div>
@@ -846,9 +870,9 @@ export default function Register() {
 
         {/* ══ STEP 1 — Compte (2 colonnes si patron) ═══════════════════════ */}
         {step === 1 && (
-          <div style={showSideEco ? { display: 'flex', gap: 24, alignItems: 'flex-start' } : {}}>
+          <div className={showSideEco ? "reg-two-col" : ""} style={showSideEco ? { display: 'flex', gap: 24, alignItems: 'flex-start' } : {}}>
             {/* Colonne gauche : formulaire */}
-            <div style={showSideEco ? { flex: '1 1 400px', minWidth: 0 } : {}}>
+            <div className={showSideEco ? "reg-col-form" : ""} style={showSideEco ? { flex: '1 1 400px', minWidth: 0 } : {}}>
               <div className="reg-card">
                 {isArtisan && (
                   <div style={{ background: DS.accentMuted, border: `1px solid ${DS.accentLight}`, borderRadius: 10, padding: '12px 14px', marginBottom: 20, display: 'flex', gap: 10 }}>
@@ -1002,7 +1026,7 @@ export default function Register() {
 
             {/* Colonne droite : écosystème (patron step 1 uniquement) */}
             {showSideEco && (
-              <div style={{ flex: '1 1 440px', minWidth: 0, position: 'sticky', top: 24 }}>
+              <div className="reg-col-eco" style={{ flex: '1 1 440px', minWidth: 0, position: 'sticky', top: 24 }}>
                 <SecteurEcosystemeSide secteur={secteur} />
               </div>
             )}
@@ -1138,7 +1162,7 @@ export default function Register() {
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="reg-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label className="reg-label">Ville d'exercice <span style={{ color: '#F87171' }}>*</span></label>
                   <input className="reg-input" placeholder="Marseille, Aix-en-Provence..." value={profil.ville} onChange={e => setProfil({ ...profil, ville: e.target.value })} />

@@ -76,11 +76,26 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, display:'flex', flexDirection:'column' }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div className="login-page" style={{ minHeight:'100vh', background:L.bg, fontFamily:L.font, display:'flex', flexDirection:'column' }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media (max-width: 640px) {
+          .login-page { padding: 0 !important; }
+          .login-content { padding: 16px 12px !important; }
+          .login-card { max-width: 100% !important; }
+          .login-header h1 { font-size: 26px !important; }
+          .login-nav { padding: 0 16px !important; height: 52px !important; }
+          .login-footer { padding: 12px 16px !important; }
+          .login-demo-btn { padding: 10px 12px !important; gap: 10px !important; }
+          .login-demo-btn .login-demo-avatar { width: 32px !important; height: 32px !important; font-size: 12px !important; }
+          .login-demo-btn .login-demo-role { font-size: 12px !important; }
+          .login-demo-btn .login-demo-desc { font-size: 10px !important; }
+          .login-submit { padding: 14px !important; font-size: 13px !important; }
+        }
+      `}</style>
 
       {/* ── Navbar ── */}
-      <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(24px,4vw,48px)', height:60, borderBottom:`1px solid ${L.border}` }}>
+      <nav className="login-nav" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 clamp(24px,4vw,48px)', height:60, borderBottom:`1px solid ${L.border}` }}>
         <button onClick={()=>navigate('/')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:800, color:L.text, fontFamily:L.font, letterSpacing:'-0.04em' }}>
           Freample<span style={{ color:L.gold }}>.</span>
         </button>
@@ -90,11 +105,11 @@ export default function Login() {
       </nav>
 
       {/* ── Contenu ── */}
-      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(24px,4vh,48px) 20px' }}>
-        <div style={{ width:'100%', maxWidth:420 }}>
+      <div className="login-content" style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(24px,4vh,48px) 20px' }}>
+        <div className="login-card" style={{ width:'100%', maxWidth:420 }}>
 
           {/* Header */}
-          <div style={{ textAlign:'center', marginBottom:36 }}>
+          <div className="login-header" style={{ textAlign:'center', marginBottom:36 }}>
             <div style={{ fontSize:11, fontWeight:600, color:L.gold, textTransform:'uppercase', letterSpacing:'0.25em', marginBottom:12 }}>
               {sector ? `Espace ${SECTOR_CONFIG[sector]?.label||sector}` : 'Connexion'}
             </div>
@@ -141,7 +156,7 @@ export default function Login() {
               </div>
             )}
 
-            <button type="submit" disabled={loading}
+            <button type="submit" disabled={loading} className="login-submit"
               style={{ width:'100%', padding:'16px', background:L.noir, color:'#fff', border:'none', fontSize:14, fontWeight:600, cursor:loading?'not-allowed':'pointer', fontFamily:L.font, letterSpacing:'0.04em', textTransform:'uppercase', transition:'all .25s', opacity:loading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
               onMouseEnter={e=>{if(!loading){e.currentTarget.style.background=L.gold;}}}
               onMouseLeave={e=>{if(!loading){e.currentTarget.style.background=L.noir;}}}>
@@ -162,14 +177,14 @@ export default function Login() {
           {/* Comptes démo */}
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {demoAccounts.map((c, i) => (
-              <button key={i} onClick={()=>remplirDemo(c)}
+              <button key={i} onClick={()=>remplirDemo(c)} className="login-demo-btn"
                 style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 16px', background:L.white, border:`1px solid ${L.border}`, cursor:'pointer', fontFamily:L.font, width:'100%', textAlign:'left', transition:'all .2s' }}
                 onMouseEnter={e=>{e.currentTarget.style.background=L.cream;e.currentTarget.style.borderColor=L.gold;}}
                 onMouseLeave={e=>{e.currentTarget.style.background=L.white;e.currentTarget.style.borderColor=L.border;}}>
-                <div style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700, color:'#fff', background:c.color, borderRadius:8, flexShrink:0, letterSpacing:'-0.02em' }}>{c.role[0]}</div>
+                <div className="login-demo-avatar" style={{ width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700, color:'#fff', background:c.color, borderRadius:8, flexShrink:0, letterSpacing:'-0.02em' }}>{c.role[0]}</div>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:L.text }}>{c.role}</div>
-                  <div style={{ fontSize:11, color:L.textLight, marginTop:2 }}>{c.desc}</div>
+                  <div className="login-demo-role" style={{ fontSize:13, fontWeight:600, color:L.text }}>{c.role}</div>
+                  <div className="login-demo-desc" style={{ fontSize:11, color:L.textLight, marginTop:2 }}>{c.desc}</div>
                 </div>
               </button>
             ))}
@@ -184,7 +199,7 @@ export default function Login() {
       </div>
 
       {/* Footer */}
-      <div style={{ padding:'16px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
+      <div className="login-footer" style={{ padding:'16px 32px', textAlign:'center', borderTop:`1px solid ${L.border}` }}>
         <span style={{ fontSize:11, color:L.textLight, letterSpacing:'0.1em', textTransform:'uppercase' }}>© 2026 Freample</span>
       </div>
     </div>

@@ -117,7 +117,7 @@ export default function DashboardPatron() {
   if (showOnboarding) return <OnboardingWizard type="patron" onComplete={() => setShowOnboarding(false)} />;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="patron-dash-section" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ══ HEADER + BOUTON ALERTES ══ */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -256,7 +256,7 @@ export default function DashboardPatron() {
         </div>
 
         {/* ── VUE DESKTOP : Grille planning compact ── */}
-        <div className="planning-grid-desktop" style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #E8E6E1' }}>
+        <div className="planning-grid-desktop patron-dash-planning" style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #E8E6E1' }}>
           {/* Header jours */}
           <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(6, 1fr)', borderBottom: '1px solid #F2F2F7' }}>
             <div style={{ padding: '10px 12px', fontSize: 11, fontWeight: 700, color: '#6E6E73', background: '#FAFAF8' }}></div>
@@ -479,7 +479,7 @@ export default function DashboardPatron() {
       )}
 
       {/* ══ CHIFFRES RAPIDES ══ */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="patron-dash-kpis" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ fontSize: 14, fontWeight: 700, marginRight: 4 }}>Vos chiffres</div>
         {[
           { label: 'CA mois', value: `${caMensuel.toLocaleString('fr-FR')}€`, color: '#1A1A1A' },
@@ -538,6 +538,7 @@ export default function DashboardPatron() {
           <div onClick={() => setShowChantier(null)}
             style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn .2s ease-out' }}>
             <div onClick={e => e.stopPropagation()}
+              className="patron-dash-chantier-modal"
               style={{ background: '#fff', borderRadius: 20, width: '92%', maxWidth: 600, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', animation: 'zoomIn .25s ease-out' }}>
 
               {/* Header */}
@@ -632,6 +633,13 @@ export default function DashboardPatron() {
         @media (max-width: 680px) {
           .planning-grid-desktop { display: none !important; }
           .planning-list-mobile { display: flex !important; }
+        }
+        @media (max-width: 640px) {
+          .patron-dash-kpis { grid-template-columns: 1fr 1fr !important; }
+          .patron-dash-planning { overflow-x: auto !important; }
+          .patron-dash-section { padding: 16px !important; }
+          .patron-dash-chantier-modal { width: 100% !important; max-width: 100% !important; height: 100% !important; max-height: 100% !important; border-radius: 0 !important; }
+          .patron-dash-chantier-modal > div:first-child { border-radius: 0 !important; }
         }
       `}</style>
     </div>

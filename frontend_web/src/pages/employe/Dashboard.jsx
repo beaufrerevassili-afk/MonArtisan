@@ -102,7 +102,8 @@ const DEMO_PATRON = (() => {
 const statutColors = { en_cours:'#2563EB', planifie:'#D97706', complete:'#16A34A', en_attente:'#D97706', approuve:'#16A34A', rejete:'#DC2626', rembourse:'#16A34A', paye:'#16A34A', parti:'#DC2626' };
 const statutLabels = { en_cours:'En cours', planifie:'Planifié', complete:'Terminé', en_attente:'En attente', approuve:'Approuvé', rejete:'Rejeté', rembourse:'Remboursé', paye:'Payé', parti:'Parti' };
 
-const CARD = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
+const CARD_DESKTOP = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:20 };
+const CARD_MOBILE = { background:'#fff', border:'1px solid #E8E6E1', borderRadius:14, padding:'12px 14px' };
 const BTN = { padding:'10px 20px', background:'#0A0A0A', color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:DS.font };
 const BTN_O = { ...BTN, background:'transparent', color:'#0A0A0A', border:'1px solid #E8E6E1' };
 const INP = { width:'100%', padding:'10px 12px', border:'1px solid #E8E6E1', borderRadius:8, fontSize:13, fontFamily:DS.font, outline:'none', boxSizing:'border-box' };
@@ -117,6 +118,7 @@ export default function DashboardEmploye() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
+  const CARD = isMobile ? CARD_MOBILE : CARD_DESKTOP;
   const isDemo = _isDemo();
   const [tab, setTab] = useState('matin');
   const [chantiers, setChantiers] = useState(isDemo ? DEMO_CHANTIERS : []);
@@ -296,7 +298,7 @@ export default function DashboardEmploye() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px clamp(20px,4vw,40px)' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '16px 12px' : '20px clamp(20px,4vw,40px)' }}>
 
       {/* Banner si pas d'entreprise */}
       {!hasEntreprise && profil.statut === 'parti' && (
@@ -373,18 +375,18 @@ export default function DashboardEmploye() {
         </div>
 
         {/* Compteur heures semaine */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
-            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Cette semaine</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: DS.ink }}>{heuresSemaine.toFixed(1)}h</div>
+        <div style={{ display: 'flex', gap: isMobile ? 6 : 8, marginBottom: 16 }}>
+          <div style={{ flex: 1, padding: isMobile ? '8px 8px' : '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? 9 : 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Cette semaine</div>
+            <div style={{ fontSize: isMobile ? 18 : 20, fontWeight: 800, color: DS.ink }}>{heuresSemaine.toFixed(1)}h</div>
           </div>
-          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
-            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Heures sup</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: heuresSupp > 0 ? '#D97706' : '#16A34A' }}>{heuresSupp.toFixed(1)}h</div>
+          <div style={{ flex: 1, padding: isMobile ? '8px 8px' : '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? 9 : 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Heures sup</div>
+            <div style={{ fontSize: isMobile ? 18 : 20, fontWeight: 800, color: heuresSupp > 0 ? '#D97706' : '#16A34A' }}>{heuresSupp.toFixed(1)}h</div>
           </div>
-          <div style={{ flex: 1, padding: '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
-            <div style={{ fontSize: 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Jours pointés</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: DS.ink }}>{joursPtes.length}/5</div>
+          <div style={{ flex: 1, padding: isMobile ? '8px 8px' : '10px 14px', background: '#fff', border: '1px solid #E8E6E1', borderRadius: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? 9 : 10, color: DS.muted, fontWeight: 600, textTransform: 'uppercase' }}>Jours pointés</div>
+            <div style={{ fontSize: isMobile ? 18 : 20, fontWeight: 800, color: DS.ink }}>{joursPtes.length}/5</div>
           </div>
         </div>
 
@@ -555,8 +557,8 @@ export default function DashboardEmploye() {
               </div>
             </div>
 
-            {/* 8 action buttons (4x2 grid) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+            {/* 8 action buttons (4x2 grid desktop, 2x4 mobile) */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
               <button onClick={() => toggleSection('stock')} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: activeSection === 'stock' ? '#0A0A0A' : 'transparent', color: activeSection === 'stock' ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Prendre du stock</button>
               <button onClick={() => toggleSection('achat')} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: activeSection === 'achat' ? '#0A0A0A' : 'transparent', color: activeSection === 'achat' ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Achat fournisseur</button>
               <button onClick={() => { setCarburantOpen(carburantOpen === c.id ? null : c.id); setCarburantForm({ litres: '', montant: '', km: '' }); setCarburantConfirm(null); }} style={{ ...BTN_O, fontSize: 11, padding: '10px 6px', background: carburantOpen === c.id ? '#0A0A0A' : 'transparent', color: carburantOpen === c.id ? '#fff' : '#0A0A0A', textAlign: 'center' }}>Plein carburant</button>
@@ -634,7 +636,7 @@ export default function DashboardEmploye() {
                 {/* Lignes d'articles */}
                 <div style={{ fontSize: 11, fontWeight: 600, color: DS.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Articles</div>
                 {achatLignes.map((ligne, idx) => (
-                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.2fr auto', gap: 6, marginBottom: 6, alignItems: 'end' }}>
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '2fr 1fr 1fr 1.2fr auto', gap: 6, marginBottom: isMobile ? 12 : 6, alignItems: 'end' }}>
                     <div>
                       {idx === 0 && <label style={{ fontSize: 10, color: DS.muted, display: 'block', marginBottom: 2 }}>Article</label>}
                       <div style={{ position: 'relative' }}>
@@ -743,7 +745,7 @@ export default function DashboardEmploye() {
             {activeSection === 'surplus' && (
               <div style={{ marginBottom: 10, padding: 14, background: '#FAFAF8', borderRadius: 10, border: '1px solid #E8E6E1' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Retourner du surplus au stock</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
                   <div style={{ position: 'relative' }}>
                     <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Article</label>
                     <input value={surplusForm.article}
@@ -1414,8 +1416,8 @@ export default function DashboardEmploye() {
 
       {/* ═══ MODALS ═══ */}
       {modal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setModal(null)}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 420, padding: '28px 24px' }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16 }} onClick={() => setModal(null)}>
+          <div style={{ background: '#fff', borderRadius: isMobile ? 0 : 16, width: '100%', maxWidth: isMobile ? '100%' : 420, padding: isMobile ? '20px 16px' : '28px 24px', minHeight: isMobile ? '100vh' : 'auto', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {modal === 'conge' && <>
               <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Demander un congé</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
@@ -1442,8 +1444,8 @@ export default function DashboardEmploye() {
       )}
       {/* ═══ BULLETIN PREVIEW MODAL ═══ */}
       {bulletinPreview && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setBulletinPreview(null)}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 540, padding: '28px 24px' }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16 }} onClick={() => setBulletinPreview(null)}>
+          <div style={{ background: '#fff', borderRadius: isMobile ? 0 : 16, width: '100%', maxWidth: isMobile ? '100%' : 540, padding: isMobile ? '20px 16px' : '28px 24px', minHeight: isMobile ? '100vh' : 'auto', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Bulletin de paie</h3>
               <button onClick={() => setBulletinPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: DS.muted }}>×</button>
@@ -1472,8 +1474,8 @@ export default function DashboardEmploye() {
 
       {/* ═══ AVIS DE PASSAGE OVERLAY ═══ */}
       {showAvis && selectedChantier && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowAvis(false)}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16 }} onClick={() => setShowAvis(false)}>
+          <div style={{ background: '#fff', borderRadius: isMobile ? 0 : 16, width: '100%', maxWidth: isMobile ? '100%' : 480, maxHeight: isMobile ? '100vh' : '90vh', minHeight: isMobile ? '100vh' : 'auto', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <AvisDePassage chantier={selectedChantier} onClose={() => setShowAvis(false)} onSaved={() => {
               if (!isDemo) {
                 api.get(`/avis-passage/chantier/${selectedChantier.id}`).then(({ data }) => setAvisPassages(data.avis || [])).catch(() => {});
@@ -1485,10 +1487,13 @@ export default function DashboardEmploye() {
         </div>
       )}
 
-      {/* Print CSS + pulse animation */}
+      {/* Print CSS + pulse animation + mobile responsive */}
       <style>{`
         @media print { body * { visibility: hidden !important; } #bulletin-print, #bulletin-print * { visibility: visible !important; } #bulletin-print { position: fixed; top: 0; left: 0; width: 100%; padding: 24px; background: #fff; } }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
+        @media (max-width: 640px) {
+          canvas[data-signature] { max-width: 100% !important; width: 100% !important; }
+        }
       `}</style>
     </div>
   );

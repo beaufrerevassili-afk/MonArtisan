@@ -10,7 +10,8 @@ import ProjetNegociation from '../../components/marketplace/ProjetNegociation';
 import ProfilClient from '../../components/client/ProfilClient';
 import PVReception from '../../components/chantier/PVReception';
 
-const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
+const CARD_DESKTOP = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
+const CARD_MOBILE = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '12px 14px' };
 const BTN = { padding: '10px 20px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font };
 const INP = { width: '100%', padding: '10px 12px', border: `1px solid ${DS.border}`, borderRadius: 8, fontSize: 13, fontFamily: DS.font, outline: 'none', boxSizing: 'border-box' };
 
@@ -26,6 +27,7 @@ export default function DashboardClient() {
   const { addToast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const CARD = isMobile ? CARD_MOBILE : CARD_DESKTOP;
   const [projets, setProjets] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -443,7 +445,7 @@ export default function DashboardClient() {
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{offres.length} artisan{offres.length > 1 ? 's' : ''} {offres.length > 1 ? 'ont' : 'a'} répondu</div>
                 {offres.length > 1 && (
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(offres.length, 3)}, 1fr)`, gap: 10, marginBottom: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : `repeat(${Math.min(offres.length, 3)}, 1fr)`, gap: 10, marginBottom: 12 }}>
                     {offres.slice(0, 3).map(o => {
                       const isBest = offres.every(x => Number(o.prix) <= Number(x.prix));
                       return (
@@ -924,7 +926,7 @@ export default function DashboardClient() {
                     <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Description *</label>
                     <textarea value={newProjet.description} onChange={e => setNewProjet(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Décrivez les travaux souhaités, la surface, les contraintes..." style={{ ...INP, resize: 'vertical' }} />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="client-form-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
                     <div>
                       <label style={{ fontSize: 11, fontWeight: 700, color: '#444', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Ville</label>
                       <input value={newProjet.ville} onChange={e => setNewProjet(f => ({ ...f, ville: e.target.value }))} style={INP} />
@@ -1016,15 +1018,15 @@ export default function DashboardClient() {
             <div style={{ ...CARD, marginTop: 16, background: '#F8F7F4', borderLeft: `4px solid ${DS.gold}` }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>🤝 Recommandez Freample</div>
               <div style={{ fontSize: 13, color: '#555', marginBottom: 12 }}>Partagez avec un ami qui a des travaux à faire.</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
                 <button
                   onClick={() => { navigator.clipboard.writeText('https://mon-artisan-fawn.vercel.app'); addToast('Lien copié !'); }}
-                  style={{ ...BTN, background: '#2C2520', fontSize: 12, padding: '8px 14px' }}>
+                  style={{ ...BTN, background: '#2C2520', fontSize: 12, padding: '8px 14px', width: isMobile ? '100%' : 'auto' }}>
                   📋 Copier le lien
                 </button>
                 <button
                   onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Salut ! J'utilise Freample pour trouver des artisans BTP à Marseille. C'est gratuit : https://mon-artisan-fawn.vercel.app")}`, '_blank')}
-                  style={{ ...BTN, background: '#25D366', fontSize: 12, padding: '8px 14px' }}>
+                  style={{ ...BTN, background: '#25D366', fontSize: 12, padding: '8px 14px', width: isMobile ? '100%' : 'auto' }}>
                   💬 Partager par WhatsApp
                 </button>
               </div>
