@@ -162,9 +162,9 @@ function usePageTracker() {
 
 function SuspendedGuard() {
   const { user } = useAuth();
-  const path = window.location.pathname;
+  const location = useLocation();
   const allowedPaths = ['/compte-suspendu', '/login', '/support', '/cgu', '/logout'];
-  if (user?.suspendu && !allowedPaths.some(p => path.startsWith(p))) {
+  if (user?.suspendu && !allowedPaths.some(p => location.pathname.startsWith(p))) {
     return <Navigate to="/compte-suspendu" replace />;
   }
   return null;
@@ -174,11 +174,9 @@ function AppRoutes() {
   const { user } = useAuth();
   usePageTracker();
 
-  // Redirection globale pour comptes suspendus
-  const suspendedRedirect = SuspendedGuard();
-  if (suspendedRedirect) return suspendedRedirect;
-
   return (
+    <>
+    <SuspendedGuard />
     <Suspense fallback={<LazySpinner />}>
     <Routes>
       {/* ── Routes publiques ── */}
@@ -326,6 +324,7 @@ function AppRoutes() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>
+    </>
   );
 }
 
