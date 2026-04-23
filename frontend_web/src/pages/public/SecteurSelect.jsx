@@ -77,7 +77,7 @@ export default function SecteurSelect() {
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 900, color: L.text, fontFamily: L.font, letterSpacing: '-0.04em' }}>
             Freample<span style={{ color: L.gold }}>.</span>
           </button>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div className="secteur-nav-links" style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => navigate('/pro')} style={{ padding: '8px 18px', background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: L.textSec, cursor: 'pointer', fontFamily: L.font, transition: 'color .15s' }}
               onMouseEnter={e => e.currentTarget.style.color = L.noir} onMouseLeave={e => e.currentTarget.style.color = L.textSec}>
               Professionnel BTP
@@ -156,7 +156,7 @@ export default function SecteurSelect() {
             </p>
 
             {/* 2 cartes : Proposer projet + Trouver artisan */}
-            <div style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
+            <div className="secteur-hero-cards" style={{ display: 'flex', gap: 16, maxWidth: 620, margin: '0 auto', flexWrap: 'wrap' }}>
               {/* Carte 1 — Proposer mon projet */}
               <div onClick={() => { setShowProjet(true); setProjetStep(1); setProjetSent(false); setProjet({ metier: '', ville: '', description: '', budget: '', urgence: 'normal', pieces: '' }); }}
                 style={{ flex: '1 1 280px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: 'clamp(24px,3vw,32px)', cursor: 'pointer', transition: 'all .3s' }}
@@ -441,7 +441,7 @@ export default function SecteurSelect() {
           <p style={{ fontSize: 15, color: L.textSec, lineHeight: 1.7, margin: '0 0 40px', maxWidth: 560 }}>
             Simplifier chaque interaction entre les clients et les professionnels. Supprimer les frictions. Rendre chaque service accessible en quelques clics.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: L.border }}>
+          <div className="secteur-objectives-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: L.border }}>
             {[
               { title: 'Simplicité', desc: 'Zéro jargon. Chaque parcours est pensé pour être compris en 30 secondes.' },
               { title: 'Rapidité', desc: 'Gestion instantanée, documents en quelques minutes.' },
@@ -523,6 +523,15 @@ export default function SecteurSelect() {
         </nav>
         <p style={{ fontSize: 11, color: L.textLight, margin: 0 }}>© 2026 Freample · Tous droits réservés</p>
       </footer>
+
+      <style>{`
+@media (max-width: 640px) {
+  .secteur-nav-links { display: none !important; }
+  .secteur-hero-cards { flex-direction: column !important; }
+  .secteur-hero-cards > div { flex: 1 1 auto !important; }
+  .secteur-objectives-grid { grid-template-columns: 1fr !important; }
+}
+`}</style>
     </div>
   );
 }

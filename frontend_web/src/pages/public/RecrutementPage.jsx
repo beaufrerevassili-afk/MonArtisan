@@ -52,11 +52,11 @@ function ModalCandidature({ offre, onClose }) {
   const inputStyle = { width:'100%', background:DS.bgSoft, border:`1px solid ${DS.border}`, borderRadius:DS.r.sm, padding:'11px 14px', fontSize:'0.9rem', color:DS.ink, outline:'none', boxSizing:'border-box', fontFamily:DS.font, transition:'border-color .15s' };
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', backdropFilter:'blur(6px)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+    <div className="recrut-candidature-outer" style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', backdropFilter:'blur(6px)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:DS.bg, borderRadius:DS.r.xl, width:'100%', maxWidth:520, maxHeight:'90vh', overflow:'hidden', display:'flex', flexDirection:'column', boxShadow:DS.shadow.xl }}>
+      <div className="recrut-candidature-inner" style={{ background:DS.bg, borderRadius:DS.r.xl, width:'100%', maxWidth:520, maxHeight:'90vh', overflow:'hidden', display:'flex', flexDirection:'column', boxShadow:DS.shadow.xl }}>
         {/* Header */}
-        <div style={{ padding:'22px 26px 16px', borderBottom:`1px solid ${DS.border}` }}>
+        <div className="recrut-candidature-header" style={{ padding:'22px 26px 16px', borderBottom:`1px solid ${DS.border}` }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <div style={{ fontSize:'1rem', fontWeight:700, color:DS.ink, letterSpacing:'-0.025em' }}>Postuler</div>
@@ -77,10 +77,10 @@ function ModalCandidature({ offre, onClose }) {
         </div>
 
         {/* Body */}
-        <div style={{ flex:1, overflowY:'auto', padding:'22px 26px 26px' }}>
+        <div className="recrut-candidature-body" style={{ flex:1, overflowY:'auto', padding:'22px 26px 26px' }}>
           {step === 1 && (
             <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-              <div style={{ display:'flex', gap:12 }}>
+              <div className="recrut-candidature-names" style={{ display:'flex', gap:12 }}>
                 {[{k:'prenom',l:'Prénom *',p:'Marie'},{k:'nom',l:'Nom *',p:'Dupont'}].map(f => (
                   <div key={f.k} style={{ flex:1 }}>
                     <label style={{ display:'block', fontSize:'0.775rem', fontWeight:500, color:DS.muted, marginBottom:6 }}>{f.l}</label>
@@ -327,7 +327,7 @@ export default function RecrutementPage() {
           </h1>
 
           {/* Barre de recherche — HelloWork style */}
-          <div ref={rSearch} style={{ display:'flex', background:'#fff', overflow:'hidden', maxWidth:600, margin:'0 auto' }}>
+          <div ref={rSearch} className="recrut-search-bar" style={{ display:'flex', background:'#fff', overflow:'hidden', maxWidth:600, margin:'0 auto' }}>
             <div style={{ flex:1, padding:'14px 20px', display:'flex', alignItems:'center', gap:10 }}>
               <span style={{ color:'#757575', fontSize:16 }}>🔍</span>
               <input value={quoi} onChange={e=>setQuoi(e.target.value)} placeholder="Plombier, électricien, peintre…"
@@ -347,7 +347,7 @@ export default function RecrutementPage() {
           </div>
 
           {/* Chips contrat — HelloWork style */}
-          <div style={{ display:'flex', justifyContent:'center', gap:8, marginTop:18, flexWrap:'wrap' }}>
+          <div className="recrut-chips" style={{ display:'flex', justifyContent:'center', gap:8, marginTop:18, flexWrap:'wrap' }}>
             {CONTRATS.map(c => (
               <button key={c} onClick={() => setContrat(c)}
                 style={{ padding:'7px 18px', border:`1px solid ${contrat===c?'#A68B4B':'rgba(255,255,255,0.15)'}`, background:contrat===c?'rgba(201,169,110,0.15)':'transparent', color:contrat===c?'#A68B4B':'rgba(255,255,255,0.5)', fontSize:12, fontWeight:600, cursor:'pointer', transition:'all .2s', fontFamily:DS.font }}>
@@ -365,7 +365,7 @@ export default function RecrutementPage() {
       </div>
 
       {/* Compteur résultats */}
-      <div style={{ padding:'12px clamp(20px,5vw,56px)', borderBottom:'1px solid #E8E6E1', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
+      <div className="recrut-results-bar" style={{ padding:'12px clamp(20px,5vw,56px)', borderBottom:'1px solid #E8E6E1', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
         <span style={{ fontSize:13, fontWeight:600, color:'#1A1A1A' }}>{filtered.length} résultat{filtered.length>1?'s':''}</span>
         <span style={{ fontSize:12, color:'#757575' }}>BTP & Artisanat</span>
         <span style={{ marginLeft:'auto', fontSize:'0.8rem', color:DS.subtle, flexShrink:0 }}>
@@ -386,7 +386,7 @@ export default function RecrutementPage() {
             </button>
           </div>
         ) : (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:16, maxWidth:1100, margin:'0 auto' }}>
+          <div className="recrut-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:16, maxWidth:1100, margin:'0 auto' }}>
             {filtered.map(o => {
               const entreprise = o.nomEntreprise || o.entreprise;
               const typeContrat = o.typeContrat || o.type_contrat;
@@ -425,9 +425,9 @@ export default function RecrutementPage() {
 
       {/* ══ MODAL OFFRE — plein écran luxe ══ */}
       {selected && !postulating && (
-        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+        <div className="recrut-modal-outer" style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
           onClick={()=>setSelected(null)}>
-          <div style={{ background:'#fff', width:'100%', maxWidth:600, maxHeight:'90vh', overflowY:'auto', position:'relative' }}
+          <div className="recrut-modal-inner" style={{ background:'#fff', width:'100%', maxWidth:600, maxHeight:'90vh', overflowY:'auto', position:'relative' }}
             onClick={e=>e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding:'28px 32px 0', position:'relative' }}>
@@ -448,10 +448,10 @@ export default function RecrutementPage() {
             </div>
 
             {/* Séparateur */}
-            <div style={{ display:'flex', alignItems:'center', margin:'0 32px' }}><div style={{ flex:1, height:1, background:'#E8E6E1' }}/><div style={{ width:6, height:6, borderRadius:'50%', background:'#A68B4B', margin:'0 16px' }}/><div style={{ flex:1, height:1, background:'#E8E6E1' }}/></div>
+            <div className="recrut-modal-sep" style={{ display:'flex', alignItems:'center', margin:'0 32px' }}><div style={{ flex:1, height:1, background:'#E8E6E1' }}/><div style={{ width:6, height:6, borderRadius:'50%', background:'#A68B4B', margin:'0 16px' }}/><div style={{ flex:1, height:1, background:'#E8E6E1' }}/></div>
 
             {/* Contenu */}
-            <div style={{ padding:'24px 32px 32px' }}>
+            <div className="recrut-modal-content" style={{ padding:'24px 32px 32px' }}>
               {selected.description && (
                 <div style={{ marginBottom:24 }}>
                   <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>Description du poste</div>
@@ -470,7 +470,7 @@ export default function RecrutementPage() {
               )}
 
               {/* Infos pratiques */}
-              <div style={{ background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'20px 24px', marginBottom:28 }}>
+              <div className="recrut-modal-info" style={{ background:'#FAFAF8', border:'1px solid #E8E6E1', padding:'20px 24px', marginBottom:28 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:'#757575', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:14 }}>Informations</div>
                 {[{l:'Entreprise',v:selected.nomEntreprise||selected.entreprise},{l:'Localisation',v:selected.localisation},{l:'Type de contrat',v:selected.typeContrat||selected.type_contrat},{l:'Rémunération',v:(selected.salaireMin&&selected.salaireMax)?`${selected.salaireMin}–${selected.salaireMax}€/mois`:selected.salaire||'Non précisé'}].map(({l,v})=>v&&(
                   <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #F0EDE8', fontSize:14 }}>
@@ -492,7 +492,30 @@ export default function RecrutementPage() {
       )}
 
       {postulating && selected && <ModalCandidature offre={selected} onClose={() => { setPostulating(false); setSelected(null); }} />}
-      <style>{`input::placeholder{color:#757575;} textarea::placeholder{color:#757575;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#E8E6E1;border-radius:2px;}`}</style>
+      <style>{`input::placeholder{color:#757575;} textarea::placeholder{color:#757575;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-thumb{background:#E8E6E1;border-radius:2px;}
+@media (max-width: 640px) {
+  .recrut-search-bar { flex-direction: column !important; border-radius: 0 !important; }
+  .recrut-search-bar > div:nth-child(2) { width: 100% !important; height: 1px !important; margin: 0 !important; }
+  .recrut-search-bar > div:nth-child(3) { min-width: unset !important; }
+  .recrut-search-bar button { padding: 14px !important; }
+  .recrut-chips { gap: 6px !important; }
+  .recrut-chips button { padding: 6px 12px !important; font-size: 11px !important; }
+  .recrut-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .recrut-modal-outer { padding: 0 !important; align-items: stretch !important; }
+  .recrut-modal-inner { max-width: 100% !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
+  .recrut-modal-inner > div:first-child { padding: 20px 16px 0 !important; }
+  .recrut-modal-inner > div:last-child, .recrut-modal-content { padding: 16px !important; }
+  .recrut-modal-sep { margin: 0 16px !important; }
+  .recrut-modal-info { padding: 14px 16px !important; }
+  .recrut-candidature-outer { padding: 0 !important; align-items: stretch !important; }
+  .recrut-candidature-inner { max-width: 100% !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
+  .recrut-candidature-header { padding: 16px 16px 12px !important; }
+  .recrut-candidature-body { padding: 16px !important; }
+  .recrut-candidature-names { flex-direction: column !important; }
+  .recrut-hero h1 { font-size: 24px !important; }
+  .recrut-results-bar { flex-wrap: wrap !important; gap: 4px !important; }
+}
+`}</style>
     </div>
   );
 }

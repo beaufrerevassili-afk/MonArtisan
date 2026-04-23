@@ -68,7 +68,7 @@ export default function Support() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAF8', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+    <div className="support-page" style={{ minHeight: '100vh', background: '#FAFAF8', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 550 }}>
 
         {/* Logo */}
@@ -215,6 +215,12 @@ export default function Support() {
           <a href="/login" style={{ fontSize: 12, color: '#A68B4B', textDecoration: 'none', fontWeight: 600 }}>← Retour à la connexion</a>
         </div>
       </div>
+      <style>{`
+@media (max-width: 640px) {
+  .support-page { padding: 12px !important; }
+  .support-page input, .support-page textarea, .support-page select { font-size: 16px !important; }
+}
+`}</style>
     </div>
   );
 }

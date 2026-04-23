@@ -76,7 +76,7 @@ export default function CompteSuspendu() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAF8', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A' }}>
+    <div className="suspendu-page" style={{ minHeight: '100vh', background: '#FAFAF8', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A' }}>
       {/* Header */}
       <div style={{ background: '#2C2520', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 16, fontWeight: 900, color: '#F5EFE0' }}>Freample<span style={{ color: '#A68B4B' }}>.</span></span>
@@ -168,6 +168,11 @@ export default function CompteSuspendu() {
           </>
         )}
       </div>
+      <style>{`
+@media (max-width: 640px) {
+  .suspendu-page input, .suspendu-page textarea { font-size: 16px !important; }
+}
+`}</style>
     </div>
   );
 }

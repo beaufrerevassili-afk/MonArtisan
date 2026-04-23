@@ -11,7 +11,7 @@ export default function CGU() {
   const [activeNav, setActiveNav] = useState('cgu');
 
   return (
-    <div style={{ maxWidth: 880, margin: '0 auto', padding: '48px 24px', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A', lineHeight: 1.7 }}>
+    <div className="cgu-page" style={{ maxWidth: 880, margin: '0 auto', padding: '48px 24px', fontFamily: "'Inter', -apple-system, sans-serif", color: '#1A1A1A', lineHeight: 1.7 }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <a href="/" style={{ fontSize: 22, fontWeight: 900, color: '#A68B4B', textDecoration: 'none', letterSpacing: '-0.03em' }}>Freample</a>
@@ -21,7 +21,7 @@ export default function CGU() {
       <p style={{ color: '#6E6E73', marginBottom: 24, fontSize: 14 }}>Dernière mise à jour : 17 avril 2026</p>
 
       {/* Navigation */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 32, borderBottom: '1px solid #E8E6E1', paddingBottom: 0 }}>
+      <div className="cgu-nav" style={{ display: 'flex', gap: 4, marginBottom: 32, borderBottom: '1px solid #E8E6E1', paddingBottom: 0 }}>
         {NAV.map(n => (
           <button key={n.id} onClick={() => { setActiveNav(n.id); document.getElementById(n.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
             style={{ padding: '10px 18px', background: 'transparent', border: 'none', borderBottom: activeNav === n.id ? '2px solid #A68B4B' : '2px solid transparent', color: activeNav === n.id ? '#A68B4B' : '#6E6E73', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
@@ -339,6 +339,14 @@ export default function CGU() {
         <a href="/" style={{ fontSize: 16, fontWeight: 800, color: '#A68B4B', textDecoration: 'none' }}>Freample</a>
         <p style={{ fontSize: 12, color: '#6E6E73', marginTop: 8 }}>Freample SAS — Marseille, France — contact@freample.com</p>
       </div>
+      <style>{`
+@media (max-width: 640px) {
+  .cgu-page { padding: 24px 16px !important; }
+  .cgu-page h1 { font-size: 1.4rem !important; }
+  .cgu-nav { overflow-x: auto !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; gap: 0 !important; }
+  .cgu-nav button { white-space: nowrap !important; padding: 8px 12px !important; font-size: 12px !important; flex-shrink: 0 !important; }
+}
+`}</style>
     </div>
   );
 }
