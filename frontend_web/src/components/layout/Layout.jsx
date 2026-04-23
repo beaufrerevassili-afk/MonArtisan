@@ -177,13 +177,17 @@ const FONDATEUR_VIEWS = [
 ];
 
 /* ── Group item ────────────────────────────────────────── */
+function matchPath(locationPath, menuPath) {
+  const basePath = menuPath.split('?')[0]; // ignore query params
+  return locationPath === basePath || locationPath.startsWith(basePath + '/');
+}
+
 function NavGroup({ group, collapsed, location, onNavigate }) {
   const storageKey = `nav-group-${group.id}`;
   const [open, setOpen] = useState(() => {
     const saved = localStorage.getItem(storageKey);
     if (saved !== null) return saved === 'true';
-    // default open if any item in group is active
-    return group.items.some(i => location.pathname === i.path || location.pathname.startsWith(i.path));
+    return group.items.some(i => matchPath(location.pathname, i.path));
   });
 
   useEffect(() => {
@@ -194,7 +198,7 @@ function NavGroup({ group, collapsed, location, onNavigate }) {
     return (
       <>
         {group.items.map(({ label, path, Icon }) => {
-          const active = location.pathname === path || location.pathname.startsWith(path + '/');
+          const active = matchPath(location.pathname, path);
           return (
             <Link
               key={path}
@@ -234,7 +238,7 @@ function NavGroup({ group, collapsed, location, onNavigate }) {
       {open && (
         <div style={{ marginTop: 2 }}>
           {group.items.map(({ label, path, Icon }) => {
-            const active = location.pathname === path || location.pathname.startsWith(path + '/');
+            const active = matchPath(location.pathname, path);
             return (
               <Link
                 key={path}
@@ -598,7 +602,7 @@ export default function Layout({ children }) {
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
               {FONDATEUR_VIEWS.map(v => {
-                const active = location.pathname.startsWith(v.path.split('/').slice(0, 2).join('/'));
+                const active = matchPath(location.pathname, v.path);
                 return (
                   <Link
                     key={v.key}
@@ -685,9 +689,7 @@ export default function Layout({ children }) {
                     );
                   })()}
                   {sectorMenu.map(({ label, path, Icon }) => {
-                    const active = location.pathname === path && path !== '/patron/dashboard' ? false : location.pathname === path;
-                    const isDash = path === '/patron/dashboard';
-                    const isActive = isDash ? location.pathname === '/patron/dashboard' : location.pathname === path;
+                    const isActive = matchPath(location.pathname, path);
                     return (
                       <Link key={label} to={path} className={`nav-item${isActive ? ' active' : ''}`}
                         style={{ padding: collapsed ? '8px' : '8px 12px', justifyContent: collapsed ? 'center' : 'flex-start', marginBottom:2, overflow:'hidden' }}
@@ -726,7 +728,7 @@ export default function Layout({ children }) {
                 isFondateur && location.pathname.startsWith('/artisan') ? MENUS.artisan :
                 menu
               ).map(({ label, path, Icon, isBack }) => {
-                const active = !isBack && location.pathname === path;
+                const active = !isBack && matchPath(location.pathname, path);
                 return (
                   <Link
                     key={label}
@@ -857,7 +859,7 @@ export default function Layout({ children }) {
               { label: 'RH',         path: '/patron/rh',        Icon: IconTeam      },
               { label: 'Plus',       path: null,                Icon: IconMenu, action: () => setMobileOpen(true) },
             ] : menu.slice(0, 5)).map(({ label, path, Icon, action }) => {
-              const active = path && (location.pathname === path || location.pathname.startsWith(path + '/'));
+              const active = path && matchPath(location.pathname, path);
               return (
                 <button
                   key={label}
