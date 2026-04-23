@@ -3,6 +3,7 @@ import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { IconCheck, IconX } from '../../components/ui/Icons';
 import { secureToken, secureTempPassword, sha256, expiresInHours } from '../../utils/security';
+import { API_URL } from '../../services/api';
 
 const L = {
   gold: '#A68B4B', goldLight: '#F5EFE0', border: '#E8E6E1', bg: '#FAFAF8',
@@ -39,15 +40,34 @@ export default function SignatureDevis() {
   const [magicLink, setMagicLink] = useState('');
 
   useEffect(() => {
-    const all = demoGet('freample_devis', []);
-    const d = all.find(x => String(x.id) === String(id));
-    if (!d) { setError('Devis introuvable ou lien invalide'); setLoading(false); return; }
-    setDevis(d);
-    setNomSignataire(d.client || '');
-    setEmail(d.clientEmail || '');
-    setTel(d.clientTel || '');
-    if (d.statut === 'signe' || d.statut === 'signé') { setDone(true); }
-    setLoading(false);
+    const isDemo = _isDemo();
+    if (isDemo) {
+      const all = demoGet('freample_devis', []);
+      const d = all.find(x => String(x.id) === String(id));
+      if (!d) { setError('Devis introuvable ou lien invalide'); setLoading(false); return; }
+      setDevis(d);
+      setNomSignataire(d.client || '');
+      setEmail(d.clientEmail || '');
+      setTel(d.clientTel || '');
+      if (d.statut === 'signe' || d.statut === 'signé') { setDone(true); }
+      setLoading(false);
+    } else {
+      const token = searchParams.get('token');
+      fetch(`${API_URL}/patron/devis-pro/${id}?token=${token || ''}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.erreur) { setError(data.erreur); }
+          else {
+            setDevis(data.devis);
+            setNomSignataire(data.devis.client?.nom || data.devis.client || '');
+            setEmail(data.devis.clientEmail || '');
+            setTel(data.devis.clientTel || '');
+            if (data.devis.statut === 'signe' || data.devis.statut === 'signé') { setDone(true); }
+          }
+        })
+        .catch(() => setError('Erreur de chargement'))
+        .finally(() => setLoading(false));
+    }
   }, [id]);
 
   // Tout-en-un : signature + paiement + création compte auto
@@ -60,6 +80,31 @@ export default function SignatureDevis() {
     setError('');
     setSubmitting(true);
 
+    const isDemo = _isDemo();
+
+    if (!isDemo) {
+      // --- Mode reel : appel API ---
+      try {
+        const token = searchParams.get('token');
+        const response = await fetch(`${API_URL}/patron/devis-pro/${id}/signer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nomSignataire, email, tel, paymentMode, token }),
+        });
+        const result = await response.json();
+        if (result.erreur) { setError(result.erreur); setSubmitting(false); return; }
+        if (result.devis) setDevis(result.devis);
+        if (result.magicLink) setMagicLink(result.magicLink);
+        setSubmitting(false);
+        setDone(true);
+      } catch {
+        setError('Erreur lors de la signature. Veuillez réessayer.');
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // --- Mode demo : localStorage ---
     // Exécution asynchrone (avec hashing du mot de passe via Web Crypto)
     await new Promise(resolve => setTimeout(resolve, 1500));
     {
@@ -185,8 +230,17 @@ export default function SignatureDevis() {
     }
   }
 
-  function demanderModif() {
+  async function demanderModif() {
     if (!modifMsg.trim()) return;
+    const isDemo = _isDemo();
+
+    if (!isDemo) {
+      // Mode reel : pour l'instant, juste afficher la confirmation
+      // (le backend pourra etre connecte plus tard)
+      setAction('modif_sent');
+      return;
+    }
+
     const all = demoGet('freample_devis', []);
     const idx = all.findIndex(x => String(x.id) === String(id));
     if (idx < 0) return;
@@ -199,7 +253,16 @@ export default function SignatureDevis() {
     setAction('modif_sent');
   }
 
-  function refuserDevis() {
+  async function refuserDevis() {
+    const isDemo = _isDemo();
+
+    if (!isDemo) {
+      // Mode reel : pour l'instant, juste afficher la confirmation
+      // (le backend pourra etre connecte plus tard)
+      setAction('refuse_sent');
+      return;
+    }
+
     const all = demoGet('freample_devis', []);
     const idx = all.findIndex(x => String(x.id) === String(id));
     if (idx < 0) return;

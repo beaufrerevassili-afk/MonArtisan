@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { secureToken } from '../../utils/security';
+import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 // Bouton + modal pour envoyer un devis au client par email avec lien de signature
 export default function EnvoyerDevisButton({ devis, onEnvoye, size = 'md', label = 'Envoyer au client' }) {
@@ -10,41 +12,66 @@ export default function EnvoyerDevisButton({ devis, onEnvoye, size = 'md', label
   const [message, setMessage] = useState('');
   const [step, setStep] = useState('form'); // 'form' | 'sent'
   const [lienCopied, setLienCopied] = useState(false);
+  const [sending, setSending] = useState(false);
 
   // Générer ou récupérer le token de signature
   const token = devis.signatureToken || secureToken(8);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://freample.com';
-  const lienSignature = `${baseUrl}/devis/${devis.id}/signer?token=${token}`;
+  const [lienSignature, setLienSignature] = useState(
+    devis.lienSignature || `${baseUrl}/devis/${devis.id}/signer?token=${token}`
+  );
 
-  const envoyer = () => {
+  const envoyer = async () => {
     if (!email.trim()) return;
-    // Mettre à jour le devis en statut 'envoye' + sauver le token + email
-    try {
-      const all = JSON.parse(localStorage.getItem('freample_devis') || '[]');
-      const idx = all.findIndex(x => String(x.id) === String(devis.id));
-      if (idx >= 0) {
-        all[idx] = {
-          ...all[idx],
-          statut: 'envoye',
-          signatureToken: token,
+    setSending(true);
+
+    const isDemo = _isDemo();
+
+    if (isDemo) {
+      // --- Mode demo : localStorage ---
+      try {
+        const all = JSON.parse(localStorage.getItem('freample_devis') || '[]');
+        const idx = all.findIndex(x => String(x.id) === String(devis.id));
+        if (idx >= 0) {
+          all[idx] = {
+            ...all[idx],
+            statut: 'envoye',
+            signatureToken: token,
+            clientEmail: email,
+            messageEnvoi: message,
+            envoyeLe: new Date().toISOString(),
+            lienSignature,
+          };
+          localStorage.setItem('freample_devis', JSON.stringify(all));
+        }
+        // Simuler l'envoi d'email dans un "journal d'emails"
+        const emails = JSON.parse(localStorage.getItem('freample_emails_envoyes') || '[]');
+        emails.push({
+          id: Date.now(), to: email, date: new Date().toISOString(),
+          sujet: `Votre devis ${devis.numero} de ${devis.emetteur?.nom || 'votre artisan'}`,
+          contenu: message || `Bonjour,\n\nVoici votre devis ${devis.numero}. Vous pouvez le consulter et le signer en ligne via le lien ci-dessous :\n\n${lienSignature}\n\nCordialement,\n${devis.emetteur?.nom || devis.aeNom || 'L\'entreprise'}`,
+          devisId: devis.id,
+        });
+        localStorage.setItem('freample_emails_envoyes', JSON.stringify(emails));
+      } catch {}
+    } else {
+      // --- Mode reel : appel API ---
+      try {
+        const res = await api.put('/patron/devis-pro/' + devis.id + '/envoyer', {
           clientEmail: email,
-          messageEnvoi: message,
-          envoyeLe: new Date().toISOString(),
-          lienSignature,
-        };
-        localStorage.setItem('freample_devis', JSON.stringify(all));
+          message,
+        });
+        const { lienSignature: lienFromApi } = res.data;
+        if (lienFromApi) setLienSignature(lienFromApi);
+      } catch (err) {
+        addToast(err.response?.data?.erreur || 'Erreur lors de l\'envoi', 'error');
+        setSending(false);
+        return;
       }
-      // Simuler l'envoi d'email dans un "journal d'emails"
-      const emails = JSON.parse(localStorage.getItem('freample_emails_envoyes') || '[]');
-      emails.push({
-        id: Date.now(), to: email, date: new Date().toISOString(),
-        sujet: `Votre devis ${devis.numero} de ${devis.emetteur?.nom || 'votre artisan'}`,
-        contenu: message || `Bonjour,\n\nVoici votre devis ${devis.numero}. Vous pouvez le consulter et le signer en ligne via le lien ci-dessous :\n\n${lienSignature}\n\nCordialement,\n${devis.emetteur?.nom || devis.aeNom || 'L\'entreprise'}`,
-        devisId: devis.id,
-      });
-      localStorage.setItem('freample_emails_envoyes', JSON.stringify(emails));
-    } catch {}
+    }
+
     setStep('sent');
+    setSending(false);
     if (onEnvoye) onEnvoye();
     addToast(`Devis ${devis.numero} envoyé à ${email}`, 'success');
   };
@@ -97,9 +124,9 @@ export default function EnvoyerDevisButton({ devis, onEnvoye, size = 'md', label
 
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setOpen(false)} style={{ padding: '10px 16px', background: 'transparent', color: '#555', border: '1px solid #E5E5EA', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
-                  <button onClick={envoyer} disabled={!email.trim()}
-                    style={{ flex: 1, padding: 10, background: email.trim() ? '#16A34A' : '#C7C7CC', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: email.trim() ? 'pointer' : 'not-allowed' }}>
-                    Envoyer le devis
+                  <button onClick={envoyer} disabled={!email.trim() || sending}
+                    style={{ flex: 1, padding: 10, background: email.trim() && !sending ? '#16A34A' : '#C7C7CC', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: email.trim() && !sending ? 'pointer' : 'not-allowed' }}>
+                    {sending ? 'Envoi en cours...' : 'Envoyer le devis'}
                   </button>
                 </div>
               </>
