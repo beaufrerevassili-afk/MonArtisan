@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const { notify } = require('../utils/notify');
 
 // ══════════════════════════════════════
 //  MESSAGERIE PAR PROJET
@@ -89,6 +90,12 @@ router.post('/projets/:id/devis', authenticateToken, async (req, res) => {
        JSON.stringify({ devisId: rows[0].id, version, montantTTC })]
     );
 
+    // Notifier le client
+    const projet = await db.query('SELECT client_id FROM projets_clients WHERE id = $1', [req.params.id]);
+    if (projet.rows[0]?.client_id) {
+      notify(projet.rows[0].client_id, 'devis', 'Nouveau devis reçu', 'Un artisan vous a envoyé un devis', '/client/dashboard').catch(() => {});
+    }
+
     res.status(201).json({ devis: rows[0], message: `Devis V${version} envoyé` });
   } catch (err) {
     console.error('POST devis:', err.message);
@@ -143,6 +150,9 @@ router.put('/devis/:id/accepter', authenticateToken, async (req, res) => {
       [devis.projet_id, req.user.id, req.user.nom, req.user.role,
        `Devis ${devis.numero} accepté — le chantier est créé ! Montant : ${devis.montant_ttc}€ TTC`]
     );
+
+    // Notifier le patron/artisan
+    notify(devis.artisan_id, 'devis', 'Devis accepté !', 'Le client a accepté votre devis', '/patron/suivi-projets').catch(() => {});
 
     res.json({ message: 'Devis accepté — chantier créé', devis: devisRows[0] });
   } catch (err) {

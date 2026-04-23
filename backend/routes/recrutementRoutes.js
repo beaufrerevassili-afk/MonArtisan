@@ -9,6 +9,7 @@ const router       = express.Router();
 const db           = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 const nodemailer   = require('nodemailer');
+const { notify } = require('../utils/notify');
 
 // ─── Mailer (optionnel — ne crashe pas si SMTP non configuré) ─
 function getMailer() {
@@ -267,6 +268,12 @@ router.post('/annonces/:id/candidatures', async (req, res) => {
       INSERT INTO candidatures_recrutement (annonce_id, nom, prenom, email, telephone, lettre, cv_texte)
       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *
     `, [req.params.id, nom, prenom, email, telephone || null, lettre || null, cvTexte || null]);
+
+    // Notifier le patron propriétaire de l'annonce
+    const { rows: annonceInfo } = await db.query('SELECT patron_id FROM annonces_recrutement WHERE id = $1', [req.params.id]);
+    if (annonceInfo[0]?.patron_id) {
+      notify(annonceInfo[0].patron_id, 'candidature', 'Nouvelle candidature', prenom + ' ' + nom + ' a postulé à votre annonce', '/patron/rh?onglet=recrutement').catch(() => {});
+    }
 
     res.status(201).json({ candidature: mapCandidature(rows[0]), message: 'Candidature enregistrée' });
   } catch (err) {

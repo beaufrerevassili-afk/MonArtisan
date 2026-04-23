@@ -9,6 +9,7 @@ const router = express.Router();
 const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 const emailService = require('../services/emailService');
+const { notify } = require('../utils/notify');
 
 // ─── Migration auto ─────────────────────────────
 async function ensureTables() {
@@ -188,8 +189,7 @@ router.put('/offres/:id/accepter', authenticateToken, async (req, res) => {
     const projet = await client.query('SELECT titre FROM projets_clients WHERE id = $1', [rows[0].projet_id]);
     if (artisan.rows[0] && projet.rows[0]) {
       emailService.sendOffreAcceptee(artisan.rows[0].email, artisan.rows[0].nom, projet.rows[0].titre).catch(() => {});
-      await client.query(`INSERT INTO notifications (user_id, type, titre, contenu) VALUES ($1, 'mission_acceptee', 'Offre acceptée !', $2)`,
-        [rows[0].artisan_id, `Votre offre pour « ${projet.rows[0].titre} » a été acceptée`]);
+      notify(rows[0].artisan_id, 'projet', 'Offre acceptée !', `Votre offre pour « ${projet.rows[0].titre} » a été acceptée`, '/patron/suivi-projets').catch(() => {});
     }
     await client.query('COMMIT');
     res.json({ offre: rows[0], message: 'Offre acceptée — vous êtes mis en relation' });
@@ -241,8 +241,7 @@ router.post('/:id/offre', authenticateToken, async (req, res) => {
       const { email, nom, client_id, titre } = projet.rows[0];
       const artisanNom = req.user.nom || 'Un artisan';
       emailService.sendNouvelleOffre(email, nom, titre, artisanNom).catch(() => {});
-      db.query(`INSERT INTO notifications (user_id, type, titre, contenu) VALUES ($1, 'nouvelle_offre', 'Nouvelle offre reçue', $2)`,
-        [client_id, `${artisanNom} a soumis une offre de ${prixPropose}€ pour « ${titre} »`]).catch(() => {});
+      notify(client_id, 'projet', 'Nouvelle offre reçue', `${artisanNom} a soumis une offre de ${prixPropose}€ pour « ${titre} »`, '/client/dashboard').catch(() => {});
     }
     res.status(201).json({ offre: rows[0], message: 'Offre envoyée' });
   } catch (err) {

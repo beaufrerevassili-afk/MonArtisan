@@ -7,6 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { notify } = require('../utils/notify');
 
 // ============================================================
 //  UTILITAIRES
@@ -433,6 +434,13 @@ router.put('/conges/:id/valider', async (req, res) => {
       `UPDATE conges SET statut=$1, commentaire=$2, validee_le=NOW() WHERE id=$3 RETURNING *`,
       [decision, commentaire || '', req.params.id]
     );
+
+    // Notifier l'employé de la décision
+    const conge = result.rows[0];
+    const empUser = await db.query('SELECT user_id FROM employes WHERE id = $1', [conge.employe_id]);
+    if (empUser.rows[0]?.user_id) {
+      notify(empUser.rows[0].user_id, 'conge', decision === 'approuvé' ? 'Congé approuvé' : 'Congé refusé', 'Votre demande de congé a été ' + decision, '/employe/dashboard').catch(() => {});
+    }
 
     res.json({ message: `Congé ${decision}`, conge: mapConge(updated.rows[0]) });
   } catch (err) {

@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const { notify } = require('../utils/notify');
 const router = express.Router();
 
 // Ensure table exists
@@ -44,6 +45,11 @@ router.post('/', authenticateToken, async (req, res) => {
       INSERT INTO avis_passages (chantier_id, employe_id, employe_nom, client_nom, chantier_titre, chantier_adresse, heure_arrivee, heure_depart, travaux_realises, materiaux_utilises, observations, signature_base64, patron_id)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *
     `, [chantierId || null, emp.id, `${emp.prenom} ${emp.nom}`, clientNom || '', chantierTitre || '', chantierAdresse || '', heureArrivee || '', heureDepart || '', travauxRealises, materiauxUtilises || '', observations || '', signatureBase64, emp.patron_id]);
+
+    // Notifier le patron
+    if (emp.patron_id) {
+      notify(emp.patron_id, 'avis_passage', 'Avis de passage signé', emp.prenom + ' ' + emp.nom + ' a fait signer un avis', '/patron/missions').catch(() => {});
+    }
 
     res.status(201).json({ avis: rows[0], message: 'Avis de passage enregistré' });
   } catch (err) {

@@ -36,6 +36,13 @@ function getTitreParType(type) {
   return titres[type] || 'Notification';
 }
 
+// Ensure lien column exists
+async function ensureColumns() {
+  await db.query('ALTER TABLE notifications ADD COLUMN IF NOT EXISTS lien VARCHAR(500)').catch(() => {});
+  await db.query('CREATE INDEX IF NOT EXISTS idx_notifs_user ON notifications(user_id, lu, cree_le DESC)').catch(() => {});
+}
+ensureColumns().catch(e => console.error('notifications columns:', e.message));
+
 function mapNotif(n) {
   return {
     id:      n.id,
@@ -43,6 +50,8 @@ function mapNotif(n) {
     type:    n.type,
     titre:   n.titre,
     contenu: n.contenu,
+    message: n.contenu,
+    lien:    n.lien || null,
     canal:   n.canal,
     lu:      n.lu,
     luLe:    n.lu_le,
@@ -50,7 +59,7 @@ function mapNotif(n) {
   };
 }
 
-// GET /notifications — Notifications de l'utilisateur
+// GET /notifications — Notifications de l'utilisateur (dernières 50)
 router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -61,7 +70,7 @@ router.get('/', async (req, res) => {
 
     if (lu !== undefined) { params.push(lu === 'true'); sql += ` AND lu = $${params.length}`; }
 
-    sql += ' ORDER BY cree_le DESC';
+    sql += ' ORDER BY cree_le DESC LIMIT 50';
 
     const result = await db.query(sql, params);
     const notifications = result.rows.map(mapNotif);
@@ -96,12 +105,22 @@ router.put('/tout-lire', async (req, res) => {
   }
 });
 
+// PUT /notifications/lire — Alias pour tout-lire (compatibilité)
+router.put('/lire', async (req, res) => {
+  try {
+    await db.query('UPDATE notifications SET lu = true, lu_le = NOW() WHERE user_id = $1 AND lu = false', [req.user.id]);
+    res.json({ message: 'Notifications marquées comme lues' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 // PUT /notifications/:id/lire — Marquer comme lue
 router.put('/:id/lire', async (req, res) => {
   try {
     const result = await db.query(
-      `UPDATE notifications SET lu = true, lu_le = NOW() WHERE id = $1 RETURNING *`,
-      [parseInt(req.params.id)]
+      `UPDATE notifications SET lu = true, lu_le = NOW() WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [parseInt(req.params.id), req.user.id]
     );
     if (!result.rows.length) return res.status(404).json({ erreur: 'Notification introuvable' });
 
@@ -118,7 +137,7 @@ router.post('/envoyer', async (req, res) => {
     if (!['patron', 'super_admin', 'fondateur'].includes(req.user.role)) {
       return res.status(403).json({ erreur: 'Non autorisé' });
     }
-    const { userId, type, titre, contenu, canal } = req.body;
+    const { userId, type, titre, contenu, canal, lien } = req.body;
     if (!userId || !type || !contenu) {
       return res.status(400).json({ erreur: 'userId, type, contenu requis' });
     }
@@ -127,10 +146,10 @@ router.post('/envoyer', async (req, res) => {
     const titreValue = titre || getTitreParType(type);
 
     const result = await db.query(
-      `INSERT INTO notifications (user_id, type, titre, contenu, canal, lu, lu_le)
-       VALUES ($1, $2, $3, $4, $5, false, NULL)
+      `INSERT INTO notifications (user_id, type, titre, contenu, canal, lien, lu, lu_le)
+       VALUES ($1, $2, $3, $4, $5, $6, false, NULL)
        RETURNING *`,
-      [parseInt(userId), type, titreValue, contenu, JSON.stringify(canalValue)]
+      [parseInt(userId), type, titreValue, contenu, JSON.stringify(canalValue), lien || null]
     );
 
     const notif = mapNotif(result.rows[0]);
