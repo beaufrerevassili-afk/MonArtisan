@@ -140,7 +140,7 @@ function ArtisanDashboardSwitch() {
   return <DashboardArtisan />;
 }
 
-function ProtectedRoute({ children, roles }) {
+function ProtectedRoute({ children, roles, allowSuspended }) {
   const { user, loading } = useAuth();
   if (loading) return (
     <div role="status" aria-label="Chargement en cours" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -148,7 +148,7 @@ function ProtectedRoute({ children, roles }) {
     </div>
   );
   if (!user) return <Navigate to="/login" replace />;
-  if (user?.suspendu) return <Navigate to="/compte-suspendu" replace />;
+  if (user?.suspendu && !allowSuspended) return <Navigate to="/compte-suspendu" replace />;
   if (roles && user?.role !== 'fondateur' && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
   return children;
 }
@@ -160,18 +160,10 @@ function usePageTracker() {
   }, [location.pathname]);
 }
 
-function useSuspendedRedirect() {
-  const { user } = useAuth();
-  const location = useLocation();
-  const allowedPaths = ['/compte-suspendu', '/login', '/support', '/cgu', '/logout'];
-  return user?.suspendu && !allowedPaths.some(p => location.pathname.startsWith(p));
-}
 
 function AppRoutes() {
   const { user } = useAuth();
   usePageTracker();
-  const isSuspendedRedirect = useSuspendedRedirect();
-  if (isSuspendedRedirect) return <Navigate to="/compte-suspendu" replace />;
 
   return (
     <Suspense fallback={<LazySpinner />}>
