@@ -1089,4 +1089,46 @@ router.get('/solde-conges/:employeId', async (req, res) => {
   }
 });
 
+// GET /rh/check-expirations — Vérifie les habilitations qui expirent bientôt
+router.get('/check-expirations', async (req, res) => {
+  try {
+    const patronId = req.user?.id;
+    if (!patronId) return res.json({ alertes: [] });
+
+    const { notify } = require('../utils/notify');
+
+    // Find habilitations expiring in the next 30 days
+    const { rows: expiring } = await db.query(`
+      SELECT h.*, e.prenom, e.nom, e.user_id as employe_user_id
+      FROM habilitations h
+      JOIN employes e ON e.id = h.employe_id
+      WHERE e.patron_id = $1
+        AND h.date_expiration IS NOT NULL
+        AND h.date_expiration <= NOW() + INTERVAL '30 days'
+        AND h.date_expiration >= NOW() - INTERVAL '7 days'
+      ORDER BY h.date_expiration ASC
+    `, [patronId]);
+
+    const alertes = expiring.map(h => {
+      const daysLeft = Math.ceil((new Date(h.date_expiration) - new Date()) / 86400000);
+      const expired = daysLeft < 0;
+      return {
+        id: h.id,
+        employe: `${h.prenom} ${h.nom}`,
+        type: h.type,
+        dateExpiration: h.date_expiration,
+        joursRestants: daysLeft,
+        expire: expired,
+        message: expired
+          ? `${h.type} de ${h.prenom} ${h.nom} est EXPIRÉE depuis ${Math.abs(daysLeft)} jour(s)`
+          : `${h.type} de ${h.prenom} ${h.nom} expire dans ${daysLeft} jour(s)`
+      };
+    });
+
+    res.json({ alertes, total: alertes.length });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

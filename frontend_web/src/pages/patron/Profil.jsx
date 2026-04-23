@@ -77,15 +77,15 @@ function OngletCompte({ user, logout }) {
     if (!pwdForm.ancien || !pwdForm.nouveau || !pwdForm.confirmer) {
       setPwdMsg({ type: 'error', text: 'Veuillez remplir tous les champs' }); return;
     }
-    if (pwdForm.nouveau.length < 6) {
-      setPwdMsg({ type: 'error', text: 'Le mot de passe doit contenir au moins 6 caractères' }); return;
+    if (pwdForm.nouveau.length < 8) {
+      setPwdMsg({ type: 'error', text: 'Le mot de passe doit contenir au moins 8 caractères' }); return;
     }
     if (pwdForm.nouveau !== pwdForm.confirmer) {
       setPwdMsg({ type: 'error', text: 'Les mots de passe ne correspondent pas' }); return;
     }
     setPwdLoading(true);
     try {
-      await api.put('/users/mot-de-passe', { ancienMotDePasse: pwdForm.ancien, nouveauMotDePasse: pwdForm.nouveau });
+      await api.put('/change-password', { ancienMotdepasse: pwdForm.ancien, nouveauMotdepasse: pwdForm.nouveau });
       setPwdMsg({ type: 'success', text: 'Mot de passe modifié avec succès' });
       setPwdForm({ ancien: '', nouveau: '', confirmer: '' });
     } catch (err) {

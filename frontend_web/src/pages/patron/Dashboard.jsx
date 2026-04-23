@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AlertesInterModules from '../../components/rh/AlertesInterModules';
 import OnboardingWizard, { isOnboardingDone, getOnboardingType } from '../../components/onboarding/OnboardingWizard';
 import { DEMO_PLANNING as PLANNING_DEMO } from '../../utils/demoData';
 import { isDemo as _isDemo, demoGet } from '../../utils/storage';
+import api from '../../services/api';
 
 const STOCK_ALERTS = [
   { materiau: 'Ciment CEM II 32.5', stock: 8, seuil: 20, unite: 'sacs' },
@@ -31,6 +32,14 @@ export default function DashboardPatron() {
   const [alerteCount, setAlerteCount] = useState(countAlertes);
   const [slotDetail, setSlotDetail] = useState(null); // { emp, jour, slot }
   const [showChantier, setShowChantier] = useState(null); // chantier label pour zoom
+  const [certAlerts, setCertAlerts] = useState([]);
+
+  useEffect(() => {
+    if (_isDemo()) return;
+    api.get('/rh/check-expirations').then(({ data }) => {
+      setCertAlerts(data.alertes || []);
+    }).catch(() => {});
+  }, []);
 
   const prenom = user?.nom?.split(' ')[0] || 'Patron';
 
@@ -178,6 +187,23 @@ export default function DashboardPatron() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ══ ALERTES HABILITATIONS ══ */}
+      {certAlerts.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626', marginBottom: 8 }}>⚠️ Habilitations à surveiller</div>
+          {certAlerts.map(a => (
+            <div key={a.id} style={{ padding: '8px 14px', borderRadius: 8, marginBottom: 6, fontSize: 12, fontWeight: 600,
+              background: a.expire ? '#FEF2F2' : '#FFFBEB',
+              border: `1px solid ${a.expire ? '#DC262640' : '#D9770640'}`,
+              color: a.expire ? '#DC2626' : '#D97706',
+              cursor: 'pointer'
+            }} onClick={() => navigate('/patron/qse?onglet=habilitations')}>
+              {a.expire ? '🚫' : '⚠️'} {a.message}
+            </div>
+          ))}
         </div>
       )}
 

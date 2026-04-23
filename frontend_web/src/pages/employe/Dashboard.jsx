@@ -1398,6 +1398,9 @@ export default function DashboardEmploye() {
             )}
           </div>
         </div>
+
+        {/* Changer le mot de passe */}
+        {!isDemo && <ChangerMotDePasseEmploye />}
       </>}
 
       </div>{/* fin maxWidth container */}
@@ -1480,6 +1483,53 @@ export default function DashboardEmploye() {
         @media print { body * { visibility: hidden !important; } #bulletin-print, #bulletin-print * { visibility: visible !important; } #bulletin-print { position: fixed; top: 0; left: 0; width: 100%; padding: 24px; background: #fff; } }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
       `}</style>
+    </div>
+  );
+}
+
+// ── Composant changement de mot de passe (employé) ──
+function ChangerMotDePasseEmploye() {
+  const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirmer: '' });
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwErr, setPwErr] = useState('');
+
+  async function changerMotDePasse() {
+    setPwMsg(''); setPwErr('');
+    if (pwForm.nouveau !== pwForm.confirmer) { setPwErr('Les mots de passe ne correspondent pas'); return; }
+    if (pwForm.nouveau.length < 8) { setPwErr('8 caractères minimum'); return; }
+    try {
+      await api.put('/change-password', { ancienMotdepasse: pwForm.ancien, nouveauMotdepasse: pwForm.nouveau });
+      setPwMsg('Mot de passe modifié !');
+      setPwErr('');
+      setPwForm({ ancien: '', nouveau: '', confirmer: '' });
+      setTimeout(() => setPwMsg(''), 3000);
+    } catch (err) {
+      setPwErr(err.response?.data?.erreur || 'Erreur');
+    }
+  }
+
+  return (
+    <div style={{ ...CARD, marginTop: 16 }}>
+      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Changer le mot de passe</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Mot de passe actuel</label>
+          <input type="password" value={pwForm.ancien} onChange={e => setPwForm(p => ({ ...p, ancien: e.target.value }))} style={INP} placeholder="••••••••" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Nouveau mot de passe</label>
+            <input type="password" value={pwForm.nouveau} onChange={e => setPwForm(p => ({ ...p, nouveau: e.target.value }))} style={INP} placeholder="••••••••" />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, color: DS.muted, display: 'block', marginBottom: 4 }}>Confirmer</label>
+            <input type="password" value={pwForm.confirmer} onChange={e => setPwForm(p => ({ ...p, confirmer: e.target.value }))} style={INP} placeholder="••••••••" />
+          </div>
+        </div>
+        {pwMsg && <div style={{ padding: '8px 12px', background: '#D1FAE5', color: '#065F46', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{pwMsg}</div>}
+        {pwErr && <div style={{ padding: '8px 12px', background: '#FEE2E2', color: '#DC2626', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{pwErr}</div>}
+        <button onClick={changerMotDePasse} style={{ ...BTN, alignSelf: 'flex-start' }}>Changer le mot de passe</button>
+      </div>
     </div>
   );
 }

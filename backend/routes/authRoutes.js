@@ -275,4 +275,29 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// ── Middleware d'authentification ──
+const { authenticateToken } = require('../middleware/auth');
+
+// PUT /change-password — Changer son mot de passe (authentifié)
+router.put('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { ancienMotdepasse, nouveauMotdepasse } = req.body;
+    if (!ancienMotdepasse || !nouveauMotdepasse) return res.status(400).json({ erreur: 'Ancien et nouveau mot de passe requis' });
+    if (nouveauMotdepasse.length < 8) return res.status(400).json({ erreur: 'Le nouveau mot de passe doit contenir au moins 8 caractères' });
+
+    const { rows } = await db.query('SELECT motdepasse FROM users WHERE id = $1', [req.user.id]);
+    if (!rows[0]) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
+
+    const valide = await bcrypt.compare(ancienMotdepasse, rows[0].motdepasse);
+    if (!valide) return res.status(400).json({ erreur: 'Ancien mot de passe incorrect' });
+
+    const hash = await bcrypt.hash(nouveauMotdepasse, 12);
+    await db.query('UPDATE users SET motdepasse = $1 WHERE id = $2', [hash, req.user.id]);
+
+    res.json({ message: 'Mot de passe modifié avec succès' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

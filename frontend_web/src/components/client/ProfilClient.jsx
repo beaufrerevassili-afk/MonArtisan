@@ -78,9 +78,58 @@ export default function ProfilClient({ user, isDemo }) {
         </div>
       </div>
 
+      {/* Changer le mot de passe */}
+      {!isDemo && <ChangerMotDePasseClient />}
+
       {/* Info membre */}
       <div style={{ marginTop: 16, padding: '12px 16px', background: '#F8F7F4', borderRadius: 10, fontSize: 12, color: '#444' }}>
         Membre depuis {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : '2026'} · Rôle : {user?.role || 'client'}
+      </div>
+    </div>
+  );
+}
+
+function ChangerMotDePasseClient() {
+  const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirmer: '' });
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwErr, setPwErr] = useState('');
+
+  async function changerMotDePasse() {
+    setPwMsg(''); setPwErr('');
+    if (pwForm.nouveau !== pwForm.confirmer) { setPwErr('Les mots de passe ne correspondent pas'); return; }
+    if (pwForm.nouveau.length < 8) { setPwErr('8 caractères minimum'); return; }
+    try {
+      await api.put('/change-password', { ancienMotdepasse: pwForm.ancien, nouveauMotdepasse: pwForm.nouveau });
+      setPwMsg('Mot de passe modifié !');
+      setPwErr('');
+      setPwForm({ ancien: '', nouveau: '', confirmer: '' });
+      setTimeout(() => setPwMsg(''), 3000);
+    } catch (err) {
+      setPwErr(err.response?.data?.erreur || 'Erreur');
+    }
+  }
+
+  return (
+    <div style={{ ...CARD, marginTop: 16 }}>
+      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: '#1A1A1A' }}>Changer le mot de passe</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div>
+          <label style={{ fontSize: 10, color: '#444', fontWeight: 700, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Mot de passe actuel</label>
+          <input type="password" value={pwForm.ancien} onChange={e => setPwForm(p => ({ ...p, ancien: e.target.value }))} style={INP} placeholder="••••••••" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div>
+            <label style={{ fontSize: 10, color: '#444', fontWeight: 700, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Nouveau mot de passe</label>
+            <input type="password" value={pwForm.nouveau} onChange={e => setPwForm(p => ({ ...p, nouveau: e.target.value }))} style={INP} placeholder="••••••••" />
+          </div>
+          <div>
+            <label style={{ fontSize: 10, color: '#444', fontWeight: 700, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>Confirmer</label>
+            <input type="password" value={pwForm.confirmer} onChange={e => setPwForm(p => ({ ...p, confirmer: e.target.value }))} style={INP} placeholder="••••••••" />
+          </div>
+        </div>
+        {pwMsg && <div style={{ padding: '8px 12px', background: '#D1FAE5', color: '#065F46', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{pwMsg}</div>}
+        {pwErr && <div style={{ padding: '8px 12px', background: '#FEE2E2', color: '#DC2626', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{pwErr}</div>}
+        <button onClick={changerMotDePasse} style={{ ...BTN, alignSelf: 'flex-start' }}>Changer le mot de passe</button>
       </div>
     </div>
   );

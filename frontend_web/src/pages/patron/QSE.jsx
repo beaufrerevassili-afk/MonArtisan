@@ -576,7 +576,7 @@ export default function QSE() {
               ) : habilitations.map((h,i) => {
                 const emp = employes.find(e=>e.id===h.employeId);
                 return (
-                  <tr key={h.id} style={{ borderBottom:'1px solid #F2F2F7', background:i%2===0?'#fff':'#FAFAFA' }}>
+                  <tr key={h.id} style={{ borderBottom:'1px solid #F2F2F7', background:h.alerte==='expirée'?'#FEF2F2':h.alerte==='urgente'?'#FFF7ED':i%2===0?'#fff':'#FAFAFA' }}>
                     <td style={{ padding:'11px 14px', fontWeight:600 }}>{emp?`${emp.prenom} ${emp.nom}`:`Employé #${h.employeId}`}</td>
                     <td style={{ padding:'11px 14px', fontWeight:600 }}>{h.nom}</td>
                     <td style={{ padding:'11px 14px', color:'#6E6E73', textTransform:'capitalize' }}>{h.type}{h.niveau&&` · ${h.niveau}`}</td>
