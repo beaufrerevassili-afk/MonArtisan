@@ -114,8 +114,7 @@ const PATRON_GROUPS = [
     id: 'commercial',
     label: 'Devis & Factures',
     items: [
-      { label: 'Devis',                path: '/patron/devis-factures?tab=devis',      Icon: IconDocument },
-      { label: 'Factures',             path: '/patron/devis-factures?tab=factures', Icon: IconCreditCard },
+      { label: 'Devis & Factures',     path: '/patron/devis-factures', Icon: IconDocument },
       { label: 'Clients & Avis',       path: '/patron/clients-rfm', Icon: IconTeam       },
     ],
   },
