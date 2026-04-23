@@ -300,4 +300,60 @@ router.put('/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /profile-photo — Upload profile photo (base64)
+router.put('/profile-photo', authenticateToken, async (req, res) => {
+  try {
+    const { photo } = req.body;
+    if (!photo) return res.status(400).json({ erreur: 'Photo requise' });
+    // Limit size (base64 of 150x150 is ~30KB max)
+    if (photo.length > 100000) return res.status(400).json({ erreur: 'Photo trop volumineuse' });
+    await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_profil TEXT').catch(()=>{});
+    await db.query('UPDATE users SET photo_profil = $1 WHERE id = $2', [photo, req.user.id]);
+    res.json({ message: 'Photo mise à jour' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// GET /profile-photo — Get my profile photo
+router.get('/profile-photo', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT photo_profil FROM users WHERE id = $1', [req.user.id]);
+    res.json({ photo: rows[0]?.photo_profil || null });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// DELETE /supprimer-compte — Suppression RGPD (anonymisation)
+router.delete('/supprimer-compte', authenticateToken, async (req, res) => {
+  try {
+    const { motdepasse } = req.body;
+    if (!motdepasse) return res.status(400).json({ erreur: 'Mot de passe requis pour confirmer' });
+
+    const { rows } = await db.query('SELECT motdepasse, role FROM users WHERE id = $1', [req.user.id]);
+    if (!rows[0]) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
+    if (rows[0].role === 'fondateur') return res.status(403).json({ erreur: 'Le compte fondateur ne peut pas être supprimé' });
+
+    const valide = await bcrypt.compare(motdepasse, rows[0].motdepasse);
+    if (!valide) return res.status(400).json({ erreur: 'Mot de passe incorrect' });
+
+    // Anonymize instead of delete (keep data integrity for linked records)
+    const anonymEmail = `supprime_${req.user.id}@deleted.freample.fr`;
+    await db.query(
+      `UPDATE users SET nom = 'Compte supprimé', email = $1, motdepasse = '', telephone = NULL,
+       adresse = NULL, ville = NULL, photo_profil = NULL, suspendu = TRUE, motif_suspension = 'Compte supprimé (RGPD)'
+       WHERE id = $2`,
+      [anonymEmail, req.user.id]
+    );
+
+    // Also clean employes if any
+    await db.query('UPDATE employes SET statut = $1, patron_id = NULL WHERE user_id = $2', ['parti', req.user.id]);
+
+    res.json({ message: 'Compte supprimé conformément au RGPD' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

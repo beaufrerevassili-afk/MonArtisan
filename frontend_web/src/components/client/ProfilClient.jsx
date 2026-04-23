@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import PhotoProfil from '../ui/PhotoProfil';
 
 const CARD = { background: '#fff', border: '1px solid #E8E6E1', borderRadius: 14, padding: '20px 24px' };
 const INP = { width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', color: '#1A1A1A' };
@@ -31,7 +34,10 @@ export default function ProfilClient({ user, isDemo }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: '#1A1A1A' }}>Mon profil</h2>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+        <PhotoProfil size={64} />
+        <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#1A1A1A' }}>Mon profil</h2>
+      </div>
 
       {saved && (
         <div style={{ padding: '10px 14px', background: '#F0FDF4', border: '1px solid #16A34A40', borderRadius: 8, marginBottom: 16, fontSize: 12, color: '#16A34A', fontWeight: 600 }}>

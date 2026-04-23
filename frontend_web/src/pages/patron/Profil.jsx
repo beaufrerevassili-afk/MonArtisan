@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { IconCheck, IconAlert, IconUser, IconBuilding } from '../../components/ui/Icons';
+import PhotoProfil from '../../components/ui/PhotoProfil';
 import { getProfilEntreprise, setProfilEntreprise, isProfilComplet, champsManquants, LABELS_CHAMPS, CORPS_METIER_BTP, getCompetencesEquipe } from '../../utils/profilEntreprise';
 import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 const SECTION = { background: '#fff', border: '1px solid #E8E6E1', borderRadius: 14, padding: 24, marginBottom: 20 };
 const INP = { width: '100%', padding: '10px 14px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
@@ -13,6 +16,8 @@ const BTN_O = { ...BTN, background: 'transparent', color: '#1C1C1E', border: '1p
 
 export default function ProfilPatron() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const isDemo = _isDemo();
   const [tab, setTab] = useState('compte'); // 'compte' | 'entreprise'
 
   return (
@@ -34,14 +39,14 @@ export default function ProfilPatron() {
         </button>
       </div>
 
-      {tab === 'compte' && <OngletCompte user={user} logout={logout} />}
+      {tab === 'compte' && <OngletCompte user={user} logout={logout} navigate={navigate} isDemo={isDemo} />}
       {tab === 'entreprise' && <OngletEntreprise user={user} />}
     </div>
   );
 }
 
 // ── Onglet 1 : Mon compte (paramètres personnels) ──
-function OngletCompte({ user, logout }) {
+function OngletCompte({ user, logout, navigate, isDemo }) {
   const [compte, setCompte] = useState({
     nom: user?.nom || '',
     email: user?.email || '',
@@ -51,8 +56,8 @@ function OngletCompte({ user, logout }) {
   const [pwdMsg, setPwdMsg] = useState(null);
   const [pwdLoading, setPwdLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [deleteInput, setDeleteInput] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const [notifPrefs, setNotifPrefs] = useState(() => {
     try { return JSON.parse(localStorage.getItem('freample_notif_prefs') || '{}'); }
     catch { return {}; }
@@ -102,9 +107,7 @@ function OngletCompte({ user, logout }) {
     <div>
       {/* Avatar + identité */}
       <div style={{ ...SECTION, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#A68B4B', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22 }}>
-          {initials}
-        </div>
+        <PhotoProfil size={80} />
         <div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>{user?.nom}</div>
           <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 2 }}>{user?.email}</div>
@@ -201,32 +204,31 @@ function OngletCompte({ user, logout }) {
         </button>
       </div>
 
-      {/* Zone dangereuse */}
-      <div style={{ ...SECTION, border: '1px solid rgba(255,59,48,0.25)', background: 'rgba(255,59,48,0.02)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <IconAlert size={16} color="#DC2626" />
-          <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0, color: '#DC2626' }}>Zone dangereuse</h2>
+      {/* Zone dangereuse — Suppression RGPD */}
+      {!isDemo && (
+        <div style={{ marginTop: 32, padding: 20, border: '2px solid #DC2626', borderRadius: 14, background: '#FEF2F2' }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#DC2626', marginBottom: 8 }}>Zone dangereuse</div>
+          <div style={{ fontSize: 12, color: '#636363', marginBottom: 12 }}>La suppression de votre compte est définitive. Vos données seront anonymisées conformément au RGPD.</div>
+          <input type="password" placeholder="Confirmez votre mot de passe" value={deletePassword} onChange={e => setDeletePassword(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 13, marginBottom: 8, boxSizing: 'border-box' }} />
+          {deleteError && <div style={{ fontSize: 12, color: '#DC2626', marginBottom: 8 }}>{deleteError}</div>}
+          <button onClick={async () => {
+            if (!window.confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est IRRÉVERSIBLE.')) return;
+            if (!window.confirm('Dernière confirmation : toutes vos données seront anonymisées. Continuer ?')) return;
+            try {
+              await api.delete('/supprimer-compte', { data: { motdepasse: deletePassword } });
+              alert('Votre compte a été supprimé.');
+              logout();
+              navigate('/');
+            } catch (err) {
+              setDeleteError(err.response?.data?.erreur || 'Erreur');
+            }
+          }} disabled={!deletePassword}
+            style={{ padding: '10px 20px', background: deletePassword ? '#DC2626' : '#ccc', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: deletePassword ? 'pointer' : 'default' }}>
+            Supprimer définitivement mon compte
+          </button>
         </div>
-        <p style={{ fontSize: 13, color: '#6E6E73', marginBottom: 12 }}>
-          La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées.
-        </p>
-        {!deleteConfirm ? (
-          <button onClick={() => setDeleteConfirm(true)} style={BTN_DANGER}>Supprimer mon compte</button>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ fontSize: 13, color: '#DC2626', fontWeight: 600, margin: 0 }}>
-              Tapez <strong>SUPPRIMER</strong> pour confirmer la suppression définitive :
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <input placeholder="SUPPRIMER" value={deleteInput} onChange={e => setDeleteInput(e.target.value)} style={{ ...INP, maxWidth: 200 }} />
-              <button disabled={deleteInput !== 'SUPPRIMER'} style={{ ...BTN_DANGER, opacity: deleteInput !== 'SUPPRIMER' ? 0.4 : 1 }}>
-                Confirmer
-              </button>
-              <button onClick={() => { setDeleteConfirm(false); setDeleteInput(''); }} style={BTN_O}>Annuler</button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

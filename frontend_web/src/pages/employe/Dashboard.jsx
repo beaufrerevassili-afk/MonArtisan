@@ -7,6 +7,7 @@ import DS from '../../design/luxe';
 import NotificationBell from '../../components/ui/NotificationBell';
 import { IconHome, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield, IconMissions } from '../../components/ui/Icons';
 import AvisDePassage from '../../components/chantier/AvisDePassage';
+import PhotoProfil from '../../components/ui/PhotoProfil';
 
 const MENU_ITEMS = [
   { id: 'matin', label: 'Mon matin', Icon: IconHome },
@@ -1354,7 +1355,10 @@ export default function DashboardEmploye() {
 
       {/* ═══ MON PROFIL ═══ */}
       {tab === 'profil' && <>
-        <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>Mon profil</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <PhotoProfil size={64} />
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: DS.ink }}>Mon profil</h2>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={CARD}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Informations personnelles</div>
@@ -1401,6 +1405,9 @@ export default function DashboardEmploye() {
 
         {/* Changer le mot de passe */}
         {!isDemo && <ChangerMotDePasseEmploye />}
+
+        {/* Zone dangereuse — Suppression RGPD */}
+        {!isDemo && <SupprimerCompteEmploye logout={logout} navigate={navigate} />}
       </>}
 
       </div>{/* fin maxWidth container */}
@@ -1530,6 +1537,38 @@ function ChangerMotDePasseEmploye() {
         {pwErr && <div style={{ padding: '8px 12px', background: '#FEE2E2', color: '#DC2626', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{pwErr}</div>}
         <button onClick={changerMotDePasse} style={{ ...BTN, alignSelf: 'flex-start' }}>Changer le mot de passe</button>
       </div>
+    </div>
+  );
+}
+
+function SupprimerCompteEmploye({ logout, navigate }) {
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+
+  async function supprimerCompte() {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est IRRÉVERSIBLE.')) return;
+    if (!window.confirm('Dernière confirmation : toutes vos données seront anonymisées. Continuer ?')) return;
+    try {
+      await api.delete('/supprimer-compte', { data: { motdepasse: deletePassword } });
+      alert('Votre compte a été supprimé.');
+      logout();
+      navigate('/');
+    } catch (err) {
+      setDeleteError(err.response?.data?.erreur || 'Erreur');
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 32, padding: 20, border: '2px solid #DC2626', borderRadius: 14, background: '#FEF2F2' }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: '#DC2626', marginBottom: 8 }}>Zone dangereuse</div>
+      <div style={{ fontSize: 12, color: '#636363', marginBottom: 12 }}>La suppression de votre compte est définitive. Vos données seront anonymisées conformément au RGPD.</div>
+      <input type="password" placeholder="Confirmez votre mot de passe" value={deletePassword} onChange={e => setDeletePassword(e.target.value)}
+        style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 13, marginBottom: 8, boxSizing: 'border-box' }} />
+      {deleteError && <div style={{ fontSize: 12, color: '#DC2626', marginBottom: 8 }}>{deleteError}</div>}
+      <button onClick={supprimerCompte} disabled={!deletePassword}
+        style={{ padding: '10px 20px', background: deletePassword ? '#DC2626' : '#ccc', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: deletePassword ? 'pointer' : 'default' }}>
+        Supprimer définitivement mon compte
+      </button>
     </div>
   );
 }
