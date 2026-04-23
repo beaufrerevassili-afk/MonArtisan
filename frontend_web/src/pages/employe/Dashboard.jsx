@@ -164,13 +164,13 @@ export default function DashboardEmploye() {
   const [fraisChantierForm, setFraisChantierForm] = useState({ montant: '', categorie: 'Repas', description: '' });
   const [fraisChantierOpen, setFraisChantierOpen] = useState(null);
 
-  const patronId = user?.patronId;
-  const hasEntreprise = !!patronId;
+  const [hasEntreprise, setHasEntreprise] = useState(!!user?.patronId);
 
   useEffect(() => {
     api.get('/rh/mon-profil').then(({ data }) => {
       if (data.employe) setProfil(data.employe);
-      if (data.patron) setPatron(data.patron);
+      if (data.patron) { setPatron(data.patron); setHasEntreprise(true); }
+      else { setPatron({}); setHasEntreprise(false); }
     }).catch(() => {});
     api.get('/missions').then(({ data }) => { if (data.missions?.length) setChantiers(data.missions); }).catch(() => {
       const patronChantiers = JSON.parse(localStorage.getItem('freample_chantiers_custom') || '[]');

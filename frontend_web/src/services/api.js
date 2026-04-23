@@ -44,9 +44,9 @@ api.interceptors.response.use(
       if (status === 403 && msg === 'Compte suspendu') {
         // Redirigé vers /compte-suspendu via le router (ProtectedRoute)
       } else if (status === 403) {
-        _errorToast('Accès refusé', 'error');
+        // Silencieux — les 403 sont normaux quand on tente des routes hors de son rôle
       } else if (status === 404) {
-        _errorToast('Ressource introuvable', 'warning');
+        // Silencieux — les 404 sont normaux quand une ressource n'existe pas encore
       } else if (status >= 500) {
         _errorToast('Erreur serveur — réessayez dans un instant', 'error');
       } else if (!error.response && error.code === 'ERR_NETWORK') {
