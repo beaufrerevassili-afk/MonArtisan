@@ -233,4 +233,16 @@ router.post('/detach-employe', authenticateToken, authorizeRole(...ADMIN_ROLES),
   }
 });
 
+// PUT /admin/users/:id/role — Changer le rôle d'un utilisateur
+router.put('/users/:id/role', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!role) return res.status(400).json({ erreur: 'role requis' });
+    await db.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
+    res.json({ message: `Rôle changé en ${role}` });
+  } catch (err) {
+    res.status(500).json({ erreur: err.message });
+  }
+});
+
 module.exports = router;
