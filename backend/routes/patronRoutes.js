@@ -51,6 +51,10 @@ async function ensureTables() {
       cree_le TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  // Add patron_id column if missing (for existing tables)
+  await db.query('ALTER TABLE stock_articles ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE agenda_events ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE avis ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
 }
 ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message));
 
