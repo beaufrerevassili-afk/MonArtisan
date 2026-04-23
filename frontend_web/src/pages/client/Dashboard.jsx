@@ -37,6 +37,8 @@ export default function DashboardClient() {
   const [clientMessage, setClientMessage] = useState('');
   const [showPaiements, setShowPaiements] = useState(false);
   const [showProfil, setShowProfil] = useState(false);
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [docDetail, setDocDetail] = useState(null);
   const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirm: '' });
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
@@ -243,9 +245,10 @@ export default function DashboardClient() {
         </div>
         <nav style={{ flex: 1, padding: '12px 0' }}>
           {[
-            { label: 'Accueil', action: () => { setProjetDetail(null); setShowPaiements(false); setShowProfil(false); } },
-            { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setProjetDetail(null); } },
-            { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setProjetDetail(null); } },
+            { label: 'Accueil', action: () => { setProjetDetail(null); setShowPaiements(false); setShowProfil(false); setShowDocuments(false); } },
+            { label: '📄 Mes documents', action: () => { setShowDocuments(true); setShowPaiements(false); setShowProfil(false); setProjetDetail(null); setDocDetail(null); } },
+            { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setShowDocuments(false); setProjetDetail(null); } },
+            { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setShowDocuments(false); setProjetDetail(null); } },
             { label: 'Trouver un artisan', action: () => navigate('/btp') },
           ].map(t => (
             <button key={t.label} onClick={() => { setMenuOpen(false); t.action(); }}
@@ -296,6 +299,123 @@ export default function DashboardClient() {
 
         {/* ══ VUE PROFIL MODIFIABLE ══ */}
         {showProfil && !projetDetail && <ProfilClient user={user} isDemo={isDemo} />}
+
+        {/* ══ VUE MES DOCUMENTS ══ */}
+        {showDocuments && !projetDetail && (() => {
+          const pvs = demoGet('freample_pv_receptions', []);
+          const docsByProjet = projets.map(p => {
+            const devisProjet = allDevis.filter(d => d.projetId === p.id && d.statut !== 'retire_marketplace');
+            const pvProjet = pvs.filter(v => v.projetId === p.id);
+            if (devisProjet.length === 0 && pvProjet.length === 0) return null;
+            return { projet: p, devis: devisProjet, pvs: pvProjet };
+          }).filter(Boolean);
+
+          const statutLabel = (s) => {
+            const map = { envoye: 'Envoyé', accepte: 'Accepté', signe: 'Signé', refuse: 'Refusé', brouillon: 'Brouillon', en_attente: 'En attente' };
+            return map[s] || s || 'En attente';
+          };
+          const statutColor = (s) => {
+            if (s === 'signe' || s === 'accepte') return { color: '#16A34A', bg: '#F0FDF4' };
+            if (s === 'refuse') return { color: '#DC2626', bg: '#FEF2F2' };
+            if (s === 'envoye') return { color: '#2563EB', bg: '#EFF6FF' };
+            return { color: '#D97706', bg: '#FFFBEB' };
+          };
+
+          return (
+            <div>
+              <button onClick={() => { setShowDocuments(false); setDocDetail(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 6px', color: '#1A1A1A' }}>Mes documents</h2>
+              <div style={{ fontSize: 13, color: '#444', marginBottom: 20 }}>Devis et PV de réception de vos projets</div>
+
+              {docsByProjet.length === 0 ? (
+                <div style={{ ...CARD, textAlign: 'center', padding: 40, color: '#444', fontSize: 13 }}>Aucun document pour le moment.</div>
+              ) : docsByProjet.map(({ projet, devis, pvs: pvList }) => (
+                <div key={projet.id} style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{projet.metier}</span>
+                    <span style={{ color: '#ccc' }}>·</span>
+                    <span>{projet.titre || projet.description?.slice(0, 40)}</span>
+                  </div>
+
+                  {/* Devis */}
+                  {devis.map(d => {
+                    const sc = statutColor(d.statut);
+                    return (
+                      <div key={d.id} style={{ ...CARD, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 22, flexShrink: 0 }}>📋</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>Devis {d.numero || ''}</div>
+                            <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>
+                              {(d.montantTTC || 0).toLocaleString('fr-FR')}€ TTC · {(d.lignes || []).length} ligne{(d.lignes || []).length > 1 ? 's' : ''}
+                              {d.date ? ` · ${new Date(d.date).toLocaleDateString('fr-FR')}` : d.createdAt ? ` · ${new Date(d.createdAt).toLocaleDateString('fr-FR')}` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: sc.color, background: sc.bg, padding: '3px 8px', borderRadius: 6 }}>{statutLabel(d.statut)}</span>
+                          <button onClick={() => setDocDetail(docDetail?.id === d.id ? null : d)}
+                            style={{ padding: '6px 12px', background: '#fff', color: '#A68B4B', border: '1px solid #A68B4B', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+                            {docDetail?.id === d.id ? 'Fermer' : 'Voir'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Détail devis ouvert */}
+                  {docDetail && devis.some(d => d.id === docDetail.id) && (
+                    <div style={{ ...CARD, marginBottom: 8, background: '#FAFAF8', borderLeft: '4px solid #A68B4B' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Détail — Devis {docDetail.numero || ''}</div>
+                      {(docDetail.lignes || []).length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {docDetail.lignes.map((l, i) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < docDetail.lignes.length - 1 ? '1px solid #E8E6E1' : 'none' }}>
+                              <div style={{ fontSize: 12, color: '#333' }}>{l.description || l.libelle || `Ligne ${i + 1}`}</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1A', flexShrink: 0, marginLeft: 12 }}>{(Number(l.totalTTC || l.total || l.prix || 0)).toLocaleString('fr-FR')}€</div>
+                            </div>
+                          ))}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '2px solid #2C2520' }}>
+                            <span style={{ fontSize: 13, fontWeight: 800 }}>Total TTC</span>
+                            <span style={{ fontSize: 13, fontWeight: 800 }}>{(docDetail.montantTTC || 0).toLocaleString('fr-FR')}€</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 12, color: '#444' }}>Montant : {(docDetail.montantTTC || 0).toLocaleString('fr-FR')}€ TTC</div>
+                      )}
+                      {docDetail.statut !== 'signe' && docDetail.id && (
+                        <button onClick={() => window.open(`/devis/${docDetail.id}/signer`, '_blank')}
+                          style={{ ...BTN, marginTop: 12, background: '#A68B4B', fontSize: 12, padding: '8px 16px' }}>
+                          Voir / Signer le devis
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* PV de réception */}
+                  {pvList.map(pv => {
+                    const sc = statutColor(pv.statut);
+                    return (
+                      <div key={pv.id} style={{ ...CARD, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 22, flexShrink: 0 }}>📄</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>PV de réception</div>
+                            <div style={{ fontSize: 11, color: '#444', marginTop: 2 }}>
+                              {pv.sansReserve ? 'Sans réserve' : pv.reserves?.length ? `${pv.reserves.length} réserve${pv.reserves.length > 1 ? 's' : ''}` : ''}
+                              {pv.date ? ` · ${new Date(pv.date).toLocaleDateString('fr-FR')}` : pv.dateSigned ? ` · ${new Date(pv.dateSigned).toLocaleDateString('fr-FR')}` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: sc.color, background: sc.bg, padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>{statutLabel(pv.statut)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* ══ DÉTAIL PROJET (modal inline) ══ */}
         {projetDetail && (() => {
@@ -654,23 +774,74 @@ export default function DashboardClient() {
               return null;
             })()}
 
-            {/* Avis */}
+            {/* Avis — confirmation */}
+            {p.statut === 'termine' && p.artisan && reviewSent[p.id] && (
+              <div style={{ ...CARD, borderLeft: '4px solid #16A34A', marginBottom: 16, textAlign: 'center', padding: '20px' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>&#x2705;</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#16A34A', marginBottom: 4 }}>Merci pour votre avis !</div>
+                <div style={{ fontSize: 13, color: '#666' }}>Vous avez not&eacute; {p.artisan} {reviewSent[p.id].note}/5</div>
+              </div>
+            )}
+            {/* Avis — formulaire */}
             {p.statut === 'termine' && p.artisan && !reviewSent[p.id] && (
               <div style={{ ...CARD, borderLeft: '4px solid #A68B4B', marginBottom: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Notez {p.artisan}</div>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} onClick={() => setReviewNote(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: n <= reviewNote ? '#A68B4B' : '#D1D5DB' }}>★</button>
-                  ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 20 }}>&#x2B50;</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: '#2C2520' }}>Notez votre artisan</span>
                 </div>
-                <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)} rows={2} placeholder="Votre expérience..." style={{ ...INP, resize: 'vertical', marginBottom: 8 }} />
-                <button onClick={() => {
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                  {'Projet : '}<strong style={{ color: '#333' }}>{p.titre || p.metier || p.description?.slice(0, 40)}</strong>
+                </div>
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 14 }}>
+                  {'Artisan : '}<strong style={{ color: '#333' }}>{p.artisan}</strong>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  {[1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setReviewNote(n)} style={{
+                      background: 'none', border: 'none', cursor: 'pointer', fontSize: 32, lineHeight: 1,
+                      color: n <= reviewNote ? '#A68B4B' : '#D1D5DB',
+                      transition: 'transform 0.15s, color 0.15s',
+                      transform: n <= reviewNote ? 'scale(1.1)' : 'scale(1)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = n <= reviewNote ? 'scale(1.1)' : 'scale(1)'; }}
+                    >&#x2605;</button>
+                  ))}
+                  {reviewNote > 0 && (
+                    <span style={{ fontSize: 13, color: '#A68B4B', fontWeight: 700, marginLeft: 4 }}>({reviewNote}/5)</span>
+                  )}
+                </div>
+                <textarea
+                  value={reviewComment}
+                  onChange={e => setReviewComment(e.target.value)}
+                  rows={3}
+                  placeholder="D\u00e9crivez votre exp\u00e9rience avec cet artisan..."
+                  style={{ ...INP, resize: 'vertical', marginBottom: 12 }}
+                />
+                <button onClick={async () => {
                   if (!reviewNote) return;
-                  const updated = { ...reviewSent, [p.id]: { note: reviewNote, commentaire: reviewComment, date: new Date().toISOString() } };
+                  const avisData = { note: reviewNote, commentaire: reviewComment, date: new Date().toISOString() };
+                  if (!isDemo) {
+                    try {
+                      await api.post('/patron/avis', { projetId: p.id, note: reviewNote, commentaire: reviewComment, artisanId: p.artisanId || null });
+                    } catch (err) {
+                      // Fallback : stockage local si API pas disponible
+                    }
+                  }
+                  const updated = { ...reviewSent, [p.id]: avisData };
                   setReviewSent(updated);
-                  localStorage.setItem('freample_reviews', JSON.stringify(updated));
+                  demoSet('freample_reviews', updated);
+                  setReviewNote(0);
+                  setReviewComment('');
                   addToast('Merci pour votre avis !', 'success');
-                }} disabled={!reviewNote} style={{ ...BTN, opacity: reviewNote ? 1 : 0.5, background: '#A68B4B' }}>Publier mon avis</button>
+                }} disabled={!reviewNote} style={{
+                  ...BTN, width: '100%', padding: '12px 20px', fontSize: 14,
+                  background: reviewNote ? '#A68B4B' : '#D1D5DB',
+                  opacity: reviewNote ? 1 : 0.6,
+                  transition: 'all 0.2s',
+                }}>
+                  Envoyer mon avis
+                </button>
               </div>
             )}
 
@@ -684,7 +855,7 @@ export default function DashboardClient() {
         })()}
 
         {/* ══ VUE PRINCIPALE ADAPTATIVE ══ */}
-        {!projetDetail && !showPaiements && !showProfil && (<>
+        {!projetDetail && !showPaiements && !showProfil && !showDocuments && (<>
 
           {/* ── SCÉNARIO 1 : Nouveau client ── */}
           {phase === 'nouveau' && !showForm && (
@@ -840,6 +1011,24 @@ export default function DashboardClient() {
               onMouseLeave={e => { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.color = DS.muted; }}>
               + Ajouter un autre projet
             </button>
+
+            {/* Recommander Freample */}
+            <div style={{ ...CARD, marginTop: 16, background: '#F8F7F4', borderLeft: `4px solid ${DS.gold}` }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>🤝 Recommandez Freample</div>
+              <div style={{ fontSize: 13, color: '#555', marginBottom: 12 }}>Partagez avec un ami qui a des travaux à faire.</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => { navigator.clipboard.writeText('https://mon-artisan-fawn.vercel.app'); addToast('Lien copié !'); }}
+                  style={{ ...BTN, background: '#2C2520', fontSize: 12, padding: '8px 14px' }}>
+                  📋 Copier le lien
+                </button>
+                <button
+                  onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Salut ! J'utilise Freample pour trouver des artisans BTP à Marseille. C'est gratuit : https://mon-artisan-fawn.vercel.app")}`, '_blank')}
+                  style={{ ...BTN, background: '#25D366', fontSize: 12, padding: '8px 14px' }}>
+                  💬 Partager par WhatsApp
+                </button>
+              </div>
+            </div>
           </>)}
         </>)}
       </div>
