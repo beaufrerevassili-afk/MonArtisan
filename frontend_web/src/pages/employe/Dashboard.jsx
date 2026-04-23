@@ -5,7 +5,8 @@ import api, { API_URL } from '../../services/api';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import DS from '../../design/luxe';
 import NotificationBell from '../../components/ui/NotificationBell';
-import { IconHome, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield } from '../../components/ui/Icons';
+import { IconHome, IconCalendar, IconCreditCard, IconClock, IconDocument, IconBox, IconUser, IconShield, IconMissions } from '../../components/ui/Icons';
+import AvisDePassage from '../../components/chantier/AvisDePassage';
 
 const MENU_ITEMS = [
   { id: 'matin', label: 'Mon matin', Icon: IconHome },
@@ -14,6 +15,7 @@ const MENU_ITEMS = [
   { id: 'paie', label: 'Fiches de paie', Icon: IconCreditCard },
   { id: 'conges', label: 'Congés', Icon: IconClock },
   { id: 'frais', label: 'Notes de frais', Icon: IconDocument },
+  { id: 'chantiers', label: 'Chantiers', Icon: IconMissions },
   { id: 'documents', label: 'Documents', Icon: IconBox },
   { id: 'profil', label: 'Profil', Icon: IconUser },
 ];
@@ -163,6 +165,11 @@ export default function DashboardEmploye() {
   // Note de frais chantier states
   const [fraisChantierForm, setFraisChantierForm] = useState({ montant: '', categorie: 'Repas', description: '' });
   const [fraisChantierOpen, setFraisChantierOpen] = useState(null);
+
+  // Chantier detail + avis de passage states
+  const [selectedChantier, setSelectedChantier] = useState(null);
+  const [showAvis, setShowAvis] = useState(false);
+  const [avisPassages, setAvisPassages] = useState([]);
 
   const [hasEntreprise, setHasEntreprise] = useState(!!user?.patronId);
 
@@ -1130,6 +1137,136 @@ export default function DashboardEmploye() {
         </div>
       </>}
 
+      {/* ═══ MES CHANTIERS ═══ */}
+      {tab === 'chantiers' && (() => {
+        const selectChantier = (ch) => {
+          setSelectedChantier(ch);
+          if (!isDemo) {
+            api.get(`/avis-passage/chantier/${ch.id}`).then(({ data }) => setAvisPassages(data.avis || [])).catch(() => {});
+          } else {
+            setAvisPassages(demoGet('freample_avis_passages', []).filter(a => a.chantierId === ch.id || a.chantierTitre === ch.titre));
+          }
+        };
+
+        if (selectedChantier) {
+          const ch = selectedChantier;
+          const avancement = ch.avancement || (ch.statut === 'en_cours' ? 50 : ch.statut === 'complete' || ch.statut === 'terminee' ? 100 : 0);
+          return <>
+            <button onClick={() => { setSelectedChantier(null); setAvisPassages([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: DS.font, fontSize: 14, fontWeight: 600, color: DS.muted, padding: '0 0 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              ← Retour aux chantiers
+            </button>
+
+            <div style={CARD}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: DS.ink }}>{ch.titre || ch.description}</h2>
+              <div style={{ fontSize: 13, color: DS.muted, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                📍 {ch.adresse || ch.ville || '—'}
+              </div>
+              <div style={{ fontSize: 13, color: DS.muted, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                📅 {ch.dateDebut || '—'} → {ch.dateFin || '—'}
+                <span style={{ marginLeft: 8 }}>·</span>
+                <span style={{ fontWeight: 600, color: DS.ink }}>Avancement : {avancement}%</span>
+              </div>
+              <div style={{ height: 6, background: '#E8E6E1', borderRadius: 3, overflow: 'hidden', marginBottom: 4 }}>
+                <div style={{ height: '100%', width: `${avancement}%`, background: avancement >= 100 ? '#16A34A' : '#2563EB', borderRadius: 3, transition: 'width .3s' }} />
+              </div>
+              {ch.chef && <div style={{ fontSize: 12, color: DS.muted, marginTop: 8 }}>Chef de chantier : {ch.chef}</div>}
+              {ch.equipe?.length > 0 && <div style={{ fontSize: 12, color: DS.muted }}>Équipe : {ch.equipe.join(', ')}</div>}
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 10, marginTop: 16 }}>
+              <button onClick={() => setShowAvis(true)} style={{ ...CARD, cursor: 'pointer', border: '1px solid #E8E6E1', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>📋</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Faire signer un avis</div>
+                  <div style={{ fontSize: 11, color: DS.muted }}>Avis de passage client</div>
+                </div>
+              </button>
+              <button onClick={() => recordPointage(todayArrivees.length <= todayDeparts.length ? 'arrivee' : 'depart')} style={{ ...CARD, cursor: 'pointer', border: '1px solid #E8E6E1', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>⏰</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>{todayArrivees.length <= todayDeparts.length ? 'Pointer mon arrivée' : 'Pointer mon départ'}</div>
+                  <div style={{ fontSize: 11, color: DS.muted }}>Pointage du jour</div>
+                </div>
+              </button>
+              <button style={{ ...CARD, cursor: 'not-allowed', border: '1px solid #E8E6E1', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12, opacity: 0.5 }}>
+                <span style={{ fontSize: 24 }}>📸</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: DS.ink }}>Ajouter une photo</div>
+                  <div style={{ fontSize: 11, color: DS.muted }}>Bientôt disponible</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Past avis de passage */}
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: DS.ink, margin: '0 0 12px', borderBottom: '1px solid #E8E6E1', paddingBottom: 8 }}>
+                Avis de passage signés
+              </h3>
+              {avisPassages.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: DS.muted, fontSize: 13 }}>
+                  Aucun avis de passage pour ce chantier
+                </div>
+              ) : (
+                <div style={{ ...CARD, padding: 0 }}>
+                  {avisPassages.map((a, i) => {
+                    const d = a.date ? new Date(a.date) : null;
+                    return (
+                      <div key={a.id || i} style={{ padding: '12px 18px', borderBottom: i < avisPassages.length - 1 ? '1px solid #E8E6E1' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{d ? d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '—'}</div>
+                          <div style={{ fontSize: 11, color: DS.muted }}>{a.heureArrivee || '—'} - {a.heureDepart || '—'}</div>
+                          {a.travauxRealises && <div style={{ fontSize: 11, color: DS.muted, marginTop: 2 }}>{a.travauxRealises.slice(0, 60)}{a.travauxRealises.length > 60 ? '…' : ''}</div>}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#16A34A', background: '#16A34A15', padding: '3px 10px', borderRadius: 6 }}>
+                          ✅ Signé
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>;
+        }
+
+        // Chantiers list view
+        return <>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: DS.ink }}>🏗️ Mes chantiers</h2>
+          {chantiers.length === 0 ? (
+            <div style={{ ...CARD, textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🏗️</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: DS.ink }}>Aucun chantier assigné</div>
+              <div style={{ fontSize: 13, color: DS.muted, marginTop: 4 }}>Vos chantiers apparaîtront ici dès qu'ils vous seront attribués.</div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {chantiers.map(ch => {
+                const avancement = ch.avancement || (ch.statut === 'en_cours' ? 50 : ch.statut === 'complete' || ch.statut === 'terminee' ? 100 : 0);
+                return (
+                  <button key={ch.id} onClick={() => selectChantier(ch)} style={{ ...CARD, cursor: 'pointer', textAlign: 'left', width: '100%', display: 'block', transition: 'box-shadow .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: DS.ink, flex: 1 }}>{ch.titre || ch.description}</div>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: statutColors[ch.statut] || DS.muted, background: `${statutColors[ch.statut] || '#999'}15`, padding: '3px 10px', borderRadius: 6, flexShrink: 0, marginLeft: 8 }}>
+                        {statutLabels[ch.statut] || ch.statut}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: DS.muted, marginBottom: 4 }}>📍 {ch.adresse || ch.ville || '—'}</div>
+                    <div style={{ fontSize: 12, color: DS.muted, marginBottom: 8 }}>📅 {ch.dateDebut || '—'} → {ch.dateFin || '—'}</div>
+                    <div style={{ height: 4, background: '#E8E6E1', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${avancement}%`, background: avancement >= 100 ? '#16A34A' : '#2563EB', borderRadius: 2 }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: DS.muted, marginTop: 4, textAlign: 'right' }}>{avancement}%</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </>;
+      })()}
+
       {/* ═══ MES DOCUMENTS ═══ */}
       {tab === 'documents' && <>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: DS.ink }}>Mes documents</h2>
@@ -1318,6 +1455,21 @@ export default function DashboardEmploye() {
               <button onClick={() => setBulletinPreview(null)} style={BTN_O}>Fermer</button>
               <button onClick={() => window.print()} style={BTN}>Imprimer / PDF</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ AVIS DE PASSAGE OVERLAY ═══ */}
+      {showAvis && selectedChantier && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowAvis(false)}>
+          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <AvisDePassage chantier={selectedChantier} onClose={() => setShowAvis(false)} onSaved={() => {
+              if (!isDemo) {
+                api.get(`/avis-passage/chantier/${selectedChantier.id}`).then(({ data }) => setAvisPassages(data.avis || [])).catch(() => {});
+              } else {
+                setAvisPassages(demoGet('freample_avis_passages', []).filter(a => a.chantierId === selectedChantier.id || a.chantierTitre === selectedChantier.titre));
+              }
+            }} />
           </div>
         </div>
       )}
