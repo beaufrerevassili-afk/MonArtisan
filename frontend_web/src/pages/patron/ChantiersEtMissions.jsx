@@ -44,6 +44,7 @@ const STATUT_MAP = {
   termine:    { bg: '#D1F2E0', color: '#1A7F43', label: 'Terminé' },
   en_pause:   { bg: '#F2F2F7', color: '#6E6E73', label: 'En pause' },
   annulee:    { bg: '#FFE5E5', color: '#C0392B', label: 'Annulée' },
+  archive:    { bg: '#F3F4F6', color: '#6B7280', label: 'Archivé' },
 };
 function statutBadge(s) {
   const x = STATUT_MAP[s] || { bg: '#F2F2F7', color: '#6E6E73', label: s };
@@ -108,8 +109,8 @@ const DEMO_DEPENSES = [
 
 const MAIN_TABS = ['Chantiers', 'Planning', 'Flotte'];
 const JOURS_SEMAINE = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-const STATUT_FILTERS = ['Tous', 'en_attente', 'planifie', 'assignee', 'en_cours', 'terminee', 'annulee'];
-const STATUT_FILTER_LABELS = { Tous: 'Tous', en_attente: 'En attente', planifie: 'Planifié', assignee: 'Assignée', en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée' };
+const STATUT_FILTERS = ['Tous', 'en_attente', 'planifie', 'assignee', 'en_cours', 'terminee', 'annulee', 'archive'];
+const STATUT_FILTER_LABELS = { Tous: 'Tous', en_attente: 'En attente', planifie: 'Planifié', assignee: 'Assignée', en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée', archive: 'Archivé' };
 
 const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#6E6E73', marginBottom: 4 };
 const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E5E5EA', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' };
@@ -250,7 +251,7 @@ export default function ChantiersEtMissions() {
     const [devisEnvoye, setDevisEnvoye] = useState(false);
 
     const filtered = items.filter(m => {
-      const matchStatut = filtre === 'Tous' || m.statut === filtre;
+      const matchStatut = filtre === 'Tous' ? m.statut !== 'archive' : m.statut === filtre;
       const matchSearch = !search || m.titre?.toLowerCase().includes(search.toLowerCase()) || m.client?.toLowerCase().includes(search.toLowerCase());
       return matchStatut && matchSearch;
     });
@@ -1510,6 +1511,7 @@ function EditModal({ item, onClose, onSave, headers }) {
                 <option value="assignee">Assignée</option>
                 <option value="en_cours">En cours</option>
                 <option value="terminee">Terminée</option>
+                <option value="archive">Archivé</option>
               </select>
             </div>
             <div>

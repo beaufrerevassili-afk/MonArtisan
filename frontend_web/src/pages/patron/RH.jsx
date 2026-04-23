@@ -603,6 +603,11 @@ function RecrutementView() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                   <span style={{ fontWeight: 800, fontSize: 15, color: '#1C1C1E' }}>{a.titre}</span>
                   {statutBadgeAnnonce(a.statut)}
+                  {a.nbCandidatures === 0 && new Date() - new Date(a.creeLe) > 30 * 86400000 && (
+                    <span style={{ fontSize: 11, color: '#D97706', fontWeight: 600, background: '#FFFBEB', padding: '2px 8px', borderRadius: 4, marginLeft: 6 }}>
+                      ⚠️ 30j sans candidature
+                    </span>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13, color: '#6E6E73' }}>
                   <span>💼 {a.typeContrat}</span>
@@ -618,7 +623,7 @@ function RecrutementView() {
                 </button>
                 {a.statut === 'active' && (
                   <button onClick={() => fermerAnnonce(a.id)} style={{ padding: '7px 14px', background: '#FFF3E0', color: '#E65100', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
-                    Fermer
+                    {a.nbCandidatures === 0 && new Date() - new Date(a.creeLe) > 30 * 86400000 ? 'Fermer l\'annonce' : 'Fermer'}
                   </button>
                 )}
                 <button onClick={() => supprimerAnnonce(a.id)} style={{ padding: '7px 12px', background: '#FFE5E5', color: '#C0392B', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>

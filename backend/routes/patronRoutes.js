@@ -240,7 +240,7 @@ router.post('/devis-pro/:id/signer', async (req, res) => {
 router.get('/chantiers', async (req, res) => {
   try {
     const patronId = req.user?.id;
-    const result = await db.query('SELECT * FROM chantiers WHERE patron_id = $1 OR patron_id IS NULL ORDER BY cree_le DESC', [patronId]);
+    const result = await db.query('SELECT * FROM chantiers WHERE (patron_id = $1 OR patron_id IS NULL) AND (statut IS NULL OR statut != \'archive\') ORDER BY cree_le DESC', [patronId]);
     const chantiers = result.rows.map(mapChantier);
 
     const stats = {
@@ -461,6 +461,47 @@ router.post('/avis/:id/repondre', async (req, res) => {
     await db.query('UPDATE avis SET reponse=$1 WHERE id=$2 AND patron_id=$3', [reponse, req.params.id, req.user.id]);
     res.json({ message: 'Réponse enregistrée' });
   } catch (err) { res.status(500).json({ erreur: err.message }); }
+});
+
+// Auto-archive completed chantiers after 7 days
+async function archiveCompletedChantiers() {
+  try {
+    const { rows } = await db.query(`
+      UPDATE chantiers SET statut = 'archive', modifie_le = NOW()
+      WHERE statut IN ('terminee', 'complete')
+        AND modifie_le < NOW() - INTERVAL '7 days'
+        AND statut != 'archive'
+      RETURNING id, nom, patron_id
+    `);
+    if (rows.length > 0) {
+      const { notify } = require('../utils/notify');
+      // Group by patron
+      const byPatron = {};
+      rows.forEach(r => { if (!byPatron[r.patron_id]) byPatron[r.patron_id] = []; byPatron[r.patron_id].push(r.nom); });
+      for (const [patronId, noms] of Object.entries(byPatron)) {
+        await notify(parseInt(patronId), 'system', 'Chantiers archivés',
+          `${noms.length} chantier(s) terminé(s) ont été archivés : ${noms.join(', ')}`,
+          '/patron/missions'
+        );
+      }
+    }
+  } catch (err) {
+    console.error('archiveCompletedChantiers:', err.message);
+  }
+}
+setTimeout(archiveCompletedChantiers, 15000);
+setInterval(archiveCompletedChantiers, 24 * 60 * 60 * 1000);
+
+// GET /patron/chantiers/archives — archived chantiers
+router.get('/chantiers/archives', async (req, res) => {
+  try {
+    const patronId = req.user?.id;
+    const result = await db.query('SELECT * FROM chantiers WHERE (patron_id = $1 OR patron_id IS NULL) AND statut = \'archive\' ORDER BY modifie_le DESC', [patronId]);
+    res.json({ chantiers: result.rows.map(mapChantier) });
+  } catch (err) {
+    console.error('GET /patron/chantiers/archives :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;

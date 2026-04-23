@@ -131,6 +131,33 @@ async function ensureTables() {
 }
 ensureTables().catch(e => console.error('recrutement ensureTables:', e.message));
 
+// Auto-close stale announcements (30 days without candidatures)
+async function checkStaleAnnonces() {
+  try {
+    const { rows } = await db.query(`
+      SELECT a.id, a.patron_id, a.titre
+      FROM annonces_recrutement a
+      LEFT JOIN candidatures_recrutement c ON c.annonce_id = a.id
+      WHERE a.statut = 'active'
+        AND a.created_at < NOW() - INTERVAL '30 days'
+      GROUP BY a.id
+      HAVING COUNT(c.id) = 0
+    `);
+    for (const annonce of rows) {
+      // Don't auto-close, just notify the patron
+      await notify(annonce.patron_id, 'recrutement', 'Annonce sans candidature',
+        `Votre annonce "${annonce.titre}" n'a reçu aucune candidature depuis 30 jours. Pensez à la modifier ou la fermer.`,
+        '/patron/rh?onglet=recrutement'
+      );
+    }
+  } catch (err) {
+    console.error('checkStaleAnnonces:', err.message);
+  }
+}
+// Run on start and every 24h
+setTimeout(checkStaleAnnonces, 10000);
+setInterval(checkStaleAnnonces, 24 * 60 * 60 * 1000);
+
 // ─── Helpers ───────────────────────────────────────────────
 function mapAnnonce(r) {
   return {
