@@ -29,10 +29,12 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [suspendedEmail, setSuspendedEmail] = useState('');
+  const [suspendedMotif, setSuspendedMotif] = useState('');
+
+  const demoAccounts = DEMO_COMPTES;
 
   const getDestination = (role, userData) => {
-    // Redirection par type d'entreprise
-
     if (userData?.entrepriseType === 'ae') return '/ae/dashboard';
     if (role === 'client' && sector) return `/client/dashboard?tab=${sector}`;
     return REDIRECTIONS[role] || '/';
@@ -58,11 +60,6 @@ export default function Login() {
       </div>
     </div>
   );
-
-  const demoAccounts = DEMO_COMPTES;
-
-  const [suspendedEmail, setSuspendedEmail] = useState('');
-  const [suspendedMotif, setSuspendedMotif] = useState('');
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true); setSuspendedEmail('');
