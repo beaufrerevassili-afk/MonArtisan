@@ -6,7 +6,7 @@ import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
   IconDownload, IconBox, IconBell, IconSearch, IconCalendar, IconCreditCard,
-  IconChevronDown, IconScale, IconStar, IconUser, IconMessage, IconGift,
+  IconChevronDown, IconScale, IconStar, IconUser, IconMessage, IconGift, IconPhoto,
   IconCheck, IconAlert,
 } from '../ui/Icons';
 
@@ -133,6 +133,7 @@ const PATRON_GROUPS = [
     items: [
       { label: 'Finances & Compta',    path: '/patron/finance',     Icon: IconFinance    },
       { label: 'Documents',            path: '/patron/documents',   Icon: IconDownload   },
+      { label: 'Mon image',             path: '/patron/mon-image',   Icon: IconPhoto      },
       { label: 'Paramètres',           path: '/patron/profil',      Icon: IconSettings   },
     ],
   },

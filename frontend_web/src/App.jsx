@@ -45,6 +45,7 @@ const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
 const Support = React.lazy(() => import('./pages/public/Support'));
 const CompteSuspendu = React.lazy(() => import('./pages/public/CompteSuspendu'));
 const DevisFactures = React.lazy(() => import('./pages/patron/DevisFactures'));
+const MonImage = React.lazy(() => import('./pages/patron/MonImage'));
 const DashboardEmploye = React.lazy(() => import('./pages/employe/Dashboard'));
 
 const LazySpinner = () => (
@@ -229,6 +230,7 @@ function AppRoutes() {
               <Route path="rappel-juridique" element={<Navigate to="/patron/documents" replace />} />
               <Route path="reputation"       element={<Navigate to="/patron/clients-rfm" replace />} />
               <Route path="devis-factures"   element={<DevisFactures />} />
+              <Route path="mon-image"        element={<MonImage />} />
               <Route path="profil"           element={<ProfilPatron />} />
             </Routes>
           </Layout>

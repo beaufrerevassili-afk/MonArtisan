@@ -51,6 +51,33 @@ async function ensureTables() {
       cree_le TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS profil_entreprise (
+      id SERIAL PRIMARY KEY,
+      patron_id INTEGER UNIQUE NOT NULL,
+      description TEXT,
+      specialites TEXT,
+      zone_intervention VARCHAR(500),
+      certifications JSONB DEFAULT '[]',
+      photos JSONB DEFAULT '[]',
+      annee_creation VARCHAR(10),
+      effectif VARCHAR(50),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS avis_clients (
+      id SERIAL PRIMARY KEY,
+      patron_id INTEGER NOT NULL,
+      client_nom VARCHAR(255),
+      client_id INTEGER,
+      projet_titre VARCHAR(255),
+      note INTEGER CHECK (note >= 1 AND note <= 5),
+      commentaire TEXT,
+      reponse_patron TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   // Add patron_id column if missing (for existing tables)
   await db.query('ALTER TABLE stock_articles ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE agenda_events ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
@@ -551,6 +578,61 @@ router.get('/chantiers/archives', async (req, res) => {
     res.json({ chantiers: result.rows.map(mapChantier) });
   } catch (err) {
     console.error('GET /patron/chantiers/archives :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// ============================================================
+//  PROFIL ENTREPRISE (image publique)
+// ============================================================
+
+// GET /patron/mon-image — Mon profil entreprise (authentifié)
+router.get('/mon-image', async (req, res) => {
+  try {
+    const { rows: profil } = await db.query('SELECT * FROM profil_entreprise WHERE patron_id = $1', [req.user.id]);
+    const { rows: avis } = await db.query('SELECT * FROM avis_clients WHERE patron_id = $1 ORDER BY created_at DESC', [req.user.id]);
+    const noteMoyenne = avis.length > 0 ? Math.round(avis.reduce((s, a) => s + a.note, 0) / avis.length * 10) / 10 : null;
+    res.json({
+      profil: profil[0] || null,
+      avis: avis.map(a => ({ id: a.id, clientNom: a.client_nom, projetTitre: a.projet_titre, note: a.note, commentaire: a.commentaire, reponsePatron: a.reponse_patron, creeLe: a.created_at })),
+      noteMoyenne,
+      nbAvis: avis.length
+    });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /patron/mon-image — Mettre à jour mon profil entreprise (authentifié)
+router.put('/mon-image', async (req, res) => {
+  try {
+    const { description, specialites, zoneIntervention, certifications, photos, anneeCreation, effectif } = req.body;
+    // Photos are base64 strings, limit total size
+    if (photos && JSON.stringify(photos).length > 2000000) return res.status(400).json({ erreur: 'Photos trop volumineuses (max 2 Mo total)' });
+
+    const { rows: existing } = await db.query('SELECT id FROM profil_entreprise WHERE patron_id = $1', [req.user.id]);
+    if (existing.length > 0) {
+      await db.query(`UPDATE profil_entreprise SET description=$1, specialites=$2, zone_intervention=$3, certifications=$4, photos=$5, annee_creation=$6, effectif=$7, updated_at=NOW() WHERE patron_id=$8`,
+        [description, specialites, zoneIntervention, JSON.stringify(certifications || []), JSON.stringify(photos || []), anneeCreation, effectif, req.user.id]);
+    } else {
+      await db.query(`INSERT INTO profil_entreprise (patron_id, description, specialites, zone_intervention, certifications, photos, annee_creation, effectif) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [req.user.id, description, specialites, zoneIntervention, JSON.stringify(certifications || []), JSON.stringify(photos || []), anneeCreation, effectif]);
+    }
+    res.json({ message: 'Profil mis à jour' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /patron/avis-client/:id/repondre — Répondre à un avis client (authentifié)
+router.put('/avis-client/:id/repondre', async (req, res) => {
+  try {
+    const { reponse } = req.body;
+    if (!reponse?.trim()) return res.status(400).json({ erreur: 'Réponse requise' });
+    const { rows } = await db.query('UPDATE avis_clients SET reponse_patron = $1 WHERE id = $2 AND patron_id = $3 RETURNING *', [reponse.trim(), req.params.id, req.user.id]);
+    if (!rows[0]) return res.status(404).json({ erreur: 'Avis introuvable' });
+    res.json({ message: 'Réponse enregistrée' });
+  } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });

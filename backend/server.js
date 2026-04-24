@@ -94,6 +94,36 @@ app.use('/',             authRoutes);
 app.use('/recrutement',  recrutementRoutes); // routes publiques + patron intégrées
 app.use('/reservations', reservationsRoutes); // réservations publiques sans compte
 app.use('/com',          comRoutes);          // Freample Com (briefs publics + projets auth)
+
+// Profil entreprise public (pas d'auth)
+app.get('/entreprise/:id', async (req, res) => {
+  try {
+    const patronId = parseInt(req.params.id);
+    const { rows: userRows } = await db.query('SELECT id, nom, ville, metier, photo_profil FROM users WHERE id = $1', [patronId]);
+    if (!userRows[0]) return res.status(404).json({ erreur: 'Entreprise introuvable' });
+
+    const { rows: profil } = await db.query('SELECT * FROM profil_entreprise WHERE patron_id = $1', [patronId]);
+    const { rows: avis } = await db.query('SELECT id, client_nom, projet_titre, note, commentaire, reponse_patron, created_at FROM avis_clients WHERE patron_id = $1 ORDER BY created_at DESC', [patronId]);
+    const noteMoyenne = avis.length > 0 ? Math.round(avis.reduce((s, a) => s + a.note, 0) / avis.length * 10) / 10 : null;
+
+    const user = userRows[0];
+    res.json({
+      entreprise: { id: user.id, nom: user.nom, ville: user.ville, metier: user.metier, photoProfil: user.photo_profil },
+      profil: profil[0] ? {
+        description: profil[0].description, specialites: profil[0].specialites,
+        zoneIntervention: profil[0].zone_intervention, certifications: profil[0].certifications,
+        photos: profil[0].photos, anneeCreation: profil[0].annee_creation, effectif: profil[0].effectif
+      } : null,
+      avis: avis.map(a => ({ id: a.id, clientNom: a.client_nom, projetTitre: a.projet_titre, note: a.note, commentaire: a.commentaire, reponsePatron: a.reponse_patron, creeLe: a.created_at })),
+      noteMoyenne,
+      nbAvis: avis.length
+    });
+  } catch (err) {
+    console.error('GET /entreprise/:id :', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 app.use('/modules',     authenticateToken, modulesRoutes);  // Incidents, NC, BSDD, Certifs, Audits, etc.
 
 // Authentifiées
@@ -175,3 +205,5 @@ db.testConnection().then(() => {
     console.log(`Documentation : GET http://localhost:${PORT}/\n`);
   });
 });
+
+module.exports = app;
