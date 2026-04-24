@@ -14,6 +14,8 @@ import DevisRapide from '../../components/devis/DevisRapide';
 import EnvoyerDevisButton from '../../components/devis/EnvoyerDevisButton';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import api from '../../services/api';
+import { genererDevisPDF } from '../../utils/devisPDF';
+import { getProfilEntreprise } from '../../utils/profilEntreprise';
 
 const CARD = { background: '#fff', border: '1px solid #E5E5EA', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
 const BTN = { padding: '8px 18px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
@@ -226,6 +228,30 @@ export default function DevisFactures() {
     };
     setDevis(prev => [newDevis, ...prev]);
     setLienGenere(lien);
+  }
+
+  async function dupliquerDevis(d) {
+    const newDevis = { ...d, id: undefined, numero: undefined, statut: 'brouillon', date: new Date().toISOString(), signeLe: null, envoyeLe: null, signatureNom: null };
+    if (!_isDemo()) {
+      try {
+        await api.post('/patron/devis-pro', {
+          client: typeof d.client === 'string' ? { nom: d.client } : d.client,
+          titre: d.objet || d.titre || 'Copie de ' + d.numero,
+          objet: d.objet || d.titre || 'Copie de ' + d.numero,
+          lignes: d.lignes || [],
+          validiteJours: d.validite || 30,
+          montantHT: d.montantHT, tva: d.tva, montantTTC: d.montantTTC,
+          statut: 'brouillon',
+        });
+        loadDevisFromApi();
+        addToast('Devis duplique avec succes', 'success');
+      } catch { addToast('Erreur lors de la duplication', 'error'); }
+    } else {
+      newDevis.id = Date.now();
+      newDevis.numero = 'DEV-' + new Date().getFullYear() + '-' + String(devis.length + 1).padStart(3, '0');
+      setDevis(prev => [newDevis, ...prev]);
+      addToast('Devis duplique avec succes', 'success');
+    }
   }
 
   const sourceBadge = (source) => {
@@ -553,6 +579,12 @@ export default function DevisFactures() {
                   {(d.statut === 'signe' || d.statut === 'signé') && factures.find(f => f.devisId === d.id) && (
                     <span style={{ fontSize: 10, fontWeight: 600, color: '#16A34A', background: '#F0FDF4', padding: '4px 10px', borderRadius: 4 }}>Facturé</span>
                   )}
+                  <button onClick={() => dupliquerDevis(d)} style={{ ...BTN_O, fontSize: 11, padding: '6px 12px' }}>Dupliquer</button>
+                  <button onClick={() => {
+                    const entreprise = getProfilEntreprise(user);
+                    const pdf = genererDevisPDF(d, entreprise);
+                    pdf.save(`${d.numero || 'devis'}.pdf`);
+                  }} style={{ ...BTN_O, fontSize: 11, padding: '6px 12px' }}>PDF</button>
                 </div>
               </div>
             );

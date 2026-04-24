@@ -128,10 +128,42 @@ async function ensureTables() {
       cree_le TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  // Bibliothèque d'ouvrages personnalisée
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS bibliotheque_ouvrages (
+      id SERIAL PRIMARY KEY,
+      patron_id INTEGER NOT NULL,
+      categorie VARCHAR(100),
+      description VARCHAR(500) NOT NULL,
+      unite VARCHAR(20) DEFAULT 'u',
+      prix_unitaire NUMERIC DEFAULT 0,
+      tva NUMERIC DEFAULT 10,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  // Situations de chantier (factures intermédiaires)
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS situations_chantier (
+      id SERIAL PRIMARY KEY,
+      devis_id INTEGER,
+      devis_numero VARCHAR(50),
+      numero_situation INTEGER DEFAULT 1,
+      pourcentage NUMERIC DEFAULT 0,
+      montant_ht NUMERIC DEFAULT 0,
+      tva NUMERIC DEFAULT 0,
+      montant_ttc NUMERIC DEFAULT 0,
+      cumul_anterieur NUMERIC DEFAULT 0,
+      client JSONB,
+      statut VARCHAR(20) DEFAULT 'brouillon',
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   // Add patron_id column if missing (for existing tables)
   await db.query('ALTER TABLE stock_articles ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE agenda_events ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE avis ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
 }
 ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message));
 
@@ -223,7 +255,7 @@ function mapChantier(c) {
 
 router.get('/devis-pro', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM devis_pro ORDER BY cree_le DESC');
+    const result = await db.query('SELECT * FROM devis_pro WHERE patron_id = $1 OR patron_id IS NULL ORDER BY cree_le DESC', [req.user.id]);
     const devis  = result.rows.map(mapDevis);
 
     const nonBrouillons = devis.filter(d => d.statut !== 'brouillon');
@@ -284,8 +316,8 @@ router.post('/devis-pro', async (req, res) => {
 
     const result = await db.query(
       `INSERT INTO devis_pro
-         (numero, client, titre, lignes, total_ht, tva, total_ttc, validite, validite_date, conditions, statut, envoye_le, signe_le, signature_nom)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'brouillon', NULL, NULL, NULL)
+         (numero, client, titre, lignes, total_ht, tva, total_ttc, validite, validite_date, conditions, statut, envoye_le, signe_le, signature_nom, patron_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'brouillon', NULL, NULL, NULL, $11)
        RETURNING *`,
       [
         numero,
@@ -298,6 +330,7 @@ router.post('/devis-pro', async (req, res) => {
         validiteJours,
         validiteDate,
         conditions || 'Acompte 30 % à la commande. Solde à réception des travaux.',
+        req.user.id,
       ]
     );
 
@@ -796,6 +829,107 @@ router.delete('/bons-livraison/:id', async (req, res) => {
   try {
     await db.query('DELETE FROM bons_livraison WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
     res.json({ message: 'Bon supprimé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// ============================================================
+//  AUTO-RELANCE DEVIS SANS RÉPONSE (7 JOURS)
+// ============================================================
+async function checkDevisRelance() {
+  try {
+    const { notify } = require('../utils/notify');
+    const { rows } = await db.query(`
+      SELECT id, numero, titre, client, patron_id
+      FROM devis_pro
+      WHERE statut = 'envoyé'
+        AND envoye_le < NOW() - INTERVAL '7 days'
+        AND envoye_le > NOW() - INTERVAL '8 days'
+    `);
+    for (const d of rows) {
+      const clientNom = typeof d.client === 'string' ? d.client : (d.client?.nom || 'Client');
+      await notify(d.patron_id, 'devis', 'Devis sans réponse',
+        `Le devis ${d.numero} envoyé à ${clientNom} n'a pas été signé depuis 7 jours. Pensez à relancer !`,
+        '/patron/devis-factures'
+      ).catch(() => {});
+    }
+  } catch (err) {
+    console.error('checkDevisRelance:', err.message);
+  }
+}
+setTimeout(checkDevisRelance, 20000);
+setInterval(checkDevisRelance, 24 * 60 * 60 * 1000);
+
+// ============================================================
+//  BIBLIOTHÈQUE D'OUVRAGES PERSONNALISÉE
+// ============================================================
+
+// GET /patron/bibliotheque
+router.get('/bibliotheque', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM bibliotheque_ouvrages WHERE patron_id = $1 ORDER BY categorie, description', [req.user.id]);
+    res.json({ ouvrages: rows.map(r => ({ id: r.id, categorie: r.categorie, description: r.description, unite: r.unite, prixUnitaire: parseFloat(r.prix_unitaire), tva: parseFloat(r.tva) })) });
+  } catch { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/bibliotheque
+router.post('/bibliotheque', async (req, res) => {
+  try {
+    const { categorie, description, unite, prixUnitaire, tva } = req.body;
+    if (!description) return res.status(400).json({ erreur: 'Description requise' });
+    const { rows } = await db.query('INSERT INTO bibliotheque_ouvrages (patron_id, categorie, description, unite, prix_unitaire, tva) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+      [req.user.id, categorie || 'Divers', description, unite || 'u', prixUnitaire || 0, tva || 10]);
+    res.status(201).json({ ouvrage: rows[0] });
+  } catch { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// DELETE /patron/bibliotheque/:id
+router.delete('/bibliotheque/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM bibliotheque_ouvrages WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
+    res.json({ message: 'Supprimé' });
+  } catch { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// ============================================================
+//  SITUATIONS DE CHANTIER (factures intermédiaires)
+// ============================================================
+
+// GET /patron/situations
+router.get('/situations', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM situations_chantier WHERE patron_id = $1 ORDER BY cree_le DESC', [req.user.id]);
+    res.json({ situations: rows });
+  } catch { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/situations — Create a situation from a signed devis
+router.post('/situations', async (req, res) => {
+  try {
+    const { devisId, devisNumero, pourcentage, client } = req.body;
+    if (!pourcentage) return res.status(400).json({ erreur: 'Pourcentage requis' });
+
+    // Get previous situations for this devis
+    const { rows: prev } = await db.query('SELECT COALESCE(SUM(pourcentage), 0) as cumul FROM situations_chantier WHERE devis_id = $1', [devisId]);
+    const cumulAnterieur = parseFloat(prev[0].cumul) || 0;
+    if (cumulAnterieur + parseFloat(pourcentage) > 100) return res.status(400).json({ erreur: 'Le cumul dépasse 100%' });
+
+    // Get devis total
+    const { rows: devisRows } = await db.query('SELECT total_ht, tva, total_ttc FROM devis_pro WHERE id = $1', [devisId]);
+    const devisTotals = devisRows[0] || { total_ht: 0, tva: 0, total_ttc: 0 };
+
+    const pct = parseFloat(pourcentage) / 100;
+    const montantHT = Math.round(parseFloat(devisTotals.total_ht) * pct * 100) / 100;
+    const tvaMontant = Math.round(parseFloat(devisTotals.tva) * pct * 100) / 100;
+    const montantTTC = montantHT + tvaMontant;
+
+    const numSit = Math.floor(cumulAnterieur / 10) + 1;
+
+    const { rows } = await db.query(`
+      INSERT INTO situations_chantier (devis_id, devis_numero, numero_situation, pourcentage, montant_ht, tva, montant_ttc, cumul_anterieur, client, patron_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+    `, [devisId, devisNumero, numSit, pourcentage, montantHT, tvaMontant, montantTTC, cumulAnterieur, JSON.stringify(client || {}), req.user.id]);
+
+    res.status(201).json({ situation: rows[0], message: 'Situation créée' });
   } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
 });
 

@@ -3,8 +3,10 @@
 //  Permet de créer un devis en 30 secondes
 //  Pour le mode complet, utiliser DevisFormulaire (mode avancé)
 // ============================================================
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import DS from '../../design/luxe';
+import api from '../../services/api';
+import { isDemo as _isDemo } from '../../utils/storage';
 
 const CARD = { background: '#fff', border: '1px solid #E8E6E1', borderRadius: 14, padding: 20 };
 const INP = { width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 14, fontFamily: DS.font, outline: 'none', boxSizing: 'border-box', color: '#1A1A1A' };
@@ -52,6 +54,14 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
   const [lignes, setLignes] = useState([{ desc: '', prix: '' }]);
   const [tvaRate, setTvaRate] = useState(10);
   const [saving, setSaving] = useState(false);
+  const [biblio, setBiblio] = useState([]);
+  const [showBiblio, setShowBiblio] = useState(false);
+
+  useEffect(() => {
+    if (!_isDemo()) {
+      api.get('/patron/bibliotheque').then(({ data }) => setBiblio(data.ouvrages || [])).catch(() => {});
+    }
+  }, []);
 
   const totalHT = useMemo(() => lignes.reduce((s, l) => s + (Number(l.prix) || 0), 0), [lignes]);
   const totalTVA = Math.round(totalHT * tvaRate) / 100;
@@ -63,6 +73,25 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
 
   function useTemplate(tmpl) {
     setLignes(tmpl.lines.map(l => ({ desc: l.desc, prix: l.prix })));
+  }
+
+  function addFromBiblio(ouvrage) {
+    setLignes(prev => [...prev, { desc: ouvrage.description, prix: ouvrage.prixUnitaire || '' }]);
+    setShowBiblio(false);
+  }
+
+  function saveLineToBiblio(ligne) {
+    if (!ligne.desc.trim() || _isDemo()) return;
+    api.post('/patron/bibliotheque', { description: ligne.desc, prixUnitaire: Number(ligne.prix) || 0, categorie: 'Divers' })
+      .then(({ data }) => {
+        setBiblio(prev => [...prev, { id: data.ouvrage?.id, description: ligne.desc, prixUnitaire: Number(ligne.prix) || 0, categorie: 'Divers', unite: 'u', tva: 10 }]);
+      }).catch(() => {});
+  }
+
+  function removeBiblioItem(id) {
+    api.delete('/patron/bibliotheque/' + id).then(() => {
+      setBiblio(prev => prev.filter(o => o.id !== id));
+    }).catch(() => {});
   }
 
   function soumettre() {
@@ -120,6 +149,34 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
         </div>
       </div>
 
+      {/* Bibliothèque d'ouvrages */}
+      <div style={{ marginBottom: 16 }}>
+        <button onClick={() => setShowBiblio(!showBiblio)}
+          style={{ padding: '8px 16px', background: showBiblio ? '#2C2520' : '#F8F7F4', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font, color: showBiblio ? '#F5EFE0' : '#1A1A1A', transition: 'all .15s' }}>
+          {'\uD83D\uDCDA'} Ma biblioth\u00e8que {biblio.length > 0 && `(${biblio.length})`}
+        </button>
+        {showBiblio && (
+          <div style={{ marginTop: 8, background: '#FAFAF8', border: '1px solid #E8E6E1', borderRadius: 10, padding: 12, maxHeight: 200, overflowY: 'auto' }}>
+            {biblio.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#636363', textAlign: 'center', padding: 12 }}>
+                Aucun ouvrage sauvegard\u00e9. Utilisez le bouton {'\uD83D\uDCBE'} sur une ligne pour en ajouter.
+              </div>
+            ) : (
+              biblio.map(o => (
+                <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, cursor: 'pointer', transition: 'background .1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#F5EFE0'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <div style={{ flex: 1, fontSize: 13, color: '#1A1A1A' }} onClick={() => addFromBiblio(o)}>
+                    {o.description} <span style={{ color: '#636363', fontSize: 11 }}>— {o.prixUnitaire} \u20ac</span>
+                  </div>
+                  <button onClick={() => removeBiblioItem(o.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 14, padding: 2 }}>\u00d7</button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Templates rapides */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Modele rapide</div>
@@ -162,8 +219,11 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
                   style={{ ...INP, paddingRight: 28, textAlign: 'right' }} />
                 <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#636363', fontSize: 13, pointerEvents: 'none' }}>€</span>
               </div>
+              {l.desc.trim() && (
+                <button onClick={() => saveLineToBiblio(l)} title="Sauvegarder dans ma biblioth\u00e8que" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A68B4B', fontSize: 14, padding: 4, flexShrink: 0 }}>{'\uD83D\uDCBE'}</button>
+              )}
               {lignes.length > 1 && (
-                <button onClick={() => removeLigne(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 16, padding: 4, flexShrink: 0 }}>×</button>
+                <button onClick={() => removeLigne(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 16, padding: 4, flexShrink: 0 }}>\u00d7</button>
               )}
             </div>
           ))}
