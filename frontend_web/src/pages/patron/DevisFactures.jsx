@@ -87,9 +87,20 @@ export default function DevisFactures() {
   const [lienForm, setLienForm] = useState({ clientNom: '', clientEmail: '', objet: '', montantHT: '' });
   const [lienGenere, setLienGenere] = useState(null);
 
+  // Avoirs, Bons de commande, Bons de livraison
+  const [avoirs, setAvoirs] = useState(() => isDemo ? demoGet('freample_avoirs', []) : []);
+  const [bonsCommande, setBonsCommande] = useState(() => isDemo ? demoGet('freample_bons_commande', []) : []);
+  const [bonsLivraison, setBonsLivraison] = useState(() => isDemo ? demoGet('freample_bons_livraison', []) : []);
+  const [showNewAvoir, setShowNewAvoir] = useState(false);
+  const [showNewBC, setShowNewBC] = useState(false);
+  const [showNewBL, setShowNewBL] = useState(false);
+
   // Persist (demo only — demoSet is a no-op for real accounts)
   useEffect(() => { demoSet('freample_devis', devis); }, [devis]);
   useEffect(() => { demoSet('freample_factures_patron', factures); }, [factures]);
+  useEffect(() => { demoSet('freample_avoirs', avoirs); }, [avoirs]);
+  useEffect(() => { demoSet('freample_bons_commande', bonsCommande); }, [bonsCommande]);
+  useEffect(() => { demoSet('freample_bons_livraison', bonsLivraison); }, [bonsLivraison]);
 
   // Load devis from API for real accounts
   const loadDevisFromApi = () => {
@@ -114,7 +125,14 @@ export default function DevisFactures() {
       })));
     }).catch(() => {});
   };
-  useEffect(() => { loadDevisFromApi(); }, []);
+  useEffect(() => {
+    loadDevisFromApi();
+    if (!_isDemo()) {
+      api.get('/patron/avoirs').then(({ data }) => setAvoirs(data.avoirs || [])).catch(() => {});
+      api.get('/patron/bons-commande').then(({ data }) => setBonsCommande(data.bons || [])).catch(() => {});
+      api.get('/patron/bons-livraison').then(({ data }) => setBonsLivraison(data.bons || [])).catch(() => {});
+    }
+  }, []);
 
   // KPIs
   const devisEnAttente = devis.filter(d => d.statut === 'envoye').length;
@@ -461,7 +479,7 @@ export default function DevisFactures() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#F2F2F7', borderRadius: 12, padding: 4, marginBottom: 22, width: 'fit-content' }}>
-        {[{ id: 'devis', label: `Devis (${filteredDevis.length})` }, { id: 'factures', label: `Factures (${filteredFactures.length})` }].map(t => (
+        {[{ id: 'devis', label: `Devis (${filteredDevis.length})` }, { id: 'factures', label: `Factures (${filteredFactures.length})` }, { id: 'avoirs', label: `Avoirs (${avoirs.length})` }, { id: 'bons-commande', label: `Bons cde (${bonsCommande.length})` }, { id: 'bons-livraison', label: `Bons liv. (${bonsLivraison.length})` }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '8px 20px', border: 'none', borderRadius: 9, cursor: 'pointer', fontSize: 14, fontWeight: 600, background: tab === t.id ? '#fff' : 'transparent', color: tab === t.id ? '#1C1C1E' : '#6E6E73', boxShadow: tab === t.id ? '0 1px 4px rgba(0,0,0,0.10)' : 'none' }}>{t.label}</button>
         ))}
       </div>
@@ -609,6 +627,242 @@ export default function DevisFactures() {
                     </div>
                   </div>
                 )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ AVOIRS ═══ */}
+      {tab === 'avoirs' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#6E6E73' }}>{avoirs.length} avoir(s)</span>
+            <button onClick={() => setShowNewAvoir(!showNewAvoir)} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouvel avoir</button>
+          </div>
+
+          {showNewAvoir && (() => {
+            const [form, setForm] = [showNewAvoir === true ? { factureOrigine: '', client: '', motif: 'Retour marchandise', lignes: [{ description: '', montant: '' }] } : showNewAvoir, (v) => setShowNewAvoir(typeof v === 'function' ? v(showNewAvoir === true ? { factureOrigine: '', client: '', motif: 'Retour marchandise', lignes: [{ description: '', montant: '' }] } : showNewAvoir) : v)];
+            const totalHT = form.lignes?.reduce((s, l) => s + (Number(l.montant) || 0), 0) || 0;
+            const tva = Math.round(totalHT * 0.2);
+            const totalTTC = totalHT + tva;
+            return (
+              <div style={{ ...CARD, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Nouvel avoir</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div><label style={LBL}>N° facture d'origine</label><input value={form.factureOrigine || ''} onChange={e => setForm({ ...form, factureOrigine: e.target.value })} placeholder="FAC-2026-001 (optionnel)" style={INP} /></div>
+                  <div><label style={LBL}>Client</label><input value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} placeholder="Nom du client" style={INP} /></div>
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={LBL}>Motif</label>
+                  <select value={form.motif || 'Retour marchandise'} onChange={e => setForm({ ...form, motif: e.target.value })} style={INP}>
+                    {['Retour marchandise', 'Erreur de facturation', 'Remise commerciale', 'Annulation partielle', 'Autre'].map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <label style={LBL}>Lignes</label>
+                {(form.lignes || []).map((l, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input value={l.description} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], description: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Description" style={{ ...INP, flex: 2 }} />
+                    <input type="number" value={l.montant} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], montant: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Montant HT" style={{ ...INP, flex: 1 }} />
+                    {form.lignes.length > 1 && <button onClick={() => { const ls = form.lignes.filter((_, j) => j !== i); setForm({ ...form, lignes: ls }); }} style={{ ...BTN_O, padding: '6px 10px', fontSize: 11, color: '#DC2626' }}>x</button>}
+                  </div>
+                ))}
+                <button onClick={() => setForm({ ...form, lignes: [...(form.lignes || []), { description: '', montant: '' }] })} style={{ ...BTN_O, fontSize: 11, marginTop: 4 }}>+ Ligne</button>
+                <div style={{ marginTop: 12, padding: '10px 14px', background: '#F8F9FA', borderRadius: 10, display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span>Total HT: <b>{fmtE(totalHT)}</b></span><span>TVA 20%: <b>{fmtE(tva)}</b></span><span>Total TTC: <b>{fmtE(totalTTC)}</b></span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <button onClick={() => {
+                    if (!form.client) { addToast('Client requis', 'error'); return; }
+                    const avoir = { id: Date.now(), numero: `AVO-${new Date().getFullYear()}-${String(avoirs.length + 1).padStart(3, '0')}`, factureOrigine: form.factureOrigine, client: form.client, motif: form.motif, lignes: form.lignes, montantHT: totalHT, tva, montantTTC: totalTTC, statut: 'emis', date: new Date().toISOString().slice(0, 10) };
+                    if (!isDemo) { api.post('/patron/avoirs', avoir).then(({ data }) => { setAvoirs(prev => [data.avoir || avoir, ...prev]); addToast('Avoir cree', 'success'); }).catch(() => { setAvoirs(prev => [avoir, ...prev]); addToast('Avoir cree (local)', 'success'); }); }
+                    else { setAvoirs(prev => [avoir, ...prev]); addToast('Avoir cree', 'success'); }
+                    setShowNewAvoir(false);
+                  }} style={BTN}>Creer l'avoir</button>
+                  <button onClick={() => setShowNewAvoir(false)} style={BTN_O}>Annuler</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {avoirs.length === 0 && !showNewAvoir && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucun avoir. Creez-en un avec le bouton ci-dessus.</div>}
+          {avoirs.map(a => {
+            const stColor = a.statut === 'emis' ? '#2563EB' : a.statut === 'rembourse' ? '#16A34A' : '#6E6E73';
+            const stBg = a.statut === 'emis' ? '#EFF6FF' : a.statut === 'rembourse' ? '#F0FDF4' : '#F2F2F7';
+            const stLabel = a.statut === 'emis' ? 'Emis' : a.statut === 'rembourse' ? 'Rembourse' : a.statut || 'Brouillon';
+            return (
+              <div key={a.id} style={{ ...CARD, borderLeft: `3px solid ${stColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700 }}>{a.numero}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: stColor, background: stBg, padding: '2px 8px', borderRadius: 4 }}>{stLabel}</span>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{a.client} — {a.motif}</div>
+                  <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>{a.date}{a.factureOrigine ? ` — Ref. ${a.factureOrigine}` : ''}</div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: '#DC2626' }}>-{fmtE(a.montantTTC)}</div>
+                  <div style={{ fontSize: 11, color: '#6E6E73' }}>{fmtE(a.montantHT)} HT</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ BONS DE COMMANDE ═══ */}
+      {tab === 'bons-commande' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#6E6E73' }}>{bonsCommande.length} bon(s) de commande</span>
+            <button onClick={() => setShowNewBC(!showNewBC)} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouveau bon</button>
+          </div>
+
+          {showNewBC && (() => {
+            const [form, setForm] = [showNewBC === true ? { fournisseur: '', chantier: '', dateLivraison: '', lignes: [{ description: '', quantite: '', prixUnitaire: '' }] } : showNewBC, (v) => setShowNewBC(typeof v === 'function' ? v(showNewBC === true ? { fournisseur: '', chantier: '', dateLivraison: '', lignes: [{ description: '', quantite: '', prixUnitaire: '' }] } : showNewBC) : v)];
+            const totalHT = form.lignes?.reduce((s, l) => s + (Number(l.quantite) || 0) * (Number(l.prixUnitaire) || 0), 0) || 0;
+            const tva = Math.round(totalHT * 0.2);
+            const totalTTC = totalHT + tva;
+            return (
+              <div style={{ ...CARD, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Nouveau bon de commande</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div><label style={LBL}>Fournisseur</label><input value={form.fournisseur || ''} onChange={e => setForm({ ...form, fournisseur: e.target.value })} placeholder="Nom du fournisseur" style={INP} /></div>
+                  <div><label style={LBL}>Chantier</label><input value={form.chantier || ''} onChange={e => setForm({ ...form, chantier: e.target.value })} placeholder="Reference chantier" style={INP} /></div>
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={LBL}>Date de livraison prevue</label>
+                  <input type="date" value={form.dateLivraison || ''} onChange={e => setForm({ ...form, dateLivraison: e.target.value })} style={INP} />
+                </div>
+                <label style={LBL}>Lignes</label>
+                {(form.lignes || []).map((l, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input value={l.description} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], description: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Description" style={{ ...INP, flex: 3 }} />
+                    <input type="number" value={l.quantite} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], quantite: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Qte" style={{ ...INP, flex: 1 }} />
+                    <input type="number" value={l.prixUnitaire} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], prixUnitaire: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="PU HT" style={{ ...INP, flex: 1 }} />
+                    {form.lignes.length > 1 && <button onClick={() => { const ls = form.lignes.filter((_, j) => j !== i); setForm({ ...form, lignes: ls }); }} style={{ ...BTN_O, padding: '6px 10px', fontSize: 11, color: '#DC2626' }}>x</button>}
+                  </div>
+                ))}
+                <button onClick={() => setForm({ ...form, lignes: [...(form.lignes || []), { description: '', quantite: '', prixUnitaire: '' }] })} style={{ ...BTN_O, fontSize: 11, marginTop: 4 }}>+ Ligne</button>
+                <div style={{ marginTop: 12, padding: '10px 14px', background: '#F8F9FA', borderRadius: 10, display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span>Total HT: <b>{fmtE(totalHT)}</b></span><span>TVA 20%: <b>{fmtE(tva)}</b></span><span>Total TTC: <b>{fmtE(totalTTC)}</b></span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <button onClick={() => {
+                    if (!form.fournisseur) { addToast('Fournisseur requis', 'error'); return; }
+                    const bc = { id: Date.now(), numero: `BC-${new Date().getFullYear()}-${String(bonsCommande.length + 1).padStart(3, '0')}`, fournisseur: form.fournisseur, chantier: form.chantier, dateLivraison: form.dateLivraison, lignes: form.lignes, montantHT: totalHT, tva, montantTTC: totalTTC, statut: 'brouillon', date: new Date().toISOString().slice(0, 10) };
+                    if (!isDemo) { api.post('/patron/bons-commande', bc).then(({ data }) => { setBonsCommande(prev => [data.bon || bc, ...prev]); addToast('Bon de commande cree', 'success'); }).catch(() => { setBonsCommande(prev => [bc, ...prev]); addToast('Bon de commande cree (local)', 'success'); }); }
+                    else { setBonsCommande(prev => [bc, ...prev]); addToast('Bon de commande cree', 'success'); }
+                    setShowNewBC(false);
+                  }} style={BTN}>Creer le bon</button>
+                  <button onClick={() => setShowNewBC(false)} style={BTN_O}>Annuler</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {bonsCommande.length === 0 && !showNewBC && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucun bon de commande.</div>}
+          {bonsCommande.map(bc => {
+            const stMap = { brouillon: { color: '#6E6E73', bg: '#F2F2F7', label: 'Brouillon' }, envoye: { color: '#D97706', bg: '#FFFBEB', label: 'Envoye' }, confirme: { color: '#2563EB', bg: '#EFF6FF', label: 'Confirme' }, livre: { color: '#16A34A', bg: '#F0FDF4', label: 'Livre' } };
+            const st = stMap[bc.statut] || stMap.brouillon;
+            return (
+              <div key={bc.id} style={{ ...CARD, borderLeft: `3px solid ${st.color}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700 }}>{bc.numero}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 4 }}>{st.label}</span>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{bc.fournisseur}{bc.chantier ? ` — ${bc.chantier}` : ''}</div>
+                  <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>{bc.date}{bc.dateLivraison ? ` — Livraison prevue ${bc.dateLivraison}` : ''}</div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtE(bc.montantTTC)}</div>
+                  <div style={{ fontSize: 11, color: '#6E6E73' }}>{fmtE(bc.montantHT)} HT</div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  {bc.statut === 'brouillon' && <button onClick={() => { setBonsCommande(prev => prev.map(b => b.id === bc.id ? { ...b, statut: 'envoye' } : b)); }} style={{ ...BTN_O, fontSize: 11, padding: '6px 12px' }}>Envoyer</button>}
+                  {bc.statut === 'envoye' && <button onClick={() => { setBonsCommande(prev => prev.map(b => b.id === bc.id ? { ...b, statut: 'confirme' } : b)); }} style={{ ...BTN, background: '#2563EB', fontSize: 11, padding: '6px 12px' }}>Confirmer</button>}
+                  {bc.statut === 'confirme' && <button onClick={() => { setBonsCommande(prev => prev.map(b => b.id === bc.id ? { ...b, statut: 'livre' } : b)); }} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 12px' }}>Marquer livre</button>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ BONS DE LIVRAISON ═══ */}
+      {tab === 'bons-livraison' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#6E6E73' }}>{bonsLivraison.length} bon(s) de livraison</span>
+            <button onClick={() => setShowNewBL(!showNewBL)} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouveau bon</button>
+          </div>
+
+          {showNewBL && (() => {
+            const [form, setForm] = [showNewBL === true ? { fournisseur: '', chantier: '', dateReception: new Date().toISOString().slice(0, 10), receptionnaire: '', conforme: true, observations: '', lignes: [{ description: '', quantiteCommandee: '', quantiteRecue: '' }] } : showNewBL, (v) => setShowNewBL(typeof v === 'function' ? v(showNewBL === true ? { fournisseur: '', chantier: '', dateReception: new Date().toISOString().slice(0, 10), receptionnaire: '', conforme: true, observations: '', lignes: [{ description: '', quantiteCommandee: '', quantiteRecue: '' }] } : showNewBL) : v)];
+            return (
+              <div style={{ ...CARD, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Nouveau bon de livraison</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div><label style={LBL}>Fournisseur</label><input value={form.fournisseur || ''} onChange={e => setForm({ ...form, fournisseur: e.target.value })} placeholder="Nom du fournisseur" style={INP} /></div>
+                  <div><label style={LBL}>Chantier</label><input value={form.chantier || ''} onChange={e => setForm({ ...form, chantier: e.target.value })} placeholder="Reference chantier" style={INP} /></div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div><label style={LBL}>Date de reception</label><input type="date" value={form.dateReception || ''} onChange={e => setForm({ ...form, dateReception: e.target.value })} style={INP} /></div>
+                  <div><label style={LBL}>Receptionnaire</label><input value={form.receptionnaire || ''} onChange={e => setForm({ ...form, receptionnaire: e.target.value })} placeholder="Qui a receptionne ?" style={INP} /></div>
+                </div>
+                <label style={LBL}>Lignes</label>
+                {(form.lignes || []).map((l, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input value={l.description} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], description: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Description" style={{ ...INP, flex: 3 }} />
+                    <input type="number" value={l.quantiteCommandee} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], quantiteCommandee: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Qte cde" style={{ ...INP, flex: 1 }} />
+                    <input type="number" value={l.quantiteRecue} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], quantiteRecue: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Qte recue" style={{ ...INP, flex: 1 }} />
+                    {form.lignes.length > 1 && <button onClick={() => { const ls = form.lignes.filter((_, j) => j !== i); setForm({ ...form, lignes: ls }); }} style={{ ...BTN_O, padding: '6px 10px', fontSize: 11, color: '#DC2626' }}>x</button>}
+                  </div>
+                ))}
+                <button onClick={() => setForm({ ...form, lignes: [...(form.lignes || []), { description: '', quantiteCommandee: '', quantiteRecue: '' }] })} style={{ ...BTN_O, fontSize: 11, marginTop: 4 }}>+ Ligne</button>
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 12 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={form.conforme !== false} onChange={e => setForm({ ...form, conforme: e.target.checked })} />
+                    Livraison conforme
+                  </label>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <label style={LBL}>Observations</label>
+                  <textarea value={form.observations || ''} onChange={e => setForm({ ...form, observations: e.target.value })} placeholder="Remarques, reserves..." rows={3} style={{ ...INP, resize: 'vertical' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <button onClick={() => {
+                    if (!form.fournisseur) { addToast('Fournisseur requis', 'error'); return; }
+                    const bl = { id: Date.now(), numero: `BL-${new Date().getFullYear()}-${String(bonsLivraison.length + 1).padStart(3, '0')}`, fournisseur: form.fournisseur, chantier: form.chantier, dateReception: form.dateReception, receptionnaire: form.receptionnaire, conforme: form.conforme !== false, observations: form.observations, lignes: form.lignes, date: new Date().toISOString().slice(0, 10) };
+                    if (!isDemo) { api.post('/patron/bons-livraison', bl).then(({ data }) => { setBonsLivraison(prev => [data.bon || bl, ...prev]); addToast('Bon de livraison cree', 'success'); }).catch(() => { setBonsLivraison(prev => [bl, ...prev]); addToast('Bon de livraison cree (local)', 'success'); }); }
+                    else { setBonsLivraison(prev => [bl, ...prev]); addToast('Bon de livraison cree', 'success'); }
+                    setShowNewBL(false);
+                  }} style={BTN}>Creer le bon</button>
+                  <button onClick={() => setShowNewBL(false)} style={BTN_O}>Annuler</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {bonsLivraison.length === 0 && !showNewBL && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucun bon de livraison.</div>}
+          {bonsLivraison.map(bl => {
+            const conformeColor = bl.conforme ? '#16A34A' : '#DC2626';
+            const conformeBg = bl.conforme ? '#F0FDF4' : '#FEF2F2';
+            return (
+              <div key={bl.id} style={{ ...CARD, borderLeft: `3px solid ${conformeColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700 }}>{bl.numero}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: conformeColor, background: conformeBg, padding: '2px 8px', borderRadius: 4 }}>{bl.conforme ? 'Conforme' : 'Non conforme'}</span>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{bl.fournisseur}{bl.chantier ? ` — ${bl.chantier}` : ''}</div>
+                  <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>Recu le {bl.dateReception || bl.date}{bl.receptionnaire ? ` par ${bl.receptionnaire}` : ''}</div>
+                  {bl.observations && <div style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', padding: '4px 8px', borderRadius: 6, marginTop: 6 }}>{bl.observations}</div>}
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 12, color: '#6E6E73' }}>
+                  {(bl.lignes || []).length} ligne(s)
+                </div>
               </div>
             );
           })}

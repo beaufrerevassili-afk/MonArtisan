@@ -78,6 +78,56 @@ async function ensureTables() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS factures_avoir (
+      id SERIAL PRIMARY KEY,
+      numero VARCHAR(50),
+      facture_origine_id INTEGER,
+      facture_origine_numero VARCHAR(50),
+      client JSONB,
+      motif TEXT,
+      lignes JSONB DEFAULT '[]',
+      total_ht NUMERIC DEFAULT 0,
+      tva NUMERIC DEFAULT 0,
+      total_ttc NUMERIC DEFAULT 0,
+      statut VARCHAR(20) DEFAULT 'brouillon',
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS bons_commande (
+      id SERIAL PRIMARY KEY,
+      numero VARCHAR(50),
+      fournisseur JSONB,
+      chantier_ref VARCHAR(255),
+      lignes JSONB DEFAULT '[]',
+      total_ht NUMERIC DEFAULT 0,
+      tva NUMERIC DEFAULT 0,
+      total_ttc NUMERIC DEFAULT 0,
+      date_livraison_prevue DATE,
+      statut VARCHAR(20) DEFAULT 'brouillon',
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS bons_livraison (
+      id SERIAL PRIMARY KEY,
+      numero VARCHAR(50),
+      bon_commande_id INTEGER,
+      fournisseur JSONB,
+      chantier_ref VARCHAR(255),
+      lignes JSONB DEFAULT '[]',
+      date_reception DATE DEFAULT CURRENT_DATE,
+      receptionnaire VARCHAR(255),
+      observations TEXT,
+      conforme BOOLEAN DEFAULT TRUE,
+      statut VARCHAR(20) DEFAULT 'recu',
+      patron_id INTEGER,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   // Add patron_id column if missing (for existing tables)
   await db.query('ALTER TABLE stock_articles ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE agenda_events ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
@@ -635,6 +685,118 @@ router.put('/avis-client/:id/repondre', async (req, res) => {
   } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
+});
+
+// ============================================================
+//  FACTURES D'AVOIR
+// ============================================================
+
+// GET /patron/avoirs
+router.get('/avoirs', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM factures_avoir WHERE patron_id = $1 ORDER BY cree_le DESC', [req.user.id]);
+    res.json({ avoirs: rows.map(r => ({ id: r.id, numero: r.numero, factureOrigineNumero: r.facture_origine_numero, client: r.client, motif: r.motif, lignes: r.lignes, totalHT: r.total_ht, tva: r.tva, totalTTC: r.total_ttc, statut: r.statut, creeLe: r.cree_le })) });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/avoirs
+router.post('/avoirs', async (req, res) => {
+  try {
+    const { factureOrigineNumero, client, motif, lignes, totalHT, tva, totalTTC } = req.body;
+    if (!client?.nom || !motif) return res.status(400).json({ erreur: 'Client et motif requis' });
+    const annee = new Date().getFullYear();
+    const countRes = await db.query(`SELECT COUNT(*)+1 AS n FROM factures_avoir WHERE patron_id = $1 AND EXTRACT(year FROM cree_le) = $2`, [req.user.id, annee]);
+    const numero = `AV-${annee}-${String(parseInt(countRes.rows[0].n)).padStart(3, '0')}`;
+    const { rows } = await db.query(`INSERT INTO factures_avoir (numero, facture_origine_numero, client, motif, lignes, total_ht, tva, total_ttc, patron_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [numero, factureOrigineNumero || null, JSON.stringify(client), motif, JSON.stringify(lignes || []), totalHT || 0, tva || 0, totalTTC || 0, req.user.id]);
+    res.status(201).json({ avoir: rows[0], message: 'Facture d\'avoir créée' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// DELETE /patron/avoirs/:id
+router.delete('/avoirs/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM factures_avoir WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
+    res.json({ message: 'Avoir supprimé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// ============================================================
+//  BONS DE COMMANDE
+// ============================================================
+
+// GET /patron/bons-commande
+router.get('/bons-commande', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM bons_commande WHERE patron_id = $1 ORDER BY cree_le DESC', [req.user.id]);
+    res.json({ bons: rows.map(r => ({ id: r.id, numero: r.numero, fournisseur: r.fournisseur, chantierRef: r.chantier_ref, lignes: r.lignes, totalHT: r.total_ht, tva: r.tva, totalTTC: r.total_ttc, dateLivraisonPrevue: r.date_livraison_prevue, statut: r.statut, creeLe: r.cree_le })) });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/bons-commande
+router.post('/bons-commande', async (req, res) => {
+  try {
+    const { fournisseur, chantierRef, lignes, totalHT, tva, totalTTC, dateLivraisonPrevue } = req.body;
+    if (!fournisseur?.nom) return res.status(400).json({ erreur: 'Fournisseur requis' });
+    const annee = new Date().getFullYear();
+    const countRes = await db.query(`SELECT COUNT(*)+1 AS n FROM bons_commande WHERE patron_id = $1 AND EXTRACT(year FROM cree_le) = $2`, [req.user.id, annee]);
+    const numero = `BC-${annee}-${String(parseInt(countRes.rows[0].n)).padStart(3, '0')}`;
+    const { rows } = await db.query(`INSERT INTO bons_commande (numero, fournisseur, chantier_ref, lignes, total_ht, tva, total_ttc, date_livraison_prevue, patron_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [numero, JSON.stringify(fournisseur), chantierRef || null, JSON.stringify(lignes || []), totalHT || 0, tva || 0, totalTTC || 0, dateLivraisonPrevue || null, req.user.id]);
+    res.status(201).json({ bon: rows[0], message: 'Bon de commande créé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// PUT /patron/bons-commande/:id/statut
+router.put('/bons-commande/:id/statut', async (req, res) => {
+  try {
+    const { statut } = req.body;
+    const { rows } = await db.query('UPDATE bons_commande SET statut = $1 WHERE id = $2 AND patron_id = $3 RETURNING *', [statut, req.params.id, req.user.id]);
+    if (!rows[0]) return res.status(404).json({ erreur: 'Bon introuvable' });
+    res.json({ message: 'Statut mis à jour' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// DELETE /patron/bons-commande/:id
+router.delete('/bons-commande/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM bons_commande WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
+    res.json({ message: 'Bon supprimé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// ============================================================
+//  BONS DE LIVRAISON
+// ============================================================
+
+// GET /patron/bons-livraison
+router.get('/bons-livraison', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM bons_livraison WHERE patron_id = $1 ORDER BY cree_le DESC', [req.user.id]);
+    res.json({ bons: rows.map(r => ({ id: r.id, numero: r.numero, bonCommandeId: r.bon_commande_id, fournisseur: r.fournisseur, chantierRef: r.chantier_ref, lignes: r.lignes, dateReception: r.date_reception, receptionnaire: r.receptionnaire, observations: r.observations, conforme: r.conforme, statut: r.statut, creeLe: r.cree_le })) });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/bons-livraison
+router.post('/bons-livraison', async (req, res) => {
+  try {
+    const { bonCommandeId, fournisseur, chantierRef, lignes, dateReception, receptionnaire, observations, conforme } = req.body;
+    if (!fournisseur?.nom) return res.status(400).json({ erreur: 'Fournisseur requis' });
+    const annee = new Date().getFullYear();
+    const countRes = await db.query(`SELECT COUNT(*)+1 AS n FROM bons_livraison WHERE patron_id = $1 AND EXTRACT(year FROM cree_le) = $2`, [req.user.id, annee]);
+    const numero = `BL-${annee}-${String(parseInt(countRes.rows[0].n)).padStart(3, '0')}`;
+    const { rows } = await db.query(`INSERT INTO bons_livraison (numero, bon_commande_id, fournisseur, chantier_ref, lignes, date_reception, receptionnaire, observations, conforme, patron_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [numero, bonCommandeId || null, JSON.stringify(fournisseur), chantierRef || null, JSON.stringify(lignes || []), dateReception || new Date().toISOString().slice(0,10), receptionnaire || null, observations || null, conforme !== false, req.user.id]);
+    res.status(201).json({ bon: rows[0], message: 'Bon de livraison créé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// DELETE /patron/bons-livraison/:id
+router.delete('/bons-livraison/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM bons_livraison WHERE id = $1 AND patron_id = $2', [req.params.id, req.user.id]);
+    res.json({ message: 'Bon supprimé' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
 });
 
 module.exports = router;
