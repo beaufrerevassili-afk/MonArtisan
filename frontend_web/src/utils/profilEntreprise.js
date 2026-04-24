@@ -120,7 +120,7 @@ export const DEMO_FICHES_SALARIES = [
 
 // ── Helpers fiches salariés ──
 export function getFichesSalaries() {
-  if (!_isDemo()) return DEMO_FICHES_SALARIES; // real accounts get data from API, fallback to demo structure
+  if (!_isDemo()) return []; // real accounts get data from API
   try { const s = localStorage.getItem('freample_fiches_salaries'); return s ? JSON.parse(s) : DEMO_FICHES_SALARIES; }
   catch { return DEMO_FICHES_SALARIES; }
 }
