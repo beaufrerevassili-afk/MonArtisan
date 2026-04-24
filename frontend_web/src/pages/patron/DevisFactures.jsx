@@ -10,6 +10,7 @@ import { useToast } from '../../context/ToastContext';
 import { secureToken } from '../../utils/security';
 import { IconDocument, IconCreditCard, IconTrendUp, IconPlus, IconCheck, IconSearch } from '../../components/ui/Icons';
 import DevisFormulaire from '../../components/DevisFormulaire';
+import DevisRapide from '../../components/devis/DevisRapide';
 import EnvoyerDevisButton from '../../components/devis/EnvoyerDevisButton';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import api from '../../services/api';
@@ -80,6 +81,7 @@ export default function DevisFactures() {
   });
   const [lienDirect, setLienDirect] = useState(null); // modal lien direct
   const [showNewDevis, setShowNewDevis] = useState(false);
+  const [advancedMode, setAdvancedMode] = useState(false);
   const [editingDevis, setEditingDevis] = useState(null);
   const [devisAEnvoyer, setDevisAEnvoyer] = useState(null);
   const [lienForm, setLienForm] = useState({ clientNom: '', clientEmail: '', objet: '', montantHT: '' });
@@ -227,8 +229,61 @@ export default function DevisFactures() {
         </div>
       </div>
 
-      {/* Nouveau devis / Modification (formulaire complet) */}
-      {showNewDevis && (
+      {/* Nouveau devis / Modification */}
+      {showNewDevis && !editingDevis && !advancedMode && (
+        <div style={{ marginBottom: 24 }}>
+          <DevisRapide
+            onSoumettre={(devisData) => {
+              const action = devisData._action || 'brouillon';
+
+              // --- Real account: send to API ---
+              if (!isDemo) {
+                const payload = {
+                  objet: devisData.objet || devisData.titre,
+                  clientNom: devisData.client?.nom || '',
+                  clientEmail: devisData.client?.email || '',
+                  clientTel: devisData.client?.telephone || '',
+                  clientAdresse: devisData.client?.adresse || '',
+                  adresseChantier: devisData.client?.adresseChantier || '',
+                  lignes: devisData.lignes,
+                  montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
+                  validiteJours: devisData.validiteJours || 30,
+                  statut: action === 'envoyer' ? 'envoye' : 'brouillon',
+                };
+                api.post('/patron/devis-pro', payload).then(({ data }) => {
+                  loadDevisFromApi();
+                  setShowNewDevis(false);
+                  addToast('Devis cree avec succes', 'success');
+                }).catch(() => { addToast('Erreur lors de la sauvegarde du devis', 'error'); });
+                return;
+              }
+
+              // --- Demo account: localStorage ---
+              const all = demoGet('freample_devis', []);
+              const num = `DEV-${new Date().getFullYear()}-${String(all.length + 1).padStart(3, '0')}`;
+              const finalDevis = {
+                id: Date.now(), numero: num, version: 1,
+                client: devisData.client?.nom || '',
+                objet: devisData.objet || devisData.titre,
+                lignes: devisData.lignes,
+                montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
+                source: 'manuel', statut: 'brouillon',
+                date: new Date().toISOString().slice(0, 10),
+              };
+              all.push(finalDevis);
+              demoSet('freample_devis', all);
+              setDevis(all);
+              setShowNewDevis(false);
+              addToast('Devis cree avec succes', 'success');
+            }}
+            onAnnuler={() => { setShowNewDevis(false); }}
+            onModeAvance={() => setAdvancedMode(true)}
+          />
+        </div>
+      )}
+
+      {/* Formulaire avance (edition ou mode avance) */}
+      {showNewDevis && (editingDevis || advancedMode) && (
         <div style={{ marginBottom: 24 }}>
           <DevisFormulaire
             user={{ entrepriseType: 'patron' }}
@@ -261,7 +316,7 @@ export default function DevisFactures() {
                   : api.post('/patron/devis-pro', payload);
                 promise.then(({ data }) => {
                   loadDevisFromApi();
-                  setShowNewDevis(false); setEditingDevis(null);
+                  setShowNewDevis(false); setEditingDevis(null); setAdvancedMode(false);
                   if (action === 'envoyer') {
                     const created = data.devis || data;
                     setDevisAEnvoyer({ ...payload, id: created.id, numero: created.numero, date: created.creeLe || new Date().toISOString() });
@@ -340,13 +395,13 @@ export default function DevisFactures() {
 
               demoSet('freample_devis', all);
               setDevis(all);
-              setShowNewDevis(false); setEditingDevis(null);
+              setShowNewDevis(false); setEditingDevis(null); setAdvancedMode(false);
               if (action === 'envoyer') { setDevisAEnvoyer(finalDevis); addToast('Devis créé — envoyez-le au client', 'success'); }
               else if (action === 'pdf') { addToast('Devis sauvegardé — impression en cours', 'info'); setTimeout(() => window.print(), 300); }
               else addToast('Devis sauvegardé en brouillon', 'success');
             }}
-            onAnnuler={() => { setShowNewDevis(false); setEditingDevis(null); }}
-            onOuvrirProfil={() => { setShowNewDevis(false); setEditingDevis(null); navigate('/patron/profil'); }}
+            onAnnuler={() => { setShowNewDevis(false); setEditingDevis(null); setAdvancedMode(false); }}
+            onOuvrirProfil={() => { setShowNewDevis(false); setEditingDevis(null); setAdvancedMode(false); navigate('/patron/profil'); }}
           />
         </div>
       )}
