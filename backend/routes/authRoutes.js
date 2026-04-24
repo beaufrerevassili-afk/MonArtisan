@@ -159,14 +159,15 @@ router.post('/register', authLimiter, async (req, res) => {
     if (!emailCheck.valid) {
       return res.status(400).json({ erreur: emailCheck.reason });
     }
-    // Verify email code
+    // Verify email code (optional — only enforced when Resend domain is configured)
     const { emailCode } = req.body;
-    if (!emailCode) return res.status(400).json({ erreur: 'Code de vérification requis' });
-    const storedCode = verificationCodes.get(email);
-    if (!storedCode || storedCode.code !== emailCode || Date.now() - storedCode.createdAt > 600000) {
-      return res.status(400).json({ erreur: 'Code de vérification invalide ou expiré' });
+    if (emailCode) {
+      const storedCode = verificationCodes.get(email);
+      if (!storedCode || storedCode.code !== emailCode || Date.now() - storedCode.createdAt > 600000) {
+        return res.status(400).json({ erreur: 'Code de vérification invalide ou expiré' });
+      }
+      verificationCodes.delete(email);
     }
-    verificationCodes.delete(email);
     const { rows: existing } = await db.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.length > 0) return res.status(400).json({ erreur: 'Cet email est déjà utilisé' });
 

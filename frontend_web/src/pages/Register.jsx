@@ -1019,7 +1019,7 @@ export default function Register() {
 
                   {error && <ErrorBox message={error} />}
 
-                  <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} disabled={!emailVerified} />
+                  <ActionButton label={isPro ? 'Continuer →' : 'Créer mon compte'} onClick={isPro ? nextStep : handleSubmit} loading={loading} />
                 </div>
               </div>
             </div>
