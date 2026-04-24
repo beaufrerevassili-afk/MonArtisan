@@ -3,6 +3,7 @@ import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { IconCheck, IconX } from '../../components/ui/Icons';
 import { secureToken, secureTempPassword, sha256, expiresInHours } from '../../utils/security';
+import SignaturePad from '../../components/chantier/SignaturePad';
 import { API_URL } from '../../services/api';
 
 const L = {
@@ -36,8 +37,9 @@ export default function SignatureDevis() {
   const [modifMsg, setModifMsg] = useState('');
   const [refuseMsg, setRefuseMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false); // final state: signed + paid + account created
+  const [done, setDone] = useState(false);
   const [magicLink, setMagicLink] = useState('');
+  const [signatureBase64, setSignatureBase64] = useState('');
 
   useEffect(() => {
     const isDemo = _isDemo();
@@ -74,6 +76,7 @@ export default function SignatureDevis() {
   async function signerEtPayer() {
     if (!nomSignataire.trim()) { setError('Saisissez votre nom.'); return; }
     if (!email.trim() || !email.includes('@')) { setError('Saisissez un email valide.'); return; }
+    if (!signatureBase64) { setError('La signature manuscrite est requise.'); return; }
     if (!acceptCGU) { setError('Vous devez accepter les CGU et le paiement.'); return; }
     if (paymentMode === 'cb' && (!cbNum || !cbExp || !cbCvv)) { setError('Remplissez les infos de carte bancaire.'); return; }
     if (paymentMode === 'sepa' && !iban.trim()) { setError('Saisissez un IBAN.'); return; }
@@ -89,7 +92,7 @@ export default function SignatureDevis() {
         const response = await fetch(`${API_URL}/patron/devis-pro/${id}/signer`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nomSignataire, email, tel, paymentMode, token }),
+          body: JSON.stringify({ nomSignataire, email, tel, paymentMode, token, signatureBase64 }),
         });
         const result = await response.json();
         if (result.erreur) { setError(result.erreur); setSubmitting(false); return; }
@@ -468,7 +471,14 @@ export default function SignatureDevis() {
                 style={{ width: '100%', padding: 11, border: `1px solid ${L.border}`, borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
             </div>
 
-            {/* Étape 2 : Paiement */}
+            {/* Étape 2 : Signature manuscrite */}
+            <div style={{ marginBottom: 18, padding: 14, background: L.bg, borderRadius: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: L.muted, textTransform: 'uppercase', marginBottom: 10 }}>Signature manuscrite *</div>
+              <SignaturePad onSave={setSignatureBase64} width={Math.min(380, window.innerWidth - 100)} height={150} />
+              {!signatureBase64 && <div style={{ fontSize: 11, color: L.orange, marginTop: 6, fontWeight: 600 }}>Veuillez signer ci-dessus avec votre doigt ou votre souris</div>}
+            </div>
+
+            {/* Étape 3 : Paiement */}
             <div style={{ marginBottom: 18, padding: 14, background: L.bg, borderRadius: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: L.muted, textTransform: 'uppercase', marginBottom: 10 }}>Paiement de l'acompte ({premierePct}%) — {fmtE(montantAcompte)}</div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -516,8 +526,8 @@ export default function SignatureDevis() {
                 style={{ padding: '12px 18px', background: 'transparent', color: L.muted, border: `1px solid ${L.border}`, borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>
                 Annuler
               </button>
-              <button onClick={signerEtPayer} disabled={submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU}
-                style={{ flex: 1, padding: 14, background: submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU ? '#C7C7CC' : L.green, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU ? 'default' : 'pointer' }}>
+              <button onClick={signerEtPayer} disabled={submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU || !signatureBase64}
+                style={{ flex: 1, padding: 14, background: submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU || !signatureBase64 ? '#C7C7CC' : L.green, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: submitting || !nomSignataire.trim() || !email.trim() || !acceptCGU || !signatureBase64 ? 'default' : 'pointer' }}>
                 {submitting ? 'Traitement en cours...' : `Signer et payer ${fmtE(montantAcompte)}`}
               </button>
             </div>
