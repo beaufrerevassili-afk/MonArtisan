@@ -100,6 +100,7 @@ const PATRON_GROUPS = [
       { label: 'Projets clients',      path: '/patron/projets',     Icon: IconSearch   },
       { label: 'Suivi futurs projets', path: '/patron/suivi-projets', Icon: IconMissions },
       { label: 'Agenda',               path: '/patron/agenda',      Icon: IconCalendar },
+      { label: 'Messages',             path: '/patron/messagerie',  Icon: IconDocument },
     ],
   },
   {

@@ -14,7 +14,6 @@ import Layout from './components/layout/Layout';
 // ── Lazy-loaded (chargées à la demande, réduit le bundle initial) ──
 const Landing = React.lazy(() => import('./pages/public/Landing'));
 const DashboardClient = React.lazy(() => import('./pages/client/Dashboard'));
-const Messagerie = React.lazy(() => import('./pages/client/Messagerie'));
 const DashboardPatron = React.lazy(() => import('./pages/patron/Dashboard'));
 const Employes = React.lazy(() => import('./pages/patron/Employes'));
 const ProjetsClients = React.lazy(() => import('./pages/patron/ProjetsClients'));
@@ -42,6 +41,7 @@ const SetupCompte = React.lazy(() => import('./pages/public/SetupCompte'));
 const DocumentView = React.lazy(() => import('./pages/public/DocumentView'));
 const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
 const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
+const Messagerie = React.lazy(() => import('./pages/Messagerie'));
 const Support = React.lazy(() => import('./pages/public/Support'));
 const CompteSuspendu = React.lazy(() => import('./pages/public/CompteSuspendu'));
 const DevisFactures = React.lazy(() => import('./pages/patron/DevisFactures'));
@@ -191,6 +191,8 @@ function AppRoutes() {
       <Route path="/documents/:type/:id" element={<DocumentView />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      {/* ── Messagerie (tous les rôles) ── */}
+      <Route path="/messagerie" element={<ProtectedRoute><Messagerie /></ProtectedRoute>} />
       {/* ── Landings sectorielles (route dynamique, après les routes fixes) ── */}
       <Route path="/:secteur" element={<SecteurLanding />} />
 
@@ -199,7 +201,6 @@ function AppRoutes() {
         <ProtectedRoute roles={['client']}>
           <Routes>
             <Route path="dashboard"   element={<DashboardClient />} />
-            <Route path="messagerie"  element={<Messagerie />} />
             <Route path="*"           element={<Navigate to="dashboard" replace />} />
           </Routes>
         </ProtectedRoute>
@@ -232,6 +233,7 @@ function AppRoutes() {
               <Route path="devis-factures"   element={<DevisFactures />} />
               <Route path="mon-image"        element={<MonImage />} />
               <Route path="profil"           element={<ProfilPatron />} />
+              <Route path="messagerie"      element={<Messagerie />} />
             </Routes>
           </Layout>
         </ProtectedRoute>

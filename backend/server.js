@@ -42,6 +42,7 @@ const calculRoutes         = require('./routes/calculRoutes');
 const supportRoutes        = require('./routes/supportRoutes');
 const marketplaceRoutes    = require('./routes/marketplaceRoutes');
 const avisPassageRoutes    = require('./routes/avisPassageRoutes');
+const messagerieRoutes     = require('./routes/messagerieRoutes');
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -151,6 +152,7 @@ app.use('/calcul',  calculRoutes);   // endpoints de calcul métier (public + au
 app.use('/support', supportRoutes);  // tickets de support (public + fondateur)
 app.use('/marketplace', marketplaceRoutes);  // messagerie projet + devis versionné + suivi patron
 app.use('/avis-passage', avisPassageRoutes);  // avis de passage avec signature électronique
+app.use('/messagerie',  messagerieRoutes);   // messagerie centralisée
 
 // ─── Analytics (visites) ────────────────────────────────────
 (async () => {

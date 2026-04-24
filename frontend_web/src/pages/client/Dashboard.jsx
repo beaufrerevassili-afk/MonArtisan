@@ -260,6 +260,7 @@ export default function DashboardClient() {
             { label: '📄 Mes documents', action: () => { setShowDocuments(true); setShowPaiements(false); setShowProfil(false); setProjetDetail(null); setDocDetail(null); } },
             { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setShowDocuments(false); setProjetDetail(null); } },
             { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setShowDocuments(false); setProjetDetail(null); } },
+            { label: '💬 Messages', action: () => navigate('/messagerie') },
             { label: 'Trouver un artisan', action: () => navigate('/btp') },
           ].map(t => (
             <button key={t.label} onClick={() => { setMenuOpen(false); t.action(); }}

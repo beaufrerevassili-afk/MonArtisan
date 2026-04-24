@@ -18,6 +18,7 @@ const MENU_ITEMS = [
   { id: 'frais', label: 'Notes de frais', Icon: IconDocument },
   { id: 'chantiers', label: 'Chantiers', Icon: IconMissions },
   { id: 'documents', label: 'Documents', Icon: IconBox },
+  { id: 'messages', label: 'Messages', Icon: IconDocument },
   { id: 'profil', label: 'Profil', Icon: IconUser },
 ];
 
@@ -1354,6 +1355,9 @@ export default function DashboardEmploye() {
           })}
         </div>
       </>}
+
+      {/* ═══ MESSAGES ═══ */}
+      {tab === 'messages' && (() => { navigate('/messagerie'); return null; })()}
 
       {/* ═══ MON PROFIL ═══ */}
       {tab === 'profil' && <>
