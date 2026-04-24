@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
 import DS from '../../design/luxe';
 import DevisFormulaire from '../../components/DevisFormulaire';
+import DevisRapide from '../../components/devis/DevisRapide';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 
 const CARD = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
@@ -22,7 +24,9 @@ const DEMO_PROJETS = [
 
 export default function ProjetsClients() {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [projets, setProjets] = useState([]);
+  const [devisProjet, setDevisProjet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [modalView, setModalView] = useState('detail');
@@ -397,6 +401,12 @@ export default function ProjetsClients() {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 18, fontWeight: 800, color: '#2C2520' }}>{(p.budget || 0).toLocaleString('fr-FR')}€</div>
                   <div style={{ fontSize: 10, color: DS.muted }}>budget client</div>
+                  {!deja && !isDemo && (
+                    <button onClick={(e) => { e.stopPropagation(); setDevisProjet(p); }}
+                      style={{ marginTop: 6, padding: '6px 12px', background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font }}>
+                      Envoyer un devis
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -655,6 +665,37 @@ export default function ProjetsClients() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MODAL DEVIS RAPIDE (depuis card) ══ */}
+      {devisProjet && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) setDevisProjet(null); }}>
+          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', padding: 24 }}
+            onClick={e => e.stopPropagation()}>
+            <DevisRapide
+              initialClient={devisProjet.clientNom || devisProjet.client_nom || ''}
+              initialObjet={devisProjet.titre || devisProjet.metier || ''}
+              onSoumettre={async (devisData) => {
+                try {
+                  await api.post(`/projets/${devisProjet.id}/devis-direct`, {
+                    titre: devisData.titre || devisData.objet,
+                    lignes: (devisData.lignes || []).map(l => ({
+                      description: l.description || l.desc || '',
+                      quantite: Number(l.quantite) || 1,
+                      prixHT: Number(l.prixUnitaire || l.prixHT || l.prix || 0),
+                      tva: l.tva !== undefined ? (l.tva > 1 ? l.tva / 100 : l.tva) : 0.10,
+                    })),
+                    validite: 30,
+                  });
+                  addToast('Devis envoye au client !', 'success');
+                  setDevisProjet(null);
+                } catch { addToast('Erreur envoi devis', 'error'); }
+              }}
+              onAnnuler={() => setDevisProjet(null)}
+            />
           </div>
         </div>
       )}

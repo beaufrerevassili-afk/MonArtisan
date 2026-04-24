@@ -44,6 +44,7 @@ export default function DashboardClient() {
   const [docDetail, setDocDetail] = useState(null);
   const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirm: '' });
   const [viewEntreprise, setViewEntreprise] = useState(null);
+  const [devisRecus, setDevisRecus] = useState([]);
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
@@ -101,6 +102,11 @@ export default function DashboardClient() {
     }
   }, []);
   useEffect(() => { if (!isDemo && projets.length > 0) chargerOffres(); }, [projets.length]);
+  useEffect(() => {
+    if (!isDemo) {
+      api.get('/projets/mes-devis').then(({ data }) => setDevisRecus(data.devis || [])).catch(() => {});
+    }
+  }, []);
 
   // Données dérivées
   const [allOffresBackend, setAllOffresBackend] = useState([]);
@@ -442,6 +448,39 @@ export default function DashboardClient() {
               <div style={{ fontSize: 12, color: '#444' }}>{p.ville} · {(p.budget || 0).toLocaleString('fr-FR')}€ · {p.urgence === 'urgent' ? 'Urgent' : p.urgence === 'flexible' ? 'Flexible' : 'Normal'}</div>
               {p.artisan && <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginTop: 8 }}>🔨 Artisan : <span onClick={(e) => { e.stopPropagation(); if (p.artisanId) setViewEntreprise(p.artisanId); }} style={{ cursor: p.artisanId ? 'pointer' : 'default', color: p.artisanId ? '#A68B4B' : '#16A34A', textDecoration: p.artisanId ? 'underline' : 'none' }}>{p.artisan}</span></div>}
             </div>
+
+            {/* Devis reçus via marketplace (backend) */}
+            {devisRecus.filter(d => d.projetId === p.id).length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 10 }}>Devis reçus</div>
+                {devisRecus.filter(d => d.projetId === p.id).map(d => (
+                  <div key={d.id} style={{ ...CARD, marginBottom: 10, borderLeft: '4px solid #A68B4B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>Devis {d.numero}</div>
+                        <div style={{ fontSize: 12, color: '#636363' }}>De {d.patronNom} · {Number(d.totalTTC).toLocaleString('fr-FR')}&euro; TTC</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {d.statut === 'envoyé' && (
+                          <>
+                            <button onClick={() => window.open(`/devis/${d.id}/signer?token=${d.signatureToken}`, '_blank')}
+                              style={{ padding: '8px 14px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                              Signer le devis
+                            </button>
+                            <button onClick={() => { addToast('Devis refuse', 'success'); setDevisRecus(prev => prev.map(x => x.id === d.id ? { ...x, statut: 'refuse' } : x)); }}
+                              style={{ padding: '8px 14px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                              Refuser
+                            </button>
+                          </>
+                        )}
+                        {d.statut === 'signé' && <span style={{ fontSize: 12, color: '#16A34A', fontWeight: 600 }}>Signe</span>}
+                        {d.statut === 'refuse' && <span style={{ fontSize: 12, color: '#DC2626', fontWeight: 600 }}>Refuse</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Offres à comparer */}
             {p.statut === 'publie' && offres.length > 0 && (
@@ -1003,6 +1042,11 @@ export default function DashboardClient() {
                     </div>
                     <div style={{ fontSize: 12, color: '#444' }}>{p.metier} · {p.ville} · {(p.budget || 0).toLocaleString('fr-FR')}€</div>
                     {p.artisan && <div style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, marginTop: 2 }}>🔨 {p.artisan}</div>}
+                    {devisRecus.filter(d => d.projetId === p.id && d.statut === 'envoyé').length > 0 && (
+                      <div style={{ fontSize: 12, color: '#A68B4B', fontWeight: 600, marginTop: 4 }}>
+                        {devisRecus.filter(d => d.projetId === p.id && d.statut === 'envoyé').length} devis reçu{devisRecus.filter(d => d.projetId === p.id && d.statut === 'envoyé').length > 1 ? 's' : ''}
+                      </div>
+                    )}
                   </div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>

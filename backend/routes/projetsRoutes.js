@@ -90,6 +90,31 @@ router.get('/publics', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════
+//  DEVIS LIÉS AUX PROJETS
+// ═══════════════════════════════════════════════════
+
+// GET /projets/mes-devis — Client gets all devis sent to them
+router.get('/mes-devis', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT d.*, u.nom as patron_nom
+      FROM devis_pro d
+      LEFT JOIN users u ON u.id = d.patron_id
+      WHERE d.client_id = $1
+      ORDER BY d.cree_le DESC
+    `, [req.user.id]);
+    res.json({ devis: rows.map(d => ({
+      id: d.id, numero: d.numero, client: d.client, titre: d.titre, lignes: d.lignes,
+      totalHT: d.total_ht, tva: d.tva, totalTTC: d.total_ttc, statut: d.statut,
+      patronNom: d.patron_nom, projetId: d.projet_id, signatureToken: d.signature_token,
+      creeLe: d.cree_le, validiteDate: d.validite_date
+    })) });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// ═══════════════════════════════════════════════════
 //  ROUTES CLIENT (authentifiées)
 // ═══════════════════════════════════════════════════
 
@@ -284,6 +309,64 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Projet retiré' });
   } catch (err) {
     console.error('DELETE /projets/:id:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// POST /projets/:id/devis-direct — Patron envoie un devis complet au client
+router.post('/:id/devis-direct', authenticateToken, async (req, res) => {
+  try {
+    const projetId = parseInt(req.params.id);
+    const { titre, lignes, validite, conditions } = req.body;
+
+    // Get project + client info
+    const { rows: projRows } = await db.query('SELECT * FROM projets_clients WHERE id = $1', [projetId]);
+    if (!projRows[0]) return res.status(404).json({ erreur: 'Projet introuvable' });
+    const projet = projRows[0];
+
+    // Get client name
+    const { rows: clientRows } = await db.query('SELECT nom, email FROM users WHERE id = $1', [projet.client_id]);
+    const clientNom = clientRows[0]?.nom || 'Client';
+
+    // Calculate totals
+    const totalHT = (lignes || []).reduce((s, l) => s + ((Number(l.quantite) || 1) * (Number(l.prixHT) || 0)), 0);
+    const tvaMont = (lignes || []).reduce((s, l) => s + ((Number(l.quantite) || 1) * (Number(l.prixHT) || 0) * (Number(l.tva) || 0.10)), 0);
+    const totalTTC = totalHT + tvaMont;
+
+    // Generate number
+    const annee = new Date().getFullYear();
+    const countRes = await db.query(`SELECT COUNT(*)+1 AS n FROM devis_pro WHERE EXTRACT(year FROM cree_le) = $1`, [annee]);
+    const numero = `DEV-${annee}-${String(parseInt(countRes.rows[0].n)).padStart(3, '0')}`;
+    const sigToken = require('crypto').randomBytes(32).toString('hex');
+
+    // Create devis linked to project
+    const { rows } = await db.query(`
+      INSERT INTO devis_pro (numero, client, titre, lignes, total_ht, tva, total_ttc, validite, validite_date, conditions, statut, patron_id, projet_id, client_id, signature_token)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'envoyé', $11, $12, $13, $14)
+      RETURNING *
+    `, [
+      numero,
+      JSON.stringify({ nom: clientNom, email: clientRows[0]?.email || '' }),
+      titre || projet.titre || projet.metier,
+      JSON.stringify(lignes || []),
+      Math.round(totalHT * 100) / 100,
+      Math.round(tvaMont * 100) / 100,
+      Math.round(totalTTC * 100) / 100,
+      validite || 30,
+      new Date(Date.now() + (validite || 30) * 86400000).toISOString().slice(0, 10),
+      conditions || 'Acompte 30% à la commande. Solde à réception.',
+      req.user.id,
+      projetId,
+      projet.client_id,
+      sigToken
+    ]);
+
+    // Notify the client
+    await notify(projet.client_id, 'devis', 'Nouveau devis reçu', `Un artisan vous a envoyé un devis pour votre projet "${projet.titre || projet.metier}"`, '/client/dashboard').catch(() => {});
+
+    res.status(201).json({ message: 'Devis envoyé au client', devis: rows[0] });
+  } catch (err) {
+    console.error('POST /projets/:id/devis-direct:', err.message);
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
 });

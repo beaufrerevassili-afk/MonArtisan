@@ -48,9 +48,9 @@ const TEMPLATES = [
   ]},
 ];
 
-export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, initialClient = '' }) {
+export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, initialClient = '', initialObjet = '' }) {
   const [client, setClient] = useState(initialClient);
-  const [objet, setObjet] = useState('');
+  const [objet, setObjet] = useState(initialObjet);
   const [lignes, setLignes] = useState([{ desc: '', prix: '' }]);
   const [tvaRate, setTvaRate] = useState(10);
   const [saving, setSaving] = useState(false);

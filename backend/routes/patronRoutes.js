@@ -164,6 +164,9 @@ async function ensureTables() {
   await db.query('ALTER TABLE agenda_events ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE avis ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS patron_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS projet_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS client_id INTEGER').catch(()=>{});
+  await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS signature_base64 TEXT').catch(()=>{});
 }
 ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message));
 
@@ -367,7 +370,7 @@ router.put('/devis-pro/:id/envoyer', async (req, res) => {
 router.post('/devis-pro/:id/signer', async (req, res) => {
   try {
     const devisId = parseInt(req.params.id);
-    const { nomSignataire, token } = req.body;
+    const { nomSignataire, token, signatureBase64 } = req.body;
 
     if (!nomSignataire?.trim() || nomSignataire.trim().length < 2 || nomSignataire.trim().length > 120) {
       return res.status(400).json({ erreur: 'Nom du signataire invalide (2–120 caractères requis)' });
@@ -381,10 +384,10 @@ router.post('/devis-pro/:id/signer', async (req, res) => {
 
     const result = await db.query(
       `UPDATE devis_pro
-       SET statut = 'signé', signe_le = NOW(), signature_nom = $1, signature_token = NULL
-       WHERE id = $2
+       SET statut = 'signé', signe_le = NOW(), signature_nom = $1, signature_token = NULL, signature_base64 = $2
+       WHERE id = $3
        RETURNING *`,
-      [nomSignataire.trim(), devisId]
+      [nomSignataire.trim(), signatureBase64 || null, devisId]
     );
 
     res.json({ message: 'Devis signé avec succès', devis: mapDevis(result.rows[0]) });
