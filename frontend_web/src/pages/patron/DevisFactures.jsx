@@ -283,16 +283,16 @@ export default function DevisFactures() {
               // --- Real account: send to API ---
               if (!isDemo) {
                 const payload = {
-                  objet: devisData.objet || devisData.titre,
-                  clientNom: devisData.client?.nom || '',
-                  clientEmail: devisData.client?.email || '',
-                  clientTel: devisData.client?.telephone || '',
-                  clientAdresse: devisData.client?.adresse || '',
-                  adresseChantier: devisData.client?.adresseChantier || '',
-                  lignes: devisData.lignes,
-                  montantHT: devisData.totalHT, tva: devisData.totalTVA, montantTTC: devisData.totalTTC,
-                  validiteJours: devisData.validiteJours || 30,
-                  statut: action === 'envoyer' ? 'envoye' : 'brouillon',
+                  client: { nom: devisData.client?.nom || '' },
+                  titre: devisData.objet || devisData.titre || '',
+                  lignes: (devisData.lignes || []).map(l => ({
+                    description: l.description || l.desc || '',
+                    quantite: Number(l.quantite) || 1,
+                    prixHT: Number(l.prixUnitaire || l.prixHT || l.prix || 0),
+                    tva: l.tva !== undefined ? (l.tva > 1 ? l.tva / 100 : l.tva) : 0.10,
+                    unite: l.unite || 'forfait',
+                  })),
+                  validite: devisData.validiteJours || 30,
                 };
                 api.post('/patron/devis-pro', payload).then(({ data }) => {
                   loadDevisFromApi();
