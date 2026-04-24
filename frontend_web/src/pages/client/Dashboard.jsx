@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import NotificationBell from '../../components/ui/NotificationBell';
 import ProjetNegociation from '../../components/marketplace/ProjetNegociation';
 import ProfilClient from '../../components/client/ProfilClient';
+import ProfilEntreprise from '../../components/marketplace/ProfilEntreprise';
 import PVReception from '../../components/chantier/PVReception';
 
 const CARD_DESKTOP = { background: '#fff', border: `1px solid ${DS.border}`, borderRadius: 14, padding: '16px 20px' };
@@ -42,6 +43,7 @@ export default function DashboardClient() {
   const [showDocuments, setShowDocuments] = useState(false);
   const [docDetail, setDocDetail] = useState(null);
   const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirm: '' });
+  const [viewEntreprise, setViewEntreprise] = useState(null);
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
@@ -61,7 +63,7 @@ export default function DashboardClient() {
             id: p.id, metier: p.metier, titre: p.titre, description: p.description,
             ville: p.ville, budget: Number(p.budget_estime) || 0, urgence: p.urgence,
             statut: p.statut, date: p.created_at?.slice(0, 10), nbOffres: Number(p.nb_offres) || 0,
-            clientNom: p.client_nom || user?.nom || '', artisan: p.artisan_nom || null,
+            clientNom: p.client_nom || user?.nom || '', artisan: p.artisan_nom || null, artisanId: p.artisan_id || null,
           })));
         }
       } catch { setProjets([]); }
@@ -77,6 +79,7 @@ export default function DashboardClient() {
         if (data.offres) {
           toutes.push(...data.offres.map(o => ({
             id: o.id, projetId: p.id, artisanNom: o.artisan_nom || 'Artisan',
+            patronId: o.patron_id || o.artisan_id,
             prix: Number(o.prix_propose) || 0, message: o.message,
             statut: o.statut, createdAt: o.created_at,
           })));
@@ -437,7 +440,7 @@ export default function DashboardClient() {
               <div style={{ fontSize: 11, fontWeight: 600, color: '#A68B4B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{p.metier}</div>
               <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: '#1A1A1A' }}>{p.titre || p.description?.slice(0, 50)}</div>
               <div style={{ fontSize: 12, color: '#444' }}>{p.ville} · {(p.budget || 0).toLocaleString('fr-FR')}€ · {p.urgence === 'urgent' ? 'Urgent' : p.urgence === 'flexible' ? 'Flexible' : 'Normal'}</div>
-              {p.artisan && <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginTop: 8 }}>🔨 Artisan : {p.artisan}</div>}
+              {p.artisan && <div style={{ fontSize: 13, fontWeight: 700, color: '#16A34A', marginTop: 8 }}>🔨 Artisan : <span onClick={(e) => { e.stopPropagation(); if (p.artisanId) setViewEntreprise(p.artisanId); }} style={{ cursor: p.artisanId ? 'pointer' : 'default', color: p.artisanId ? '#A68B4B' : '#16A34A', textDecoration: p.artisanId ? 'underline' : 'none' }}>{p.artisan}</span></div>}
             </div>
 
             {/* Offres à comparer */}
@@ -456,7 +459,7 @@ export default function DashboardClient() {
                           <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#2C2520', color: '#F5EFE0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, margin: '0 auto 8px' }}>
                             {(o.artisanNom || 'A').charAt(0)}
                           </div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{o.artisanNom}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}><span onClick={(e) => { e.stopPropagation(); setViewEntreprise(o.patronId); }} style={{ cursor: 'pointer', color: '#A68B4B', textDecoration: 'underline' }}>{o.artisanNom}</span></div>
                           <div style={{ fontSize: 22, fontWeight: 800, color: isBest ? '#16A34A' : '#2C2520', margin: '6px 0' }}>{Number(o.prix).toLocaleString('fr-FR')}€</div>
                           {isBest && <div style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', marginBottom: 4 }}>MEILLEUR PRIX</div>}
                           <div style={{ fontSize: 11, color: '#444' }}>{o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : ''}</div>
@@ -471,7 +474,7 @@ export default function DashboardClient() {
                 {offres.length === 1 && (
                   <div style={{ ...CARD, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>🔨 {offres[0].artisanNom}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>🔨 <span onClick={(e) => { e.stopPropagation(); setViewEntreprise(offres[0].patronId); }} style={{ cursor: 'pointer', color: '#A68B4B', textDecoration: 'underline' }}>{offres[0].artisanNom}</span></div>
                       <div style={{ fontSize: 12, color: '#444' }}>{offres[0].createdAt ? `Envoyé le ${new Date(offres[0].createdAt).toLocaleDateString('fr-FR')}` : ''}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -524,7 +527,7 @@ export default function DashboardClient() {
                       {(patronNom || 'A').charAt(0)}
                     </div>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: '#F5EFE0' }}>{patronNom}</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: '#F5EFE0' }}><span onClick={(e) => { e.stopPropagation(); if (p.artisanId) setViewEntreprise(p.artisanId); }} style={{ cursor: p.artisanId ? 'pointer' : 'default', textDecoration: p.artisanId ? 'underline' : 'none' }}>{patronNom}</span></div>
                       <div style={{ fontSize: 11, color: 'rgba(245,239,224,0.6)' }}>Votre artisan · {p.metier}</div>
                     </div>
                   </div>
@@ -1034,6 +1037,7 @@ export default function DashboardClient() {
           </>)}
         </>)}
       </div>
+      {viewEntreprise && <ProfilEntreprise patronId={viewEntreprise} onClose={() => setViewEntreprise(null)} />}
     </div>
   );
 }

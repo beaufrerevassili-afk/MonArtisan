@@ -117,11 +117,15 @@ router.get('/mes-projets', authenticateToken, async (req, res) => {
   try {
     const { rows } = await db.query(`
       SELECT p.*, COUNT(o.id) AS nb_offres,
-        COUNT(o.id) FILTER (WHERE o.statut = 'acceptee') AS nb_acceptees
+        COUNT(o.id) FILTER (WHERE o.statut = 'acceptee') AS nb_acceptees,
+        acc.artisan_id AS artisan_id,
+        ua.nom AS artisan_nom
       FROM projets_clients p
       LEFT JOIN projet_offres o ON o.projet_id = p.id
+      LEFT JOIN projet_offres acc ON acc.projet_id = p.id AND acc.statut = 'acceptee'
+      LEFT JOIN users ua ON ua.id = acc.artisan_id
       WHERE p.client_id = $1
-      GROUP BY p.id
+      GROUP BY p.id, acc.artisan_id, ua.nom
       ORDER BY p.created_at DESC
     `, [req.user.id]);
     res.json({ projets: rows });
