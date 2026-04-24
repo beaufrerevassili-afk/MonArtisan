@@ -160,10 +160,10 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
                 <input type="number" value={l.prix} onChange={e => updateLigne(i, 'prix', e.target.value)}
                   placeholder="Prix HT"
                   style={{ ...INP, paddingRight: 28, textAlign: 'right' }} />
-                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#636363', fontSize: 13, pointerEvents: 'none' }}>\u20AC</span>
+                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#636363', fontSize: 13, pointerEvents: 'none' }}>€</span>
               </div>
               {lignes.length > 1 && (
-                <button onClick={() => removeLigne(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 16, padding: 4, flexShrink: 0 }}>\u00D7</button>
+                <button onClick={() => removeLigne(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 16, padding: 4, flexShrink: 0 }}>×</button>
               )}
             </div>
           ))}
@@ -187,15 +187,15 @@ export default function DevisRapide({ onSoumettre, onAnnuler, onModeAvance, init
         <div style={{ borderTop: '2px solid #E8E6E1', paddingTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <span style={{ fontSize: 13, color: '#636363' }}>Total HT</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{totalHT.toLocaleString('fr-FR')} \u20AC</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{totalHT.toLocaleString('fr-FR')} €</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <span style={{ fontSize: 13, color: '#636363' }}>TVA ({tvaRate}%)</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{totalTVA.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} \u20AC</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{totalTVA.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid #E8E6E1' }}>
             <span style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>Total TTC</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#2C2520' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} \u20AC</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: '#2C2520' }}>{totalTTC.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</span>
           </div>
         </div>
       </div>
