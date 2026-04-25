@@ -134,47 +134,36 @@ export default function ProLanding() {
         </div>
       </section>
 
-      {/* ══ TARIFS DÉTAILLÉ ══ */}
+      {/* ══ TARIFS ══ */}
       <section id="tarifs" className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 8px', color: '#1A1A1A' }}>Un seul tarif. Tout inclus.</h2>
-          <p style={{ fontSize: 15, color: L.textSec, marginBottom: 40 }}>3 mois d'essai gratuit, puis 15€/mois sans engagement.</p>
+          <p style={{ fontSize: 15, color: L.textSec, marginBottom: 32 }}>3 mois offerts pour démarrer, puis un abonnement simple.</p>
 
-          <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {/* Essai gratuit */}
-            <div style={{ flex: '1 1 280px', maxWidth: 320, background: '#fff', border: `2px solid ${L.border}`, borderRadius: 16, padding: 28, textAlign: 'left' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Essai gratuit</div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#1A1A1A' }}>0€<span style={{ fontSize: 14, fontWeight: 400, color: '#636363' }}> / 3 mois</span></div>
-              <div style={{ fontSize: 12, color: '#636363', marginTop: 4, marginBottom: 20 }}>Aucune carte bancaire requise</div>
-              {['Marketplace illimitée', 'Devis & Factures', 'Gestion RH', 'Chantiers', 'Recrutement', 'Signature électronique'].map(f => (
-                <div key={f} style={{ fontSize: 13, color: '#333', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ color: '#16A34A' }}>✓</span> {f}
-                </div>
-              ))}
-              <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ width: '100%', marginTop: 20, padding: 14, background: L.noir, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font }}>
-                Commencer gratuitement
-              </button>
+          <div style={{ background: L.noir, border: `2px solid ${L.gold}`, borderRadius: 20, padding: '36px 28px', textAlign: 'center', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: L.gold, color: '#fff', padding: '5px 20px', borderRadius: 20, fontSize: 12, fontWeight: 700, letterSpacing: '0.05em' }}>3 MOIS GRATUITS</div>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 48, fontWeight: 800, color: '#fff' }}>15€<span style={{ fontSize: 16, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>/mois</span></div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Gratuit pendant 3 mois · Sans engagement · Annulable en 3 clics</div>
             </div>
 
-            {/* Freample Pro */}
-            <div style={{ flex: '1 1 280px', maxWidth: 320, background: L.noir, border: `2px solid ${L.gold}`, borderRadius: 16, padding: 28, textAlign: 'left', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: L.gold, color: '#fff', padding: '4px 16px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>RECOMMANDÉ</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Freample Pro</div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#fff' }}>15€<span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}> / mois</span></div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4, marginBottom: 20 }}>Sans engagement · Annulable en 3 clics</div>
-              {['Tout de l\'essai gratuit +', 'QHSE complet', 'Avis de passage terrain', 'Messagerie centralisée', 'Bibliothèque d\'ouvrages', 'Bons de commande & livraison', 'Situations de chantier', 'Notifications temps réel', 'Support prioritaire'].map(f => (
-                <div key={f} style={{ fontSize: 13, color: f.includes('+') ? L.gold : 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: f.includes('+') ? 700 : 400 }}>
-                  <span style={{ color: L.gold }}>✓</span> {f}
+            <div style={{ textAlign: 'left', margin: '0 auto', maxWidth: 320 }}>
+              {['Marketplace — recevez des projets clients', 'Devis & Factures professionnels', 'Signature électronique terrain', 'Gestion RH, congés, pointage', 'Suivi de chantiers', 'Recrutement & pipeline candidatures', 'QHSE complet', 'Bons de commande & livraison', 'Messagerie centralisée', 'Notifications temps réel', 'Support prioritaire'].map(f => (
+                <div key={f} style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ color: L.gold, flexShrink: 0 }}>✓</span> {f}
                 </div>
               ))}
-              <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ width: '100%', marginTop: 20, padding: 14, background: L.gold, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font }}>
-                Essayer 3 mois gratuit
-              </button>
             </div>
+
+            <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ width: '100%', marginTop: 24, padding: 16, background: L.gold, color: '#fff', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: L.font, transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#8B7340'}
+              onMouseLeave={e => e.currentTarget.style.background = L.gold}>
+              Démarrer mes 3 mois gratuits →
+            </button>
           </div>
 
-          <div style={{ marginTop: 24, fontSize: 12, color: '#636363' }}>
-            Commission marketplace : 1% prélevée sur le paiement client, pas sur l'artisan.
+          <div style={{ marginTop: 20, fontSize: 12, color: '#636363' }}>
+            Aucune carte bancaire requise pour l'essai. Commission marketplace : 1% prélevée sur le paiement client.
           </div>
         </div>
       </section>
