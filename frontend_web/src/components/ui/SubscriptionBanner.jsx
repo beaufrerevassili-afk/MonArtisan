@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import DS from '../../design/luxe';
 import { isDemo as _isDemo } from '../../utils/storage';
 
 export default function SubscriptionBanner() {
   const isDemo = _isDemo();
+  const { user } = useAuth();
   const [sub, setSub] = useState(null);
 
   useEffect(() => {
     if (isDemo) return;
+    if (user?.role === 'fondateur') return;
     api.get('/patron/subscription').then(({ data }) => setSub(data)).catch(() => {});
   }, []);
 
-  if (isDemo || !sub) return null;
+  if (isDemo || !sub || user?.role === 'fondateur') return null;
 
   // Trial active — show days remaining
   if (sub.status === 'trial') {
