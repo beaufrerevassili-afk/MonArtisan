@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import SubscriptionBanner from '../ui/SubscriptionBanner';
 import {
   IconHome, IconMissions, IconFinance, IconTeam, IconShield,
   IconBank, IconSettings, IconLogout, IconMenu, IconDocument, IconBuilding,
@@ -840,6 +841,7 @@ export default function Layout({ children }) {
           {isMobile && <span style={{ flex: 1 }} />}
           <NotifBell isMobile={isMobile} />
         </div>
+        <SubscriptionBanner />
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 14px 80px' : '28px 32px' }}>
           {children}
         </main>

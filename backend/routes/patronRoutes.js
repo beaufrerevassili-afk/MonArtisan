@@ -167,6 +167,10 @@ async function ensureTables() {
   await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS projet_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS client_id INTEGER').catch(()=>{});
   await db.query('ALTER TABLE devis_pro ADD COLUMN IF NOT EXISTS signature_base64 TEXT').catch(()=>{});
+  // Subscription columns
+  await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(20) DEFAULT \'trial\'').catch(()=>{});
+  await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMPTZ').catch(()=>{});
+  await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_end TIMESTAMPTZ').catch(()=>{});
 }
 ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message));
 
@@ -934,6 +938,37 @@ router.post('/situations', async (req, res) => {
 
     res.status(201).json({ situation: rows[0], message: 'Situation créée' });
   } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// GET /patron/subscription — Check subscription status
+router.get('/subscription', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT cree_le, subscription_status, subscription_end, trial_end FROM users WHERE id = $1', [req.user.id]);
+    if (!rows[0]) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
+    const user = rows[0];
+
+    const createdAt = new Date(user.cree_le);
+    const trialEnd = user.trial_end ? new Date(user.trial_end) : new Date(createdAt.getTime() + 90 * 86400000); // 3 months
+    const now = new Date();
+    const trialActive = now < trialEnd;
+    const subscriptionActive = user.subscription_status === 'active' && user.subscription_end && new Date(user.subscription_end) > now;
+    const daysLeft = trialActive ? Math.ceil((trialEnd - now) / 86400000) : 0;
+
+    // Set trial_end if not set
+    if (!user.trial_end) {
+      await db.query('UPDATE users SET trial_end = $1 WHERE id = $2', [trialEnd.toISOString(), req.user.id]);
+    }
+
+    res.json({
+      status: subscriptionActive ? 'active' : (trialActive ? 'trial' : 'expired'),
+      trialEnd: trialEnd.toISOString(),
+      subscriptionEnd: user.subscription_end,
+      daysLeft: trialActive ? daysLeft : 0,
+      prix: 15,
+    });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;
