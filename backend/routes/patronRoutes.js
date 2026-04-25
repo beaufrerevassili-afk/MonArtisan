@@ -971,4 +971,14 @@ router.get('/subscription', async (req, res) => {
   }
 });
 
+// PUT /patron/subscription/cancel — Désabonnement (obligation légale, 3 clics max)
+router.put('/subscription/cancel', async (req, res) => {
+  try {
+    await db.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['cancelled', req.user.id]);
+    res.json({ message: 'Abonnement annulé' });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

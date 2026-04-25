@@ -135,29 +135,46 @@ export default function ProLanding() {
       </section>
 
       {/* ══ TARIFS DÉTAILLÉ ══ */}
-      <section className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 12px', color: '#1A1A1A' }}>Gratuit pour vous.</h2>
-          <p style={{ fontSize: 15, color: L.textSec, marginBottom: 32 }}>Pas d'abonnement. La commission de 1% est payée par le client, pas par l'artisan. Vous recevez 100% du montant des travaux.</p>
-          <div style={{ background: L.noir, borderRadius: 16, padding: '28px 24px', color: '#fff', textAlign: 'left' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <span style={{ fontSize: 14 }}>Inscription</span><span style={{ fontWeight: 700, color: L.gold }}>Gratuit</span>
+      <section id="tarifs" className="pro-section" style={{ padding: 'clamp(56px,9vh,88px) 32px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 8px', color: '#1A1A1A' }}>Un seul tarif. Tout inclus.</h2>
+          <p style={{ fontSize: 15, color: L.textSec, marginBottom: 40 }}>3 mois d'essai gratuit, puis 15€/mois sans engagement.</p>
+
+          <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {/* Essai gratuit */}
+            <div style={{ flex: '1 1 280px', maxWidth: 320, background: '#fff', border: `2px solid ${L.border}`, borderRadius: 16, padding: 28, textAlign: 'left' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Essai gratuit</div>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#1A1A1A' }}>0€<span style={{ fontSize: 14, fontWeight: 400, color: '#636363' }}> / 3 mois</span></div>
+              <div style={{ fontSize: 12, color: '#636363', marginTop: 4, marginBottom: 20 }}>Aucune carte bancaire requise</div>
+              {['Marketplace illimitée', 'Devis & Factures', 'Gestion RH', 'Chantiers', 'Recrutement', 'Signature électronique'].map(f => (
+                <div key={f} style={{ fontSize: 13, color: '#333', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ color: '#16A34A' }}>✓</span> {f}
+                </div>
+              ))}
+              <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ width: '100%', marginTop: 20, padding: 14, background: L.noir, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font }}>
+                Commencer gratuitement
+              </button>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <span style={{ fontSize: 14 }}>Abonnement mensuel</span><span style={{ fontWeight: 700, color: L.gold }}>0 €</span>
+
+            {/* Freample Pro */}
+            <div style={{ flex: '1 1 280px', maxWidth: 320, background: L.noir, border: `2px solid ${L.gold}`, borderRadius: 16, padding: 28, textAlign: 'left', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: L.gold, color: '#fff', padding: '4px 16px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>RECOMMANDÉ</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: L.gold, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Freample Pro</div>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#fff' }}>15€<span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}> / mois</span></div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4, marginBottom: 20 }}>Sans engagement · Annulable en 3 clics</div>
+              {['Tout de l\'essai gratuit +', 'QHSE complet', 'Avis de passage terrain', 'Messagerie centralisée', 'Bibliothèque d\'ouvrages', 'Bons de commande & livraison', 'Situations de chantier', 'Notifications temps réel', 'Support prioritaire'].map(f => (
+                <div key={f} style={{ fontSize: 13, color: f.includes('+') ? L.gold : 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontWeight: f.includes('+') ? 700 : 400 }}>
+                  <span style={{ color: L.gold }}>✓</span> {f}
+                </div>
+              ))}
+              <button onClick={() => navigate('/register?role=patron&secteur=btp')} style={{ width: '100%', marginTop: 20, padding: 14, background: L.gold, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: L.font }}>
+                Essayer 3 mois gratuit
+              </button>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <span style={{ fontSize: 14 }}>Accès projets clients</span><span style={{ fontWeight: 700, color: L.gold }}>Illimité</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <span style={{ fontSize: 14 }}>Devis & factures</span><span style={{ fontWeight: 700, color: L.gold }}>Illimité</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <span style={{ fontSize: 14 }}>ERP complet (RH, paie, QHSE...)</span><span style={{ fontWeight: 700, color: L.gold }}>Inclus</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
-              <span style={{ fontSize: 14 }}>Commission</span><span style={{ fontWeight: 700, color: '#16A34A' }}>0 € — payée par le client</span>
-            </div>
+          </div>
+
+          <div style={{ marginTop: 24, fontSize: 12, color: '#636363' }}>
+            Commission marketplace : 1% prélevée sur le paiement client, pas sur l'artisan.
           </div>
         </div>
       </section>
@@ -168,7 +185,7 @@ export default function ProLanding() {
           <h2 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 32px', textAlign: 'center', color: '#1A1A1A' }}>Questions fréquentes</h2>
           {[
             { q: 'Comment je reçois des projets ?', a: 'Les particuliers publient leurs projets sur Freample avec leur budget et leur ville. Vous configurez votre zone d\'intervention (adresse + rayon en km) et seuls les projets proches de vous apparaissent.' },
-            { q: 'Combien ça coûte ?', a: 'Rien. L\'inscription, l\'accès aux projets, les devis, la gestion d\'entreprise — tout est gratuit. La commission de 1% est payée par le client, pas par vous.' },
+            { q: 'Combien ça coûte ?', a: '3 mois d\'essai gratuit, puis 15€/mois sans engagement (annulable en 3 clics). La commission marketplace de 1% est payée par le client, pas par vous.' },
             { q: 'Comment je réponds à un projet ?', a: 'Vous avez 4 options : accepter au prix du client (devis automatique), envoyer un devis personnalisé, proposer un rendez-vous pour évaluer les travaux, ou contacter directement le client.' },
             { q: 'C\'est quoi "Mon entreprise" ?', a: 'C\'est un ERP complet intégré : gestion du personnel, paie BTP, QHSE (audits, EPI, incidents), comptabilité, recrutement, chantiers. Tout ce dont vous avez besoin pour gérer votre activité.' },
             { q: 'Je peux créer les comptes de mes salariés ?', a: 'Oui. Depuis votre espace, vous créez les comptes employés. Ils reçoivent leurs identifiants et accèdent à leur propre espace (planning, fiches de paie, documents...).' },

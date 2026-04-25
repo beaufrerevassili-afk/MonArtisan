@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { IconCheck, IconAlert, IconUser, IconBuilding } from '../../components/ui/Icons';
@@ -204,6 +204,15 @@ function OngletCompte({ user, logout, navigate, isDemo }) {
         </button>
       </div>
 
+      {/* Abonnement — Désabonnement en 3 clics */}
+      {!isDemo && (
+        <div style={{ ...SECTION, borderColor: '#D97706' }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#1A1A1A', marginBottom: 4 }}>Mon abonnement</div>
+          <div style={{ fontSize: 12, color: '#636363', marginBottom: 12 }}>Gérez votre abonnement Freample Pro.</div>
+          <SubscriptionSection />
+        </div>
+      )}
+
       {/* Zone dangereuse — Suppression RGPD */}
       {!isDemo && (
         <div style={{ marginTop: 32, padding: 20, border: '2px solid #DC2626', borderRadius: 14, background: '#FEF2F2' }}>
@@ -228,6 +237,57 @@ function OngletCompte({ user, logout, navigate, isDemo }) {
             Supprimer définitivement mon compte
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Désabonnement en 3 clics ──
+function SubscriptionSection() {
+  const [sub, setSub] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    api.get('/patron/subscription').then(({ data }) => setSub(data)).catch(() => {});
+  }, []);
+
+  if (!sub) return <div style={{ fontSize: 12, color: '#636363' }}>Chargement...</div>;
+
+  const statusLabel = sub.status === 'active' ? '✅ Abonnement actif' : sub.status === 'trial' ? `🎁 Essai gratuit (${sub.daysLeft}j restants)` : '⏰ Essai expiré';
+  const endDate = sub.status === 'active' && sub.subscriptionEnd ? new Date(sub.subscriptionEnd).toLocaleDateString('fr-FR') : sub.status === 'trial' ? new Date(sub.trialEnd).toLocaleDateString('fr-FR') : null;
+
+  async function seDesabonner() {
+    if (!window.confirm('Voulez-vous vraiment vous désabonner ?')) return;
+    if (!window.confirm('Votre abonnement sera annulé. Vous garderez l\'accès jusqu\'à la fin de la période payée. Confirmer ?')) return;
+    setCancelling(true);
+    try {
+      // Call backend to cancel (set status to expired at end of current period)
+      await api.put('/patron/subscription/cancel');
+      setSub(prev => ({ ...prev, status: 'cancelled' }));
+      alert('Désabonnement confirmé. Vous garderez l\'accès jusqu\'à la fin de votre période.');
+    } catch {
+      alert('Erreur — contactez contact@freample.com');
+    }
+    setCancelling(false);
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A' }}>{statusLabel}</div>
+          {endDate && <div style={{ fontSize: 12, color: '#636363', marginTop: 2 }}>{sub.status === 'active' ? 'Renouvellement' : 'Fin'} le {endDate}</div>}
+        </div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: '#A68B4B' }}>{sub.prix}€/mois</div>
+      </div>
+      {sub.status === 'active' && (
+        <button onClick={seDesabonner} disabled={cancelling}
+          style={{ padding: '8px 16px', background: 'transparent', color: '#DC2626', border: '1px solid #DC2626', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+          {cancelling ? 'Annulation...' : 'Se désabonner'}
+        </button>
+      )}
+      {sub.status === 'trial' && (
+        <div style={{ fontSize: 11, color: '#636363' }}>L'essai est gratuit — aucun paiement avant la fin de la période.</div>
       )}
     </div>
   );
