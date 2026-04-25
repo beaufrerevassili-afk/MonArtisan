@@ -245,4 +245,51 @@ router.put('/users/:id/role', authenticateToken, authorizeRole(...ADMIN_ROLES), 
   }
 });
 
+// PUT /admin/users/:id/subscription — Gérer l'abonnement d'un utilisateur
+router.put('/users/:id/subscription', authenticateToken, authorizeRole(...ADMIN_ROLES), async (req, res) => {
+  try {
+    const { action, moisGratuits } = req.body;
+    const userId = req.params.id;
+
+    if (action === 'offrir') {
+      // Offrir X mois gratuits
+      const mois = parseInt(moisGratuits) || 1;
+      const now = new Date();
+      // Get current subscription end or trial end
+      const { rows } = await db.query('SELECT subscription_end, trial_end FROM users WHERE id = $1', [userId]);
+      const user = rows[0];
+      if (!user) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
+
+      const baseDate = user.subscription_end ? new Date(user.subscription_end) : (user.trial_end ? new Date(user.trial_end) : now);
+      const startFrom = baseDate > now ? baseDate : now;
+      const newEnd = new Date(startFrom.getTime() + mois * 30 * 86400000);
+
+      await db.query('UPDATE users SET subscription_status = $1, subscription_end = $2 WHERE id = $3', ['active', newEnd.toISOString(), userId]);
+      res.json({ message: `${mois} mois offert(s) jusqu'au ${newEnd.toLocaleDateString('fr-FR')}`, subscriptionEnd: newEnd.toISOString() });
+
+    } else if (action === 'activer') {
+      // Activer manuellement (paiement reçu hors Stripe)
+      const mois = parseInt(moisGratuits) || 1;
+      const newEnd = new Date(Date.now() + mois * 30 * 86400000);
+      await db.query('UPDATE users SET subscription_status = $1, subscription_end = $2 WHERE id = $3', ['active', newEnd.toISOString(), userId]);
+      res.json({ message: `Abonnement activé pour ${mois} mois`, subscriptionEnd: newEnd.toISOString() });
+
+    } else if (action === 'suspendre') {
+      await db.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['expired', userId]);
+      res.json({ message: 'Abonnement suspendu' });
+
+    } else if (action === 'reset-trial') {
+      // Remettre en essai gratuit (90 jours)
+      const newTrialEnd = new Date(Date.now() + 90 * 86400000);
+      await db.query('UPDATE users SET subscription_status = $1, trial_end = $2, subscription_end = NULL WHERE id = $3', ['trial', newTrialEnd.toISOString(), userId]);
+      res.json({ message: 'Essai gratuit remis à 90 jours', trialEnd: newTrialEnd.toISOString() });
+
+    } else {
+      return res.status(400).json({ erreur: 'Action requise: offrir, activer, suspendre, reset-trial' });
+    }
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

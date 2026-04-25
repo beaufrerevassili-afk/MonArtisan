@@ -325,6 +325,26 @@ function Utilisateurs({ users, setUsers }) {
                 {u.actif ? 'Suspendre le compte' : 'Reactiver le compte'}
               </button>
             )}
+            {u.role === 'patron' && (
+              <>
+                <button onClick={async () => {
+                  const mois = prompt('Combien de mois offrir ?', '1');
+                  if (!mois) return;
+                  const token = localStorage.getItem('token');
+                  const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+                  const r = await fetch(`${API}/admin/users/${u.id}/subscription`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'offrir', moisGratuits: parseInt(mois) }) });
+                  const d = await r.json();
+                  alert(d.message || d.erreur);
+                }} style={{ ...BTN_PRIMARY, background: '#A68B4B' }}>🎁 Offrir des mois</button>
+                <button onClick={async () => {
+                  const token = localStorage.getItem('token');
+                  const API = import.meta.env.VITE_API_URL || 'https://monartisan-4lqa.onrender.com';
+                  const r = await fetch(`${API}/admin/users/${u.id}/subscription`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'reset-trial' }) });
+                  const d = await r.json();
+                  alert(d.message || d.erreur);
+                }} style={BTN_PRIMARY}>🔄 Reset essai 90j</button>
+              </>
+            )}
             <button onClick={async () => {
               const msg = prompt(`Message à ${u.nom} :`);
               if (!msg) return;
