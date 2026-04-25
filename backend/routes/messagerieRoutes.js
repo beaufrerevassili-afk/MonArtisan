@@ -37,13 +37,13 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     await ensureTable();
     const userId = req.user.id;
     const { rows } = await db.query(`
-      SELECT DISTINCT ON (m.conversation_id)
-        m.conversation_id, m.contenu as dernier_message, m.created_at as dernier_date,
-        m.sender_id, m.sender_nom, m.receiver_id, m.contexte, m.contexte_id, m.contexte_titre,
-        (SELECT COUNT(*) FROM messages m2 WHERE m2.conversation_id = m.conversation_id AND m2.receiver_id = $1 AND m2.lu = FALSE) as non_lus
-      FROM messages m
-      WHERE m.sender_id = $1 OR m.receiver_id = $1
-      ORDER BY m.conversation_id, m.created_at DESC
+      SELECT DISTINCT ON (messages.conversation_id)
+        messages.conversation_id, messages.contenu as dernier_message, messages.created_at as dernier_date,
+        messages.sender_id, messages.sender_nom, messages.receiver_id, messages.contexte, messages.contexte_id, messages.contexte_titre,
+        (SELECT COUNT(*) FROM messages m2 WHERE m2.conversation_id = messages.conversation_id AND m2.receiver_id = $1 AND m2.lu = FALSE) as non_lus
+      FROM messages
+      WHERE messages.sender_id = $1 OR messages.receiver_id = $1
+      ORDER BY messages.conversation_id, messages.created_at DESC
     `, [userId]);
 
     const convs = await Promise.all(rows.map(async (r) => {
