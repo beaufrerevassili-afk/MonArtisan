@@ -33,6 +33,8 @@ function convId(a, b, ctx, ctxId) {
 // GET /messagerie/conversations
 router.get('/conversations', authenticateToken, async (req, res) => {
   try {
+    // Ensure table exists on first call
+    await ensureTable();
     const userId = req.user.id;
     const { rows } = await db.query(`
       SELECT DISTINCT ON (m.conversation_id)
@@ -46,10 +48,10 @@ router.get('/conversations', authenticateToken, async (req, res) => {
 
     const convs = await Promise.all(rows.map(async (r) => {
       const otherId = r.sender_id === userId ? r.receiver_id : r.sender_id;
-      const { rows: u } = await db.query('SELECT nom, photo_profil FROM users WHERE id = $1', [otherId]);
+      const { rows: u } = await db.query('SELECT nom FROM users WHERE id = $1', [otherId]);
       return {
         conversationId: r.conversation_id, autreId: otherId,
-        autreNom: u[0]?.nom || 'Utilisateur', autrePhoto: u[0]?.photo_profil || null,
+        autreNom: u[0]?.nom || 'Utilisateur', autrePhoto: null,
         dernierMessage: r.dernier_message, dernierDate: r.dernier_date,
         nonLus: parseInt(r.non_lus) || 0, contexte: r.contexte,
         contexteId: r.contexte_id, contexteTitre: r.contexte_titre,
@@ -58,8 +60,8 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     convs.sort((a, b) => new Date(b.dernierDate) - new Date(a.dernierDate));
     res.json({ conversations: convs, totalNonLus: convs.reduce((s, c) => s + c.nonLus, 0) });
   } catch (err) {
-    console.error('GET /messagerie/conversations:', err.message);
-    res.status(500).json({ erreur: 'Erreur serveur' });
+    console.error('GET /messagerie/conversations:', err.message, err.stack);
+    res.status(500).json({ erreur: 'Erreur serveur: ' + err.message });
   }
 });
 
