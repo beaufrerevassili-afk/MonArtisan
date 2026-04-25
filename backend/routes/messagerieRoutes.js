@@ -6,7 +6,7 @@ const router = express.Router();
 
 async function ensureTable() {
   await db.query(`
-    CREATE TABLE IF NOT EXISTS messages (
+    CREATE TABLE IF NOT EXISTS messagerie (
       id SERIAL PRIMARY KEY,
       conversation_id VARCHAR(100) NOT NULL,
       sender_id INTEGER NOT NULL,
@@ -20,8 +20,8 @@ async function ensureTable() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
-  await db.query('CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id, created_at)').catch(()=>{});
-  await db.query('CREATE INDEX IF NOT EXISTS idx_msg_receiver ON messages(receiver_id, lu)').catch(()=>{});
+  await db.query('CREATE INDEX IF NOT EXISTS idx_msgr_conv ON messagerie(conversation_id, created_at)').catch(()=>{});
+  await db.query('CREATE INDEX IF NOT EXISTS idx_msgr_receiver ON messagerie(receiver_id, lu)').catch(()=>{});
 }
 ensureTable().catch(e => console.error('messages table:', e.message));
 
@@ -37,13 +37,13 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     await ensureTable();
     const userId = req.user.id;
     const { rows } = await db.query(`
-      SELECT DISTINCT ON (messages.conversation_id)
-        messages.conversation_id, messages.contenu as dernier_message, messages.created_at as dernier_date,
-        messages.sender_id, messages.sender_nom, messages.receiver_id, messages.contexte, messages.contexte_id, messages.contexte_titre,
-        (SELECT COUNT(*) FROM messages m2 WHERE m2.conversation_id = messages.conversation_id AND m2.receiver_id = $1 AND m2.lu = FALSE) as non_lus
-      FROM messages
-      WHERE messages.sender_id = $1 OR messages.receiver_id = $1
-      ORDER BY messages.conversation_id, messages.created_at DESC
+      SELECT DISTINCT ON (messagerie.conversation_id)
+        messagerie.conversation_id, messagerie.contenu as dernier_message, messagerie.created_at as dernier_date,
+        messagerie.sender_id, messagerie.sender_nom, messagerie.receiver_id, messagerie.contexte, messagerie.contexte_id, messagerie.contexte_titre,
+        (SELECT COUNT(*) FROM messagerie m2 WHERE m2.conversation_id = messagerie.conversation_id AND m2.receiver_id = $1 AND m2.lu = FALSE) as non_lus
+      FROM messagerie
+      WHERE messagerie.sender_id = $1 OR messagerie.receiver_id = $1
+      ORDER BY messagerie.conversation_id, messagerie.created_at DESC
     `, [userId]);
 
     const convs = await Promise.all(rows.map(async (r) => {
@@ -69,10 +69,10 @@ router.get('/conversations', authenticateToken, async (req, res) => {
 router.get('/conversation/:convId', authenticateToken, async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM messages WHERE conversation_id = $1 AND (sender_id = $2 OR receiver_id = $2) ORDER BY created_at ASC',
+      'SELECT * FROM messagerie WHERE conversation_id = $1 AND (sender_id = $2 OR receiver_id = $2) ORDER BY created_at ASC',
       [req.params.convId, req.user.id]
     );
-    await db.query('UPDATE messages SET lu = TRUE WHERE conversation_id = $1 AND receiver_id = $2 AND lu = FALSE', [req.params.convId, req.user.id]);
+    await db.query('UPDATE messagerie SET lu = TRUE WHERE conversation_id = $1 AND receiver_id = $2 AND lu = FALSE', [req.params.convId, req.user.id]);
     res.json({ messages: rows.map(m => ({ id: m.id, senderId: m.sender_id, senderNom: m.sender_nom, receiverId: m.receiver_id, contenu: m.contenu, lu: m.lu, createdAt: m.created_at })) });
   } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
 });
@@ -84,7 +84,7 @@ router.post('/envoyer', authenticateToken, async (req, res) => {
     if (!receiverId || !contenu?.trim()) return res.status(400).json({ erreur: 'Destinataire et message requis' });
     const conversationId = convId(req.user.id, receiverId, contexte, contexteId);
     const { rows } = await db.query(
-      `INSERT INTO messages (conversation_id, sender_id, sender_nom, receiver_id, contenu, contexte, contexte_id, contexte_titre) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      `INSERT INTO messagerie (conversation_id, sender_id, sender_nom, receiver_id, contenu, contexte, contexte_id, contexte_titre) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
       [conversationId, req.user.id, req.user.nom || 'Utilisateur', receiverId, contenu.trim(), contexte || 'direct', contexteId || null, contexteTitre || null]
     );
     await notify(receiverId, 'message', 'Nouveau message', `${req.user.nom || 'Quelqu\'un'} vous a envoyé un message`, '/messagerie').catch(() => {});
