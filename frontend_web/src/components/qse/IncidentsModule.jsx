@@ -59,7 +59,7 @@ export default function IncidentsModule() {
     txt += `1. EMPLOYEUR\n${'─'.repeat(40)}\n`;
     txt += `Nom / Raison sociale : Freample Artisans BTP\n`;
     txt += `SIRET              : 123 456 789 000 12\n`;
-    txt += `Adresse            : 45 boulevard de la Libération, 13001 Marseille\n`;
+    txt += `Adresse            : Adresse de l'entreprise\n`;
     txt += `Code risque AT/MP  : 452BB\n`;
     txt += `N° Adhérent        : _______________\n\n`;
 

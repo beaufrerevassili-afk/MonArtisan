@@ -894,7 +894,7 @@ export function genererDUERP(risques, entreprise, siret) {
 // ─────────────────────────────────────────────
 
 export function genererPlanDechet(data) {
-  const { identification = {}, dechetsInertes = [], dechetsNonDangereux = [], dechetsDangereux = [], tri5flux = {}, tracabilite = {}, entreprise = 'Bernard Martin BTP', siret = '123 456 789 00012' } = data;
+  const { identification = {}, dechetsInertes = [], dechetsNonDangereux = [], dechetsDangereux = [], tri5flux = {}, tracabilite = {}, entreprise = 'Mon Entreprise', siret = '—' } = data;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
   let y = enteteDocument(doc, 'PLAN DE GESTION DES DÉCHETS DE CHANTIER', 'Loi n°2020-105 · Art. L541-1 CE · Décret n°2020-1573 (tri 5 flux) · BSDD obligatoire', entreprise, siret);
@@ -1003,7 +1003,7 @@ export function genererPlanDechet(data) {
 // ─────────────────────────────────────────────
 
 export function genererDiagnostic(data) {
-  const { batiment = {}, amiante = [], plomb = [], autresSubstances = [], estimationDechets = [], recommandations = '', operateur = {}, signatures = {}, entreprise = 'Bernard Martin BTP', siret = '123 456 789 00012' } = data;
+  const { batiment = {}, amiante = [], plomb = [], autresSubstances = [], estimationDechets = [], recommandations = '', operateur = {}, signatures = {}, entreprise = 'Mon Entreprise', siret = '—' } = data;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   let y = enteteDocument(doc, 'DIAGNOSTIC AVANT DÉMOLITION / RÉHABILITATION', 'Art. R4412-97 CT (amiante) · Art. R4412-152 CT (plomb) · Décret 96-97 · Art. L271-4 CCH', entreprise, siret);

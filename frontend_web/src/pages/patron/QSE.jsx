@@ -1163,7 +1163,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       'registre-at': [
         { key:'entreprise', label:'Nom de l\'entreprise', ph:getProfilEntreprise().nom || 'Mon Entreprise' },
         { key:'siret', label:'N° SIRET', ph:getProfilEntreprise().siret || '—' },
-        { key:'adresse', label:'Adresse du siège', ph:'12 rue des Artisans, 13005 Marseille' },
+        { key:'adresse', label:'Adresse du siège', ph:getProfilEntreprise().adresse || '—' },
         { key:'responsable', label:'Responsable de la sécurité', ph:'Nom, Prénom' },
       ],
       'ppsps': [
@@ -1178,7 +1178,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
       default: [
         { key:'entreprise', label:'Nom de l\'entreprise', ph:getProfilEntreprise().nom || 'Mon Entreprise' },
         { key:'siret', label:'N° SIRET', ph:getProfilEntreprise().siret || '—' },
-        { key:'adresse', label:'Adresse', ph:'12 rue des Artisans, 13005 Marseille' },
+        { key:'adresse', label:'Adresse', ph:getProfilEntreprise().adresse || '—' },
         { key:'date', label:'Date du document', ph:'', type:'date' },
         { key:'redacteur', label:'Rédacteur', ph:'Nom, Prénom' },
         { key:'contenu', label:'Contenu / Observations', ph:'Saisissez le contenu du document…', multiline:true },
@@ -1320,7 +1320,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   <div style={{ fontSize:11, fontWeight:800, color:'#3C3C43', textTransform:'uppercase', letterSpacing:0.6, marginBottom:8 }}>Références légales</div>
                   {mentions.map((m, i) => <div key={i} style={{ fontSize:11, color:'#6E6E73', marginBottom:3 }}>• {m}</div>)}
                   <div style={{ fontSize:10, color:'#636363', marginTop:10 }}>
-                    Bernard Martin BTP — SIRET : {data?.contenu?.siret || getProfilEntreprise().siret || '—'} · {data?.contenu?.adresse || '12 rue des Artisans, 13005 Marseille'} · Document généré le {new Date().toLocaleDateString('fr-FR')}
+                    Bernard Martin BTP — SIRET : {data?.contenu?.siret || getProfilEntreprise().siret || '—'} · {data?.contenu?.adresse || getProfilEntreprise().adresse || '—'} · Document généré le {new Date().toLocaleDateString('fr-FR')}
                   </div>
                 </div>
               </div>

@@ -178,16 +178,25 @@ ensureTables().catch(e => console.error('patronRoutes ensureTables:', e.message)
 //  INFORMATIONS SOCIÉTÉ (statiques)
 // ============================================================
 
-const companyInfo = {
-  nom:          'Bernard Martin BTP',
-  siret:        '123 456 789 00012',
-  adresse:      '15 rue du Commerce, 75015 Paris',
-  telephone:    '01 45 67 89 00',
-  email:        'contact@bernardmartin-btp.fr',
-  tva_intracom: 'FR12 123456789',
-  garantie:     'GD-2024-BM-001 — AXA Assurances',
-  rcs:          'RCS Paris B 123 456 789',
-};
+// companyInfo loaded dynamically per user
+async function getCompanyInfo(userId) {
+  try {
+    const { rows } = await db.query('SELECT nom, email, telephone, siret, adresse, ville FROM users WHERE id = $1', [userId]);
+    const u = rows[0] || {};
+    return {
+      nom: u.nom || 'Mon Entreprise',
+      siret: u.siret || '—',
+      adresse: `${u.adresse || ''} ${u.ville || ''}`.trim() || '—',
+      telephone: u.telephone || '—',
+      email: u.email || '—',
+      tva_intracom: '—',
+      garantie: '—',
+      rcs: '—',
+    };
+  } catch {
+    return { nom: 'Mon Entreprise', siret: '—', adresse: '—', telephone: '—', email: '—', tva_intracom: '—', garantie: '—', rcs: '—' };
+  }
+}
 
 // Pipeline commercial statique (données fictives)
 const pipeline = {
@@ -279,6 +288,7 @@ router.get('/devis-pro', async (req, res) => {
         : 0,
     };
 
+    const companyInfo = await getCompanyInfo(req.user.id);
     res.json({ companyInfo, stats, devis });
   } catch (err) {
     console.error('GET /patron/devis-pro :', err.message);
@@ -288,8 +298,9 @@ router.get('/devis-pro', async (req, res) => {
 
 router.get('/devis-pro/:id', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM devis_pro WHERE id = $1', [parseInt(req.params.id)]);
+    const result = await db.query('SELECT * FROM devis_pro WHERE id = $1 AND (patron_id = $2 OR patron_id IS NULL)', [parseInt(req.params.id), req.user.id]);
     if (!result.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
+    const companyInfo = await getCompanyInfo(req.user.id);
     res.json({ devis: mapDevis(result.rows[0]), companyInfo });
   } catch (err) {
     console.error('GET /patron/devis-pro/:id :', err.message);
