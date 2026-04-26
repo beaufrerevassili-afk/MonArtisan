@@ -56,7 +56,7 @@ const DEMO_FINANCE = {
     { label: 'Autres',      pct: 8,  color: '#636363', ca: 11_424 },
   ],
   topClients: [
-    { nom: 'SCI Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Marseille 6e' },
+    { nom: 'Copropriété Les Acacias',      ca: 28_400, factures: 6,  taux: 100, ville: 'Marseille 6e' },
     { nom: 'Résidence du Parc',    ca: 19_800, factures: 4,  taux: 100, ville: 'Aix-en-Provence'  },
     { nom: 'M. & Mme Bertrand',    ca: 14_500, factures: 3,  taux: 67,  ville: 'Aubagne'  },
     { nom: 'SARL Dupont Immo',     ca: 12_900, factures: 5,  taux: 80,  ville: 'La Ciotat'   },
@@ -68,7 +68,7 @@ const DEMO_FINANCE = {
 const DEMO_TRESORERIE = {
   soldeActuel: 42_800,
   encaissementsAttendus: [
-    { label: 'FAC-2025-038 · SCI Les Acacias',   montant: 8_400, datePrevu: '2025-04-10', statut: 'facturé',   joursRestants: 14 },
+    { label: 'FAC-2025-038 · Copropriété Les Acacias',   montant: 8_400, datePrevu: '2025-04-10', statut: 'facturé',   joursRestants: 14 },
     { label: 'FAC-2025-037 · Résidence du Parc', montant: 5_200, datePrevu: '2025-04-18', statut: 'relancé',   joursRestants: 22 },
     { label: 'FAC-2025-036 · M. Bertrand',       montant: 3_800, datePrevu: '2025-04-30', statut: 'facturé',   joursRestants: 34 },
     { label: 'Acompte Devis #041',               montant: 4_500, datePrevu: '2025-05-05', statut: 'en attente', joursRestants: 39 },
@@ -861,7 +861,7 @@ function FacturesView({ factures, setFac }) {
           <div style={{ borderTop: '2px solid #E5E5EA', paddingTop: 16, fontSize: 10.5, color: '#636363', lineHeight: 1.6 }}>
             <div style={{ fontWeight: 700, fontSize: 11, color: '#6E6E73', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Mentions légales</div>
             {MENTIONS_LEGALES.map((m, i) => <div key={i} style={{ marginBottom: 3 }}>• {m}</div>)}
-            <div style={{ marginTop: 8 }}>Bernard Martin BTP — SARL au capital de 10 000 € · RCS Marseille B 123 456 789 · Siège social : 12 rue des Artisans, 13005 Marseille · N° TVA intracommunautaire : FR12 123456789</div>
+            <div style={{ marginTop: 8 }}>Votre entreprise — Mentions légales générées depuis votre profil</div>
           </div>
         </div>
       </div>
@@ -1448,7 +1448,7 @@ function BaremePaiementView() {
 /* ── Retenues de garantie ── */
 function RetenuesDeGarantie() {
   const DEMO_RETENUES = [
-    { id: 1, client: 'SCI Les Acacias', chantier: 'Rénovation halls A & B', montantFacture: 28_400, dateReception: '2025-01-15' },
+    { id: 1, client: 'Copropriété Les Acacias', chantier: 'Rénovation halls A & B', montantFacture: 28_400, dateReception: '2025-01-15' },
     { id: 2, client: 'Résidence du Parc', chantier: 'Ravalement façade', montantFacture: 19_800, dateReception: '2025-03-20' },
     { id: 3, client: 'SARL Dupont Immo', chantier: 'Mise aux normes élec.', montantFacture: 12_900, dateReception: '2024-11-05' },
     { id: 4, client: 'Copropriété Voltaire', chantier: 'Réfection toiture', montantFacture: 9_200, dateReception: '2024-02-10' },

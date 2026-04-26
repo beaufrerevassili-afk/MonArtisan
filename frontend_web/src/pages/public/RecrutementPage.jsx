@@ -17,14 +17,7 @@ const SECTEUR_COLOR = {
   btp:        { bg:'#EEF2FF', border:'#C7D2FE', text:'#3730A3' },
 };
 
-const DEMO_OFFRES = [
-  { id:3, poste:'Plombier chauffagiste N2/N3', entreprise:'PlombiPro', localisation:'Marseille', type_contrat:'CDI', salaire:'2 400–3 000€/mois', description:'Installation et dépannage chauffage, plomberie sanitaire. Permis B indispensable. Véhicule de société fourni.', competences:'Soudure cuivre, PAC, Chauffe-eau, Sanitaire', urgent:false, teletravail:false, created_at: new Date(Date.now()-2*86400000).toISOString(), secteur:'btp' },
-  { id:4, poste:'Électricien(ne) N3P1', entreprise:'Énergie et Co', localisation:'Marseille', type_contrat:'CDI', salaire:'2 300–2 900€/mois', description:"Travaux d'installation électrique en neuf et rénovation. Habilitations BR/B2V requises.", competences:'Électricité HTA, Domotique, Habilitation électrique', urgent:false, teletravail:false, created_at: new Date(Date.now()-3*86400000).toISOString(), secteur:'btp' },
-  { id:8, poste:'Peintre en bâtiment', entreprise:'Déco & Finitions', localisation:'Marseille 8e', type_contrat:'CDI', salaire:'2 200–2 600€/mois', description:'Peinture intérieure et extérieure, ravalement de façade. Travail soigné et minutieux exigé.', competences:'Peinture, Enduit, Ravalement, Décoration', urgent:false, teletravail:false, created_at: new Date(Date.now()-86400000).toISOString(), secteur:'btp' },
-  { id:9, poste:'Menuisier poseur', entreprise:'Bois & Création', localisation:'Bordeaux', type_contrat:'CDD', salaire:'2 100–2 500€/mois', description:'Pose de menuiseries intérieures et extérieures (portes, fenêtres, escaliers). Lecture de plans requise.', competences:'Menuiserie, Pose, Lecture de plans', urgent:true, teletravail:false, created_at: new Date(Date.now()-4*86400000).toISOString(), secteur:'btp' },
-  { id:10, poste:'Maçon qualifié', entreprise:'BâtiSolide', localisation:'Toulouse', type_contrat:'CDI', salaire:'2 300–2 800€/mois', description:'Construction et rénovation. Montage de murs, dalles, fondations. Autonome sur chantier.', competences:'Maçonnerie, Coffrage, Ferraillage', urgent:false, teletravail:false, created_at: new Date(Date.now()-5*86400000).toISOString(), secteur:'btp' },
-  { id:11, poste:'Carreleur(se)', entreprise:'Carrelage Express', localisation:'Marseille', type_contrat:'Alternance', salaire:'1 200–1 600€/mois', description:'Poste en alternance pour apprendre la pose de carrelage sol et mur. Encadrement par un maître artisan.', competences:'Carrelage, Découpe, Étanchéité', urgent:false, teletravail:false, created_at: new Date(Date.now()-6*86400000).toISOString(), secteur:'btp' },
-];
+// Offres chargées depuis l'API — pas de données démo
 
 // ─── Modal candidature ─────────────────────────────────────────────────────────
 

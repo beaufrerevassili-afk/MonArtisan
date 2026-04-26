@@ -842,7 +842,7 @@ export default function Register() {
           </div>
         )}
 
-        {/* Sélecteur secteur pour patron classique (step 1, non SCI) */}
+        {/* Sélecteur secteur pour patron (step 1) */}
         {step === 1 && isPatron && !searchParams.get('secteur') && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4A4A4A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Votre secteur d'activité</p>

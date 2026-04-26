@@ -365,7 +365,7 @@ function OngletEntreprise({ user }) {
           <div>
             <label style={LBL}>Forme juridique *</label>
             <select value={profil.forme} onChange={e => u('forme', e.target.value)} style={INP}>
-              <option>SAS</option><option>SARL</option><option>EURL</option><option>EI</option><option>SA</option><option>SCI</option><option>Auto-entrepreneur</option>
+              <option>SAS</option><option>SARL</option><option>EURL</option><option>EI</option><option>SA</option><option>Auto-entrepreneur</option>
             </select>
           </div>
         </div>
