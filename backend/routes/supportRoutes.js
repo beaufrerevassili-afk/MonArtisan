@@ -6,7 +6,10 @@ const express = require('express');
 const db = require('../db');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
+const rateLimit = require('express-rate-limit');
+const writeLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 60, message: { erreur: 'Trop de requêtes.' }, keyGenerator: (req) => req.user?.id || req.ip });
 const router = express.Router();
+router.use((req, res, next) => { if (['POST','PUT','DELETE'].includes(req.method)) return writeLimit(req, res, next); next(); });
 
 // POST /support/ticket — Créer un ticket OU ajouter à un ticket existant
 router.post('/ticket', async (req, res) => {

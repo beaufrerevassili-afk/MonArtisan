@@ -5,6 +5,8 @@
 // ============================================================
 
 const express      = require('express');
+const rateLimit = require('express-rate-limit');
+const writeLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 60, message: { erreur: 'Trop de requêtes.' }, keyGenerator: (req) => req.user?.id || req.ip });
 const router       = express.Router();
 const db           = require('../db');
 const { authenticateToken } = require('../middleware/auth');

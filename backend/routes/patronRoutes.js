@@ -11,6 +11,8 @@ const db      = require('../db');
 // Rate limit: max 100 writes per 15 min per user
 const writeLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { erreur: 'Trop de requêtes. Réessayez dans quelques minutes.' }, keyGenerator: (req) => req.user?.id || req.ip });
 router.use((req, res, next) => { if (['POST', 'PUT', 'DELETE'].includes(req.method)) return writeLimit(req, res, next); next(); });
+// Guard: ensure req.user exists (auth middleware should set it)
+router.use((req, res, next) => { if (!req.user?.id) return res.status(401).json({ erreur: 'Non authentifié' }); next(); });
 
 // Auto-create missing tables
 async function ensureTables() {

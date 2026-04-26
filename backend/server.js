@@ -52,7 +52,12 @@ const allowedOrigins = [
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true); // mobile apps, curl
-    if ((origin.startsWith('http://localhost:') || origin.startsWith('http://localhost/')) || allowedOrigins.includes(origin)) {
+    // localhost only in development
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (isDev && (origin.startsWith('http://localhost:') || origin.startsWith('http://localhost/'))) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     callback(null, false);
