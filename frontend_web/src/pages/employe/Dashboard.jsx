@@ -97,7 +97,7 @@ const DEMO_PATRON = (() => {
     const p = JSON.parse(localStorage.getItem('freample_profil_patron') || 'null');
     if (p?.nom) return { nom: p.nom, email: p.email || '', siret: p.siret || '', adresse: p.adresse || 'Marseille', metier: (p.metiers || []).join(', ') || p.metier || 'BTP' };
   } catch {}
-  return { nom:'Lambert BTP', email:'contact@lambertbtp.fr', siret:'12345678900012', adresse:'Marseille', metier:'BTP' };
+  return {};
 })();
 
 const statutColors = { en_cours:'#2563EB', planifie:'#D97706', complete:'#16A34A', en_attente:'#D97706', approuve:'#16A34A', rejete:'#DC2626', rembourse:'#16A34A', paye:'#16A34A', parti:'#DC2626' };

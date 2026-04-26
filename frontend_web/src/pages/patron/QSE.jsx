@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import { getProfilEntreprise } from '../../utils/profilEntreprise';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import {
   IconShield, IconAlert, IconDocument, IconCheck, IconSearch,
@@ -293,7 +294,7 @@ export default function QSE() {
             <select value={filterUT} onChange={e=>setFilterUT(e.target.value)} style={{ padding:'8px 10px', border:'1px solid #E5E5EA', borderRadius:8, fontSize:13, outline:'none' }}>
               {UNITES_TRAVAIL.map(u=><option key={u} value={u}>{u}</option>)}
             </select>
-            <button onClick={()=>genererDUERP(risquesFiltres, 'Bernard Martin BTP', '123 456 789 00012')} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/>PDF</button>
+            <button onClick={()=>genererDUERP(risquesFiltres, getProfilEntreprise().nom || 'Mon Entreprise', getProfilEntreprise().siret || '—')} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 14px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconDownload size={13}/>PDF</button>
             <button onClick={()=>setShowAdd(true)} style={{ display:'flex', alignItems:'center', gap:5, padding:'8px 16px', border:'none', borderRadius:8, background:'#5B5BD6', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600 }}><IconPlus size={13}/>Ajouter</button>
           </div>
         </div>
@@ -660,7 +661,7 @@ export default function QSE() {
 
     /* ── CHARTE QUALITÉ STATE ── */
     const CHARTE_DEFAULT = `CHARTE QUALITÉ CHANTIER
-Bernard Martin BTP — SIRET 123 456 789 00012
+${getProfilEntreprise().nom || 'Mon Entreprise'} — SIRET ${getProfilEntreprise().siret || '—'}
 
 1. ENGAGEMENT DE QUALITÉ
 Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respect des normes DTU, des règles de l'art, et des exigences contractuelles définies avec le maître d'ouvrage.
@@ -1160,8 +1161,8 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
     // Champs par type de document
     const CHAMPS_DOC = {
       'registre-at': [
-        { key:'entreprise', label:'Nom de l\'entreprise', ph:'Bernard Martin BTP' },
-        { key:'siret', label:'N° SIRET', ph:'123 456 789 00012' },
+        { key:'entreprise', label:'Nom de l\'entreprise', ph:getProfilEntreprise().nom || 'Mon Entreprise' },
+        { key:'siret', label:'N° SIRET', ph:getProfilEntreprise().siret || '—' },
         { key:'adresse', label:'Adresse du siège', ph:'12 rue des Artisans, 13005 Marseille' },
         { key:'responsable', label:'Responsable de la sécurité', ph:'Nom, Prénom' },
       ],
@@ -1175,8 +1176,8 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
         { key:'mesures', label:'Mesures de prévention', ph:'EPI, garde-corps, consignations…' },
       ],
       default: [
-        { key:'entreprise', label:'Nom de l\'entreprise', ph:'Bernard Martin BTP' },
-        { key:'siret', label:'N° SIRET', ph:'123 456 789 00012' },
+        { key:'entreprise', label:'Nom de l\'entreprise', ph:getProfilEntreprise().nom || 'Mon Entreprise' },
+        { key:'siret', label:'N° SIRET', ph:getProfilEntreprise().siret || '—' },
         { key:'adresse', label:'Adresse', ph:'12 rue des Artisans, 13005 Marseille' },
         { key:'date', label:'Date du document', ph:'', type:'date' },
         { key:'redacteur', label:'Rédacteur', ph:'Nom, Prénom' },
@@ -1268,7 +1269,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                 {/* Doc header */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, paddingBottom:16, borderBottom:'3px solid #1C1C1E' }}>
                   <div>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:0.8, marginBottom:6 }}>Bernard Martin BTP · SIRET : {data?.contenu?.siret || '123 456 789 00012'}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#636363', textTransform:'uppercase', letterSpacing:0.8, marginBottom:6 }}>Bernard Martin BTP · SIRET : {data?.contenu?.siret || getProfilEntreprise().siret || '—'}</div>
                     <div style={{ fontSize:20, fontWeight:800, color:'#1C1C1E' }}>{doc?.nom}</div>
                     <div style={{ fontSize:13, color:'#6E6E73', marginTop:4 }}>{doc?.freq} · MAJ : {data?.dateMAJ || new Date().toLocaleDateString('fr-FR')}</div>
                   </div>
@@ -1319,7 +1320,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
                   <div style={{ fontSize:11, fontWeight:800, color:'#3C3C43', textTransform:'uppercase', letterSpacing:0.6, marginBottom:8 }}>Références légales</div>
                   {mentions.map((m, i) => <div key={i} style={{ fontSize:11, color:'#6E6E73', marginBottom:3 }}>• {m}</div>)}
                   <div style={{ fontSize:10, color:'#636363', marginTop:10 }}>
-                    Bernard Martin BTP — SIRET : {data?.contenu?.siret || '123 456 789 00012'} · {data?.contenu?.adresse || '12 rue des Artisans, 13005 Marseille'} · Document généré le {new Date().toLocaleDateString('fr-FR')}
+                    Bernard Martin BTP — SIRET : {data?.contenu?.siret || getProfilEntreprise().siret || '—'} · {data?.contenu?.adresse || '12 rue des Artisans, 13005 Marseille'} · Document généré le {new Date().toLocaleDateString('fr-FR')}
                   </div>
                 </div>
               </div>
@@ -1470,7 +1471,7 @@ Bernard Martin BTP s'engage à réaliser l'ensemble de ses travaux dans le respe
             </div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={()=>{ setForm({chantier:plan.chantier,date:plan.date,entreprises:plan.entreprises?.join(', ')||'',risques:plan.risques?.join(', ')||'',mesures:''}); setShowModal(true); }} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconRefresh size={12}/> Modifier</button>
-              <button onClick={()=>genererPlanPrevention(plan, 'Bernard Martin BTP', '123 456 789 00012')} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconDownload size={12}/> PDF</button>
+              <button onClick={()=>genererPlanPrevention(plan, getProfilEntreprise().nom || 'Mon Entreprise', getProfilEntreprise().siret || '—')} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconDownload size={12}/> PDF</button>
               <button onClick={()=>setPlans(p=>p.map(x=>x.id===plan.id?{...x,statut:'clôturé'}:x))} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', border:'1px solid #E5E5EA', borderRadius:8, background:'#fff', cursor:'pointer', fontSize:12, fontWeight:600 }}><IconCheck size={12}/> Clôturer</button>
             </div>
           </div>

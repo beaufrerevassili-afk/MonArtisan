@@ -1112,7 +1112,7 @@ function TabProfil({ user }) {
     ville: '',
     // Entreprise
     nomEntreprise: 'Bernard Martin BTP',
-    siret: '123 456 789 00012',
+    siret: '',
     metier: 'Maçonnerie / Gros oeuvre',
     tva: 'FR12123456789',
     // Carte Pro BTP
