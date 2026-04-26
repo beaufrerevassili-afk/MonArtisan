@@ -866,6 +866,37 @@ async function checkDevisRelance() {
 setTimeout(checkDevisRelance, 20000);
 setInterval(checkDevisRelance, 24 * 60 * 60 * 1000);
 
+// Auto-rappel essai gratuit (J-7, J-3, J-1)
+async function checkTrialExpiry() {
+  try {
+    const { notify } = require('../utils/notify');
+    const { rows } = await db.query(`
+      SELECT id, nom, trial_end, subscription_status
+      FROM users
+      WHERE role = 'patron'
+        AND (subscription_status IS NULL OR subscription_status = 'trial')
+        AND trial_end IS NOT NULL
+    `);
+    const now = new Date();
+    for (const u of rows) {
+      const daysLeft = Math.ceil((new Date(u.trial_end) - now) / 86400000);
+      if (daysLeft === 7) {
+        await notify(u.id, 'system', 'Essai gratuit — 7 jours restants', 'Votre essai Freample Pro se termine dans 7 jours. Abonnez-vous pour continuer à utiliser toutes les fonctionnalités.', '/patron/profil').catch(() => {});
+      } else if (daysLeft === 3) {
+        await notify(u.id, 'system', 'Essai gratuit — 3 jours restants', 'Plus que 3 jours d\'essai gratuit ! Passez à l\'abonnement pour ne rien perdre.', '/patron/profil').catch(() => {});
+      } else if (daysLeft === 1) {
+        await notify(u.id, 'system', 'Dernier jour d\'essai gratuit', 'Votre essai Freample Pro se termine demain. Abonnez-vous maintenant pour garder l\'accès.', '/patron/profil').catch(() => {});
+      } else if (daysLeft === 0) {
+        await notify(u.id, 'system', 'Essai gratuit terminé', 'Votre essai est terminé. Abonnez-vous à 15€/mois pour continuer à utiliser Freample Pro.', '/patron/profil').catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.error('checkTrialExpiry:', err.message);
+  }
+}
+setTimeout(checkTrialExpiry, 25000);
+setInterval(checkTrialExpiry, 24 * 60 * 60 * 1000);
+
 // ============================================================
 //  BIBLIOTHÈQUE D'OUVRAGES PERSONNALISÉE
 // ============================================================
@@ -943,18 +974,23 @@ router.post('/situations', async (req, res) => {
 // GET /patron/subscription — Check subscription status
 router.get('/subscription', async (req, res) => {
   try {
+    // Only patrons have subscriptions — fondateur, client, employe are exempt
+    const role = req.user.role;
+    if (role === 'fondateur' || role === 'client' || role === 'employe' || role === 'artisan') {
+      return res.json({ status: 'active', exempt: true, daysLeft: 999, prix: 0 });
+    }
+
     const { rows } = await db.query('SELECT cree_le, subscription_status, subscription_end, trial_end FROM users WHERE id = $1', [req.user.id]);
     if (!rows[0]) return res.status(404).json({ erreur: 'Utilisateur introuvable' });
     const user = rows[0];
 
     const createdAt = new Date(user.cree_le);
-    const trialEnd = user.trial_end ? new Date(user.trial_end) : new Date(createdAt.getTime() + 90 * 86400000); // 3 months
+    const trialEnd = user.trial_end ? new Date(user.trial_end) : new Date(createdAt.getTime() + 90 * 86400000);
     const now = new Date();
     const trialActive = now < trialEnd;
     const subscriptionActive = user.subscription_status === 'active' && user.subscription_end && new Date(user.subscription_end) > now;
     const daysLeft = trialActive ? Math.ceil((trialEnd - now) / 86400000) : 0;
 
-    // Set trial_end if not set
     if (!user.trial_end) {
       await db.query('UPDATE users SET trial_end = $1 WHERE id = $2', [trialEnd.toISOString(), req.user.id]);
     }
@@ -968,6 +1004,29 @@ router.get('/subscription', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// POST /patron/subscription/checkout — Stripe checkout (placeholder until API key is set)
+router.post('/subscription/checkout', async (req, res) => {
+  try {
+    // When Stripe is configured, create a Checkout Session here:
+    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    // const session = await stripe.checkout.sessions.create({
+    //   mode: 'subscription',
+    //   line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+    //   success_url: `${process.env.FRONTEND_URL}/patron/profil?subscription=success`,
+    //   cancel_url: `${process.env.FRONTEND_URL}/patron/profil?subscription=cancel`,
+    //   client_reference_id: String(req.user.id),
+    // });
+    // return res.json({ url: session.url });
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.json({ url: null, message: 'Stripe non configuré. Contactez contact@freample.com.' });
+    }
+    res.json({ url: null });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur paiement' });
   }
 });
 

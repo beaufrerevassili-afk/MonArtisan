@@ -57,10 +57,18 @@ export default function SubscriptionBanner() {
         <button style={{ width: '100%', padding: 16, background: '#A68B4B', color: '#fff', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font, transition: 'background .15s' }}
           onMouseEnter={e => e.currentTarget.style.background = '#8B7340'}
           onMouseLeave={e => e.currentTarget.style.background = '#A68B4B'}
-          onClick={() => alert('Paiement Stripe — bientôt disponible. Contactez contact@freample.com')}>
+          onClick={async () => {
+            try {
+              const { data } = await api.post('/patron/subscription/checkout');
+              if (data.url) window.location.href = data.url;
+              else alert('Le paiement en ligne sera bientôt disponible. Contactez contact@freample.com pour activer votre abonnement.');
+            } catch {
+              alert('Le paiement en ligne sera bientôt disponible. Contactez contact@freample.com pour activer votre abonnement.');
+            }
+          }}>
           S'abonner — 15€/mois
         </button>
-        <p style={{ fontSize: 11, color: '#999', marginTop: 12 }}>Paiement sécurisé par Stripe. Facture mensuelle automatique.</p>
+        <p style={{ fontSize: 11, color: '#999', marginTop: 12 }}>Paiement sécurisé. Facture mensuelle automatique. Annulable en 3 clics.</p>
       </div>
     </div>
   );
