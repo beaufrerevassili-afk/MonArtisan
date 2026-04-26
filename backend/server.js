@@ -90,6 +90,25 @@ app.use(express.json({ limit: '500kb' }));
 app.use('/',             authRoutes);
 app.use('/recrutement',  recrutementRoutes);
 
+// Signature devis publique (pas d'auth — protégée par token unique)
+app.post('/patron/devis-pro/:id/signer', async (req, res) => {
+  try {
+    const devisId = parseInt(req.params.id);
+    const { nomSignataire, token, signatureBase64 } = req.body;
+    if (!nomSignataire?.trim() || nomSignataire.trim().length < 2) return res.status(400).json({ erreur: 'Nom du signataire invalide' });
+    if (!token) return res.status(400).json({ erreur: 'Token de signature manquant' });
+    const existing = await db.query('SELECT statut, signature_token FROM devis_pro WHERE id = $1', [devisId]);
+    if (!existing.rows.length) return res.status(404).json({ erreur: 'Devis introuvable' });
+    if (existing.rows[0].statut === 'signé') return res.status(400).json({ erreur: 'Ce devis a déjà été signé' });
+    if (existing.rows[0].signature_token !== token) return res.status(403).json({ erreur: 'Token invalide' });
+    const result = await db.query(
+      `UPDATE devis_pro SET statut = 'signé', signe_le = NOW(), signature_nom = $1, signature_token = NULL, signature_base64 = $2 WHERE id = $3 RETURNING *`,
+      [nomSignataire.trim(), signatureBase64 || null, devisId]
+    );
+    res.json({ message: 'Devis signé avec succès', devis: result.rows[0] });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
 // Profil entreprise public (pas d'auth)
 app.get('/entreprise/:id', async (req, res) => {
   try {
