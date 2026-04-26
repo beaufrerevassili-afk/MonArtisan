@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════
+   Freample — Common Styles
+   Reduces inline styles across all components
+   ═══════════════════════════════════════════ */
+
+/* ── Cards ── */
+.f-card {
+  background: #fff;
+  border: 1px solid #E8E6E1;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.f-card-sm {
+  background: #fff;
+  border: 1px solid #E8E6E1;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+/* ── Buttons ── */
+.f-btn {
+  padding: 10px 20px;
+  background: #2C2520;
+  color: #F5EFE0;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, sans-serif;
+  transition: background 0.15s;
+}
+
+.f-btn:hover { background: #A68B4B; }
+.f-btn:disabled { opacity: 0.5; cursor: default; }
+
+.f-btn-outline {
+  padding: 10px 20px;
+  background: transparent;
+  color: #1A1A1A;
+  border: 1px solid #E8E6E1;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, sans-serif;
+  transition: all 0.15s;
+}
+
+.f-btn-outline:hover { border-color: #A68B4B; color: #A68B4B; }
+
+.f-btn-danger {
+  padding: 10px 20px;
+  background: #DC2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.f-btn-gold {
+  padding: 10px 20px;
+  background: #A68B4B;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.f-btn-gold:hover { background: #8B7340; }
+
+/* ── Inputs ── */
+.f-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #E8E6E1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  outline: none;
+  box-sizing: border-box;
+  color: #1A1A1A;
+  transition: border-color 0.15s;
+}
+
+.f-input:focus { border-color: #A68B4B; }
+
+.f-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #E8E6E1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+  color: #1A1A1A;
+}
+
+.f-textarea:focus { border-color: #A68B4B; }
+
+/* ── Labels ── */
+.f-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #636363;
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Section titles ── */
+.f-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+/* ── Badges ── */
+.f-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.f-badge-green { background: #D1F2E0; color: #1A7F43; }
+.f-badge-orange { background: #FFFBEB; color: #D97706; }
+.f-badge-red { background: #FEF2F2; color: #DC2626; }
+.f-badge-blue { background: #EFF6FF; color: #1565C0; }
+.f-badge-gold { background: #F5EFE0; color: #7A6232; }
+.f-badge-gray { background: #F3F4F6; color: #6B7280; }
+
+/* ── Grid layouts ── */
+.f-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.f-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.f-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+@media (max-width: 640px) {
+  .f-grid-2 { grid-template-columns: 1fr; }
+  .f-grid-3 { grid-template-columns: 1fr; }
+  .f-grid-4 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Toast / Alerts ── */
+.f-alert-success {
+  padding: 10px 14px;
+  background: #F0FDF4;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #16A34A;
+  font-weight: 600;
+}
+
+.f-alert-error {
+  padding: 10px 14px;
+  background: #FEF2F2;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.f-alert-warning {
+  padding: 10px 14px;
+  background: #FFFBEB;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #D97706;
+  font-weight: 600;
+}
+
+/* ── Loading spinner ── */
+.f-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #E8E6E1;
+  border-top-color: #A68B4B;
+  border-radius: 50%;
+  animation: f-spin 0.7s linear infinite;
+}
+
+@keyframes f-spin { to { transform: rotate(360deg); } }
+
+/* ── Empty states ── */
+.f-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #636363;
+}
+
+.f-empty-icon {
+  font-size: 48px;
+  opacity: 0.2;
+  margin-bottom: 12px;
+}
+
+.f-empty-text {
+  font-size: 14px;
+  color: #636363;
+}
+
+/* ── Modal overlay ── */
+.f-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.f-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  .f-modal {
+    border-radius: 0;
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 100vh;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #E8E6E1; border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
