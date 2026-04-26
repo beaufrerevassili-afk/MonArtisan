@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
+import { getProfilEntreprise } from '../../utils/profilEntreprise';
 import { IconPlus, IconDownload, IconRefresh, IconFinance, IconDocument, IconCheck, IconAlert, IconX, IconArrowUp, IconArrowDown, IconTrendUp } from '../../components/ui/Icons';
 // Facturation.jsx est géré via DevisFactures.jsx, pas ici
 import PipelineCommercial from '../../components/rh/PipelineCommercial';
@@ -787,10 +788,12 @@ function FacturesView({ factures, setFac }) {
               <div style={{ fontSize: 13, color: '#6E6E73', marginTop: 4 }}>{f.numero}</div>
             </div>
             <div style={{ textAlign: 'right', fontSize: 13 }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>Bernard Martin BTP</div>
-              <div style={{ color: '#6E6E73' }}>12 rue des Artisans, 13005 Marseille</div>
-              <div style={{ color: '#6E6E73' }}>SIRET : 123 456 789 00012</div>
-              <div style={{ color: '#6E6E73' }}>APE : 4391A · N° TVA : FR12 123456789</div>
+              {(() => { const p = getProfilEntreprise(); return <>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>{p.nom || 'Mon Entreprise'}</div>
+              <div style={{ color: '#6E6E73' }}>{`${p.adresse || ''} ${p.codePostal || ''} ${p.ville || ''}`.trim() || 'Adresse'}</div>
+              <div style={{ color: '#6E6E73' }}>SIRET : {p.siret || '—'}</div>
+              <div style={{ color: '#6E6E73' }}>N° TVA : {p.tvaIntra || '—'}</div>
+              </>; })()}
             </div>
           </div>
 

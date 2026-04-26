@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
-import { DEMO_FICHES_SALARIES } from '../../utils/profilEntreprise';
+import { DEMO_FICHES_SALARIES, getProfilEntreprise } from '../../utils/profilEntreprise';
 import {
   IconTeam, IconDocument, IconAlert, IconPlus, IconCheck, IconX,
   IconDownload, IconUser, IconCalendar,
@@ -2023,10 +2023,10 @@ function PaieView({ employes }) {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #1C1C1E' }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>Bernard Martin BTP</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#5B5BD6' }}>{(() => { const p = getProfilEntreprise(); return p.nom || 'Mon Entreprise'; })()}</div>
                 <div style={{ fontSize: 12, color: '#6E6E73', lineHeight: 1.7, marginTop: 4 }}>
-                  12 rue des Artisans, 13002 Marseille<br />
-                  SIRET : 123 456 789 00012 · NAF : 4329A<br />
+                  {(() => { const p = getProfilEntreprise(); return `${p.adresse || ''} ${p.codePostal || ''} ${p.ville || 'Marseille'}`.trim(); })()}<br />
+                  SIRET : {(() => { const p = getProfilEntreprise(); return p.siret || '—'; })()} · NAF : {(() => { const p = getProfilEntreprise(); return p.naf || '—'; })()}<br />
                   Convention collective : BTP (IDCC 1597/1596)
                 </div>
               </div>
@@ -2190,7 +2190,7 @@ function PaieView({ employes }) {
 
             {/* Footer */}
             <div style={{ borderTop: '1px solid #F2F2F7', paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#636363' }}>
-              <span>Bulletin de paie établi par Bernard Martin BTP · Période : {periodeLabel}</span>
+              <span>Bulletin de paie établi par {getProfilEntreprise().nom || 'Mon Entreprise'} · Période : {periodeLabel}</span>
               <span>Net imposable : {formatCur(result.netImposable)}</span>
             </div>
           </div>
