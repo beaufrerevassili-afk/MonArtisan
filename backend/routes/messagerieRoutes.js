@@ -46,17 +46,23 @@ router.get('/conversations', authenticateToken, async (req, res) => {
       ORDER BY messagerie.conversation_id, messagerie.created_at DESC
     `, [userId]);
 
-    const convs = await Promise.all(rows.map(async (r) => {
+    // Batch load all other user names in one query
+    const otherIds = [...new Set(rows.map(r => r.sender_id === userId ? r.receiver_id : r.sender_id))];
+    const userMap = {};
+    if (otherIds.length > 0) {
+      const { rows: users } = await db.query('SELECT id, nom FROM users WHERE id = ANY($1)', [otherIds]);
+      users.forEach(u => { userMap[u.id] = u.nom; });
+    }
+    const convs = rows.map(r => {
       const otherId = r.sender_id === userId ? r.receiver_id : r.sender_id;
-      const { rows: u } = await db.query('SELECT nom FROM users WHERE id = $1', [otherId]);
       return {
         conversationId: r.conversation_id, autreId: otherId,
-        autreNom: u[0]?.nom || 'Utilisateur', autrePhoto: null,
+        autreNom: userMap[otherId] || 'Utilisateur', autrePhoto: null,
         dernierMessage: r.dernier_message, dernierDate: r.dernier_date,
         nonLus: parseInt(r.non_lus) || 0, contexte: r.contexte,
         contexteId: r.contexte_id, contexteTitre: r.contexte_titre,
       };
-    }));
+    });
     convs.sort((a, b) => new Date(b.dernierDate) - new Date(a.dernierDate));
     res.json({ conversations: convs, totalNonLus: convs.reduce((s, c) => s + c.nonLus, 0) });
   } catch (err) {

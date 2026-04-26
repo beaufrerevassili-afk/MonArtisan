@@ -18,31 +18,23 @@ const db           = require('./db');
 
 // ─── Routes ────────────────────────────────────────────────
 const authRoutes          = require('./routes/authRoutes');
-const dashboardRoutes     = require('./routes/dashboardRoutes');
-const missionsRoutes      = require('./routes/missionsRoutes');
-const erpRoutes           = require('./routes/erpRoutes');
-const teamRoutes          = require('./routes/teamRoutes');
 const adminRoutes         = require('./routes/adminRoutes');
-const profilRoutes        = require('./routes/profilRoutes');
 const financeRoutes       = require('./routes/financeRoutes');
 const rhRoutes            = require('./routes/rhRoutes');
 const qseRoutes           = require('./routes/qseRoutes');
-const urssafRoutes        = require('./routes/urssafRoutes');
 const clientRoutes        = require('./routes/clientRoutes');
 const patronRoutes        = require('./routes/patronRoutes');
 const artisanRoutes       = require('./routes/artisanRoutes');
 const notificationsRoutes  = require('./routes/notificationsRoutes');
 const recrutementRoutes    = require('./routes/recrutementRoutes');
-const reservationsRoutes   = require('./routes/reservationsRoutes');
-const comRoutes            = require('./routes/comRoutes');
-const modulesRoutes        = require('./routes/modulesRoutes');
-const immoRoutes           = require('./routes/immoRoutes');
 const projetsRoutes        = require('./routes/projetsRoutes');
 const calculRoutes         = require('./routes/calculRoutes');
 const supportRoutes        = require('./routes/supportRoutes');
 const marketplaceRoutes    = require('./routes/marketplaceRoutes');
 const avisPassageRoutes    = require('./routes/avisPassageRoutes');
 const messagerieRoutes     = require('./routes/messagerieRoutes');
+// Dead routes removed: immoRoutes, modulesRoutes, comRoutes, reservationsRoutes,
+// dashboardRoutes, missionsRoutes, erpRoutes, teamRoutes, profilRoutes, urssafRoutes
 
 const { authenticateToken } = require('./middleware/auth');
 
@@ -90,11 +82,8 @@ app.use(express.json({ limit: '500kb' }));
 // ─── Montage des routes ─────────────────────────────────────
 
 // Public (non authentifiées)
-app.use('/',             require('./routes/publicRoutes'));
 app.use('/',             authRoutes);
-app.use('/recrutement',  recrutementRoutes); // routes publiques + patron intégrées
-app.use('/reservations', reservationsRoutes); // réservations publiques sans compte
-app.use('/com',          comRoutes);          // Freample Com (briefs publics + projets auth)
+app.use('/recrutement',  recrutementRoutes);
 
 // Profil entreprise public (pas d'auth)
 app.get('/entreprise/:id', async (req, res) => {
@@ -125,28 +114,19 @@ app.get('/entreprise/:id', async (req, res) => {
   }
 });
 
-app.use('/modules',     authenticateToken, modulesRoutes);  // Incidents, NC, BSDD, Certifs, Audits, etc.
-
 // Authentifiées
-app.use('/dashboard',   dashboardRoutes);
-app.use('/missions',    missionsRoutes);
-app.use('/erp',         erpRoutes);        // /erp/rapport, /erp/stats
-app.use('/',            teamRoutes);       // /artisans, /artisans/:id/missions, /clients
 app.use('/admin',       adminRoutes);
-app.use('/users',       profilRoutes);
 
 // Modules ERP (auth appliquée au montage)
 app.use('/finance',       authenticateToken, financeRoutes);
 app.use('/rh',            authenticateToken, rhRoutes);
 app.use('/qse',           authenticateToken, qseRoutes);
-app.use('/urssaf',        authenticateToken, urssafRoutes);
 app.use('/notifications', authenticateToken, notificationsRoutes);
 
 // Modules par rôle
 app.use('/client',  authenticateToken, clientRoutes);
 app.use('/patron',  authenticateToken, patronRoutes);
 app.use('/artisan', authenticateToken, artisanRoutes);
-app.use('/immo',    authenticateToken, immoRoutes);
 app.use('/projets', projetsRoutes);  // mix public + auth
 app.use('/calcul',  calculRoutes);   // endpoints de calcul métier (public + auth)
 app.use('/support', supportRoutes);  // tickets de support (public + fondateur)
