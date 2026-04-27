@@ -595,6 +595,23 @@ export default function DevisFactures() {
       {/* ═══ FACTURES ═══ */}
       {tab === 'factures' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#6E6E73' }}>{filteredFactures.length} facture(s)</span>
+            <button onClick={() => {
+              const num = `FAC-${new Date().getFullYear()}-${String(factures.length + 1).padStart(3, '0')}`;
+              const client = prompt('Nom du client :');
+              if (!client) return;
+              const objet = prompt('Objet de la facture :');
+              if (!objet) return;
+              const montant = prompt('Montant TTC (€) :');
+              if (!montant) return;
+              const ttc = Number(montant) || 0;
+              const ht = Math.round(ttc / 1.1 * 100) / 100;
+              const tva = ttc - ht;
+              const newFac = { id: Date.now(), numero: num, client, objet, montantHT: ht, tva, montantTTC: ttc, statut: 'envoyee', source: 'manuel', date: new Date().toISOString().slice(0, 10), dateLimite: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) };
+              setFactures(prev => [newFac, ...prev]);
+            }} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouvelle facture</button>
+          </div>
           {filteredFactures.length === 0 && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucune facture pour ce filtre.</div>}
           {filteredFactures.map(f => {
             const st = STATUT_FACTURE[f.statut] || STATUT_FACTURE.envoyee;
@@ -618,6 +635,14 @@ export default function DevisFactures() {
                 </div>
 
                 {/* Détail séquestre Freample */}
+                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                  <button onClick={() => {
+                    const entreprise = getProfilEntreprise(user);
+                    const pdf = genererDevisPDF({ ...f, objet: f.objet || 'Facture', titre: 'FACTURE' }, entreprise);
+                    pdf.save(`${f.numero}.pdf`);
+                  }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 Télécharger PDF</button>
+                </div>
+
                 {isFreample && (
                   <div style={{ marginTop: 14, padding: '14px 16px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Paiement sécurisé Freample</div>
@@ -653,7 +678,12 @@ export default function DevisFactures() {
                       <div style={{ fontSize: 12, fontWeight: 600, color: '#92400E' }}>Chantier hors marketplace — gestion financière manuelle</div>
                       <div style={{ fontSize: 11, color: '#92400E', marginTop: 2 }}>Cette facture n'est pas sécurisée par Freample. Passez par la marketplace ou envoyez un lien direct pour un paiement garanti.</div>
                     </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button onClick={() => {
+                        const entreprise = getProfilEntreprise(user);
+                        const pdf = genererDevisPDF({ ...f, numero: f.numero, objet: f.objet || 'Facture', titre: 'FACTURE' }, entreprise);
+                        pdf.save(`${f.numero}.pdf`);
+                      }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 PDF</button>
                       {f.statut !== 'payee' && <button onClick={() => marquerPayee(f.id)} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 12px' }}>Marquer payée</button>}
                       {isRetard && <button onClick={() => { window.open(`mailto:?subject=${encodeURIComponent('Relance facture ' + f.numero)}&body=${encodeURIComponent(`Bonjour,\n\nLa facture ${f.numero} de ${fmtE(f.montantTTC)} est en attente de règlement depuis le ${f.date}.\n\nMerci de régulariser.\n\nCordialement`)}`); }} style={{ ...BTN, background: '#DC2626', fontSize: 11, padding: '6px 12px' }}>Relancer</button>}
                     </div>
