@@ -16,6 +16,7 @@ import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import api from '../../services/api';
 import { genererDevisPDF } from '../../utils/devisPDF';
 import { getProfilEntreprise } from '../../utils/profilEntreprise';
+import SignaturePad from '../../components/chantier/SignaturePad';
 
 const CARD = { background: '#fff', border: '1px solid #E5E5EA', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
 const BTN = { padding: '8px 18px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
@@ -94,6 +95,8 @@ export default function DevisFactures() {
   const [bonsCommande, setBonsCommande] = useState(() => isDemo ? demoGet('freample_bons_commande', []) : []);
   const [bonsLivraison, setBonsLivraison] = useState(() => isDemo ? demoGet('freample_bons_livraison', []) : []);
   const [showNewAvoir, setShowNewAvoir] = useState(false);
+  const [signFacture, setSignFacture] = useState(null); // facture à signer
+  const [signatureData, setSignatureData] = useState('');
   const [showNewBC, setShowNewBC] = useState(false);
   const [showNewBL, setShowNewBL] = useState(false);
 
@@ -635,12 +638,14 @@ export default function DevisFactures() {
                 </div>
 
                 {/* Détail séquestre Freample */}
-                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                   <button onClick={() => {
                     const entreprise = getProfilEntreprise(user);
                     const pdf = genererDevisPDF({ ...f, objet: f.objet || 'Facture', titre: 'FACTURE' }, entreprise);
                     pdf.save(`${f.numero}.pdf`);
-                  }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 Télécharger PDF</button>
+                  }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 PDF</button>
+                  {!f.signatureBase64 && <button onClick={() => setSignFacture(f)} style={{ ...BTN, background: '#A68B4B', fontSize: 11, padding: '6px 12px' }}>✍️ Faire signer</button>}
+                  {f.signatureBase64 && <span style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, padding: '6px 0' }}>✅ Signée par {f.signatureNom || 'le client'}</span>}
                 </div>
 
                 {isFreample && (
@@ -968,6 +973,40 @@ export default function DevisFactures() {
                 <button onClick={() => { setLienDirect(null); setLienGenere(null); setLienForm({ clientNom: '', clientEmail: '', objet: '', montantHT: '' }); }} style={{ ...BTN_O, width: '100%', marginTop: 10 }}>Fermer</button>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {/* Modal signature facture */}
+      {signFacture && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) { setSignFacture(null); setSignatureData(''); } }}>
+          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, padding: 28 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: '#1A1A1A' }}>Signature facture</div>
+                <div style={{ fontSize: 12, color: '#636363', marginTop: 2 }}>{signFacture.numero} — {signFacture.client}</div>
+              </div>
+              <button onClick={() => { setSignFacture(null); setSignatureData(''); }} style={{ background: '#F2F2F7', border: 'none', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#636363' }}>×</button>
+            </div>
+
+            <div style={{ padding: '12px 16px', background: '#F8F7F4', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#1A1A1A' }}>
+              <div><strong>Montant :</strong> {fmtE(signFacture.montantTTC)}</div>
+              <div><strong>Objet :</strong> {signFacture.objet}</div>
+            </div>
+
+            <SignaturePad onSave={setSignatureData} width={Math.min(380, window.innerWidth - 80)} height={150} />
+
+            <button
+              disabled={!signatureData}
+              onClick={() => {
+                setFactures(prev => prev.map(f => f.id === signFacture.id ? { ...f, signatureBase64: signatureData, signatureNom: signFacture.client, statut: 'signee', signeLe: new Date().toISOString() } : f));
+                setSignFacture(null);
+                setSignatureData('');
+                addToast('Facture signée !', 'success');
+              }}
+              style={{ width: '100%', marginTop: 16, padding: 14, background: signatureData ? '#2C2520' : '#ccc', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: signatureData ? 'pointer' : 'default' }}>
+              {signatureData ? '✅ Valider la signature' : 'Signez ci-dessus pour valider'}
+            </button>
           </div>
         </div>
       )}
