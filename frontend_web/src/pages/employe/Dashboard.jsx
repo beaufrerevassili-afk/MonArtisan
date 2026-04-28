@@ -1525,7 +1525,7 @@ function ChangerMotDePasseEmploye() {
   }
 
   return (
-    <div style={{ ...CARD, marginTop: 16 }}>
+    <div style={{ ...CARD_DESKTOP, marginTop: 16 }}>
       <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Changer le mot de passe</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div>
