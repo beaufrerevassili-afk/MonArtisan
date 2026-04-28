@@ -20,7 +20,6 @@ const ProjetsClients = React.lazy(() => import('./pages/patron/ProjetsClients'))
 const SuiviProjets = React.lazy(() => import('./pages/patron/SuiviProjets'));
 const DashboardAE = React.lazy(() => import('./pages/patron/DashboardAE'));
 const DashboardCom = React.lazy(() => import('./pages/patron/DashboardCom'));
-const SuiviCommande = React.lazy(() => import('./pages/public/SuiviCommande'));
 const DashboardAdmin = React.lazy(() => import('./pages/admin/Dashboard'));
 const Finance = React.lazy(() => import('./pages/patron/Finance'));
 const RH = React.lazy(() => import('./pages/patron/RH'));
@@ -32,14 +31,12 @@ const ClientsRFM = React.lazy(() => import('./pages/patron/ClientsRFM'));
 const Agenda = React.lazy(() => import('./pages/patron/Agenda'));
 const ProfilPatron = React.lazy(() => import('./pages/patron/Profil'));
 const DashboardArtisan = React.lazy(() => import('./pages/artisan/Dashboard'));
-const DashboardMonteur = React.lazy(() => import('./pages/artisan/DashboardMonteur'));
 const CGU = React.lazy(() => import('./pages/public/CGU'));
 const RecrutementPage = React.lazy(() => import('./pages/public/RecrutementPage'));
 const SecteurLanding = React.lazy(() => import('./pages/public/SecteurLanding'));
 const SignatureDevis = React.lazy(() => import('./pages/public/SignatureDevis'));
 const SetupCompte = React.lazy(() => import('./pages/public/SetupCompte'));
 const DocumentView = React.lazy(() => import('./pages/public/DocumentView'));
-const StatsAdmin = React.lazy(() => import('./pages/public/StatsAdmin'));
 const ProLanding = React.lazy(() => import('./pages/public/ProLanding'));
 const Messagerie = React.lazy(() => import('./pages/Messagerie'));
 const Support = React.lazy(() => import('./pages/public/Support'));
@@ -137,7 +134,7 @@ function PatronDashboard() {
 function ArtisanDashboardSwitch() {
   const { user } = useAuth();
   const secteur = user?.secteur;
-  if (secteur === 'com')    return <DashboardMonteur />;
+  if (secteur === 'com')    return <DashboardCom />;
   return <DashboardArtisan />;
 }
 
@@ -172,7 +169,7 @@ function AppRoutes() {
       {/* ── Routes publiques ── */}
       <Route path="/" element={<SecteurSelect />} />
       <Route path="/btp" element={<Landing />} />
-      <Route path="/admin/stats" element={<StatsAdmin />} />
+      <Route path="/admin/stats" element={<Navigate to="/fondateur/dashboard" replace />} />
       {/* Anciennes routes redirigées vers l'accueil */}
       <Route path="/coiffure" element={<Navigate to="/" replace />} />
       <Route path="/com" element={<Navigate to="/" replace />} />
@@ -181,7 +178,7 @@ function AppRoutes() {
       <Route path="/pro" element={<ProLanding />} />
       <Route path="/support" element={<Support />} />
       <Route path="/compte-suspendu" element={<CompteSuspendu />} />
-      <Route path="/suivi/:token" element={<SuiviCommande />} />
+      <Route path="/suivi/:token" element={<Navigate to="/" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cgu" element={<CGU />} />
