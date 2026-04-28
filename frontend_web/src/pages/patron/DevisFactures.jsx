@@ -16,7 +16,7 @@ import { isDemo as _isDemo, demoGet, demoSet } from '../../utils/storage';
 import api from '../../services/api';
 import { genererDevisPDF } from '../../utils/devisPDF';
 import { getProfilEntreprise } from '../../utils/profilEntreprise';
-import SignaturePad from '../../components/chantier/SignaturePad';
+// SignaturePad removed — factures don't get signed, devis do
 
 const CARD = { background: '#fff', border: '1px solid #E5E5EA', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
 const BTN = { padding: '8px 18px', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
@@ -35,13 +35,16 @@ const STATUT_DEVIS = {
 };
 
 const STATUT_FACTURE = {
-  sequestre_acompte: { label: 'Acompte bloqué', color: '#2563EB', bg: '#EFF6FF' },
-  sequestre_attente: { label: 'En attente validation', color: '#D97706', bg: '#FFFBEB' },
-  sequestre_libere: { label: 'Libéré', color: '#16A34A', bg: '#F0FDF4' },
-  sequestre_litige: { label: 'Litige', color: '#DC2626', bg: '#FEF2F2' },
-  envoyee: { label: 'Envoyée', color: '#2563EB', bg: '#EFF6FF' },
-  payee: { label: 'Payée', color: '#16A34A', bg: '#F0FDF4' },
+  emise: { label: 'Emise', color: '#6E6E73', bg: '#F2F2F7' },
+  envoyee: { label: 'Envoyee au client', color: '#2563EB', bg: '#EFF6FF' },
+  en_attente: { label: 'En attente de paiement', color: '#D97706', bg: '#FFFBEB' },
+  acompte_recu: { label: 'Acompte recu (30%)', color: '#2563EB', bg: '#EFF6FF' },
+  payee: { label: 'Payee (100%)', color: '#16A34A', bg: '#F0FDF4' },
   en_retard: { label: 'En retard', color: '#DC2626', bg: '#FEF2F2' },
+  sequestre_acompte: { label: 'Acompte bloque', color: '#2563EB', bg: '#EFF6FF' },
+  sequestre_attente: { label: 'En attente validation', color: '#D97706', bg: '#FFFBEB' },
+  sequestre_libere: { label: 'Libere', color: '#16A34A', bg: '#F0FDF4' },
+  sequestre_litige: { label: 'Litige', color: '#DC2626', bg: '#FEF2F2' },
 };
 
 // Données démo
@@ -54,8 +57,8 @@ const DEMO_DEVIS = [
 ];
 
 const DEMO_FACTURES = [
-  { id: 1, numero: 'FAC-2026-001', devisId: 1, client: 'M. Leblanc', objet: 'Rénovation façade', montantTTC: 20350, source: 'marketplace', statut: 'sequestre_attente', acompte: 6105, solde: 14245, avancement: 65, date: '2026-03-20', chantierId: 1 },
-  { id: 2, numero: 'FAC-2026-002', devisId: 3, client: 'Copropriété Les Oliviers', objet: 'Installation électrique', montantTTC: 5280, source: 'manuel', statut: 'en_retard', date: '2026-03-15', chantierId: 3, dateLimite: '2026-04-15' },
+  { id: 1, numero: 'FAC-2026-001', devisId: 1, client: 'M. Leblanc', objet: 'Renovation facade', montantHT: 18500, tva: 1850, montantTTC: 20350, commissionFreample: 203.50, montantClientPaye: 20553.50, source: 'marketplace', statut: 'envoyee', date: '2026-03-20', chantierId: 1, dateLimite: '2026-04-20' },
+  { id: 2, numero: 'FAC-2026-002', devisId: 3, client: 'Copropriete Les Oliviers', objet: 'Installation electrique', montantHT: 4800, tva: 480, montantTTC: 5280, commissionFreample: 52.80, montantClientPaye: 5332.80, source: 'manuel', statut: 'en_retard', date: '2026-03-15', chantierId: 3, dateLimite: '2026-04-15' },
 ];
 
 export default function DevisFactures() {
@@ -95,8 +98,8 @@ export default function DevisFactures() {
   const [bonsCommande, setBonsCommande] = useState(() => isDemo ? demoGet('freample_bons_commande', []) : []);
   const [bonsLivraison, setBonsLivraison] = useState(() => isDemo ? demoGet('freample_bons_livraison', []) : []);
   const [showNewAvoir, setShowNewAvoir] = useState(false);
-  const [signFacture, setSignFacture] = useState(null); // facture à signer
-  const [signatureData, setSignatureData] = useState('');
+  const [showNewFacture, setShowNewFacture] = useState(false); // inline facture form
+  const [newFacForm, setNewFacForm] = useState({ client: '', objet: '', lignes: [{ description: '', montant: '' }], tauxTVA: 10 });
   const [showNewBC, setShowNewBC] = useState(false);
   const [showNewBL, setShowNewBL] = useState(false);
 
@@ -191,22 +194,38 @@ export default function DevisFactures() {
     const emetteur = devisItem.emetteur || (() => {
       try { return JSON.parse(localStorage.getItem('freample_profil_patron') || '{}'); } catch { return {}; }
     })();
+    const montantHT = devisItem.montantHT || 0;
+    const tvaMontant = devisItem.tva || 0;
+    const montantTTC = devisItem.montantTTC || (montantHT + tvaMontant);
+    const commissionFreample = Math.round(montantTTC * 0.01 * 100) / 100;
+    const montantClientPaye = Math.round((montantTTC + commissionFreample) * 100) / 100;
+
     const newFac = {
       id: Date.now(), numero: num, devisId: devisItem.id,
       client: devisItem.client, clientEmail: devisItem.clientEmail, clientTel: devisItem.clientTel,
       clientAdresse: devisItem.clientAdresse, adresseChantier: devisItem.adresseChantier,
       objet: devisItem.objet,
       emetteur,
-      montantHT: devisItem.montantHT, tva: devisItem.tva, montantTTC: devisItem.montantTTC,
+      lignes: devisItem.lignes || [],
+      montantHT, tva: tvaMontant, montantTTC,
+      commissionFreample, montantClientPaye,
       tvaDetails: devisItem.tvaDetails,
       source, date: new Date().toISOString().slice(0, 10),
       chantierId: devisItem.chantierId,
-      statut: source === 'marketplace' || source === 'direct' ? 'sequestre_acompte' : 'envoyee',
-      acompte: source !== 'manuel' ? Math.round(devisItem.montantTTC * 0.3) : 0,
-      solde: source !== 'manuel' ? Math.round(devisItem.montantTTC * 0.7) : 0,
-      avancement: 0,
+      statut: 'emise',
       dateLimite: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
     };
+    // Also save to API for real accounts
+    if (!isDemo) {
+      api.post('/patron/factures', {
+        devisId: devisItem.id,
+        client: { nom: devisItem.client, email: devisItem.clientEmail, telephone: devisItem.clientTel, adresse: devisItem.clientAdresse },
+        objet: devisItem.objet, lignes: devisItem.lignes || [],
+        montantHT, tva: tvaMontant, montantTTC,
+      }).then(({ data }) => {
+        addToast('Facture creee', 'success');
+      }).catch(() => {});
+    }
     setFactures(prev => [newFac, ...prev]);
   }
 
@@ -600,26 +619,91 @@ export default function DevisFactures() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#6E6E73' }}>{filteredFactures.length} facture(s)</span>
-            <button onClick={() => {
-              const num = `FAC-${new Date().getFullYear()}-${String(factures.length + 1).padStart(3, '0')}`;
-              const client = prompt('Nom du client :');
-              if (!client) return;
-              const objet = prompt('Objet de la facture :');
-              if (!objet) return;
-              const montant = prompt('Montant TTC (€) :');
-              if (!montant) return;
-              const ttc = Number(montant) || 0;
-              const ht = Math.round(ttc / 1.1 * 100) / 100;
-              const tva = ttc - ht;
-              const newFac = { id: Date.now(), numero: num, client, objet, montantHT: ht, tva, montantTTC: ttc, statut: 'envoyee', source: 'manuel', date: new Date().toISOString().slice(0, 10), dateLimite: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) };
-              setFactures(prev => [newFac, ...prev]);
-            }} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouvelle facture</button>
+            <button onClick={() => setShowNewFacture(!showNewFacture)} style={BTN}><IconPlus size={14} style={{ marginRight: 6 }} />Nouvelle facture</button>
           </div>
-          {filteredFactures.length === 0 && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucune facture pour ce filtre.</div>}
+
+          {/* Commission info banner */}
+          <div style={{ padding: '10px 16px', background: '#EFF6FF', borderRadius: 10, border: '1px solid #BFDBFE', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>&#x2139;&#xFE0F;</span>
+            <div style={{ fontSize: 12, color: '#1E40AF', lineHeight: 1.5 }}>
+              <strong>L'artisan recoit 100% du montant TTC</strong> — La commission Freample de 1% est ajoutee en supplement, payee par le client.
+            </div>
+          </div>
+
+          {/* ── Inline New Facture Form ── */}
+          {showNewFacture && (() => {
+            const form = newFacForm;
+            const setForm = (v) => setNewFacForm(typeof v === 'function' ? v(newFacForm) : v);
+            const totalHT = form.lignes.reduce((s, l) => s + (Number(l.montant) || 0), 0);
+            const tvaMontant = Math.round(totalHT * (form.tauxTVA / 100) * 100) / 100;
+            const totalTTC = Math.round((totalHT + tvaMontant) * 100) / 100;
+            const commission = Math.round(totalTTC * 0.01 * 100) / 100;
+            const clientPaye = Math.round((totalTTC + commission) * 100) / 100;
+            return (
+              <div style={{ ...CARD, marginBottom: 12, borderLeft: '4px solid #2563EB' }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Nouvelle facture</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div><label style={LBL}>Nom du client</label><input value={form.client} onChange={e => setForm({ ...form, client: e.target.value })} placeholder="M. Dupont" style={INP} /></div>
+                  <div><label style={LBL}>Objet</label><input value={form.objet} onChange={e => setForm({ ...form, objet: e.target.value })} placeholder="Renovation salle de bain" style={INP} /></div>
+                </div>
+                <label style={LBL}>Lignes</label>
+                {form.lignes.map((l, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input value={l.description} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], description: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Description" style={{ ...INP, flex: 2 }} />
+                    <input type="number" value={l.montant} onChange={e => { const ls = [...form.lignes]; ls[i] = { ...ls[i], montant: e.target.value }; setForm({ ...form, lignes: ls }); }} placeholder="Montant HT" style={{ ...INP, flex: 1 }} />
+                    {form.lignes.length > 1 && <button onClick={() => setForm({ ...form, lignes: form.lignes.filter((_, j) => j !== i) })} style={{ ...BTN_O, padding: '6px 10px', fontSize: 11, color: '#DC2626' }}>x</button>}
+                  </div>
+                ))}
+                <button onClick={() => setForm({ ...form, lignes: [...form.lignes, { description: '', montant: '' }] })} style={{ ...BTN_O, fontSize: 11, marginTop: 4 }}>+ Ligne</button>
+                <div style={{ marginTop: 12, marginBottom: 8 }}>
+                  <label style={LBL}>Taux de TVA</label>
+                  <select value={form.tauxTVA} onChange={e => setForm({ ...form, tauxTVA: Number(e.target.value) })} style={{ ...INP, maxWidth: 160 }}>
+                    {[{ v: 0, l: '0% (auto-entrepreneur)' }, { v: 5.5, l: '5.5% (renovation)' }, { v: 10, l: '10% (renovation)' }, { v: 20, l: '20% (taux normal)' }].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </div>
+                <div style={{ padding: '12px 16px', background: '#F8F9FA', borderRadius: 10, fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span>Total HT</span><b>{fmtE(totalHT)}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span>TVA ({form.tauxTVA}%)</span><b>{fmtE(tvaMontant)}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, paddingBottom: 8, borderBottom: '2px solid #1C1C1E' }}><span style={{ fontWeight: 700 }}>Montant TTC (artisan recoit)</span><b style={{ fontSize: 16 }}>{fmtE(totalTTC)}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: '#2563EB' }}><span>Commission Freample (1%)</span><b>+ {fmtE(commission)}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#16A34A' }}><span style={{ fontWeight: 700 }}>Le client paye</span><b style={{ fontSize: 16 }}>{fmtE(clientPaye)}</b></div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <button onClick={() => {
+                    if (!form.client || !form.objet) { addToast('Client et objet requis', 'error'); return; }
+                    const num = `FAC-${new Date().getFullYear()}-${String(factures.length + 1).padStart(3, '0')}`;
+                    const newFac = {
+                      id: Date.now(), numero: num, client: form.client, objet: form.objet,
+                      lignes: form.lignes.filter(l => l.description || l.montant),
+                      montantHT: totalHT, tva: tvaMontant, montantTTC: totalTTC,
+                      commissionFreample: commission, montantClientPaye: clientPaye,
+                      statut: 'emise', source: 'manuel',
+                      date: new Date().toISOString().slice(0, 10),
+                      dateLimite: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+                    };
+                    if (!isDemo) {
+                      api.post('/patron/factures', {
+                        client: { nom: form.client }, objet: form.objet,
+                        lignes: form.lignes.filter(l => l.description || l.montant),
+                        montantHT: totalHT, tva: tvaMontant, montantTTC: totalTTC,
+                      }).then(() => addToast('Facture creee', 'success')).catch(() => {});
+                    }
+                    setFactures(prev => [newFac, ...prev]);
+                    setShowNewFacture(false);
+                    setNewFacForm({ client: '', objet: '', lignes: [{ description: '', montant: '' }], tauxTVA: 10 });
+                    addToast('Facture creee', 'success');
+                  }} style={BTN}>Creer la facture</button>
+                  <button onClick={() => setShowNewFacture(false)} style={BTN_O}>Annuler</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {filteredFactures.length === 0 && !showNewFacture && <div style={{ ...CARD, textAlign: 'center', padding: 48, color: '#6E6E73' }}>Aucune facture pour ce filtre.</div>}
           {filteredFactures.map(f => {
-            const st = STATUT_FACTURE[f.statut] || STATUT_FACTURE.envoyee;
-            const isFreample = f.source === 'marketplace' || f.source === 'direct';
-            const isRetard = f.statut === 'en_retard';
+            const st = STATUT_FACTURE[f.statut] || STATUT_FACTURE.emise;
+            const commission = f.commissionFreample || Math.round((f.montantTTC || 0) * 0.01 * 100) / 100;
+            const clientPaye = f.montantClientPaye || Math.round(((f.montantTTC || 0) + commission) * 100) / 100;
             return (
               <div key={f.id} style={{ ...CARD, borderLeft: `3px solid ${st.color}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
@@ -629,71 +713,63 @@ export default function DevisFactures() {
                       <span style={{ fontSize: 10, fontWeight: 600, color: st.color, background: st.bg, padding: '2px 8px', borderRadius: 4 }}>{st.label}</span>
                       {sourceBadge(f.source)}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>{f.client} — {f.objet}</div>
-                    <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>Émise le {f.date}{f.dateLimite ? ` — Échéance ${f.dateLimite}` : ''}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{typeof f.client === 'object' ? f.client?.nom : f.client} — {f.objet}</div>
+                    <div style={{ fontSize: 11, color: '#6E6E73', marginTop: 2 }}>Emise le {f.date || f.dateEmission}{f.dateLimite ? ` — Echeance ${f.dateLimite}` : ''}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtE(f.montantTTC)}</div>
+                    <div style={{ fontSize: 11, color: '#6E6E73' }}>{fmtE(f.montantHT)} HT</div>
                   </div>
                 </div>
 
-                {/* Détail séquestre Freample */}
+                {/* Commission breakdown */}
+                <div style={{ marginTop: 10, padding: '10px 14px', background: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                    <span>Artisan recoit</span>
+                    <span style={{ fontWeight: 700 }}>{fmtE(f.montantTTC)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4, color: '#2563EB' }}>
+                    <span>Commission Freample (1%)</span>
+                    <span style={{ fontWeight: 600 }}>+ {fmtE(commission)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingTop: 6, borderTop: '1px solid #E2E8F0' }}>
+                    <span style={{ fontWeight: 700 }}>Client paye</span>
+                    <span style={{ fontWeight: 700, color: '#16A34A' }}>{fmtE(clientPaye)}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
                 <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                   <button onClick={() => {
                     const entreprise = getProfilEntreprise(user);
                     const pdf = genererDevisPDF({ ...f, objet: f.objet || 'Facture', titre: 'FACTURE' }, entreprise);
                     pdf.save(`${f.numero}.pdf`);
-                  }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 PDF</button>
-                  {!f.signatureBase64 && <button onClick={() => setSignFacture(f)} style={{ ...BTN, background: '#A68B4B', fontSize: 11, padding: '6px 12px' }}>✍️ Faire signer</button>}
-                  {f.signatureBase64 && <span style={{ fontSize: 11, color: '#16A34A', fontWeight: 600, padding: '6px 0' }}>✅ Signée par {f.signatureNom || 'le client'}</span>}
+                  }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>PDF</button>
+                  {(f.statut === 'emise' || !f.clientId) && (
+                    <button onClick={() => {
+                      if (!isDemo) {
+                        const clientEmail = f.clientEmail || prompt('Email du client (pour lui envoyer la facture) :');
+                        if (!clientEmail) return;
+                        api.put(`/patron/factures/${f.id}/envoyer`, { clientEmail }).then(() => {
+                          setFactures(prev => prev.map(x => x.id === f.id ? { ...x, statut: 'envoyee' } : x));
+                          addToast('Facture envoyee au client', 'success');
+                        }).catch(() => {
+                          setFactures(prev => prev.map(x => x.id === f.id ? { ...x, statut: 'envoyee' } : x));
+                          addToast('Facture marquee comme envoyee', 'success');
+                        });
+                      } else {
+                        setFactures(prev => prev.map(x => x.id === f.id ? { ...x, statut: 'envoyee' } : x));
+                        addToast('Facture envoyee au client', 'success');
+                      }
+                    }} style={{ ...BTN, background: '#2563EB', fontSize: 11, padding: '6px 12px' }}>Envoyer au client</button>
+                  )}
+                  {f.statut !== 'payee' && f.statut !== 'emise' && (
+                    <button onClick={() => marquerPayee(f.id)} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 12px' }}>Marquer payee</button>
+                  )}
+                  {f.statut === 'en_retard' && (
+                    <button onClick={() => { window.open(`mailto:?subject=${encodeURIComponent('Relance facture ' + f.numero)}&body=${encodeURIComponent(`Bonjour,\n\nLa facture ${f.numero} de ${fmtE(f.montantTTC)} est en attente de reglement depuis le ${f.date}.\n\nMerci de regulariser.\n\nCordialement`)}`); }} style={{ ...BTN, background: '#DC2626', fontSize: 11, padding: '6px 12px' }}>Relancer</button>
+                  )}
                 </div>
-
-                {isFreample && (
-                  <div style={{ marginTop: 14, padding: '14px 16px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Paiement sécurisé Freample</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                        <span>Acompte 30%</span>
-                        <span style={{ fontWeight: 600, color: '#16A34A' }}>{fmtE(f.acompte)} — Bloqué sur séquestre</span>
-                      </div>
-                      {f.avancement > 0 && f.avancement < 100 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                          <span>Situation {f.avancement}%</span>
-                          <span style={{ fontWeight: 600, color: f.statut === 'sequestre_attente' ? '#D97706' : '#16A34A' }}>
-                            {fmtE(Math.round(f.montantTTC * f.avancement / 100 - f.acompte))} — {f.statut === 'sequestre_attente' ? 'En attente de validation client' : 'Libéré'}
-                          </span>
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                        <span>Solde</span>
-                        <span style={{ color: '#6E6E73' }}>{fmtE(f.solde)} — {f.avancement >= 100 ? 'En attente' : 'Non déclenché'}</span>
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 10, fontSize: 11, color: '#16A34A' }}>Tout est géré par Freample. Libération automatique après validation client (7 jours max).</div>
-                    {f.statut === 'sequestre_attente' && (
-                      <button onClick={() => libererSequestre(f.id)} style={{ ...BTN, background: '#16A34A', fontSize: 11, marginTop: 10 }}>Simuler la libération</button>
-                    )}
-                  </div>
-                )}
-
-                {/* Gestion manuelle */}
-                {!isFreample && (
-                  <div style={{ marginTop: 14 }}>
-                    <div style={{ padding: '12px 16px', background: '#FFFBEB', border: '1px solid #D9770630', borderRadius: 10, marginBottom: 10 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#92400E' }}>Chantier hors marketplace — gestion financière manuelle</div>
-                      <div style={{ fontSize: 11, color: '#92400E', marginTop: 2 }}>Cette facture n'est pas sécurisée par Freample. Passez par la marketplace ou envoyez un lien direct pour un paiement garanti.</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      <button onClick={() => {
-                        const entreprise = getProfilEntreprise(user);
-                        const pdf = genererDevisPDF({ ...f, numero: f.numero, objet: f.objet || 'Facture', titre: 'FACTURE' }, entreprise);
-                        pdf.save(`${f.numero}.pdf`);
-                      }} style={{ ...BTN, background: '#1565C0', fontSize: 11, padding: '6px 12px' }}>📄 PDF</button>
-                      {f.statut !== 'payee' && <button onClick={() => marquerPayee(f.id)} style={{ ...BTN, background: '#16A34A', fontSize: 11, padding: '6px 12px' }}>Marquer payée</button>}
-                      {isRetard && <button onClick={() => { window.open(`mailto:?subject=${encodeURIComponent('Relance facture ' + f.numero)}&body=${encodeURIComponent(`Bonjour,\n\nLa facture ${f.numero} de ${fmtE(f.montantTTC)} est en attente de règlement depuis le ${f.date}.\n\nMerci de régulariser.\n\nCordialement`)}`); }} style={{ ...BTN, background: '#DC2626', fontSize: 11, padding: '6px 12px' }}>Relancer</button>}
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -973,40 +1049,6 @@ export default function DevisFactures() {
                 <button onClick={() => { setLienDirect(null); setLienGenere(null); setLienForm({ clientNom: '', clientEmail: '', objet: '', montantHT: '' }); }} style={{ ...BTN_O, width: '100%', marginTop: 10 }}>Fermer</button>
               </>
             )}
-          </div>
-        </div>
-      )}
-      {/* Modal signature facture */}
-      {signFacture && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={e => { if (e.target === e.currentTarget) { setSignFacture(null); setSignatureData(''); } }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, padding: 28 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: '#1A1A1A' }}>Signature facture</div>
-                <div style={{ fontSize: 12, color: '#636363', marginTop: 2 }}>{signFacture.numero} — {signFacture.client}</div>
-              </div>
-              <button onClick={() => { setSignFacture(null); setSignatureData(''); }} style={{ background: '#F2F2F7', border: 'none', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#636363' }}>×</button>
-            </div>
-
-            <div style={{ padding: '12px 16px', background: '#F8F7F4', borderRadius: 10, marginBottom: 16, fontSize: 13, color: '#1A1A1A' }}>
-              <div><strong>Montant :</strong> {fmtE(signFacture.montantTTC)}</div>
-              <div><strong>Objet :</strong> {signFacture.objet}</div>
-            </div>
-
-            <SignaturePad onSave={setSignatureData} width={Math.min(380, window.innerWidth - 80)} height={150} />
-
-            <button
-              disabled={!signatureData}
-              onClick={() => {
-                setFactures(prev => prev.map(f => f.id === signFacture.id ? { ...f, signatureBase64: signatureData, signatureNom: signFacture.client, statut: 'signee', signeLe: new Date().toISOString() } : f));
-                setSignFacture(null);
-                setSignatureData('');
-                addToast('Facture signée !', 'success');
-              }}
-              style={{ width: '100%', marginTop: 16, padding: 14, background: signatureData ? '#2C2520' : '#ccc', color: '#F5EFE0', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: signatureData ? 'pointer' : 'default' }}>
-              {signatureData ? '✅ Valider la signature' : 'Signez ci-dessus pour valider'}
-            </button>
           </div>
         </div>
       )}

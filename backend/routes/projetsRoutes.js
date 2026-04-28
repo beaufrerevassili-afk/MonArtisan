@@ -117,6 +117,29 @@ router.get('/mes-devis', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /projets/mes-factures — Client gets factures sent to them
+router.get('/mes-factures', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT f.*, u.nom as patron_nom
+      FROM factures_patron f
+      LEFT JOIN users u ON u.id = f.patron_id
+      WHERE f.client_id = $1
+      ORDER BY f.cree_le DESC
+    `, [req.user.id]);
+    res.json({ factures: rows.map(f => ({
+      id: f.id, numero: f.numero, devisId: f.devis_id,
+      client: f.client, objet: f.objet, lignes: f.lignes,
+      montantHT: parseFloat(f.montant_ht), tva: parseFloat(f.tva), montantTTC: parseFloat(f.montant_ttc),
+      commissionFreample: parseFloat(f.commission_freample), montantClientPaye: parseFloat(f.montant_client_paye),
+      statut: f.statut, dateEmission: f.date_emission, dateEcheance: f.date_echeance,
+      patronNom: f.patron_nom, creeLe: f.cree_le
+    })) });
+  } catch (err) {
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 // ═══════════════════════════════════════════════════
 //  ROUTES CLIENT (authentifiées)
 // ═══════════════════════════════════════════════════

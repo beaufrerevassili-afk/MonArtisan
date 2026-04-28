@@ -152,6 +152,30 @@ async function ensureTables() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  // Factures patron (liées aux devis signés ou standalone)
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS factures_patron (
+      id SERIAL PRIMARY KEY,
+      numero VARCHAR(50),
+      devis_id INTEGER,
+      patron_id INTEGER,
+      client_id INTEGER,
+      client JSONB,
+      objet TEXT,
+      lignes JSONB DEFAULT '[]',
+      montant_ht NUMERIC DEFAULT 0,
+      tva NUMERIC DEFAULT 0,
+      montant_ttc NUMERIC DEFAULT 0,
+      commission_freample NUMERIC DEFAULT 0,
+      montant_client_paye NUMERIC DEFAULT 0,
+      statut VARCHAR(30) DEFAULT 'emise',
+      date_emission DATE DEFAULT CURRENT_DATE,
+      date_echeance DATE,
+      date_paiement DATE,
+      signature_base64_devis TEXT,
+      cree_le TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   // Situations de chantier (factures intermédiaires)
   await db.query(`
     CREATE TABLE IF NOT EXISTS situations_chantier (
@@ -1031,6 +1055,90 @@ router.put('/subscription/cancel', async (req, res) => {
   } catch (err) {
     res.status(500).json({ erreur: 'Erreur serveur' });
   }
+});
+
+// ============================================================
+//  FACTURES PATRON
+// ============================================================
+
+// GET /patron/factures — List patron's factures
+router.get('/factures', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM factures_patron WHERE patron_id = $1 ORDER BY cree_le DESC', [req.user.id]);
+    res.json({ factures: rows.map(r => ({
+      id: r.id, numero: r.numero, devisId: r.devis_id, clientId: r.client_id,
+      client: r.client, objet: r.objet, lignes: r.lignes,
+      montantHT: parseFloat(r.montant_ht), tva: parseFloat(r.tva), montantTTC: parseFloat(r.montant_ttc),
+      commissionFreample: parseFloat(r.commission_freample), montantClientPaye: parseFloat(r.montant_client_paye),
+      statut: r.statut, dateEmission: r.date_emission, dateEcheance: r.date_echeance,
+      datePaiement: r.date_paiement, signatureBase64Devis: r.signature_base64_devis, creeLe: r.cree_le
+    })) });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// POST /patron/factures — Create facture (from devis or standalone)
+router.post('/factures', async (req, res) => {
+  try {
+    const { devisId, client, objet, lignes, montantHT, tva, montantTTC, signatureBase64Devis } = req.body;
+    if (!objet) return res.status(400).json({ erreur: 'Objet requis' });
+
+    const ht = parseFloat(montantHT) || 0;
+    const tvaMontant = parseFloat(tva) || 0;
+    const ttc = parseFloat(montantTTC) || (ht + tvaMontant);
+    const commission = Math.round(ttc * 0.01 * 100) / 100;
+    const clientPaye = Math.round((ttc + commission) * 100) / 100;
+
+    const annee = new Date().getFullYear();
+    const countRes = await db.query(`SELECT COUNT(*)+1 AS n FROM factures_patron WHERE patron_id = $1 AND EXTRACT(year FROM cree_le) = $2`, [req.user.id, annee]);
+    const numero = `FAC-${annee}-${String(parseInt(countRes.rows[0].n)).padStart(3, '0')}`;
+
+    const dateEcheance = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+    const { rows } = await db.query(`
+      INSERT INTO factures_patron (numero, devis_id, patron_id, client, objet, lignes, montant_ht, tva, montant_ttc, commission_freample, montant_client_paye, date_echeance, signature_base64_devis)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *
+    `, [numero, devisId || null, req.user.id, JSON.stringify(client || {}), objet, JSON.stringify(lignes || []),
+        ht, tvaMontant, ttc, commission, clientPaye, dateEcheance, signatureBase64Devis || null]);
+
+    res.status(201).json({ facture: rows[0], message: 'Facture creee' });
+  } catch (err) {
+    console.error('POST /patron/factures:', err.message);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
+// PUT /patron/factures/:id/envoyer — Send facture to client (set client_id)
+router.put('/factures/:id/envoyer', async (req, res) => {
+  try {
+    const { clientId, clientEmail } = req.body;
+    // Try to find client by email if no clientId provided
+    let cId = clientId;
+    if (!cId && clientEmail) {
+      const { rows } = await db.query('SELECT id FROM users WHERE email = $1 AND role = $2', [clientEmail, 'client']);
+      if (rows[0]) cId = rows[0].id;
+    }
+    const { rows } = await db.query(
+      'UPDATE factures_patron SET client_id = $1, statut = $2 WHERE id = $3 AND patron_id = $4 RETURNING *',
+      [cId || null, 'envoyee', parseInt(req.params.id), req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Facture introuvable' });
+    res.json({ message: 'Facture envoyee au client', facture: rows[0] });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
+});
+
+// PUT /patron/factures/:id/statut — Update facture status
+router.put('/factures/:id/statut', async (req, res) => {
+  try {
+    const { statut } = req.body;
+    const updates = { statut };
+    if (statut === 'payee') updates.date_paiement = new Date().toISOString().slice(0, 10);
+    const { rows } = await db.query(
+      'UPDATE factures_patron SET statut = $1, date_paiement = $2 WHERE id = $3 AND patron_id = $4 RETURNING *',
+      [statut, updates.date_paiement || null, parseInt(req.params.id), req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erreur: 'Facture introuvable' });
+    res.json({ message: 'Statut mis a jour' });
+  } catch (err) { res.status(500).json({ erreur: 'Erreur serveur' }); }
 });
 
 module.exports = router;

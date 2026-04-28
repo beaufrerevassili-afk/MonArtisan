@@ -45,6 +45,9 @@ export default function DashboardClient() {
   const [pwForm, setPwForm] = useState({ ancien: '', nouveau: '', confirm: '' });
   const [viewEntreprise, setViewEntreprise] = useState(null);
   const [devisRecus, setDevisRecus] = useState([]);
+  const [showFactures, setShowFactures] = useState(false);
+  const [facturesRecues, setFacturesRecues] = useState([]);
+  const [factureDetail, setFactureDetail] = useState(null);
 
   const prenom = user?.nom?.split(' ')[0] || 'vous';
 
@@ -105,6 +108,11 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!isDemo) {
       api.get('/projets/mes-devis').then(({ data }) => setDevisRecus(data.devis || [])).catch(() => {});
+      api.get('/projets/mes-factures').then(({ data }) => setFacturesRecues(data.factures || [])).catch(() => {});
+    } else {
+      // Demo: load factures from patron's demo data
+      const demoFac = demoGet('freample_factures_patron', []);
+      setFacturesRecues(demoFac.filter(f => f.statut === 'envoyee' || f.statut === 'en_attente' || f.statut === 'payee' || f.statut === 'acompte_recu'));
     }
   }, []);
 
@@ -256,10 +264,11 @@ export default function DashboardClient() {
         </div>
         <nav style={{ flex: 1, padding: '12px 0' }}>
           {[
-            { label: 'Accueil', action: () => { setProjetDetail(null); setShowPaiements(false); setShowProfil(false); setShowDocuments(false); } },
-            { label: '📄 Mes documents', action: () => { setShowDocuments(true); setShowPaiements(false); setShowProfil(false); setProjetDetail(null); setDocDetail(null); } },
-            { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setShowDocuments(false); setProjetDetail(null); } },
-            { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setShowDocuments(false); setProjetDetail(null); } },
+            { label: 'Accueil', action: () => { setProjetDetail(null); setShowPaiements(false); setShowProfil(false); setShowDocuments(false); setShowFactures(false); } },
+            { label: '📄 Mes documents', action: () => { setShowDocuments(true); setShowPaiements(false); setShowProfil(false); setShowFactures(false); setProjetDetail(null); setDocDetail(null); } },
+            { label: '🧾 Mes factures', action: () => { setShowFactures(true); setShowPaiements(false); setShowProfil(false); setShowDocuments(false); setProjetDetail(null); setFactureDetail(null); } },
+            { label: 'Mes paiements', action: () => { setShowPaiements(true); setShowProfil(false); setShowDocuments(false); setShowFactures(false); setProjetDetail(null); } },
+            { label: 'Mon profil', action: () => { setShowProfil(true); setShowPaiements(false); setShowDocuments(false); setShowFactures(false); setProjetDetail(null); } },
             { label: '💬 Messages', action: () => navigate('/messagerie') },
             { label: 'Trouver un artisan', action: () => navigate('/btp') },
           ].map(t => (
@@ -308,6 +317,129 @@ export default function DashboardClient() {
             ))}
           </div>
         )}
+
+        {/* ══ VUE MES FACTURES ══ */}
+        {showFactures && !projetDetail && (() => {
+          const fmtE = (n) => `${Number(n || 0).toLocaleString('fr-FR')} \u20AC`;
+          const statutMap = {
+            emise: { label: 'Emise', color: '#6E6E73', bg: '#F2F2F7' },
+            envoyee: { label: 'En attente de paiement', color: '#D97706', bg: '#FFFBEB' },
+            en_attente: { label: 'En attente de paiement', color: '#D97706', bg: '#FFFBEB' },
+            acompte_recu: { label: 'Acompte recu (30%)', color: '#2563EB', bg: '#EFF6FF' },
+            payee: { label: 'Payee (100%)', color: '#16A34A', bg: '#F0FDF4' },
+            en_retard: { label: 'En retard', color: '#DC2626', bg: '#FEF2F2' },
+          };
+
+          return (
+            <div>
+              <button onClick={() => { setShowFactures(false); setFactureDetail(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, marginBottom: 16, fontFamily: DS.font }}>← Retour</button>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 6px', color: '#1A1A1A' }}>Mes factures</h2>
+              <div style={{ fontSize: 13, color: '#444', marginBottom: 20 }}>Factures envoyees par vos artisans</div>
+
+              {/* Info banner */}
+              <div style={{ ...CARD, marginBottom: 16, borderLeft: '4px solid #2563EB', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>&#x1F4B3;</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Paiement transparent</div>
+                  <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>Le montant affiche inclut la commission Freample de 1%. L'artisan recoit 100% du montant TTC de ses travaux. La commission est un supplement pour garantir la securite du paiement.</div>
+                </div>
+              </div>
+
+              {facturesRecues.length === 0 ? (
+                <div style={{ ...CARD, textAlign: 'center', padding: 40, color: '#444', fontSize: 13 }}>Aucune facture pour le moment.</div>
+              ) : facturesRecues.map(f => {
+                const st = statutMap[f.statut] || statutMap.envoyee;
+                const clientNom = typeof f.client === 'object' ? f.client?.nom : f.client;
+                const commission = f.commissionFreample || Math.round((f.montantTTC || 0) * 0.01 * 100) / 100;
+                const clientPaye = f.montantClientPaye || Math.round(((f.montantTTC || 0) + commission) * 100) / 100;
+                const isOpen = factureDetail?.id === f.id;
+
+                return (
+                  <div key={f.id} style={{ ...CARD, marginBottom: 10, borderLeft: `4px solid ${st.color}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 14, fontWeight: 700 }}>Facture {f.numero}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: '3px 8px', borderRadius: 6 }}>{st.label}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: '#444' }}>
+                          {f.patronNom ? `De ${f.patronNom}` : ''}{f.objet ? ` — ${f.objet}` : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                          {f.dateEmission || f.date ? `Emise le ${new Date(f.dateEmission || f.date).toLocaleDateString('fr-FR')}` : ''}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>{fmtE(clientPaye)}</div>
+                        <div style={{ fontSize: 10, color: '#888' }}>dont {fmtE(commission)} commission</div>
+                      </div>
+                    </div>
+
+                    {/* Toggle detail */}
+                    <button onClick={() => setFactureDetail(isOpen ? null : f)}
+                      style={{ marginTop: 8, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#A68B4B', fontWeight: 600, fontFamily: DS.font, padding: 0 }}>
+                      {isOpen ? 'Masquer le detail' : 'Voir le detail'}
+                    </button>
+
+                    {isOpen && (
+                      <div style={{ marginTop: 12, padding: '14px 16px', background: '#FAFAF8', borderRadius: 10, border: `1px solid ${DS.border}` }}>
+                        {/* Line items */}
+                        {(f.lignes || []).length > 0 && (
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', marginBottom: 6 }}>Detail des prestations</div>
+                            {(f.lignes || []).map((l, i) => (
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < f.lignes.length - 1 ? `1px solid ${DS.border}` : 'none', fontSize: 12 }}>
+                                <span style={{ color: '#333' }}>{l.description || l.libelle || `Ligne ${i + 1}`}</span>
+                                <span style={{ fontWeight: 600, color: '#1A1A1A', flexShrink: 0, marginLeft: 12 }}>{fmtE(l.montant || l.totalHT || l.prix || 0)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Totals */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Montant HT</span><span>{fmtE(f.montantHT)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>TVA</span><span>{fmtE(f.tva)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, paddingTop: 4, borderTop: '1px solid #ccc' }}><span>Montant TTC (artisan)</span><span>{fmtE(f.montantTTC)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2563EB', marginTop: 4 }}><span>Commission Freample (1%)</span><span>+ {fmtE(commission)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 15, paddingTop: 8, borderTop: '2px solid #1A1A1A', marginTop: 4 }}>
+                            <span>TOTAL A PAYER</span><span style={{ color: '#16A34A' }}>{fmtE(clientPaye)}</span>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
+                          {f.statut !== 'payee' && (
+                            <button onClick={() => {
+                              addToast('Paiement Stripe non configure. Contactez l\'artisan ou effectuez un virement.', 'info');
+                            }} style={{ padding: '10px 20px', background: '#16A34A', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: DS.font }}>
+                              Payer {fmtE(clientPaye)}
+                            </button>
+                          )}
+                          {f.statut === 'payee' && (
+                            <span style={{ padding: '10px 20px', background: '#F0FDF4', color: '#16A34A', borderRadius: 10, fontSize: 13, fontWeight: 700 }}>Payee</span>
+                          )}
+                          <button onClick={() => {
+                            addToast('Telechargement PDF en cours...', 'info');
+                          }} style={{ padding: '10px 20px', background: '#fff', color: '#1A1A1A', border: `1px solid ${DS.border}`, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: DS.font }}>
+                            Telecharger PDF
+                          </button>
+                        </div>
+
+                        {/* Bank transfer fallback */}
+                        {f.statut !== 'payee' && (
+                          <div style={{ marginTop: 12, padding: '10px 14px', background: '#FFFBEB', borderRadius: 8, border: '1px solid #D9770630', fontSize: 12, color: '#92400E', lineHeight: 1.6 }}>
+                            <strong>Paiement par virement :</strong> Pour payer par virement, contactez l'artisan pour obtenir ses coordonnees bancaires. Indiquez la reference <strong>{f.numero}</strong> dans le motif du virement.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* ══ VUE PROFIL MODIFIABLE ══ */}
         {showProfil && !projetDetail && <ProfilClient user={user} isDemo={isDemo} />}
@@ -900,7 +1032,7 @@ export default function DashboardClient() {
         })()}
 
         {/* ══ VUE PRINCIPALE ADAPTATIVE ══ */}
-        {!projetDetail && !showPaiements && !showProfil && !showDocuments && (<>
+        {!projetDetail && !showPaiements && !showProfil && !showDocuments && !showFactures && (<>
 
           {/* ── SCÉNARIO 1 : Nouveau client ── */}
           {phase === 'nouveau' && !showForm && (
