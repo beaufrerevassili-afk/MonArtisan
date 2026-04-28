@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import DS from '../design/luxe';
 import { isDemo as _isDemo } from '../utils/storage';
@@ -18,12 +19,17 @@ const CTX_ICONS = { projet: '🏗️', recrutement: '👤', devis: '📋', suppo
 export default function Messagerie() {
   const { user } = useAuth();
   const isDemo = _isDemo();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [activeConv, setActiveConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showNewMsg, setShowNewMsg] = useState(false);
+  const [newMsgTo, setNewMsgTo] = useState('');
+  const [newMsgText, setNewMsgText] = useState('');
+  const [contacts, setContacts] = useState([]);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -82,11 +88,38 @@ export default function Messagerie() {
       {showList && (
         <div style={{ width: isMobile ? '100%' : 320, borderRight: isMobile ? 'none' : '1px solid #E8E6E1', display: 'flex', flexDirection: 'column', flexShrink: 0, background: '#fff' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #E8E6E1' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>Messages</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#A68B4B', fontWeight: 700, padding: 0 }}>←</button>
+                <span style={{ fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>Messages</span>
+              </div>
+              <button onClick={() => setShowNewMsg(true)} style={{ padding: '6px 14px', background: '#2C2520', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>+ Nouveau</button>
+            </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
+            {/* Nouveau message */}
+            {showNewMsg && (
+              <div style={{ padding: 16, borderBottom: '1px solid #E8E6E1', background: '#F8F7F4' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#1A1A1A' }}>Nouveau message</div>
+                <input value={newMsgTo} onChange={e => setNewMsgTo(e.target.value)} placeholder="ID du destinataire (ex: 4)" type="number"
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+                <textarea value={newMsgText} onChange={e => setNewMsgText(e.target.value)} placeholder="Votre message..." rows={2}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8E6E1', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', marginBottom: 8 }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button disabled={!newMsgTo || !newMsgText.trim()} onClick={async () => {
+                    try {
+                      await api.post('/messagerie/envoyer', { receiverId: parseInt(newMsgTo), contenu: newMsgText.trim(), contexte: 'direct' });
+                      setNewMsgTo(''); setNewMsgText(''); setShowNewMsg(false);
+                      loadConversations();
+                    } catch {}
+                  }} style={{ padding: '8px 16px', background: newMsgTo && newMsgText.trim() ? '#2C2520' : '#ccc', color: '#F5EFE0', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: newMsgTo && newMsgText.trim() ? 'pointer' : 'default' }}>Envoyer</button>
+                  <button onClick={() => setShowNewMsg(false)} style={{ padding: '8px 16px', background: '#F2F2F7', color: '#636363', border: 'none', borderRadius: 8, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                </div>
+              </div>
+            )}
+
             {loading && <div style={{ padding: 40, textAlign: 'center', color: '#636363', fontSize: 13 }}>Chargement...</div>}
-            {!loading && conversations.length === 0 && (
+            {!loading && conversations.length === 0 && !showNewMsg && (
               <div style={{ padding: 40, textAlign: 'center' }}>
                 <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.3 }}>💬</div>
                 <div style={{ fontSize: 14, color: '#636363' }}>Aucune conversation</div>
